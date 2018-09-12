@@ -1,3 +1,15 @@
+/**
+ * @author Simon JOUAN
+ * @site https://jouan.ovh/
+ * @lastmodified 12/09/2018
+ *
+ */
+
+ /**
+  * Sticky Footer
+  *
+  * sticky footer always stays on the bottom of the page
+  */
 body {
     display: flex;
     min-height: 100vh;
@@ -8,22 +20,26 @@ main {
     flex: 1 0 auto;
 }
 
-.border {
+/**
+ * The border of the card
+ */
+.card.border {
     border: 1px solid #FFFFFF;
+    border-radius: 0;
 }
 
-
-/* Class for when element is above threshold*/
-.pin-top {
-    position: relative;
+/**
+ * The carousel
+ */
+.carousel > .carousel-item.inactive {
+	opacity:0 !important;
 }
 
-/* Class for when element is below threshold*/
-.pin-bottom {
-    position: relative;
-}
-
-/* Class for when element is pinned*/
-.pinned {
-    position: fixed !important;
+.carousel > .carousel-item.active {
+	-webkit-transition: opacity 2s ease-in-out;
+	-moz-transition: opacity 2s ease-in-out;
+	-ms-transition: opacity 2s ease-in-out;
+	-o-transition: opacity 2s ease-in-out;
+	transition: opacity 2s ease-in-out;
+	opacity:0;
 }

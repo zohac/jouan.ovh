@@ -5,7 +5,7 @@
 		<!--Let browser know website is optimized for mobile-->
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-		<title>&lt;jouan /&gt;</title>
+		<title>..:: &lt;jouan /&gt; ::..</title>
 		<!--Import Google Icon Font-->
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         
@@ -13,11 +13,14 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 
         <!--Import http://fontawesome.io/ -->
-        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+        <link
+            rel="stylesheet"
+            href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+            integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+            crossorigin="anonymous">
 
-		<!-- feuille de style personnalisée -->
+		<!-- custom stylesheet -->
 		<link href="css/style.css" rel="stylesheet">
-
 	</head>
 
 	<body class="blue-grey darken-4 white-text">
@@ -34,29 +37,33 @@
       
         <main class="container valign-wrapper">
             <div class="carousel carousel-slider center row">
-                <div id="block1" class="carousel-item col s12 ">
-                    <div class="border blue-grey darken-4">
-                        <h1>Simon JOUAN</h1>
-                        <h5>Futur Développeur Web</h5>
+                <div id="item-1" class="carousel-item valign-wrapper">
+                    <div class="col s12">
+                        <div class="card col s12 small border blue-grey darken-4">
+                            <h1>Simon JOUAN</h1>
+                            <h5>Développeur d'application - PHP / Symfony</h5>
+                        </div>
                     </div>
                 </div>
-                <div id="block2" class="carousel-item col s12 row">
-                    <div class="card col s4 small border blue-grey darken-4">
-                        <div class="icon-block">
-                            <h2 class="center"><i class="material-icons">perm_identity</i></h2>
-                            <p class="light">Après 10 ans d'expériences comme métrologue, j'effectue une reconversion professionnelle.</p>
+                <div id="item-2" class="carousel-item row valign-wrapper">
+                    <div class="col s12">
+                        <div class="card col s4 small border blue-grey darken-4">
+                            <div class="icon-block">
+                                <h2 class="center"><i class="material-icons">perm_identity</i></h2>
+                                <p class="light">Après 11 ans d'expériences comme métrologue, j'effectue une reconversion professionnelle.</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card col s4 small border blue-grey darken-4">
-                        <div class="icon-block">
-                            <h2 class="center"><i class="material-icons">today</i></h2>
-                            <p class="light">Actuellement en formation chez <a href="https://openclassrooms.com/">OpenClassrooms</a>, je suis le parcour de formation "Développeur d'application - PHP / Symfony". J'espère ainsi devenir Développeur Web Freelance.</p>
+                        <div class="card col s4 small border blue-grey darken-4">
+                            <div class="icon-block">
+                                <h2 class="center"><i class="material-icons">today</i></h2>
+                                <p class="light">Actuellement en formation chez <a href="https://openclassrooms.com/">OpenClassrooms</a>, je suis le parcour de formation "Développeur d'application - PHP / Symfony". J'espère ainsi devenir Développeur Web Freelance.</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card col s4 small border blue-grey darken-4">
-                        <div class="icon-block">
-                            <h2 class="center"><i class="material-icons">code</i></h2>
-                            <p class="light">Demain ;-) <strong>Développeur web!</strong></p>
+                        <div class="card col s4 small border blue-grey darken-4">
+                            <div class="icon-block">
+                                <h2 class="center"><i class="material-icons">code</i></h2>
+                                <p class="light">Demain ;-) <strong>Développeur web!</strong></p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -65,11 +72,24 @@
 
         <footer class="page-footer blue-grey darken-4">
             <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <a href="https://www.linkedin.com/in/simon-jouan-b355a927/" class="white-text">
-                            <i class="fa fa-linkedin fa-2x" aria-hidden="true"></i>.
-                        </a>
+                <div class="row center">
+                    <div class="col m6 s12">
+                        <h5>Sur le réseau</h5>
+                        <div class="row">
+                            <a href="https://www.linkedin.com/in/simon-jouan-b355a927/" class="white-text">
+                                <i class="fab fa-linkedin fa-2x" aria-hidden="true"></i>.
+                            </a>
+                            <a href="https://github.com/zohac/" class="white-text">
+                                <i class="fab fa-github fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col m6 s12">
+                        <h5>Contact</h5>
+                        <div class="row">
+                            <i class="fas fa-envelope fa-2x"></i><br>
+                            fenrir0680(a)gmail.com
+                        </div>
                     </div>
                 </div>
             </div>
@@ -80,15 +100,41 @@
             src="https://code.jquery.com/jquery-3.3.1.min.js"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
             crossorigin="anonymous"></script>
-        <!-- Compiled and minified JavaScript -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-
+        <!--
+            Compiled and minified JavaScript 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>.
+        -->
+        <!-- I use a custom version of MaterializeCSS -->
+        <script src="js/custom-materialize.js"></script>
         
         <script>
-            $('.carousel.carousel-slider').carousel({
-                fullWidth: true,
-                indicators: false
-            });
+            document.addEventListener('DOMContentLoaded', function() {
+                var elems = document.querySelectorAll('.carousel.carousel-slider');
+                var options = {
+                    fullWidth: true,
+                    indicators: true,
+                    dist: -100,
+                    duration: 500
+                };
+                var instance = M.Carousel.init(elems, options);
+                
+                $('body').on('mousewheel DOMMouseScroll', function( e ){
+                    if(typeof e.originalEvent.detail == 'number' && e.originalEvent.detail !== 0) {
+                        handleMouseWheelDirection( e.originalEvent.detail );
+                    } else if (typeof e.originalEvent.wheelDelta == 'number') {
+                        handleMouseWheelDirection( e.originalEvent.wheelDelta );
+                    }
+                });
+                
+                function handleMouseWheelDirection( event )
+                {
+                    if ( event > 0 ) {
+                        instance[0].next();
+                    } else if ( event < 0 ) {
+                        instance[0].prev();
+                    }
+                }
+            }); 
         </script>
 	</body>
 </html>
