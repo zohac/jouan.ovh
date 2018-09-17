@@ -18,6 +18,8 @@ body {
 
 main {
     flex: 1 0 auto;
+    perspective: 1000px;
+    transform-style: preserve-3d;
 }
 
 /**
@@ -29,17 +31,64 @@ main {
 }
 
 /**
- * The carousel
+ * Blink an element
  */
-.carousel > .carousel-item.inactive {
-	opacity:0 !important;
+ .blink {
+    animation: blinker 2s linear infinite;
 }
 
-.carousel > .carousel-item.active {
-	-webkit-transition: opacity 2s ease-in-out;
-	-moz-transition: opacity 2s ease-in-out;
-	-ms-transition: opacity 2s ease-in-out;
-	-o-transition: opacity 2s ease-in-out;
-	transition: opacity 2s ease-in-out;
-	opacity:0;
+@keyframes blinker {
+    50% {
+        opacity: 0.0;
+    }
+}
+
+/**
+ * ScrollTrigger animation
+ */
+.j-height {
+    height: calc(100vh - 200px);
+}
+
+.invisible {
+    transition: transform 2s ease, opacity 1s ease;
+    transform: rotateX(90deg) scale(0.5,0.5);
+    opacity: 0.0;
+}
+
+.visible {
+    transition: opacity 1s ease;
+    opacity: 1.0;
+}
+
+.fromTopIn
+{
+	transition: transform 1.0s ease, opacity 1.0s ease;
+	
+	transform: translate(0,0);
+	opacity: 1.0;
+}
+
+.fromTopOut
+{
+	transition: transform 1.0s ease, opacity 1.0s ease;
+	
+	transform: translate(0,-10px);
+	opacity: 0.0;
+}
+
+.fromBottomIn
+{
+	transition: transform 1.0s ease, opacity 1.0s ease;
+	
+	transform: translate(0,0);
+	opacity: 1.0;
+}
+
+.fromBottomOut
+{
+	transition: transform 1.0s ease, opacity 1.0s ease;
+	
+	transform: translate(0,10px);
+	opacity: 0.0;
 }

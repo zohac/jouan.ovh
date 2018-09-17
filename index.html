@@ -36,34 +36,79 @@
         </header>
       
         <main class="container valign-wrapper">
-            <div class="carousel carousel-slider center row">
-                <div id="item-1" class="carousel-item valign-wrapper">
+            <div class="center row">
+                <div id="item-1" class="j-height valign-wrapper" data-scroll="toggle(fromBottomIn, fromTopOut)">
                     <div class="col s12">
-                        <div class="card col s12 small border blue-grey darken-4">
+                        <div class="card col s12 border blue-grey darken-4">
                             <h1>Simon JOUAN</h1>
                             <h5>Développeur d'application - PHP / Symfony</h5>
+                            <i class="medium material-icons blink">expand_more</i>
                         </div>
                     </div>
                 </div>
-                <div id="item-2" class="carousel-item row valign-wrapper">
+                <div id="item-2" class="j-height valign-wrapper" data-scroll="toggle(fromBottomIn, fromTopOut)">
                     <div class="col s12">
-                        <div class="card col s4 small border blue-grey darken-4">
-                            <div class="icon-block">
-                                <h2 class="center"><i class="material-icons">perm_identity</i></h2>
-                                <p class="light">Après 11 ans d'expériences comme métrologue, j'effectue une reconversion professionnelle.</p>
+                        <div class="card col s12 border blue-grey darken-4">
+                            <h2 class="center"><i class="medium material-icons">perm_identity</i></h2>
+                            <p class="light">Après 11 ans d'expériences comme métrologue, j'effectue une reconversion professionnelle.</p>
+                            <p class="light">Actuellement en formation chez <a href="https://openclassrooms.com/">OpenClassrooms</a>, je suis le parcour de formation "Développeur d'application - PHP / Symfony". J'espère ainsi devenir Développeur Web Freelance.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="item-3" class="j-height valign-wrapper" data-scroll="toggle(fromBottomIn, fromTopOut)">
+                    <div class="col s12">                
+                        <div class="card col s12 border blue-grey darken-4">
+                            <h2 class="center"><i class="medium material-icons">code</i></h2>
+                            <div class="col s12 m6">
+                                <h5>Logiciels / Langages</h5>
+                                <ul>
+                                    <li>
+                                        <div class="col s6 right-align"><i class="fab fa-php"></i></div>
+                                        <div class="col s6 left-align">PHP</div>
+                                    </li>
+                                    <li>
+                                        <div class="col s6 right-align"><i class="fas fa-database"></i></div>
+                                        <div class="col s6 left-align">MySQL</div>
+                                    </li>
+                                    <li>
+                                        <div class="col s6 right-align"><i class="fab fa-html5"></i></div>
+                                        <div class="col s6 left-align">HTML5</div>
+                                    </li>
+                                    <li>
+                                        <div class="col s6 right-align"><i class="fab fa-css3-alt"></i></div>
+                                        <div class="col s6 left-align">CSS</div>
+                                    </li>
+                                    <li>
+                                        <div class="col s6 right-align"><i class="fab fa-js"></i></div>
+                                        <div class="col s6 left-align">JavaScript</div>
+                                    </li>
+                                </ul> 
+                            </div>
+                            <div class="col s12 m6">
+                                <h5>Framework</h5>
+                                <ul>
+                                    <li>
+                                        <div class="col s6 right-align">logo</div>
+                                        <div class="col s6 left-align">Symfony</div>
+                                    </li>
+                                    <li>
+                                        <div class="col s6 right-align">logo</div>
+                                        <div class="col s6 left-align">Bootstrap</div>
+                                    </li>
+                                    <li>
+                                        <div class="col s6 right-align">logo</div>
+                                        <div class="col s6 left-align">jQuery</div>
+                                    </li>
+                                </ul> 
                             </div>
                         </div>
-                        <div class="card col s4 small border blue-grey darken-4">
-                            <div class="icon-block">
-                                <h2 class="center"><i class="material-icons">today</i></h2>
-                                <p class="light">Actuellement en formation chez <a href="https://openclassrooms.com/">OpenClassrooms</a>, je suis le parcour de formation "Développeur d'application - PHP / Symfony". J'espère ainsi devenir Développeur Web Freelance.</p>
-                            </div>
-                        </div>
-                        <div class="card col s4 small border blue-grey darken-4">
-                            <div class="icon-block">
-                                <h2 class="center"><i class="material-icons">code</i></h2>
-                                <p class="light">Demain ;-) <strong>Développeur web!</strong></p>
-                            </div>
+                    </div>
+                </div>
+                <div id="item-4" class="j-height valign-wrapper" data-scroll="toggle(fromBottomIn, fromTopOut)">
+                    <div class="col s12">                
+                        <div class="card col s12 border blue-grey darken-4">
+                            <h2 class="center"><i class="medium material-icons">code</i></h2>
+                            <p>Mes réalisations</p>
                         </div>
                     </div>
                 </div>
@@ -100,27 +145,20 @@
             src="https://code.jquery.com/jquery-3.3.1.min.js"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
             crossorigin="anonymous"></script>
-        <!--
-            Compiled and minified JavaScript 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>.
-        -->
+        <!-- Compiled and minified JavaScript -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
         <!-- I use a custom version of MaterializeCSS -->
-        <script src="js/custom-materialize.js"></script>
-        
+        <script src="js/ScrollTrigger.min.js"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var elems = document.querySelectorAll('.carousel.carousel-slider');
-                var options = {
-                    fullWidth: true,
-                    indicators: true,
-                    dist: -100,
-                    duration: 500
-                };
-                var instance = M.Carousel.init(elems, options);
+            document.addEventListener('DOMContentLoaded', function(){
+                var trigger = new ScrollTrigger({
+                    offset: { x: 0, y: 0 }
+                });
                 
                 $('body').on('mousewheel DOMMouseScroll', function( e ){
                     if(typeof e.originalEvent.detail == 'number' && e.originalEvent.detail !== 0) {
-                        handleMouseWheelDirection( e.originalEvent.detail );
+                        handleMouseWheelDirection( -1 * e.originalEvent.detail );
                     } else if (typeof e.originalEvent.wheelDelta == 'number') {
                         handleMouseWheelDirection( e.originalEvent.wheelDelta );
                     }
@@ -129,12 +167,19 @@
                 function handleMouseWheelDirection( event )
                 {
                     if ( event > 0 ) {
-                        instance[0].next();
+                        // Scroll Up
+                        console.log('Up');
+                        var select = document.querySelectorAll('[data-scroll]')
+                        console.log(select);
+                        trigger.bind(select);
+                        
                     } else if ( event < 0 ) {
-                        instance[0].prev();
+                        // Scroll Down
+                        console.log('Down');
                     }
                 }
-            }); 
+            });
         </script>
+
 	</body>
 </html>
