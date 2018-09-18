@@ -50,17 +50,26 @@ main {
     height: calc(100vh - 200px);
 }
 
-.invisible {
-    transition: opacity 1s ease;
-    opacity: 0.0;
-}
-
-.visible {
-    transition: opacity 1s ease;
+.visible.scrollUp {
+    transition: opacity 2s ease, transform 2s ease;
+    transform: rotateX(90deg) scale(0.5,0.5);
     opacity: 1.0;
 }
 
-.visible.scrollUp {
-    transition: transform 2s ease;
+.visible.scrollDown {
+    transition: opacity 2s ease, transform 2s ease;
     transform: rotateX(90deg) scale(0.5,0.5);
+    opacity: 1.0;
+}
+
+.invisible.scrollUp {
+    transition: opacity 2s ease, transform 2s ease;
+    transform: rotateX(90deg) scale(0.5,0.5);
+    opacity: 0.0;
+}
+
+.invisible.scrollDown {
+    transition: opacity 2s ease, transform 2s ease;
+    transform: rotateX(90deg) scale(0.5,0.5);
+    opacity: 0.0;
 }
