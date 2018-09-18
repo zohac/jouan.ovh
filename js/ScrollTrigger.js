@@ -37,6 +37,8 @@
 			this.hideCallback = null;
 			this.visibleClass = 'visible';
 			this.hiddenClass = 'invisible';
+			this.scrollUpClass = 'scrollUp';
+			this.scrollDownClass = 'scrollDown';
 			this.addWidth = false;
 			this.addHeight = false;
 			this.once = false;
@@ -106,6 +108,8 @@
 				return function() {
 					_this.removeClass(_this.visibleClass);
 					_this.removeClass(_this.hiddenClass);
+					_this.removeClass(_this.scrollUpClass);
+					_this.removeClass(_this.scrollDownClass);
 				};
 			}(this);
 
@@ -173,6 +177,14 @@
 
 						if (options.toggle && options.toggle.hidden) {
 							_this.hiddenClass = options.toggle.hidden;
+						}
+
+						if (options.toggle && options.toggle.visible) {
+							_this.scrollUpClass = options.toggle.scrollUp;
+						}
+
+						if (options.toggle && options.toggle.hidden) {
+							_this.scrollDownClass = options.toggle.scrollDown;
 						}
 
 						if (options.showCallback) {
@@ -252,6 +264,8 @@
 						// trim and remove the dot
 						_this.visibleClass = classes[0].trim().replace('.', '');
 						_this.hiddenClass = classes[1].trim().replace('.', '');
+						_this.scrollUpClass = classes[2].trim().replace('.', '');
+						_this.scrollDownClass = classes[3].trim().replace('.', '');
 					}
 
 					// adds the half of the offsetWidth/Height to the x/yOffset
@@ -554,6 +568,7 @@
 				triggers.each(function(trigger, index){
 					var triggerLeft = trigger.left();
 					var triggerTop = trigger.top();
+					var scrollDirection = null;
 
 					if (previousScroll.left > currentLeft) {
 						// scrolling left, so we subtract the xOffset
@@ -566,9 +581,11 @@
 					if (previousScroll.top > currentTop) {
 						// scrolling up, so we subtract the yOffset
 						triggerTop -= trigger.yOffset(true);
+						scrollDirection = 'Up';
 					} else if (previousScroll.top < currentTop){
 						// scrolling down so then we add the yOffset
 						triggerTop += trigger.yOffset(false);
+						scrollDirection = 'Down';
 					}
 
 					// toggle the classes
@@ -581,6 +598,14 @@
 							}
 						});
 
+						if ( scrollDirection == 'Up') {
+							trigger.addClass(trigger.scrollUpClass);
+							trigger.removeClass(trigger.scrollDownClass);
+						} else if (scrollDirection == 'Down') {
+							trigger.addClass(trigger.scrollDownClass);
+							trigger.removeClass(trigger.scrollUpClass);
+						}
+						
 						trigger.removeClass(trigger.hiddenClass);
 
 						if (trigger.once) {
@@ -595,6 +620,8 @@
 								functionCall(trigger, trigger.hideCallback);
 							}
 						});
+						trigger.removeClass(trigger.scrollUpClass);
+						trigger.removeClass(trigger.scrollDownClass);
 					}
 				});
 

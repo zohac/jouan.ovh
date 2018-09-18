@@ -37,7 +37,7 @@
       
         <main class="container valign-wrapper">
             <div class="center row">
-                <div id="item-1" class="j-height valign-wrapper" data-scroll="toggle(fromBottomIn, fromTopOut)">
+                <div id="item-1" class="j-height valign-wrapper" data-scroll>
                     <div class="col s12">
                         <div class="card col s12 border blue-grey darken-4">
                             <h1>Simon JOUAN</h1>
@@ -46,7 +46,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="item-2" class="j-height valign-wrapper" data-scroll="toggle(fromBottomIn, fromTopOut)">
+                <div id="item-2" class="j-height valign-wrapper" data-scroll>
                     <div class="col s12">
                         <div class="card col s12 border blue-grey darken-4">
                             <h2 class="center"><i class="medium material-icons">perm_identity</i></h2>
@@ -55,7 +55,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="item-3" class="j-height valign-wrapper" data-scroll="toggle(fromBottomIn, fromTopOut)">
+                <div id="item-3" class="j-height valign-wrapper" data-scroll>
                     <div class="col s12">                
                         <div class="card col s12 border blue-grey darken-4">
                             <h2 class="center"><i class="medium material-icons">code</i></h2>
@@ -104,7 +104,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="item-4" class="j-height valign-wrapper" data-scroll="toggle(fromBottomIn, fromTopOut)">
+                <div id="item-4" class="j-height valign-wrapper" data-scroll>
                     <div class="col s12">                
                         <div class="card col s12 border blue-grey darken-4">
                             <h2 class="center"><i class="medium material-icons">code</i></h2>
@@ -149,7 +149,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
         <!-- I use a custom version of MaterializeCSS -->
-        <script src="js/ScrollTrigger.min.js"></script>
+        <script src="js/ScrollTrigger.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function(){
                 var trigger = new ScrollTrigger({
@@ -169,10 +169,6 @@
                     if ( event > 0 ) {
                         // Scroll Up
                         console.log('Up');
-                        var select = document.querySelectorAll('[data-scroll]')
-                        console.log(select);
-                        trigger.bind(select);
-                        
                     } else if ( event < 0 ) {
                         // Scroll Down
                         console.log('Down');
