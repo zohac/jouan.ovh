@@ -597,15 +597,27 @@
 								functionCall(trigger, trigger.showCallback);
 							}
 						});
-
-						if ( scrollDirection == 'Up') {
-							trigger.addClass(trigger.scrollUpClass);
-							trigger.removeClass(trigger.scrollDownClass);
-						} else if (scrollDirection == 'Down') {
-							trigger.addClass(trigger.scrollDownClass);
-							trigger.removeClass(trigger.scrollUpClass);
-						}
 						
+						// Adding a class to indicate the direction of the scroll
+						var childs = [];
+						for (let index = 0; index < trigger.element.parentElement.childElementCount; index++) {
+							childs.push(trigger.element.parentElement.children[index]);
+						}
+
+						if (scrollDirection == 'Up') {
+                            childs.forEach(function (child) {
+								child.classList.add(trigger.scrollUpClass);
+								child.classList.remove(trigger.scrollDownClass);
+							});
+						} else if (scrollDirection == 'Down') {
+							//trigger.addClass(trigger.scrollDownClass);
+							//trigger.removeClass(trigger.scrollUpClass);
+                            childs.forEach(function (child) {
+								child.classList.add(trigger.scrollDownClass);
+								child.classList.remove(trigger.scrollUpClass);
+							});
+						}
+
 						trigger.removeClass(trigger.hiddenClass);
 
 						if (trigger.once) {
@@ -620,8 +632,6 @@
 								functionCall(trigger, trigger.hideCallback);
 							}
 						});
-						trigger.removeClass(trigger.scrollUpClass);
-						trigger.removeClass(trigger.scrollDownClass);
 					}
 				});
 
