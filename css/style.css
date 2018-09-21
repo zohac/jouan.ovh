@@ -20,6 +20,10 @@ main {
     flex: 1 0 auto;
 }
 
+.equalizer {
+    height: 2.8rem;
+}
+
 /**
  * The border of the card
  */
@@ -29,94 +33,151 @@ main {
 }
 
 /**
- * Blink an element
+ * The carousel
  */
- .blink {
-    animation: blinker 2s linear infinite;
+ .carousel {
+     height: 450px !important;
+ }
+
+ .carousel-item {
+    visibility: hidden !important;
 }
 
-@keyframes blinker {
-    50% {
-        opacity: 0.0;
-    }
+.carousel-item.active {
+    visibility: visible !important;
 }
 
-/**
- * ScrollTrigger animation
- */
-.j-height {
-    height: calc(100vh - 220px);
+.carousel > .carousel-item.active.right {
+    animation: fromRightIn 1s linear;
 }
 
-.container-3d {
-    perspective: 1000px;
-    transform-style: preserve-3d;
+.indicators-container{
+    height: 450px;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.visible {
-    opacity: 1.0;
+.indicators {
+    position: relative;
+    left: 10px;
+    width: 25px;
+    padding-bottom: 10px;
 }
 
-.invisible {
-    opacity: 0.0;
+.indicator-item {
+    float: right;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    height: 10px;
+    width: 21px;    
 }
 
-.visible.scrollDown {
-    animation: fromBottomIn 2s linear;
+.indicator-item:hover,
+.indicator-item.active {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.7);
+    width: 25px;
+    cursor: pointer;
 }
 
-@keyframes fromBottomIn {
+@keyframes fromRightIn {
     from {
-        transform: rotateX(-45deg) scale(0.5,0.5);
+        transform: translateX(200px) rotateY(45deg) scale(0.5,0.5);
         opacity: 0.0;
     }
     to {
-        transform: rotateX(0deg) scale(1,1);
+        transform: translateX(0px) rotateY(0deg) scale(1.0,1.0);
         opacity: 1.0;
     }
 }
 
-.visible.scrollUp {
-    animation: fromTopIn 2s linear;
+.carousel > .carousel-item.active.left {
+    animation: fromLeftIn 1s linear;
+}
+
+@keyframes fromLeftIn {
+    from {
+        transform: translateX(-200px) rotateY(-45deg) scale(0.5,0.5);
+        opacity: 0.0;
+    }
+    to {
+        transform: translateX(0px) rotateY(0deg) scale(1.0,1.0);
+        opacity: 1.0;
+    }
+}
+
+#item-2.active h2 {
+    animation-duration: 1s;
+    animation-delay: 1000ms;
+    animation-name: fromTopIn;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-out;
+    opacity: 0;
+}
+
+#item-2.active p {
+    animation-duration: 1s;
+    animation-delay: 1000ms;
+    animation-name: fromBottomIn;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-out;
+    opacity: 0;
 }
 
 @keyframes fromTopIn {
     from {
-        transform: rotateX(45deg) scale(0.5,0.5);
+        transform: translateY(-200px);
         opacity: 0.0;
     }
     to {
-        transform: rotateX(0deg) scale(1,1);
+        transform: translateX(0px);
         opacity: 1.0;
     }
 }
 
-.invisible.scrollDown {
-    animation: fromTopOut 2s linear;
-}
-
-@keyframes fromTopOut {
+@keyframes fromBottomIn {
     from {
-        transform: rotateX(0deg) scale(1,1);
-        opacity: 1.0;
-    }
-    to {
-        transform: rotateX(45deg) scale(0.5,0.5);
+        transform: translateY(200px);
         opacity: 0.0;
     }
+    to {
+        transform: translateX(0px);
+        opacity: 1.0;
+    }
 }
 
-.invisible.scrollUp {
-    animation: fromBottomOut 2s linear;
+/**
+ * Item Code
+ */
+ #item-3.active #code-item-1,
+ #item-3.active #code-item-2,
+ #item-3.active #code-item-3 {
+    animation-duration: 1s;
+    animation-name: codeFromBottomIn;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-out;
+    opacity: 0;
+    height: 165px;
+ }
+
+ #item-3.active #code-item-1 {
+    animation-delay: 1000ms;
+} 
+
+#item-3.active #code-item-2 {
+    animation-delay: 1100ms;
+} 
+
+#item-3.active #code-item-3 {
+    animation-delay: 1200ms;
 }
 
-@keyframes fromBottomOut {
+@keyframes codeFromBottomIn {
     from {
-        transform: rotateX(0deg) scale(1,1);
-        opacity: 1.0;
+        transform: translateY(200px);
+        background-color: rgba(255, 255, 255, 0.7);
+        opacity: 0.0;
     }
     to {
-        transform: rotateX(-45deg) scale(0.5,0.5);
-        opacity: 0.0;
+        transform: translateX(0px);
+        background-color: transparent;
+        opacity: 1.0;
     }
 }
