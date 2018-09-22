@@ -5,7 +5,7 @@
  *
  */
 
- /**
+/**
   * Sticky Footer
   *
   * sticky footer always stays on the bottom of the page
@@ -24,6 +24,23 @@ main {
     height: 2.8rem;
 }
 
+.overflow {
+    overflow: hidden;
+}
+
+/*
+ * Preloader
+ */
+.preloader-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1000;
+}
+
+.spinner-white-only {
+    border-color: white !important;
+}
 /**
  * The border of the card
  */
@@ -35,11 +52,11 @@ main {
 /**
  * The carousel
  */
- .carousel {
-     height: 450px !important;
- }
+.carousel {
+    height: 450px !important;
+}
 
- .carousel-item {
+.carousel-item {
     visibility: hidden !important;
 }
 
@@ -47,11 +64,11 @@ main {
     visibility: visible !important;
 }
 
-.carousel > .carousel-item.active.right {
+.carousel>.carousel-item.active.right {
     animation: fromRightIn 1s linear;
 }
 
-.indicators-container{
+.indicators-container {
     height: 450px;
     border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -67,7 +84,7 @@ main {
     float: right;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
     height: 10px;
-    width: 21px;    
+    width: 21px;
 }
 
 .indicator-item:hover,
@@ -79,26 +96,28 @@ main {
 
 @keyframes fromRightIn {
     from {
-        transform: translateX(200px) rotateY(45deg) scale(0.5,0.5);
+        transform: translateX(200px) rotateY(45deg) scale(0.5, 0.5);
         opacity: 0.0;
     }
+
     to {
-        transform: translateX(0px) rotateY(0deg) scale(1.0,1.0);
+        transform: translateX(0px) rotateY(0deg) scale(1.0, 1.0);
         opacity: 1.0;
     }
 }
 
-.carousel > .carousel-item.active.left {
+.carousel>.carousel-item.active.left {
     animation: fromLeftIn 1s linear;
 }
 
 @keyframes fromLeftIn {
     from {
-        transform: translateX(-200px) rotateY(-45deg) scale(0.5,0.5);
+        transform: translateX(-200px) rotateY(-45deg) scale(0.5, 0.5);
         opacity: 0.0;
     }
+
     to {
-        transform: translateX(0px) rotateY(0deg) scale(1.0,1.0);
+        transform: translateX(0px) rotateY(0deg) scale(1.0, 1.0);
         opacity: 1.0;
     }
 }
@@ -123,47 +142,97 @@ main {
 
 @keyframes fromTopIn {
     from {
-        transform: translateY(-200px);
+        transform: translateY(-100px);
         opacity: 0.0;
     }
+
     to {
-        transform: translateX(0px);
+        transform: translateY(0px);
         opacity: 1.0;
     }
 }
 
 @keyframes fromBottomIn {
     from {
-        transform: translateY(200px);
+        transform: translateY(100px);
         opacity: 0.0;
     }
+
     to {
-        transform: translateX(0px);
+        transform: translateY(0px);
         opacity: 1.0;
     }
 }
 
-/**
- * Item Code
+.indicators-container {
+    animation: fromTopInIndicator 1s linear;
+}
+
+@keyframes fromTopInIndicator {
+    from {
+        transform: translateY(-200px);
+        opacity: 0.0;
+    }
+
+    to {
+        transform: translateY(0px);
+        opacity: 1.0;
+    }
+}
+
+/*
+ * Item-1 - Presentation
  */
- #item-3.active #code-item-1,
- #item-3.active #code-item-2,
- #item-3.active #code-item-3 {
+#item-1.active h1,
+#item-1.active h5 {
+    animation-duration: 1000ms;
+    animation-name: titleTransition2;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+    opacity: 0;
+}
+
+#item-1.active h1 {
+    animation-delay: 1000ms;
+}
+
+#item-1.active h5 {
+    animation-delay: 1500ms;
+}
+
+@keyframes titleTransition2 {
+    from {
+        transform: translateY(200px);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+/**
+ * Item-3 - Code
+ */
+#item-3.active #code-item-1,
+#item-3.active #code-item-2,
+#item-3.active #code-item-3 {
     animation-duration: 1s;
     animation-name: codeFromBottomIn;
     animation-fill-mode: forwards;
     animation-timing-function: ease-out;
     opacity: 0;
     height: 165px;
- }
+}
 
- #item-3.active #code-item-1 {
+#item-3.active #code-item-1 {
     animation-delay: 1000ms;
-} 
+}
 
 #item-3.active #code-item-2 {
     animation-delay: 1100ms;
-} 
+}
 
 #item-3.active #code-item-3 {
     animation-delay: 1200ms;
@@ -175,6 +244,7 @@ main {
         background-color: rgba(255, 255, 255, 0.7);
         opacity: 0.0;
     }
+
     to {
         transform: translateX(0px);
         background-color: transparent;
