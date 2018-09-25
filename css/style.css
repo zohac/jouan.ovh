@@ -1,7 +1,7 @@
 /**
  * @author Simon JOUAN
  * @site https://jouan.ovh/
- * @lastmodified 12/09/2018
+ * @lastmodified 23/09/2018
  *
  */
 
@@ -41,6 +41,7 @@ main {
 .spinner-white-only {
     border-color: white !important;
 }
+
 /**
  * The border of the card
  */
@@ -50,10 +51,33 @@ main {
 }
 
 /**
+ * Menu
+ */
+.sidenav-trigger {
+    display: initial !important;
+}
+
+#menu {
+    height: auto;
+}
+
+.logo a {
+    font-size: 2.1rem !important;
+    font-weight: bold !important;
+    margin-bottom: 5% !important;
+}
+
+/**
  * The carousel
  */
 .carousel {
     height: 450px !important;
+}
+
+@media only screen and (max-width: 600px) {
+    .carousel {
+        height: 555px !important;
+    }
 }
 
 .carousel-item {
@@ -131,7 +155,12 @@ main {
     opacity: 0;
 }
 
-#item-2.active p {
+#item-1.active p,
+#item-2.active p,
+#item-3.active p,
+#item-4.active p,
+#item-5.active p,
+#item-6.active p {
     animation-duration: 1s;
     animation-delay: 1000ms;
     animation-name: fromBottomIn;

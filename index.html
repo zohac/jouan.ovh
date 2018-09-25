@@ -38,14 +38,22 @@
     </div>
 
     <header>
-        <div class="navbar-fixed">
-            <nav class="navbar blue-grey darken-4 z-depth-0">
-                <div class="nav-wrapper container">
-                    <a href="#" class="brand-logo left">&lt;jouan /&gt;</a>
-                </div>
-            </nav>
-        </div>
-    </header>
+            <div class="navbar-fixed">
+                <nav class="navbar blue-grey darken-4 z-depth-0">
+                    <div class="nav-wrapper container">
+                        <a href="https:\\jouan.ovh" class="brand-logo left">&lt;jouan /&gt;</a>
+                        <a href="#" data-target="menu" class="sidenav-trigger right">
+                            <i class="material-icons">menu</i>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            <ul class="sidenav" id="menu">
+                <li class="logo center"><a href="index.html">&lt;jouan /&gt;</a></li>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="project.html">Mes réalisations</a></li>
+            </ul>
+        </header>
 
     <main class="container valign-wrapper">
         <div class="carousel carousel-slider center row col s12">
@@ -68,9 +76,9 @@
                         <h2 class="center"><i class="medium material-icons">perm_identity</i></h2>
                         <p class="light">Après 11 ans d'expériences comme métrologue, j'effectue une reconversion
                             professionnelle.</p>
-                        <p class="light">Actuellement en formation chez <a href="https://openclassrooms.com/">OpenClassrooms</a>,
-                            je suis le parcour de formation "Développeur d'application - PHP / Symfony". J'espère ainsi
-                            devenir Développeur Web Freelance.</p>
+                        <p class="light">Actuellement étudiant chez <a href="https://openclassrooms.com/">OpenClassrooms</a>,
+                            je me forme au métier de "Développeur d'application - PHP / Symfony". J'espère ainsi
+                            devenir Développeur Web.</p>
                     </div>
                 </div>
             </div>
@@ -78,7 +86,7 @@
                 <div class="col s12">
                     <div class="card col s12 border blue-grey darken-4 overflow">
                         <h2 class="center"><i class="medium material-icons">code</i></h2>
-                        <div id="code-item-1" class="col s12 m4 card z-depth-0">
+                        <div id="code-item-1" class="col s12 m6 l4 card z-depth-0">
                             <h5>Langages</h5>
                             <ul>
                                 <li>
@@ -103,7 +111,7 @@
                                 </li>
                             </ul>
                         </div>
-                        <div id="code-item-2" class="col s12 m4 card z-depth-0">
+                        <div id="code-item-2" class="col s12 m6 l4 card z-depth-0">
                             <h5>OS / Logiciels</h5>
                             <ul>
                                 <li>
@@ -124,7 +132,7 @@
                                 </li>
                             </ul>
                         </div>
-                        <div id="code-item-3" class="col s12 m4 card z-depth-0">
+                        <div id="code-item-3" class="col l4 card z-depth-0 hide-on-med-and-down">
                             <h5>Framework</h5>
                             <ul>
                                 <li>

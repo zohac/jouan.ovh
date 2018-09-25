@@ -2,6 +2,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     $('.preloader-wrapper').detach();
 
+    /**
+     * Menu
+     */
+    var menu = document.querySelectorAll('.sidenav');
+    var optionsMenu = {
+        edge: 'right',
+    };
+    var instances = M.Sidenav.init(menu, optionsMenu);
+
+    /**
+     * Carousel
+     */
     var elems = document.querySelectorAll('.carousel.carousel-slider');
     var options = {
         fullWidth: true,
