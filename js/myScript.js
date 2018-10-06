@@ -92,4 +92,21 @@ document.addEventListener('DOMContentLoaded', function () {
             selectedId: id
         });
     });
+    
+    /**
+     * Redirection to the selected url
+     */
+    $('.carousel-fixed-item').on('click', function () {
+        var id = $('.carousel-item.active').attr('id');
+        var url = {
+            'item-1': 'http://chalet-et-caviar.zohac.fr/',
+            'item-2': '#',
+            'item-3': '#',
+            'item-4': 'https://p5.jouan.ovh/',
+            'item-5': 'https://p6.jouan.ovh/',
+            'item-6': '#'
+        };
+
+        window.open(url[id],"_self")
+    });
 });
