@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
             selectedId: id
         });
     });
-    
+
     /**
      * Redirection to the selected url
      */
@@ -100,11 +100,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var id = $('.carousel-item.active').attr('id');
         var url = {
             'item-1': 'http://chalet-et-caviar.zohac.fr/',
-            'item-2': '#',
+            'item-2': 'https://jouan.ovh/P3',
             'item-3': '#',
             'item-4': 'https://p5.jouan.ovh/',
             'item-5': 'https://p6.jouan.ovh/',
-            'item-6': '#'
+            'item-6': 'https://p7.jouan.ovh/api/doc',
+            'item-7': 'https://p8.jouan.ovh/'
         };
 
         window.open(url[id],"_self")
