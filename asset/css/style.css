@@ -1,0 +1,46 @@
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    display: flex;
+    flex: 1 0 auto;
+    align-items: center;
+}
+
+.blue-grey.darken-4 {
+    background-color: #263238 !important;
+}
+
+.border {
+    border: 1px solid #FFFFFF;
+}
+
+/*-------------------------------------------*/
+/*-----------------Carousel------------------*/
+/*-------------------------------------------*/
+.carousel-indicators {
+    position: relative;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 15;
+    display: -ms-flexbox;
+    display: flex;
+    flex-direction: column;
+    -ms-flex-pack: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.carousel-indicators li {
+    margin: 5px auto 0 auto;
+}
+
+.carousel-indicators li.active {
+    width: 35px;
+}
