@@ -1,12 +1,10 @@
 <template>
-  <aside>
-    <terminal-component />
-  </aside>
+  <aside></aside>
 </template>
 
 <script>
 export default {
-  name: "aside-component"
+  name: "AsideComponent"
 }
 </script>
 

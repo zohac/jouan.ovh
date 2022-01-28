@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  name: "footer-component",
+  name: "FooterComponent",
 
   data() {
     return {
@@ -38,6 +38,7 @@ export default {
     background-color: #2C001E;
     background-color: rgba(44, 0, 30, var(--bg-opacity));
   }
+
   .animation-wrapper {
     -webkit-animation: 2s linear 0s 1 width-100;
     animation: 2s linear 0s 1 width-100;
@@ -53,6 +54,7 @@ export default {
     background-color: #957F8E;
     background-color: rgba(149, 127, 142, var(--bg-opacity));
   }
+
   .animate-slide {
     -webkit-animation: 2s linear 0s 1 slide;
     animation: 2s linear 0s 1 slide;

@@ -1,7 +1,7 @@
 import { ApplicationInterface, OptionInterface, TerminalInterface, TerminalOptionInterface } from "./interface";
-import { TerminalWindow } from "./utils";
+import { Window } from "./utils";
 
-export class Terminal extends TerminalWindow {
+export class Terminal extends Window {
   applications: ApplicationInterface[] = [];
 
   welcomeMessage: string = 'Bienvenue, pour voir les commandes disponible commencez par taper "help"'
@@ -49,7 +49,7 @@ export class Terminal extends TerminalWindow {
     const welcomeMessage = this.createNewLine(this.welcomeMessage);
     this.content.insertBefore(welcomeMessage, this.form);
 
-    this.addEventListenerOnTerminal(this);
+    this.addEventListenerOnTerminal();
   }
 
   drawScheme() {
@@ -94,11 +94,11 @@ export class Terminal extends TerminalWindow {
     return prefixLine;
   }
 
-  openTerminalOnKeyPress(event: KeyboardEvent, terminal: Terminal): Terminal {
-    super.openTerminalOnKeyPress(event, terminal);
-    terminal.input.focus();
+  open(event: Event): Terminal {
+    super.open(event);
+    this.input.focus();
 
-    return terminal;
+    return this;
   }
 
   addApplication(application: ApplicationInterface): Terminal {
@@ -107,7 +107,8 @@ export class Terminal extends TerminalWindow {
     return this;
   }
 
-  addEventListenerOnTerminal(terminal: Terminal): TerminalInterface {
+  addEventListenerOnTerminal(): TerminalInterface {
+    const terminal = this;
     terminal.form.addEventListener('submit', (event) => {
       terminal.terminalFormSubmit(event);
     });

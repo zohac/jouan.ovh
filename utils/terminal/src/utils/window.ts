@@ -1,7 +1,7 @@
 import { HTMLElementService } from '../utils';
 import { TerminalInterface } from '../interface'
 
-export class TerminalWindow implements TerminalInterface {
+export class Window implements TerminalInterface {
   HTMLElementService: HTMLElementService;
 
   height: string = '400px';
@@ -53,7 +53,7 @@ export class TerminalWindow implements TerminalInterface {
     this.init();
   }
 
-  init(): TerminalWindow {
+  init(): Window {
 
     const emptyDiv = this.HTMLElementService.createDiv();
     const hostDiv = this.HTMLElementService.createDiv();
@@ -68,18 +68,19 @@ export class TerminalWindow implements TerminalInterface {
     this.simulator.append(this.header);
     this.simulator.append(this.content)
 
-    this.move(this);
-    this.addEventListener(this);
+    this.move();
+    this.addEventListener();
 
     return this;
   }
 
-  addEventListener(terminal: TerminalInterface): TerminalInterface {
+  addEventListener(): TerminalInterface {
+    const terminal = this;
     terminal.closeButton.addEventListener('click', () => {
-      terminal.close(terminal);
+      terminal.close();
     });
     document.addEventListener('keydown', (event) => {
-      terminal.openTerminalOnKeyPress(event, terminal);
+      terminal.open(event);
     });
     // terminal.header.addEventListener('click', () => {
     //   terminal.simulator.style.zIndex = terminal.displayFront();
@@ -92,21 +93,32 @@ export class TerminalWindow implements TerminalInterface {
     return this.simulator;
   }
 
-  openTerminalOnKeyPress(event: KeyboardEvent, terminal: TerminalInterface): TerminalInterface {
-    if (event.ctrlKey && event.altKey && (event.key === 't' || event.key === 'r')) {  // case sensitive
-      terminal.simulator.classList.remove('hidden');
+  open(event: Event): TerminalInterface {
+    const hidden = (terminal: TerminalInterface) => {
+      terminal.simulator.hidden = false;
     }
 
-    return terminal;
+    if (event.type === 'keydown') {
+      const keyboardEvent = event as KeyboardEvent;
+      if (keyboardEvent.ctrlKey && keyboardEvent.altKey && (keyboardEvent.key === 't' || keyboardEvent.key === 'r')) {  // case sensitive
+        hidden(this);
+      }
+    }
+    if (event.type === 'click') {
+      hidden(this);
+    }
+
+    return this;
   }
 
-  close(terminal: TerminalInterface): TerminalInterface {
-    terminal.simulator.classList.add('hidden');
-
-    return terminal;
+  close(): TerminalInterface {
+    // terminal.simulator.hidden = true;
+    this.simulator.hidden = true;
+    return this;
   }
 
-  move(terminal: TerminalInterface): TerminalInterface {
+  move(): TerminalInterface {
+    const terminal = this;
     let pos1: number = 0;
     let pos2: number = 0;
     let pos3: number = 0;

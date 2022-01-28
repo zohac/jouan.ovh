@@ -1,5 +1,7 @@
 <template>
   <div class="init">
+    <header-component />
+
     <main-component />
 
     <footer-component />

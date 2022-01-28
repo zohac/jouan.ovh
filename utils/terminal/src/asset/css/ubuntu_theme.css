@@ -97,47 +97,6 @@
   color: var(--blue-color);
 }
 
-.tooltip {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dashed var(--black-color);
-}
-
-/* Tooltip text */
-.tooltip .tooltiptext {
-  --width-box: 150px;
-  visibility: hidden;
-  width: var(--width-box);
-  bottom: 120%;
-  left: 50%;
-  margin-left: calc(var(--width-box) / -2);
-  background-color: var(--black-color);
-  color: var(--white-color);
-  text-align: center;
-  padding: 5px 0;
-  border-radius: 0.25rem;
-
-  /* Position the tooltip text - see examples below! */
-  position: absolute;
-  z-index: 1;
-}
-
-/* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-}
-
-.tooltip .tooltiptext::after {
-  content: " ";
-  position: absolute;
-  top: 100%; /* At the bottom of the tooltip */
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: var(--black-color) transparent transparent transparent;
-}
-
 .hidden {
   display: none !important;
 }

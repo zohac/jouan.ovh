@@ -17,7 +17,7 @@
 
 <script>
 export default {
-  name: "article-component"
+  name: "ArticleComponent"
 }
 </script>
 

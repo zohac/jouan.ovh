@@ -1,3 +1,3 @@
 export { HTMLElementService } from './HTML.element.service';
-export { TerminalWindow } from './terminal.window';
+export { Window } from './window';
 export { Application } from "./application";

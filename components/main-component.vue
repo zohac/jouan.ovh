@@ -3,14 +3,14 @@
 
     <article-component />
 
-    <aside-component />
+    <terminal-component />
 
   </main>
 </template>
 
 <script>
 export default {
-  name: "main-component"
+  name: "MainComponent"
 }
 </script>
 

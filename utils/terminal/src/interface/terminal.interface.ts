@@ -11,11 +11,11 @@ export interface TerminalInterface {
   closeButton: HTMLDivElement;
   content: HTMLDivElement;
 
-  move(terminal: TerminalInterface): TerminalInterface;
+  move(): TerminalInterface;
 
-  close(terminal: TerminalInterface): TerminalInterface;
+  close(): TerminalInterface;
 
-  addEventListener(terminal: TerminalInterface): TerminalInterface;
+  addEventListener(): TerminalInterface;
 
-  openTerminalOnKeyPress(event: KeyboardEvent, terminal: TerminalInterface): TerminalInterface;
+  open(event: KeyboardEvent): TerminalInterface;
 }
