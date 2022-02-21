@@ -17,7 +17,7 @@ export class Terminal extends Window {
     }
 
     this.form = this.HTMLElementService.createForm({
-      id: `${this.terminalId}-form`,
+      id: `${this.terminalId}-form-${this.counter}`,
       classes: ["terminal-form"],
       attributes: {
         autocomplete: "off"
@@ -25,7 +25,7 @@ export class Terminal extends Window {
     });
 
     this.input = this.HTMLElementService.createInput({
-      id: `${this.terminalId}-input`,
+      id: `${this.terminalId}-input-${this.counter}`,
       classes: ["terminal-content-input"],
       attributes: {
         type: "text"
@@ -80,7 +80,6 @@ export class Terminal extends Window {
 
   createNewLine(content: string, option: OptionInterface | null = null): HTMLDivElement {
     const newLine = this.HTMLElementService.createDiv(option);
-    console.log(`${content}`);
     const newLineContent = document.createTextNode(`${content}`);
     newLine.append(newLineContent);
 
@@ -94,8 +93,8 @@ export class Terminal extends Window {
     return prefixLine;
   }
 
-  open(event: Event): Terminal {
-    super.open(event);
+  open(): Terminal {
+    super.open();
     this.input.focus();
 
     return this;
@@ -111,6 +110,9 @@ export class Terminal extends Window {
     const terminal = this;
     terminal.form.addEventListener('submit', (event) => {
       terminal.terminalFormSubmit(event);
+    });
+    terminal.content.addEventListener('click', () => {
+      terminal.input.focus();
     });
 
     return terminal;
@@ -140,7 +142,8 @@ export class Terminal extends Window {
   }
 
   executeCommand(command: string | null): HTMLDivElement | null {
-    let response = null;
+    let response: HTMLDivElement | null = this.HTMLElementService.createDiv();
+    response.append(`command not found: ${command}`);
 
     for (const obCmd of this.applications) {
       if (obCmd.COMMAND_NAME === command  ) {

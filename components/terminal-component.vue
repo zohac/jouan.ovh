@@ -1,5 +1,5 @@
 <template>
-  <div ref="terminal-container" class="tooltip-container">
+  <div class="tooltip-container">
     <div>
       Ouvrez le comme si vous étiez sous
       <div class="tooltip"> linux
@@ -10,22 +10,15 @@
 </template>
 
 <script lang="ts">
-import terminal from '../utils/terminal/src/main';
 
 export default {
   name: 'TerminalComponent',
 
-  mounted() {
-    const terminal = this.$store.state.terminal;
-    console.log(terminal);
-    this.$refs['terminal-container'].append(terminal.render());
-  },
 }
 
 </script>
 
 <style>
-  @import '../utils/terminal/src/asset/css/ubuntu_theme.css';
 
   .tooltip-container {
     display: flex;

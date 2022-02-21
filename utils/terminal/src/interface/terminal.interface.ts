@@ -17,5 +17,5 @@ export interface TerminalInterface {
 
   addEventListener(): TerminalInterface;
 
-  open(event: KeyboardEvent): TerminalInterface;
+  open(): TerminalInterface;
 }

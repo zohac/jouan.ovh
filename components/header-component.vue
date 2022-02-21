@@ -5,7 +5,7 @@
     <nav id="menu" hidden>
       <ul>
         <li ref="menu-terminal">terminal</li>
-        <li>application 2</li>
+        <li ref="menu-about">À propos</li>
         <li>application 3</li>
       </ul>
     </nav>
@@ -14,19 +14,32 @@
 </template>
 
 <script lang="ts">
-import terminal from '~/utils/terminal/src/main';
 
 export default {
   name: 'HeaderComponent',
 
   mounted() {
-    this.$refs['toggle-menu'].addEventListener('click', function(){
-      toggle('menu');
-    });
-    this.$refs['menu-terminal'].addEventListener('click', function(event: Event){
-      terminal.open(event);
+    const storeTerminal = this.$store.state.terminal;
+    const refs = this.$refs;
 
-      toggle('menu');
+    const menuId = 'menu';
+    const terminal = storeTerminal.terminal;
+    const about = storeTerminal.about;
+    document.body.append(terminal.render());
+    document.body.append(about.render());
+
+    refs['toggle-menu'].addEventListener('click', () => {
+      toggle(menuId);
+    });
+    refs['menu-terminal'].addEventListener('click', () => {
+      terminal.open();
+
+      toggle(menuId);
+    });
+    refs['menu-about'].addEventListener('click', () => {
+      about.open();
+
+      toggle(menuId);
     });
     // document.addEventListener('click',function (event: Event) {
     //   console.log(event?.target?.localName);
@@ -51,7 +64,8 @@ function toggle(id: string) {
 
 </script>
 
-<style scoped>
+<style>
+  @import '../utils/terminal/src/asset/css/ubuntu_theme.css';
 
   header {
     display: flex;

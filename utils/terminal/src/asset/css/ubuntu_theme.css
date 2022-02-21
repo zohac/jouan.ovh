@@ -1,102 +1,69 @@
-:root {
-  --gradient-from-color: #DA0000;
-  --gradient-to-color: #B80000;
-  --gradient-color-stops: var(--gradient-from-color), var(--gradient-to-color, rgba(218, 0, 0, 0));
-  --green-color: #4E9A06;
-  --blue-color: #34659A;
-  --black-color: #141414;
-  --light-grey-color: #525252;
-  --grey-color: #333333;
-  --aubergine-color: #2C001E;
-  --white-color: #EEEDEB;
-}
-
 .terminal {
-  color: var(--white-color);
+  color: #EEEDEB;
+  display: flex;
+  flex-direction: column;
 }
-
-.terminal-header {
+.terminal .terminal-header {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-
-  height: auto;
+  height: 24px;
   padding: 0.25rem;
-
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
-
   text-align: center;
-
   background-color: #333333;
-
   cursor: move;
 }
-
-.terminal-close {
+.terminal .terminal-header .terminal-close {
   cursor: pointer;
   border-radius: 9999px;
-
   width: 1rem;
   height: 1rem;
   margin: 0.25rem;
-
-  background-image: linear-gradient(to bottom right, var(--gradient-color-stops));
-
-  box-shadow: 2px 2px 3px var(--black-color), -2px -2px 3px var(--light-grey-color);
+  background-image: linear-gradient(to bottom right, #DA0000, #B80000);
+  box-shadow: 2px 2px 3px #141414, -2px -2px 3px #525252;
 }
-
-.terminal-content {
+.terminal .terminal-content {
+  flex-grow: 2;
   padding: 0.25rem;
-
   overflow-x: auto;
-  height: 100%;
-
   border-width: 1px;
   border-style: solid;
-  border-color: var(--grey-color);
-
-  background-color: var(--aubergine-color);
+  border-color: #333333;
+  background-color: #2C001E;
 }
-
-.terminal-content-label {
+.terminal .terminal-content .terminal-content-label {
   display: flex;
   flex-wrap: nowrap;
 }
-
-.terminal-form {
+.terminal .terminal-content .terminal-form {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
 }
-
-.terminal-content-input {
+.terminal .terminal-content .terminal-content-input {
   width: 100%;
-
   border: none;
-
-  color: var(--green-color);
+  color: #4E9A06;
   font-size: 1rem;
-
-  background-color: var(--aubergine-color);
-
-  caret-color: var(--green-color);
+  background-color: #2C001E;
+  caret-color: #4E9A06;
   caret-shape: underscore;
 }
-
-.terminal-content-input:focus{
+.terminal .terminal-content .terminal-content-input:focus {
   outline: none;
 }
-
-.text-shell-green {
-  color: var(--green-color);
+.terminal .text-shell-green {
+  color: #4E9A06;
 }
-
-.text-shell-blue {
-  color: var(--blue-color);
+.terminal .text-shell-blue {
+  color: #34659A;
 }
 
 .hidden {
   display: none !important;
 }
+
+/*# sourceMappingURL=ubuntu_theme.css.map */

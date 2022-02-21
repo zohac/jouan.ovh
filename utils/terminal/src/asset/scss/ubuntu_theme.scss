@@ -1,0 +1,105 @@
+$gradient-from-color: #DA0000;
+$gradient-to-color: #B80000;
+$gradient-color-stops: $gradient-from-color, $gradient-to-color, rgba(218, 0, 0, 0);
+$green-color: #4E9A06;
+$blue-color: #34659A;
+$black-color: #141414;
+$light-grey-color: #525252;
+$grey-color: #333333;
+$aubergine-color: #2C001E;
+$white-color: #EEEDEB;
+
+$padding: 0.25rem;
+
+.terminal {
+  color: $white-color;
+
+  display: flex;
+  flex-direction: column;
+
+  .terminal-header {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 24px;
+    padding: $padding;
+
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+
+    text-align: center;
+
+    background-color: #333333;
+
+    cursor: move;
+
+    .terminal-close {
+      cursor: pointer;
+      border-radius: 9999px;
+
+      width: 1rem;
+      height: 1rem;
+      margin: 0.25rem;
+
+      background-image: linear-gradient(to bottom right, $gradient-from-color, $gradient-to-color);
+
+      box-shadow: 2px 2px 3px $black-color, -2px -2px 3px $light-grey-color;
+    }
+  }
+
+  .terminal-content {
+    flex-grow: 2;
+    padding: $padding;
+
+    overflow-x: auto;
+
+    border-width: 1px;
+    border-style: solid;
+    border-color: $grey-color;
+
+    background-color: $aubergine-color;
+
+    .terminal-content-label {
+      display: flex;
+      flex-wrap: nowrap;
+    }
+
+    .terminal-form {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+
+    .terminal-content-input {
+      width: 100%;
+
+      border: none;
+
+      color: $green-color;
+      font-size: 1rem;
+
+      background-color: $aubergine-color;
+
+      caret-color: $green-color;
+      caret-shape: underscore;
+    }
+
+    .terminal-content-input:focus{
+      outline: none;
+    }
+  }
+
+  .text-shell-green {
+    color: $green-color;
+  }
+
+  .text-shell-blue {
+    color: $blue-color;
+  }
+}
+
+.hidden {
+  display: none !important;
+}

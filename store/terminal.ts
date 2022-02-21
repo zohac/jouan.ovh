@@ -1,4 +1,4 @@
-import { Clear, Help } from "~/utils/terminal/src/application";
+import { Clear, Help, About } from "~/utils/terminal/src/application";
 import { Terminal } from "~/utils/terminal/src/terminal";
 
 const terminal = new Terminal({
@@ -16,10 +16,13 @@ const terminal = new Terminal({
     '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\\______/'
   ]
 });
+const about = new About();
 
 terminal.addApplication(new Help(terminal))
-  .addApplication(new Clear(terminal));
+  .addApplication(new Clear(terminal))
+  .addApplication(about);
 
 export const state = () => ({
   terminal: terminal,
+  about: about,
 })

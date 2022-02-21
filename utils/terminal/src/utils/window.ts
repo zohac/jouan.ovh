@@ -1,7 +1,9 @@
+import * as events from "events";
 import { HTMLElementService } from '../utils';
 import { TerminalInterface } from '../interface'
 
 export class Window implements TerminalInterface {
+  static WINDOWS: TerminalInterface[] = [];
   HTMLElementService: HTMLElementService;
 
   height: string = '400px';
@@ -15,12 +17,16 @@ export class Window implements TerminalInterface {
   header: HTMLDivElement;
   closeButton: HTMLDivElement;
   content: HTMLDivElement;
+  counter: number;
 
   constructor() {
+    Window.WINDOWS.push(this);
+    this.counter = Window.WINDOWS.length;
+
     this.HTMLElementService = new HTMLElementService();
 
     this.simulator = this.HTMLElementService.createDiv({
-      id: this.terminalId,
+      id: `${this.terminalId}-${this.counter}`,
       classes: ['terminal'],
       attributes: {
         'data-http-host': `${this.httpHost}`,
@@ -30,23 +36,23 @@ export class Window implements TerminalInterface {
         width: this.width,
         height: this.height,
         position: 'absolute',
-        right: '25px',
-        top: '25px',
+        right: `${50 * this.counter}px`,
+        top: `${50 * this.counter}px`,
       },
     });
 
     this.header = this.HTMLElementService.createDiv({
-      id: `${this.terminalId}-header`,
+      id: `${this.terminalId}-header-${this.counter}`,
       classes: ['terminal-header'],
     });
 
     this.closeButton = this.HTMLElementService.createDiv({
-      id: `${this.terminalId}-close`,
+      id: `${this.terminalId}-close-${this.counter}`,
       classes: ['terminal-close'],
     });
 
     this.content = this.HTMLElementService.createDiv({
-      id: `${this.terminalId}-content`,
+      id: `${this.terminalId}-content-${this.counter}`,
       classes: ['terminal-content'],
     });
 
@@ -63,8 +69,6 @@ export class Window implements TerminalInterface {
     this.header.append(hostDiv);
     this.header.append(this.closeButton);
 
-    this.content.style.maxHeight = this.height;
-
     this.simulator.append(this.header);
     this.simulator.append(this.content)
 
@@ -80,7 +84,9 @@ export class Window implements TerminalInterface {
       terminal.close();
     });
     document.addEventListener('keydown', (event) => {
-      terminal.open(event);
+      if (event.ctrlKey && event.altKey && (event.key === 't' || event.key === 'r')) {  // case sensitive
+        terminal.open();
+      }
     });
     // terminal.header.addEventListener('click', () => {
     //   terminal.simulator.style.zIndex = terminal.displayFront();
@@ -93,26 +99,15 @@ export class Window implements TerminalInterface {
     return this.simulator;
   }
 
-  open(event: Event): TerminalInterface {
-    const hidden = (terminal: TerminalInterface) => {
-      terminal.simulator.hidden = false;
-    }
-
-    if (event.type === 'keydown') {
-      const keyboardEvent = event as KeyboardEvent;
-      if (keyboardEvent.ctrlKey && keyboardEvent.altKey && (keyboardEvent.key === 't' || keyboardEvent.key === 'r')) {  // case sensitive
-        hidden(this);
-      }
-    }
-    if (event.type === 'click') {
-      hidden(this);
-    }
+  open(): TerminalInterface {
+    this.simulator.classList.remove('hidden');
+    this.simulator.hidden = false;
 
     return this;
   }
 
   close(): TerminalInterface {
-    // terminal.simulator.hidden = true;
+    this.simulator.classList.add('hidden');
     this.simulator.hidden = true;
     return this;
   }
@@ -145,8 +140,24 @@ export class Window implements TerminalInterface {
       pos3 = event.clientX;
       pos4 = event.clientY;
       // set the element's new position:
-      terminal.simulator.style.top = (terminal.simulator.offsetTop - pos2) + 'px';
-      terminal.simulator.style.left = (terminal.simulator.offsetLeft - pos1) + 'px';
+
+      let newTopPosition = terminal.simulator.offsetTop - pos2
+      let newLeftPosition = terminal.simulator.offsetLeft - pos1
+      const offsetTopPosition = window.innerHeight - (terminal.simulator.offsetHeight + terminal.simulator.offsetTop);
+      const offsetRightPosition = window.innerWidth - (terminal.simulator.offsetWidth + terminal.simulator.offsetLeft);
+
+      console.log('offset : ' + offsetTopPosition);
+
+      if (0 > offsetTopPosition) {
+        newTopPosition = window.innerHeight - terminal.simulator.offsetHeight;
+      }
+      terminal.simulator.style.top = 0 > newTopPosition ? '0px' : `${newTopPosition}px`;
+
+      if (0 > offsetRightPosition) {
+        newLeftPosition = window.innerWidth - terminal.simulator.offsetWidth;
+      }
+      terminal.simulator.style.left = 0 > newLeftPosition ? '0px' : `${newLeftPosition}px`;
+
     }
 
     function closeDragElement() {
