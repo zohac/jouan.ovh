@@ -1,6 +1,5 @@
-import * as events from "events";
+import { TerminalInterface } from '../interface';
 import { HTMLElementService } from '../utils';
-import { TerminalInterface } from '../interface'
 
 export class Window implements TerminalInterface {
   static WINDOWS: TerminalInterface[] = [];
@@ -8,6 +7,7 @@ export class Window implements TerminalInterface {
 
   height: string = '400px';
   width: string = '50vw';
+  zIndex: number = 1000;
 
   httpHost: string = 'jouan.ovh';
   userName: string = 'anon.';
@@ -25,12 +25,15 @@ export class Window implements TerminalInterface {
 
     this.HTMLElementService = new HTMLElementService();
 
-    this.simulator = this.HTMLElementService.createDiv({
+    this.calculateZ_index();
+
+    this.simulator = this.HTMLElementService.createElement('div', {
       id: `${this.terminalId}-${this.counter}`,
-      classes: ['terminal'],
+      classes: ['terminal', 'resizable'],
       attributes: {
         'data-http-host': `${this.httpHost}`,
         'data-username': `${this.userName}`,
+        'aria-label': 'terminal simulator',
       },
       styles: {
         width: this.width,
@@ -38,31 +41,54 @@ export class Window implements TerminalInterface {
         position: 'absolute',
         right: `${50 * this.counter}px`,
         top: `${50 * this.counter}px`,
+        zIndex: `${this.zIndex}`,
       },
-    });
+    }) as HTMLDivElement;
 
-    this.header = this.HTMLElementService.createDiv({
+    this.header = this.HTMLElementService.createElement('div', {
       id: `${this.terminalId}-header-${this.counter}`,
       classes: ['terminal-header'],
-    });
+    }) as HTMLDivElement;
 
-    this.closeButton = this.HTMLElementService.createDiv({
+    this.closeButton = this.HTMLElementService.createElement('div', {
       id: `${this.terminalId}-close-${this.counter}`,
       classes: ['terminal-close'],
-    });
+    }) as HTMLDivElement;
 
-    this.content = this.HTMLElementService.createDiv({
+    this.content = this.HTMLElementService.createElement('div', {
       id: `${this.terminalId}-content-${this.counter}`,
       classes: ['terminal-content'],
-    });
+    }) as HTMLDivElement;
 
     this.init();
   }
 
   init(): Window {
 
-    const emptyDiv = this.HTMLElementService.createDiv();
-    const hostDiv = this.HTMLElementService.createDiv();
+    const emptyDiv = this.HTMLElementService.createElement('div', );
+    const hostDiv = this.HTMLElementService.createElement('div', );
+    const topLeft = this.HTMLElementService.createElement('div', {
+      classes: ['resizer', 'top-left'],
+    });
+    const topRight = this.HTMLElementService.createElement('div', {
+      classes: ['resizer', 'top-right'],
+    });
+    const bottomLeft = this.HTMLElementService.createElement('div', {
+      classes: ['resizer', 'bottom-left'],
+    });
+    const bottomRight = this.HTMLElementService.createElement('div', {
+      classes: ['resizer', 'bottom-right'],
+    });
+    const resizers =this.HTMLElementService.createElement('div', {
+      classes: ['resizers'],
+    });
+    const resizable = this.HTMLElementService.createElement('div', {
+      classes: ['resizable'],
+    });
+
+    resizers.append(topLeft, topRight, bottomLeft, bottomRight);
+    resizable.append(resizers);
+
     hostDiv.append(`${this.httpHost}`);
 
     this.header.append(emptyDiv);
@@ -70,10 +96,30 @@ export class Window implements TerminalInterface {
     this.header.append(this.closeButton);
 
     this.simulator.append(this.header);
-    this.simulator.append(this.content)
+    this.simulator.append(this.content);
+    this.simulator.append(resizers);
+    resizable.append(this.simulator)
 
     this.move();
     this.addEventListener();
+
+    return this;
+  }
+
+  calculateZ_index(): TerminalInterface {
+    if (0 < Window.WINDOWS.length) {
+      const zIndexes: number[] = [];
+      Window.WINDOWS.forEach(element => zIndexes.push(element.zIndex));
+      const zIndexMax = Math.max(...zIndexes);
+      this.zIndex = zIndexMax + 1;
+    }
+
+    return this;
+  }
+
+  displayFront(): TerminalInterface {
+    this.calculateZ_index();
+    this.simulator.style.zIndex = this.zIndex.toString();
 
     return this;
   }
@@ -88,9 +134,9 @@ export class Window implements TerminalInterface {
         terminal.open();
       }
     });
-    // terminal.header.addEventListener('click', () => {
-    //   terminal.simulator.style.zIndex = terminal.displayFront();
-    // });
+    terminal.simulator.addEventListener('click', () => {
+      terminal.displayFront();
+    });
 
     return terminal;
   }
@@ -145,8 +191,6 @@ export class Window implements TerminalInterface {
       let newLeftPosition = terminal.simulator.offsetLeft - pos1
       const offsetTopPosition = window.innerHeight - (terminal.simulator.offsetHeight + terminal.simulator.offsetTop);
       const offsetRightPosition = window.innerWidth - (terminal.simulator.offsetWidth + terminal.simulator.offsetLeft);
-
-      console.log('offset : ' + offsetTopPosition);
 
       if (0 > offsetTopPosition) {
         newTopPosition = window.innerHeight - terminal.simulator.offsetHeight;

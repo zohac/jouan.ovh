@@ -1,6 +1,7 @@
 export interface TerminalInterface {
   height: string;
   width: string;
+  zIndex: number;
 
   httpHost: string;
   userName: string;

@@ -9,8 +9,7 @@ export abstract class Application {
   }
 
   createNewLine(content: string, option: OptionInterface | null = null): HTMLDivElement {
-    const newLine = this.HTMLElementService.createDiv(option);
-    console.log(`${content}`);
+    const newLine = this.HTMLElementService.createElement('div', option) as HTMLDivElement;
     const newLineContent = document.createTextNode(`${content}`);
     newLine.append(newLineContent);
 

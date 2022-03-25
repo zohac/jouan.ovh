@@ -1,27 +1,47 @@
-$gradient-from-color: #DA0000;
-$gradient-to-color: #B80000;
-$gradient-color-stops: $gradient-from-color, $gradient-to-color, rgba(218, 0, 0, 0);
-$green-color: #4E9A06;
-$blue-color: #34659A;
-$black-color: #141414;
-$light-grey-color: #525252;
-$grey-color: #333333;
-$aubergine-color: #2C001E;
-$white-color: #EEEDEB;
+$color-red: hsl(0, 100%, 43%);              /*without text*/
+$color-red-light: hsl(0, 72%, 72%);         /*with dark text*/
+$color-red-dark: hsl(0, 100%, 27%);         /*with light text*/
+$color-green: hsl(143, 60%, 50%);           /*with dark text*/
+$color-green-light: hsl(143, 60%, 75%);     /*with dark text*/
+$color-green-dark: hsl(143, 80%, 19%);      /*with light text*/
+$color-blue: hsl(204, 70%, 53%);            /*without text*/
+$color-blue-light: hsl(204, 69%, 80%);      /*with dark text*/
+$color-blue-dark: hsl(204, 75%, 24%);       /*with light text*/
+$color-yellow: hsl(48, 89%, 50%);           /*with dark text*/
+$color-yellow-light: hsl(48, 89%, 79%);     /*with dark text*/
+$color-yellow-dark: hsl(48, 100%, 15%);     /*with light text*/
+$color-grey: hsl(0, 0%, 27%);               /*with light text*/
+$color-grey-light: hsl(0, 0%, 68%);         /*with dark text*/
+$color-grey-dark: hsl(0, 0%, 20%);          /*with light text*/
+
+$color-light: hsl(0, 0%, 92%);              /*with dark text*/
+$color-dark: hsl(0, 0%, 8%);                /*with light text*/
+
+$color-aubergine: hsl(319, 33%, 30%);       /*with light text*/
+$color-aubergine-light: hsl(319, 26%, 70%); /*with dark text*/
+$color-aubergine-dark: hsl(319, 100%, 9%);  /*with light text*/
+
+$gradient-color: $color-red, $color-red-dark, $color-dark;
 
 $padding: 0.25rem;
 
 .terminal {
-  color: $white-color;
-
+  color: $color-light;
   display: flex;
   flex-direction: column;
+
+  @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
 
   .terminal-header {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
+    z-index: 1;
 
     height: 24px;
     padding: $padding;
@@ -31,7 +51,7 @@ $padding: 0.25rem;
 
     text-align: center;
 
-    background-color: #333333;
+    background-color: $color-grey-dark;
 
     cursor: move;
 
@@ -43,23 +63,29 @@ $padding: 0.25rem;
       height: 1rem;
       margin: 0.25rem;
 
-      background-image: linear-gradient(to bottom right, $gradient-from-color, $gradient-to-color);
+      background-image: linear-gradient(to bottom right, $color-red, $color-red-dark);
 
-      box-shadow: 2px 2px 3px $black-color, -2px -2px 3px $light-grey-color;
+      box-shadow: 2px 2px 3px $color-dark, -2px -2px 3px $color-grey;
     }
   }
 
   .terminal-content {
     flex-grow: 2;
     padding: $padding;
+    z-index: 1;
 
     overflow-x: auto;
 
     border-width: 1px;
     border-style: solid;
-    border-color: $grey-color;
+    border-color: $color-dark;
 
-    background-color: $aubergine-color;
+    background-color: $color-aubergine-dark;
+    opacity: 0.95;
+
+    @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+      opacity: 0.75 !important;
+    }
 
     .terminal-content-label {
       display: flex;
@@ -75,29 +101,97 @@ $padding: 0.25rem;
     .terminal-content-input {
       width: 100%;
 
-      border: none;
+      border: 0;
 
-      color: $green-color;
+      color: $color-green;
       font-size: 1rem;
 
-      background-color: $aubergine-color;
+      background-color: $color-aubergine-dark;
 
-      caret-color: $green-color;
+      caret-color: $color-green;
       caret-shape: underscore;
-    }
 
-    .terminal-content-input:focus{
-      outline: none;
+      &:focus {
+        outline: none;
+      }
     }
   }
 
   .text-shell-green {
-    color: $green-color;
+    color: $color-green;
   }
 
   .text-shell-blue {
-    color: $blue-color;
+    color: $color-blue-light;
   }
+
+  //&.resizable {
+  //  width: 100px;
+  //  height: 100px;
+  //  position: absolute;
+  //  top: 100px;
+  //  left: 100px;
+  //
+  //  .resizers {
+  //    width: 100%;
+  //    height: 100%;
+  //    box-sizing: border-box;
+  //    position: absolute;
+  //
+  //    .resizer {
+  //      width: 10px;
+  //      height: 10px;
+  //      border-radius: 50%; /*magic to turn square into circle*/
+  //      background: white;
+  //      border: 1px solid #4286f4;
+  //      position: absolute;
+  //
+  //      &.top-left {
+  //        left: -5px;
+  //        top: -5px;
+  //        cursor: nwse-resize; /*resizer cursor*/
+  //        display: none;
+  //
+  //        &:hover {
+  //          display: block !important;
+  //        }
+  //      }
+  //
+  //      &.top-right {
+  //        right: -5px;
+  //        top: -5px;
+  //        cursor: nesw-resize;
+  //        display: none;
+  //
+  //        &:hover {
+  //          display: block !important;
+  //        }
+  //      }
+  //
+  //      &.bottom-left {
+  //        left: -5px;
+  //        bottom: -5px;
+  //        cursor: nesw-resize;
+  //        display: none;
+  //
+  //        &:hover {
+  //          display: block !important;
+  //        }
+  //      }
+  //
+  //      &.bottom-right {
+  //        right: -5px;
+  //        bottom: -5px;
+  //        cursor: nwse-resize;
+  //        display: none;
+  //
+  //        &:hover {
+  //          display: block !important;
+  //        }
+  //      }
+  //    }
+  //  }
+  //}
 }
 
 .hidden {

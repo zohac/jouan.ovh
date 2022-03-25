@@ -14,6 +14,7 @@ export class About extends Window implements ApplicationInterface {
 
   openAbout() {
     this.simulator.classList.remove('hidden');
+    this.displayFront();
   }
 
   execute(): HTMLDivElement | null {

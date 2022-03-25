@@ -1,0 +1,140 @@
+/*url: https://www.opensourcecolorsystem.design/*/
+
+/*Semantics*/
+/*Colors that help identify status, see actions, locate help, and understand next steps.*/
+/*Max 4 colors*/
+
+/*Neutrals & Overlays*/
+/*They are essential for a perfect visual interface.*/
+/*Please note that Neutrals and Overlays should be influenced by your Primary Color.*/
+/*This is why we can't provide Neutral and Overlay palettes*/
+/*As Neutrals have more usages in our interfaces,*/
+/*we will update the section with the right matrix and we are currently working on specific parameters to help you define them.*/
+
+/*color*/
+/*--color-background: ;*/
+/*--color-background-hover: ;*/
+/*--color-border: ;*/
+/*--color-border-hover: ;*/
+/*Shapes : icons/elements*/
+/*--color-shapes: ;*/
+/*--color-shapes-hover: ;*/
+/*--color-shapes-active: ;*/
+/*--color-text: ;*/
+/*--color-text-hover: ;*/
+/*--color-text-active: ;*/
+
+/*dark color*/
+/*--color-dark-background: ;*/
+/*--color-dark-background-hover: ;*/
+/*--color-dark-border: ;*/
+/*--color-dark-border-hover: ;*/
+/*--color-dark-shapes: ;*/
+/*--color-dark-shapes-hover: ;*/
+/*--color-dark-shapes-active: ;*/
+/*--color-dark-text: ;*/
+/*--color-dark-text-hover: ;*/
+/*--color-dark-text-active: ;*/
+
+$color-aubergine: hsl(319, 33%, 30%);       /*with light text*/
+$color-aubergine-light: hsl(319, 26%, 70%); /*with dark text*/
+$color-aubergine-dark: hsl(319, 100%, 9%);  /*with light text*/
+$color-orange: hsl(16, 82%, 52%);           /*without text*/
+$color-orange-light: hsl(16, 80%, 76%);     /*with dark text*/
+$color-orange-dark: hsl(16, 90%, 24%);      /*with light text*/
+
+$color-grey: hsl(0, 0%, 27%);               /*with light text*/
+$color-grey-light: hsl(0, 0%, 68%);         /*with dark text*/
+
+$color-light: hsl(0, 0%, 92%);              /*with dark text*/
+$color-dark: hsl(0, 0%, 8%);                /*with light text*/
+
+$color-white: hsl(0, 0%, 100%);
+$color-black: hsl(0, 0%, 0%);
+
+:root {
+  /*Semantics*/
+  /*Colors that help identify status, see actions, locate help, and understand next steps.*/
+  /*Max 4 colors*/
+  --color-aubergine: #{$color-aubergine};             /*with light text*/
+  --color-aubergine-light: #{$color-aubergine-light}; /*with dark text*/
+  --color-aubergine-dark: #{$color-aubergine-dark};   /*with light text*/
+  --color-orange: #{$color-orange};                   /*without text*/
+  --color-orange-light: #{$color-orange-light};       /*with dark text*/
+  --color-orange-dark: #{$color-orange-dark};         /*with light text*/
+
+  --color-grey: #{$color-grey};                       /*with light text*/
+  --color-grey-light: #{$color-grey-light};           /*with dark text*/
+
+  --color-light: #{$color-light};                     /*with dark text*/
+  --color-dark: #{$color-dark};                       /*with light text*/
+
+  --color-white: #{$color-white};
+  --color-black: #{$color-black};
+
+  --color-text-dark: var(--color-dark);
+  --color-text-light: var(--color-light);
+
+  /*Accent*/
+  /*Colors you can use to distinguish elements between them such as tags.*/
+  /*For now there is 6 colors because we think it is enough and avoid too much confusions.*/
+
+  --color-red: hsl(0, 100%, 43%);           /*without text*/
+  --color-red-light: hsl(0, 72%, 72%);      /*with dark text*/
+  --color-red-dark: hsl(0, 100%, 27%);      /*with light text*/
+  --color-yellow: hsl(48, 89%, 50%);        /*with dark text*/
+  --color-yellow-light: hsl(48, 89%, 79%);  /*with dark text*/
+  --color-yellow-dark: hsl(48, 100%, 15%);  /*with light text*/
+  --color-green: hsl(143, 60%, 50%);        /*with dark text*/
+  --color-green-light: hsl(143, 60%, 75%);  /*with dark text*/
+  --color-green-dark: hsl(143, 80%, 19%);   /*with light text*/
+  --color-blue: hsl(204, 70%, 53%);         /*without text*/
+  --color-blue-light: hsl(204, 69%, 80%);   /*with dark text*/
+  --color-blue-dark: hsl(204, 75%, 24%);    /*with light text*/
+
+  /*Card color*/
+  --color-card-background: var(--color-light);
+  /*--color-background-hover: ;*/
+  /*--color-border: ;*/
+  /*--color-border-hover: ;*/
+  /*Shapes : icons/elements*/
+  /*--color-shapes: ;*/
+  /*--color-shapes-hover: ;*/
+  /*--color-shapes-active: ;*/
+  --color-card-text: var(--color-text-dark);
+  /*--color-text-hover: ;*/
+  /*--color-text-active: ;*/
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    //--color-aubergine: #000000;       /*with light text*/
+    //--color-aubergine-light: #ffffff; /*with dark text*/
+    //--color-aubergine-dark: #000000;  /*with light text*/
+    //--color-orange: #ffffff;          /*without text*/
+    //--color-orange-light: #ffffff;    /*with dark text*/
+    //--color-orange-dark: #000000;     /*with light text*/
+    //
+    //--color-grey: #000000;            /*with light text*/
+    //--color-grey-light: #aeaeae;      /*with dark text*/
+    //
+    //--color-light: #ffffff;           /*with dark text*/
+    //--color-dark: #000000;            /*with light text*/
+    //
+    //--color-text-dark: var(--color-dark);
+    //--color-text-light: var(--color-light);
+    //
+    //--color-red: #ffffff;           /*without text*/
+    //--color-red-light: #ffffff;     /*with dark text*/
+    //--color-red-dark: #000000;      /*with light text*/
+    //--color-yellow: #ffffff;        /*with dark text*/
+    //--color-yellow-light: #ffffff;  /*with dark text*/
+    //--color-yellow-dark: #000000;   /*with light text*/
+    //--color-green: #ffffff;         /*with dark text*/
+    //--color-green-light: #ffffff;   /*with dark text*/
+    //--color-green-dark: #000000;    /*with light text*/
+    //--color-blue: #ffffff;          /*without text*/
+    //--color-blue-light: #ffffff;    /*with dark text*/
+    //--color-blue-dark: #000000;     /*with light text*/
+  }
+}

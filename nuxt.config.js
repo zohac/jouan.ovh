@@ -23,8 +23,25 @@ export default {
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
     // CSS file in the project
-    '~assets/css/main.css',
+    '~/assets/css/main.css',
   ],
+
+  loader: 'sass-loader',
+
+  options: {
+    sassOptions: {
+      indentedSyntax: true,
+      outputStyle: 'compressed',
+    }
+  },
+
+  styleResources: {
+    scss: [
+      '~/assets/scss/abstract/_color.scss',
+      '~/assets/scss/abstract/_variables.scss',
+      '~/assets/scss/abstract/_mixin.scss',
+    ]
+  },
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [],
@@ -39,8 +56,15 @@ export default {
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
-  modules: [],
+  modules: [
+    '@nuxtjs/style-resources',
+  ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {},
+  build: {
+    extractCSS: false,
+    optimization: {
+      minimize: false,
+    },
+  },
 }
