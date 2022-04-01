@@ -1,7 +1,7 @@
 <template>
 
   <header>
-    <button ref="toggle-menu" role="button">&lt;sj &#47;&gt;</button>
+    <button ref="toggle-menu" class="btn btn-small btn-dark" role="button">&lt;sj &#47;&gt;</button>
     <nav id="menu" hidden>
       <div id="close-menu"></div>
       <ul>
@@ -73,7 +73,7 @@ export default Vue.extend({
     }
 
     const closeMenuElement = document.getElementById('close-menu');
-    closeMenuElement?.addEventListener('click',function (event: Event) {
+    closeMenuElement?.addEventListener('click',function () {
       const menu = document.getElementById('menu');
 
       if (menu) {
@@ -97,100 +97,79 @@ function toggle(id: string) {
   @import '../utils/terminal/src/asset/css/ubuntu_theme.css';
 
   header {
-    /*button color*/
-    background-color: var(--color-dark);
+    // Button color
     --color-button-background: var(--color-dark);
-    --color-button-background-hover: var(--color-grey);
     --color-button-border: var(--color-grey);
+    // Button hover
+    --color-button-background-hover: var(--color-grey);
+    --color-button-border-hover: var(--color-grey-light);
     /*Shapes : icons/elements*/
     /*--color-shapes: ;*/
     /*--color-shapes-hover: ;*/
     /*--color-shapes-active: ;*/
-    --color-button-border-hover: var(--color-grey-light);
+    // Button text color
     --color-button-text: var(--color-text-light);
-    /*--color-text-active: ;*/
-
     --color-button-text-hover: var(--color-text-light);
 
-    color: var(--color-text-light);
+    --header-height: 2.5rem;
+    --margin-left-button: 0.25rem;
 
     display: flex;
+    align-items: center;
     width: 100%;
-  }
+    height: var(--header-height);
+    color: var(--color-text-light);
+    background-color: var(--color-dark);
 
-  nav {
-    position: absolute;
-    top: 2.5rem;
+    button {
+      margin-left: var(--margin-left-button);
+    }
 
-    &:not([hidden]) {
-      animation: menu-animation 300ms ease-in-out forwards;
+    nav {
+      position: absolute;
+      z-index: 1;
+      top: var(--header-height);
 
       #close-menu {
-        background-color: transparent;
-        bottom: 0;
-        height: 100vh;
-        left: 0;
         position: absolute;
-        right: 0;
-        top: 0;
-        width: 100vw;
         z-index: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 0;
+        background-color: transparent;
       }
 
-      ul {
-        border-radius: 0 0 0.5em 0.5em;
-        margin: 0;
-        overflow: hidden;
-        padding: 0;
-        z-index: 1;
+      &:not([hidden]) {
+        animation: menu-animation 300ms ease-in-out forwards;
 
-        li {
-          @keyframes menu-item-opacity {
-            0% {
-              opacity: 0;
-            }
-            80% {
-              opacity: 0;
-            }
-            100% {
-              opacity: 1;
-            }
-          }
+        #close-menu {
+          animation: close-menu 500ms ease-in-out forwards;
+        }
 
-          animation: menu-item-opacity 300ms ease-in-out forwards;
-          background-color: var(--color-dark);
-          color: var(--color-text-light);
-          cursor: pointer;
-          list-style-type: none;
-          padding: 0.5rem 1rem;
+        ul {
+          z-index: 1;
+          overflow: hidden;
+          margin: 0;
+          padding: 0;
+          border-radius: 0 0 0.5em 0.5em;
 
-          &:hover {
-            background-color: var(--color-grey);
+          li {
+            padding: 0.5rem 1rem;
+            list-style-type: none;
+            cursor: pointer;
+            animation: menu-item-opacity 300ms ease-in-out forwards;
+            color: var(--color-text-light);
+            background-color: var(--color-dark);
+
+            &:hover {
+              background-color: var(--color-grey);
+            }
           }
         }
       }
-    }
-  }
-
-  button {
-    background-color: var(--color-button-background);
-    border: 1px solid var(--color-button-border);
-    border-radius: 0.25rem;
-    color: var(--color-button-text);
-
-    height: 2rem;
-    margin: 0.25rem;
-
-    padding: 0.25rem;
-
-    width: auto;
-
-    &:hover {
-      background-color: var(--color-button-background-hover);
-
-      border: 1px solid var(--color-button-border-hover);
-
-      color: var(--color-button-text-hover);
     }
   }
 </style>

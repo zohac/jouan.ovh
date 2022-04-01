@@ -19,8 +19,9 @@ export default {
 
 <style lang="scss">
   .tooltip-container {
-    display: none;
     align-items: center;
+    display: none;
+    flex: 1;
     justify-content: center;
     width: 50vw;
 
@@ -29,15 +30,15 @@ export default {
     }
 
     > div {
-      padding: 1.25rem;
       border-radius: 0.25rem;
+      padding: 1.25rem;
       @include background-opacity($color-light, 0.8)
     }
 
     .tooltip {
-      position: relative;
-      display: inline-block;
       border-bottom: 1px dashed var(--color-dark);
+      display: inline-block;
+      position: relative;
 
       /* Show the tooltip text when you mouse over the tooltip container */
       &:hover {
@@ -47,31 +48,31 @@ export default {
       }
 
       .tooltip-text {
-        --width-box: 150px;
-        visibility: hidden;
-        width: var(--width-box);
+        background-color: var(--color-dark);
+        border-radius: 0.25rem;
         bottom: 120%;
+        --width-box: 150px;
+        color: var(--color-text-light);
         left: 50%;
         margin-left: calc(var(--width-box) / -2);
-        background-color: var(--color-dark);
-        color: var(--color-text-light);
-        text-align: center;
         padding: 5px 0;
-        border-radius: 0.25rem;
+        position: absolute;
+        text-align: center;
+        visibility: hidden;
 
         /* Position the tooltip text - see examples below! */
-        position: absolute;
+        width: var(--width-box);
         z-index: 1;
 
         &::after {
+          border-color: var(--color-dark) transparent transparent transparent;
+          border-style: solid;
+          border-width: 5px;
           content: " ";
-          position: absolute;
-          top: 100%; /* At the bottom of the tooltip */
           left: 50%;
           margin-left: -5px;
-          border-width: 5px;
-          border-style: solid;
-          border-color: var(--color-dark) transparent transparent transparent;
+          position: absolute;
+          top: 100%; /* At the bottom of the tooltip */
         }
       }
     }

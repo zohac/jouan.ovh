@@ -17,22 +17,9 @@ export default {
 <style lang="scss" scoped>
   main {
     display: flex;
+    flex: 1;
     flex-direction: row;
-
-    width: 100vw;
-    margin: auto 0;
-
-    > article,
-    > aside {
-      flex-grow: 1;
-
-      max-width: 100vw;
-      height: auto;
-      margin: auto 1.25rem;
-
-      @media only screen and (min-width: $laptop) {
-        max-width: 50vw;
-      }
-    }
+    padding: 1.25rem;
+    width: calc(100% - (2 * 1.25rem));
   }
 </style>

@@ -26,6 +26,11 @@
     opacity: 1;
   }
 
+  50% {
+    left: 50vw;
+    opacity: 1;
+  }
+
   100% {
     left: 100vw;
     opacity: 1;
@@ -368,5 +373,46 @@
 
   100% {
     transform: rotate(90deg);
+  }
+}
+
+@keyframes close-menu {
+  0% {
+    width: 0;
+    height: 0;
+  }
+
+  25% {
+    width: 25vw;
+    height: calc(25vh - var(--header-height));
+  }
+
+  50% {
+    width: 50vw;
+    height: calc(50vh - var(--header-height));
+  }
+
+  75% {
+    width: 75vw;
+    height: calc(75vh - var(--header-height));
+  }
+
+  100% {
+    width: 100vw;
+    height: calc(100vh - var(--header-height));
+  }
+}
+
+@keyframes menu-item-opacity {
+  0% {
+    opacity: 0;
+  }
+
+  80% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
   }
 }

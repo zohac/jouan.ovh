@@ -97,7 +97,7 @@ linters:
     allow_leading_underscore: true
 
   NestingDepth:
-    enabled: true
+    enabled: false
     max_depth: 1
 
   PlaceholderInExtend:
