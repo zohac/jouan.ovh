@@ -7,6 +7,7 @@ export class Terminal extends Window {
 
   welcomeMessage: string = 'Bienvenue, pour voir les commandes disponible commencez par taper "help"'
   scheme: string[] = [];
+  historic: string[] = [];
   form: HTMLFormElement;
   input: HTMLInputElement;
 
@@ -148,6 +149,8 @@ export class Terminal extends Window {
   }
 
   executeCommand(command: string | null): HTMLDivElement | null {
+    this.historic.push(`${command}`);
+    console.log(this.historic);
     let response: HTMLDivElement | null = this.HTMLElementService.createElement('div') as HTMLDivElement;
     response.append(`command not found: ${command}`);
 
@@ -160,6 +163,10 @@ export class Terminal extends Window {
   private getApplication(command: string | null): ApplicationInterface {
     const application = this.applications.find((app) => app.COMMAND_NAME === command);
     if ("undefined" === typeof application) {
+      this.createNewLine({
+        content: `The application can't be found : ${command}`,
+        classes: ['text-color-red'],
+      });
       throw new Error(`The application can't be found : ${command}`);
     }
 
