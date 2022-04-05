@@ -1,5 +1,5 @@
 <template>
-  <a href="https://twitter.com/fenrir0680">
+  <a class="btn btn-grey btn-icon" href="https://twitter.com/fenrir0680">
     <svg
       class="bi bi-twitter"
       fill="currentColor"

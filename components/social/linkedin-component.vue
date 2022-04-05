@@ -1,5 +1,5 @@
 <template>
-  <a href="https://www.linkedin.com/in/simonjouan/">
+  <a class="btn btn-grey btn-icon" href="https://www.linkedin.com/in/simonjouan/">
     <svg
       class="bi bi-linkedin"
       fill="currentColor"
