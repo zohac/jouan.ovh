@@ -8,6 +8,7 @@ export class Terminal extends Window {
   welcomeMessage: string = 'Bienvenue, pour voir les commandes disponible commencez par taper "help"'
   scheme: string[] = [];
   historic: string[] = [];
+  lastHistoricIndex: number = 0;
   form: HTMLFormElement;
   input: HTMLInputElement;
 
@@ -58,7 +59,7 @@ export class Terminal extends Window {
     this.scheme.forEach(item => {
       const newLine = this.createNewLine({
         content: item,
-        classes: ["text-shell-green"]
+        classes: ["text-green"]
       });
       this.content.insertBefore(newLine, this.form);
     });
@@ -67,11 +68,11 @@ export class Terminal extends Window {
   createPrefix(option: OptionInterface | null = null): HTMLDivElement {
     const spanTextGreen = this.HTMLElementService.createElement('span', {
       content: `${this.userName}@${this.httpHost}`,
-      classes: ["text-shell-green"]
+      classes: ["text-green"]
     });
     const spanTextBleu = this.HTMLElementService.createElement('span', {
       content: '~',
-      classes: ["text-shell-blue"]
+      classes: ["text-blue"]
     });
 
     const prefixLine = this.HTMLElementService.createElement('div', option) as HTMLDivElement;
@@ -107,12 +108,6 @@ export class Terminal extends Window {
     return this;
   }
 
-  addDynamicApplication(appName: string): Terminal {
-    this.appName.push(appName);
-
-    return this;
-  }
-
   addEventListenerOnTerminal(): TerminalInterface {
     const terminal = this;
     terminal.form.addEventListener('submit', (event) => {
@@ -120,6 +115,18 @@ export class Terminal extends Window {
     });
     terminal.content.addEventListener('click', () => {
       terminal.input.focus();
+    });
+    document.addEventListener('keydown', (event) => {
+      if ('ArrowUp' === event.code) {
+        terminal.displayFront();
+        terminal.input.focus();
+        terminal.input.value = terminal.historic[terminal.lastHistoricIndex];
+        terminal.lastHistoricIndex = terminal.lastHistoricIndex - 1;
+
+        if (0 > terminal.lastHistoricIndex) {
+          this.lastHistoricIndex = this.historic.length - 1;
+        }
+      }
     });
 
     return terminal;
@@ -150,48 +157,19 @@ export class Terminal extends Window {
 
   executeCommand(command: string | null): HTMLDivElement | null {
     this.historic.push(`${command}`);
-    console.log(this.historic);
-    let response: HTMLDivElement | null = this.HTMLElementService.createElement('div') as HTMLDivElement;
-    response.append(`command not found: ${command}`);
+    this.lastHistoricIndex = this.historic.length - 1;
 
-    const application = this.getApplication(command);
-    response = application.execute();
+    let response: HTMLDivElement | null = this.HTMLElementService.createElement('div') as HTMLDivElement;
+    response.append(this.createNewLine({
+      content: `The application can't be found : ${command}`,
+      classes: ['text-red'],
+    }));
+
+    const application = this.applications.find((app) => app.COMMAND_NAME === command);
+    if (application) {
+      response = application.execute();
+    }
 
     return response;
   }
-
-  private getApplication(command: string | null): ApplicationInterface {
-    const application = this.applications.find((app) => app.COMMAND_NAME === command);
-    if ("undefined" === typeof application) {
-      this.createNewLine({
-        content: `The application can't be found : ${command}`,
-        classes: ['text-color-red'],
-      });
-      throw new Error(`The application can't be found : ${command}`);
-    }
-
-    return application;
-  }
-
-  // async executeDynamicCommand(command: string): Promise<HTMLDivElement | null> {
-  //   let response: HTMLDivElement | null = this.HTMLElementService.createDiv();
-  //   response.append(`command not found: ${command}`);
-  //
-  //   const application = await this.getDynamicApplication(command);
-  //   response = application.execute();
-  //
-  //   return response;
-  // }
-  //
-  // private async getDynamicApplication(command: string): Promise<ApplicationInterface> {
-  //   const applicationName = this.appName.find((app) => app === command);
-  //   if ("undefined" === typeof applicationName) {
-  //     throw new Error(`The application can't be found : ${command}`);
-  //   }
-  //
-  //   const applicationImport = await import(`./application/${applicationName}`);
-  //   const capitalizedAppName = StringHelper.uppercaseFirstLetter(command);
-  //
-  //   return new applicationImport[capitalizedAppName]() as ApplicationInterface;
-  // }
 }
