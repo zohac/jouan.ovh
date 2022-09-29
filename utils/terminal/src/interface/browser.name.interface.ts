@@ -1,5 +1,5 @@
 export interface BrowserNameInterface {
-  match: string;
-  notMatch?: string;
-  browserName: string;
+  match: string
+  notMatch?: string
+  browserName: string
 }

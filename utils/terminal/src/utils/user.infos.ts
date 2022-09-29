@@ -1,149 +1,149 @@
-import { BrowserNameInterface } from '../interface';
+import { BrowserNameInterface } from '../interface'
 
 export class UserInfos {
-  timeOpened: Date;
-  timezone: number;
-  browserName: string = 'Other';
+  timeOpened: Date
+  timezone: number
+  browserName: string = 'Other'
 
   private browsersRegex: BrowserNameInterface[] = [
     {
       match: 'firefox',
       notMatch: 'seamonkey',
-      browserName: 'Firefox'
+      browserName: 'Firefox',
     },
     {
       match: 'seamonkey',
-      browserName: 'Seamonkey'
+      browserName: 'Seamonkey',
     },
     {
       match: 'chrome',
       notMatch: 'chromium',
-      browserName: 'Chrome'
+      browserName: 'Chrome',
     },
     {
       match: 'chromium',
-      browserName: 'Chromium'
+      browserName: 'Chromium',
     },
     {
       match: 'safari',
       notMatch: 'chrome|chromium',
-      browserName: 'Safari'
+      browserName: 'Safari',
     },
     {
       match: 'opr|opera',
-      browserName: 'Opera'
+      browserName: 'Opera',
     },
     {
       match: 'msie',
-      browserName: 'Internet Explorer'
-    }
-  ];
+      browserName: 'Internet Explorer',
+    },
+  ]
 
   constructor() {
-    this.timeOpened = new Date();
-    this.timezone = (new Date()).getTimezoneOffset() / 60;
+    this.timeOpened = new Date()
+    this.timezone = new Date().getTimezoneOffset() / 60
 
-    this.init();
+    this.init()
   }
 
   init() {
-    const userAgent = window.navigator.userAgent.toLowerCase();
+    const userAgent = window.navigator.userAgent.toLowerCase()
 
-    this.getBrowserName(userAgent);
+    this.getBrowserName(userAgent)
   }
 
   pathname() {
-    return window.location.pathname;
+    return window.location.pathname
   }
 
   referrer() {
-    return document.referrer;
+    return document.referrer
   }
 
   previousSites() {
-    return history.length;
+    return history.length
   }
 
   private getBrowserName(userAgent: string) {
     this.browsersRegex.forEach((browserRegex) => {
-      const match = userAgent.match(browserRegex.match);
-      const notMatch = browserRegex.notMatch ? !userAgent.match(browserRegex.notMatch) : true;
+      const match = userAgent.match(browserRegex.match)
+      const notMatch = browserRegex.notMatch ? !userAgent.match(browserRegex.notMatch) : true
 
       if (match && notMatch) {
-        this.browserName = browserRegex.browserName;
+        this.browserName = browserRegex.browserName
       }
-    });
+    })
   }
 
   browserEngine() {
-    return navigator.product;
+    return navigator.product
   }
 
   browserVersion1a() {
-    return navigator.appVersion;
+    return navigator.appVersion
   }
 
   browserVersion1b() {
-    return navigator.userAgent;
+    return navigator.userAgent
   }
 
   browserLanguage() {
-    return navigator.language;
+    return navigator.language
   }
 
   browserOnline() {
-    return navigator.onLine;
+    return navigator.onLine
   }
 
   browserPlatform() {
-    return navigator.platform;
+    return navigator.platform
   }
 
   javaEnabled() {
-    return navigator.javaEnabled();
+    return navigator.javaEnabled()
   }
 
   dataCookiesEnabled() {
-    return navigator.cookieEnabled;
+    return navigator.cookieEnabled
   }
 
   dataCookies1() {
-    return document.cookie;
+    return document.cookie
   }
 
   dataStorage() {
-    return localStorage;
+    return localStorage
   }
 
   sizeScreenW() {
-    return screen.width;
+    return screen.width
   }
 
   sizeScreenH() {
-    return screen.height;
+    return screen.height
   }
 
   sizeInW() {
-    return innerWidth;
+    return innerWidth
   }
 
   sizeInH() {
-    return innerHeight;
+    return innerHeight
   }
 
   sizeAvailW() {
-    return screen.availWidth;
+    return screen.availWidth
   }
 
   sizeAvailH() {
-    return screen.availHeight;
+    return screen.availHeight
   }
 
   scrColorDepth() {
-    return screen.colorDepth;
+    return screen.colorDepth
   }
 
   scrPixelDepth() {
-    return screen.pixelDepth;
+    return screen.pixelDepth
   }
 }

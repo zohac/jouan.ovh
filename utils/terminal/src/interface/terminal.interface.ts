@@ -1,22 +1,22 @@
 export interface TerminalInterface {
-  height: string;
-  width: string;
-  zIndex: number;
+  height: string
+  width: string
+  zIndex: number
 
-  httpHost: string;
-  userName: string;
+  httpHost: string
+  userName: string
 
-  terminalId: string;
-  simulator: HTMLDivElement;
-  header: HTMLDivElement;
-  closeButton: HTMLDivElement;
-  content: HTMLDivElement;
+  terminalId: string
+  simulator: HTMLDivElement
+  header: HTMLDivElement
+  closeButton: HTMLDivElement
+  content: HTMLDivElement
 
-  move(): TerminalInterface;
+  move(): TerminalInterface
 
-  close(): TerminalInterface;
+  close(): TerminalInterface
 
-  addEventListener(): TerminalInterface;
+  addEventListener(): TerminalInterface
 
-  open(): TerminalInterface;
+  open(): TerminalInterface
 }

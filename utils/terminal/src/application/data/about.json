@@ -1,0 +1,22 @@
+{
+  "userInfo" : {
+    "firstname": "Simon",
+    "lastname": "JOUAN",
+    "poste": "Développeur Fullstack & Testeur QA",
+    "experience": "3 ans",
+    "ville": "Valognes, France",
+    "telephone": "+33 6 58 96 90 20",
+    "email": "simon@jouan.ovh"
+  },
+  "experiences" : [
+    {
+      "date": "02/2021 - aujourd'hui",
+      "entreprise": "Linkizz",
+      "description": "Testeur QA",
+      "technology": "nodejs typesript testcafé"
+    }
+  ],
+  "hobbies" : [
+    "crossfit"
+  ]
+}

@@ -1,3 +1,3 @@
 export interface TerminalOptionInterface {
-  scheme?: string[];
+  scheme?: string[]
 }

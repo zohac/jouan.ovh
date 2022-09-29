@@ -1,0 +1,9 @@
+.table {
+  &.w-100 {
+    width: calc(100% - 2 * var(--margin));
+  }
+
+  &.w-50 {
+    width: calc(50% - 2 * var(--margin));
+  }
+}

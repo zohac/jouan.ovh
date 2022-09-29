@@ -1,6 +1,6 @@
 export interface ApplicationInterface {
-  COMMAND_NAME: string;
-  description: string;
+  COMMAND_NAME: string
+  description: string
 
-  execute(): HTMLDivElement | null;
+  execute(): HTMLDivElement | null
 }

@@ -1,25 +1,141 @@
-import { ApplicationInterface } from "../interface";
-import { Window } from "../utils";
+import { ApplicationInterface } from '../interface'
+import { Window } from '../utils'
+import AboutData from './data/about.json'
+
+interface AboutInterface {
+  userInfo: {
+    firstname: string
+    lastname: string
+    poste: string
+    experience: string
+    ville: string
+    telephone: string
+    email: string
+  }
+  experiences: ExperienceInterface[]
+  hobbies: string[]
+}
+
+interface ExperienceInterface {
+  date: string
+  entreprise: string
+  description: string
+  technology: string
+}
 
 export class About extends Window implements ApplicationInterface {
-  COMMAND_NAME: string = 'about';
-  description: string = 'about me';
+  COMMAND_NAME: string = 'about'
+  description: string = 'Voulez-vous en savoir plus sur moi ?'
+  data: AboutInterface = AboutData
 
   constructor() {
-    super();
+    super()
 
-    this.simulator.classList.add('hidden');
+    this.simulator.classList.add('hidden')
     // document.removeEventListener('keydown', document);
   }
 
-  openAbout() {
-    this.simulator.classList.remove('hidden');
-    this.displayFront();
+  execute(): HTMLDivElement | null {
+    this.openAbout()
+
+    return null
   }
 
-  execute(): HTMLDivElement | null {
-    this.openAbout();
+  openAbout() {
+    this.simulator.classList.remove('hidden')
+    this.drawContent()
+    this.displayFront()
+  }
 
-    return null;
+  drawContent() {
+    this.content.innerHTML = ''
+
+    const divElement = this.HTMLElementService.createElement('div')
+
+    divElement.innerHTML =
+      '<table class="table w-50">\n' +
+      '  <thead>\n' +
+      '    <tr>\n' +
+      `      <th colspan="2">User Informations</th>\n` +
+      '    </tr>\n' +
+      '  </thead>\n' +
+      '  <tbody>\n' +
+      '    <tr>\n' +
+      `      <td>name</td>\n` +
+      `      <td>${this.data.userInfo.firstname} ${this.data.userInfo.lastname}</td>\n` +
+      '    </tr>\n' +
+      '    <tr>\n' +
+      `      <td>poste</td>\n` +
+      `      <td>${this.data.userInfo.poste}</td>\n` +
+      '    </tr>\n' +
+      '    <tr>\n' +
+      `      <td>experience</td>\n` +
+      `      <td>${this.data.userInfo.experience}</td>\n` +
+      '    </tr>\n' +
+      '    <tr>\n' +
+      `      <td>city</td>\n` +
+      `      <td>${this.data.userInfo.ville}</td>\n` +
+      '    </tr>\n' +
+      '    <tr>\n' +
+      `      <td>email</td>\n` +
+      `      <td>${this.data.userInfo.email}</td>\n` +
+      '    </tr>\n' +
+      '  </tbody>\n' +
+      '</table>\n'
+
+    divElement.innerHTML += this.getExperiences()
+    divElement.innerHTML += this.getHobbies()
+
+    this.content.append(divElement)
+  }
+
+  private getExperiences(): string {
+    let experiences =
+      '<table class="table w-100">\n' +
+      '  <thead>\n' +
+      '    <tr>\n' +
+      '      <th colspan="4">Experiences</th>\n' +
+      '    </tr>\n' +
+      '    <tr>\n' +
+      '      <th>Date</th>\n' +
+      '      <th>Entreprise</th>\n' +
+      '      <th>Description</th>\n' +
+      '      <th>Technology</th>\n' +
+      '    </tr>\n' +
+      '  </thead>\n' +
+      '  <tbody>\n'
+
+    this.data.experiences.forEach((experience) => {
+      experiences +=
+        '    <tr>\n' +
+        `      <td>${experience.date}</td>\n` +
+        `      <td>${experience.entreprise}</td>\n` +
+        `      <td>${experience.description}</td>\n` +
+        `      <td>${experience.technology}</td>\n` +
+        '    </tr>\n'
+    })
+
+    experiences += '  </tbody>\n' + '</table>\n'
+    return experiences
+  }
+
+  private getHobbies(): string {
+    if (0 === this.data.hobbies.length) return ''
+
+    let hobbies =
+      '<table class="table w-100">\n' +
+      '  <thead>\n' +
+      '    <tr>\n' +
+      '      <th>Hobbies</th>\n' +
+      '    </tr>\n' +
+      '  </thead>\n' +
+      '  <tbody>\n'
+
+    this.data.hobbies.forEach((hobby) => {
+      hobbies += '    <tr>\n' + `      <td>${hobby}</td>\n` + '    </tr>\n'
+    })
+
+    hobbies += '  </tbody>\n' + '</table>\n'
+    return hobbies
   }
 }

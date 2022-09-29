@@ -1,32 +1,37 @@
-import { ApplicationInterface } from '../interface';
-import { Terminal } from '../terminal';
-import { Application } from '../utils';
+import { ApplicationInterface } from '../interface'
+import { Terminal } from '../terminal'
+import { Application } from '../utils'
 
 export class Help extends Application implements ApplicationInterface {
+  COMMAND_NAME: string = 'help'
+  description: string = 'Affiche les commandes disponible.'
 
-  COMMAND_NAME: string = 'help';
-  description: string = 'Affiche les commandes disponible.';
-
-  terminal: Terminal;
+  terminal: Terminal
 
   constructor(terminal: Terminal, description: string | null = null) {
-    super();
-    this.terminal = terminal;
+    super()
+    this.terminal = terminal
 
     if (description) {
-      this.description = description;
+      this.description = description
     }
   }
 
-  execute(): HTMLDivElement | null {
-    let newElement = null;
+  execute(): HTMLDivElement {
+    const newElement = this.HTMLElementService.createElement('div') as HTMLDivElement
+    const ulElement = this.HTMLElementService.createElement('ul')
 
     for (const application of this.terminal.applications) {
-      newElement = this.createNewLine(`${application.COMMAND_NAME} - ${application.description}`);
+      const liElement = this.HTMLElementService.createElement('li')
 
-      this.terminal.content.insertBefore(newElement, this.terminal.form);
+      const code = this.HTMLElementService.createElement('code', { content: application.COMMAND_NAME })
+      liElement.append(code)
+      liElement.append(` - ${application.description}`)
+      ulElement.append(liElement)
     }
+    newElement.append(ulElement)
+    this.terminal.content.insertBefore(newElement, this.terminal.form)
 
-    return newElement;
+    return newElement
   }
 }

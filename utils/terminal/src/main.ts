@@ -1,5 +1,5 @@
-import { Help, Clear } from './application';
-import { Terminal } from './terminal';
+import { Clear, Help } from './application'
+import { Terminal } from './terminal'
 
 const terminal = new Terminal({
   scheme: [
@@ -13,11 +13,10 @@ const terminal = new Terminal({
     '\xa0\xa0\xa0\\__/|_______/\xa0|\xa0$$|__/',
     '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0/$$\xa0\xa0|\xa0$$',
     '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0|\xa0\xa0$$$$$$/',
-    '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\\______/'
-  ]
-});
+    '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\\______/',
+  ],
+})
 
-terminal.addApplication(new Help(terminal))
-  .addApplication(new Clear(terminal));
+terminal.addApplication(new Help(terminal)).addApplication(new Clear(terminal))
 
-export default terminal;
+export default terminal
