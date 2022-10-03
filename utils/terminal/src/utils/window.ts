@@ -211,4 +211,8 @@ export class Window implements TerminalInterface {
 
     return terminal
   }
+
+  setHeight(height: string) {
+    this.simulator.style.setProperty('height', height)
+  }
 }

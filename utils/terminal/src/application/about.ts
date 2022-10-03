@@ -13,6 +13,7 @@ interface AboutInterface {
     email: string
   }
   experiences: ExperienceInterface[]
+  degrees: DegreeInterface[]
   hobbies: string[]
 }
 
@@ -21,6 +22,13 @@ interface ExperienceInterface {
   entreprise: string
   description: string
   technology: string
+}
+
+interface DegreeInterface {
+  date: string
+  name: string
+  school: string
+  description: string
 }
 
 export class About extends Window implements ApplicationInterface {
@@ -42,6 +50,7 @@ export class About extends Window implements ApplicationInterface {
   }
 
   openAbout() {
+    this.setHeight('600px')
     this.simulator.classList.remove('hidden')
     this.drawContent()
     this.displayFront()
@@ -52,8 +61,16 @@ export class About extends Window implements ApplicationInterface {
 
     const divElement = this.HTMLElementService.createElement('div')
 
-    divElement.innerHTML =
-      '<table class="table w-50">\n' +
+    divElement.innerHTML += this.getUserInformationsTable();
+    divElement.innerHTML += this.getExperiencesTable()
+    divElement.innerHTML += this.getDegreeTable()
+    divElement.innerHTML += this.getHobbiesTable()
+
+    this.content.append(divElement)
+  }
+
+  private getUserInformationsTable(): string {
+    return '<table class="table w-50">\n' +
       '  <thead>\n' +
       '    <tr>\n' +
       `      <th colspan="2">User Informations</th>\n` +
@@ -81,15 +98,10 @@ export class About extends Window implements ApplicationInterface {
       `      <td>${this.data.userInfo.email}</td>\n` +
       '    </tr>\n' +
       '  </tbody>\n' +
-      '</table>\n'
-
-    divElement.innerHTML += this.getExperiences()
-    divElement.innerHTML += this.getHobbies()
-
-    this.content.append(divElement)
+      '</table>\n';
   }
 
-  private getExperiences(): string {
+  private getExperiencesTable(): string {
     let experiences =
       '<table class="table w-100">\n' +
       '  <thead>\n' +
@@ -119,7 +131,7 @@ export class About extends Window implements ApplicationInterface {
     return experiences
   }
 
-  private getHobbies(): string {
+  private getHobbiesTable(): string {
     if (0 === this.data.hobbies.length) return ''
 
     let hobbies =
@@ -137,5 +149,35 @@ export class About extends Window implements ApplicationInterface {
 
     hobbies += '  </tbody>\n' + '</table>\n'
     return hobbies
+  }
+
+  private getDegreeTable(): string {
+    let degrees =
+      '<table class="table w-100">\n' +
+      '  <thead>\n' +
+      '    <tr>\n' +
+      '      <th colspan="4">Degrees</th>\n' +
+      '    </tr>\n' +
+      '    <tr>\n' +
+      '      <th>Date</th>\n' +
+      '      <th>Name</th>\n' +
+      '      <th>School</th>\n' +
+      '      <th>Description</th>\n' +
+      '    </tr>\n' +
+      '  </thead>\n' +
+      '  <tbody>\n'
+
+    this.data.degrees.forEach((degree) => {
+      degrees +=
+        '    <tr>\n' +
+        `      <td>${degree.date}</td>\n` +
+        `      <td>${degree.name}</td>\n` +
+        `      <td>${degree.school}</td>\n` +
+        `      <td>${degree.description}</td>\n` +
+        '    </tr>\n'
+    })
+
+    degrees += '  </tbody>\n' + '</table>\n'
+    return degrees
   }
 }

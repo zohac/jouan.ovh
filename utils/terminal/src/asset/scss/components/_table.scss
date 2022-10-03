@@ -1,4 +1,11 @@
 .table {
+  tbody {
+    tr:nth-child(even) {
+      background-color: var(--color-grey-light);
+      color: var(--color-text-dark);
+    }
+  }
+
   &.w-100 {
     width: calc(100% - 2 * var(--margin));
   }

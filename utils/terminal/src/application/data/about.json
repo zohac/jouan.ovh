@@ -13,7 +13,45 @@
       "date": "02/2021 - aujourd'hui",
       "entreprise": "Linkizz",
       "description": "Testeur QA",
-      "technology": "nodejs typesript testcafé"
+      "technology": "nodejs Typesript Testcafé"
+    },
+    {
+      "date": "05/2020 - 12/2021",
+      "entreprise": "CINS",
+      "description": "Développeur Full Stack",
+      "technology": "PHP/MySQL HTML/CSS JS SASS Symfony-4/5 Drupal-7/8 Prestashop-1.7.* Wordpress Bootstrap Git Docker"
+    },
+    {
+      "date": "07/2007 - 05/2019",
+      "entreprise": "A+ Métrologie/Trescal",
+      "description": "Métrologue",
+      "technology": "Technicien métrologue multi-grandeur. Suppléant du dossier COFRAC en Électricité - magnétisme. Suppléant du laboratoire Électricité - magnétisme"
+    },
+    {
+      "date": "07/2001 - 07/2006",
+      "entreprise": "OPTEOR",
+      "description": "Régleur / Instrumentiste",
+      "technology": "Maintenance industrielle sur un site pétrochimique"
+    }
+  ],
+  "degrees": [
+    {
+      "date": "2017 - 2018",
+      "name": "Développeur d’application - PHP / Symfony",
+      "school": "OpenClassrooms",
+      "description": "Projet Wordpress • Projet Bootstrap • Projet Mysql • Projet PHP – POO • 3 Projet Symfony"
+    },
+    {
+      "date": "1999 - 2001",
+      "name": "BTS CIRA",
+      "school": "Lycée A. de Tocqueville à Cherbourg",
+      "description": "Contrôle Industriel et Régulation Automatique"
+    },
+    {
+      "date": "1997 - 1999",
+      "name": "BAC STL PLPI",
+      "school": "Lycée A. de Tocqueville à Cherbourg",
+      "description": "Science et Technique de Laboratoire option Physique de Laboratoire et Procédé Industriel"
     }
   ],
   "hobbies" : [
