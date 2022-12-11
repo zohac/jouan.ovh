@@ -19,6 +19,8 @@ export default {
 
 <style lang="scss">
   .tooltip-container {
+    --width-box: 150px;
+
     align-items: center;
     display: none;
     flex: 1;
@@ -40,7 +42,7 @@ export default {
       display: inline-block;
       position: relative;
 
-      /* Show the tooltip text when you mouse over the tooltip container */
+      // Show the tooltip text when you mouse over the tooltip container
       &:hover {
         .tooltip-text {
           visibility: visible;
@@ -51,16 +53,15 @@ export default {
         background-color: var(--color-dark);
         border-radius: 0.25rem;
         bottom: 120%;
-        --width-box: 150px;
         color: var(--color-text-light);
         left: 50%;
-        margin-left: calc(var(--width-box) / -2);
+        margin-left: calc(-1 * var(--width-box) / 2);
         padding: 5px 0;
         position: absolute;
         text-align: center;
         visibility: hidden;
 
-        /* Position the tooltip text - see examples below! */
+        // Position the tooltip text - see examples below!
         width: var(--width-box);
         z-index: 1;
 
@@ -72,7 +73,7 @@ export default {
           left: 50%;
           margin-left: -5px;
           position: absolute;
-          top: 100%; /* At the bottom of the tooltip */
+          top: 100%; // At the bottom of the tooltip
         }
       }
     }
