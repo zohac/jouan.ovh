@@ -46,8 +46,8 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import SocialLinkListComponent from '~/components/social/social-link-list-component.vue';
+import Vue from "vue";
+import SocialLinkListComponent from "~/components/social/social-link-list-component.vue";
 
 export default Vue.extend({
   name: "ArticleComponent",
@@ -56,8 +56,6 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
-  @import "assets/scss/abstract";
-
   article {
     animation: card-animation 1200ms linear both;
     background-color: var(--color-card-background);
