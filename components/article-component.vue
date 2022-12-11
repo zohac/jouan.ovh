@@ -56,6 +56,8 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+  @import "assets/scss/abstract";
+
   article {
     animation: card-animation 1200ms linear both;
     background-color: var(--color-card-background);

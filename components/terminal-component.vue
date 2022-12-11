@@ -18,6 +18,8 @@ export default {
 </script>
 
 <style lang="scss">
+  @import "assets/scss/abstract";
+
   .tooltip-container {
     align-items: center;
     display: none;
