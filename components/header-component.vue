@@ -15,9 +15,9 @@
 
 <script lang="ts">
 
-import Vue from 'vue';
-import { About, Clear, Help } from '~/utils/terminal/src/application';
-import { Terminal } from '~/utils/terminal/src/terminal';
+import Vue from "vue";
+import { About, Clear, Help } from "~/utils/terminal/src/application";
+import { Terminal } from "~/utils/terminal/src/terminal";
 
 export default Vue.extend({
   name: 'HeaderComponent',
@@ -66,7 +66,7 @@ export default Vue.extend({
     }
     if (refs['menu-about'] && refs['menu-about'] instanceof HTMLElement) {
       refs['menu-about'].addEventListener('click', async () => {
-        about.open();
+        about.openAbout();
 
         toggle(menuId);
       });
