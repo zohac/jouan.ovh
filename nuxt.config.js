@@ -60,10 +60,10 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    analyze: true,
+    analyze: false,
     extractCSS: false,
     // Default: true for dev and false for production.
-    cssSourceMap: true,
+    cssSourceMap: false,
     optimization: {
       minimize: true,
     },
