@@ -5,6 +5,8 @@ export class UserInfos {
   timezone: number
   browserName: string = 'Other'
 
+  os: string = 'undefined'
+
   private browsersRegex: BrowserNameInterface[] = [
     {
       match: 'firefox',
@@ -39,6 +41,61 @@ export class UserInfos {
     },
   ]
 
+  private osRegex: BrowserNameInterface[] = [
+    {
+      match: 'macintosh',
+      browserName: 'Mac OS',
+    },
+    {
+      match: 'macintel',
+      browserName: 'Mac OS',
+    },
+    {
+      match: 'macppc',
+      browserName: 'Mac OS',
+    },
+    {
+      match: 'mac68k',
+      browserName: 'Mac OS',
+    },
+    {
+      match: 'win32',
+      browserName: 'Windows',
+    },
+    {
+      match: 'Win64',
+      browserName: 'Windows',
+    },
+    {
+      match: 'windows',
+      browserName: 'Windows',
+    },
+    {
+      match: 'wince',
+      browserName: 'Windows',
+    },
+    {
+      match: 'iphone',
+      browserName: 'iOS',
+    },
+    {
+      match: 'ipad',
+      browserName: 'iOS',
+    },
+    {
+      match: 'ipod',
+      browserName: 'iOS',
+    },
+    {
+      match: 'android',
+      browserName: 'Android',
+    },
+    {
+      match: 'linux',
+      browserName: 'Linux',
+    },
+  ]
+
   constructor() {
     this.timeOpened = new Date()
     this.timezone = new Date().getTimezoneOffset() / 60
@@ -48,8 +105,9 @@ export class UserInfos {
 
   init() {
     const userAgent = window.navigator.userAgent.toLowerCase()
-
+    console.log(userAgent)
     this.getBrowserName(userAgent)
+    this.getOS(userAgent)
   }
 
   pathname() {
@@ -145,5 +203,36 @@ export class UserInfos {
 
   scrPixelDepth() {
     return screen.pixelDepth
+  }
+
+  private getOS(userAgent: string) {
+    // const userAgent = window.navigator.userAgent
+    // // @ts-ignore
+    // const platform = window.navigator?.userAgentData?.platform || window.navigator.platform
+    // const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K']
+    // const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE']
+    // const iosPlatforms = ['iPhone', 'iPad', 'iPod']
+    // let os = 'undefined'
+    //
+    // if (macosPlatforms.indexOf(platform) !== -1) {
+    //   os = 'Mac OS'
+    // } else if (iosPlatforms.indexOf(platform) !== -1) {
+    //   os = 'iOS'
+    // } else if (windowsPlatforms.indexOf(platform) !== -1) {
+    //   os = 'Windows'
+    // } else if (/Android/.test(userAgent)) {
+    //   os = 'Android'
+    // } else if (/Linux/.test(platform)) {
+    //   os = 'Linux'
+    // }
+
+    this.osRegex.forEach((regex) => {
+      const match = userAgent.match(regex.match)
+      const notMatch = regex.notMatch ? !userAgent.match(regex.notMatch) : true
+
+      if (match && notMatch) {
+        this.os = regex.browserName
+      }
+    })
   }
 }

@@ -1,5 +1,5 @@
 import { TerminalInterface } from '../interface'
-import { HTMLElementService } from '../utils'
+import { HTMLElementService, UserInfos } from '../utils'
 
 export class Window implements TerminalInterface {
   static WINDOWS: TerminalInterface[] = []
@@ -142,6 +142,10 @@ export class Window implements TerminalInterface {
   }
 
   render(): HTMLElement {
+    const userInfos = new UserInfos()
+
+    console.log(userInfos.os)
+    console.log(userInfos.browserName)
     return this.simulator
   }
 
