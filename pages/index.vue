@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import Vue from "vue";
 
 export default Vue.extend({
   name: 'IndexPage'
@@ -21,18 +21,23 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
   .init {
-    align-items: center;
     background-image:
       linear-gradient(127deg, var(--color-aubergine-dark), transparent),
       linear-gradient(217deg, var(--color-orange), transparent),
       linear-gradient(0deg, var(--color-red), transparent);
-    display: flex;
-    flex-direction: column;
-    font-size: 1rem;
-    justify-content: center;
     margin: 0;
     min-height: 100vh;
     overflow: auto;
     width: 100vw;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--header-height) 1fr var(--footer-height);
+    gap: 0 0;
+    grid-template-areas:
+    "."
+    "."
+    ".";
+    justify-content: center;
   }
 </style>

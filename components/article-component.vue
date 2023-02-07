@@ -6,12 +6,15 @@
         <!--      <source srcset="https://dummyimage.com/250x250/141414/ebebeb.png&text=laptop" media="(min-width: 1280px)" type="image/png">-->
         <!--      <source srcset="https://dummyimage.com/200x200/141414/ebebeb.png&text=tablet" media="(min-width: 768px)" type="image/png">-->
         <!--      <source srcset="https://dummyimage.com/150x150/141414/ebebeb.png&text=mobile" media="(min-width: 375px)" type="image/png">-->
-
-        <img alt="Portrait de Simon JOUAN"
-             height="709"
-             src="/images/BR.jpeg"
-             title="Portrait de Simon JOUAN"
-             width="512">
+        <source srcset="/images/BR.webp" type="image/webp">
+        <img
+          alt="Portrait de Simon JOUAN"
+          height="709"
+          src="/images/BR.jpeg"
+          title="Portrait de Simon JOUAN"
+          width="512"
+          loading="eager"
+          decoding="async">
       </picture>
     </header>
 

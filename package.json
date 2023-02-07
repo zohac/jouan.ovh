@@ -41,6 +41,8 @@
     "pug": "^3.0.2",
     "pug-plain-loader": "^1.1.0",
     "sass": "^1.56.2",
-    "sass-loader": "10"
+    "sass-loader": "10",
+    "stylelint": "^14.16.1",
+    "stylelint-scss": "^4.3.0"
   }
 }
