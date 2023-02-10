@@ -1,14 +1,4 @@
 .btn {
-  --color-button-background: var(--color-dark);
-  --color-button-background-hover: var(--color-grey);
-  --color-button-border: var(--color-grey);
-  --color-button-border-hover: var(--color-grey-light);
-  --color-button-text: var(--color-text-light);
-  --color-button-text-hover: var(--color-text-light);
-  /*Shapes : icons/elements*/
-  --color-shapes: var(--color-grey);
-  --color-shapes-hover: var(--color-dark);
-
   background-color: transparent;
   border: 1px solid transparent;
   border-radius: 0.25rem;
@@ -33,9 +23,7 @@
     padding: 0;
 
     svg {
-      background-color: var(--color-light);
       border-radius: 0.25rem 0 0 0.25rem;
-      color: var(--color-shapes);
       height: 1.25rem;
       padding: 0.5rem;
       width: 1.25rem;
@@ -47,45 +35,68 @@
       flex-grow: 1;
       justify-content: center;
     }
-
-    &:hover {
-      background-color: var(--color-button-background);
-      border-color: var(--color-button-border);
-
-      svg {
-        color: var(--color-shapes-hover);
-      }
-    }
   }
 
   &.btn-dark {
-    background-color: var(--color-button-background);
-    border: 1px solid var(--color-button-border);
-    color: var(--color-button-text);
+    // color system
+    // =============================================================================
+    --btn-dark-color-background: var(--color-dark-background);
+    --btn-dark-color-background-hover: var(--color-dark-background-hover);
+    --btn-dark-color-border: var(--color-dark-border);
+    --btn-dark-color-border-hover: var(--color-dark-border-hover);
+    // Shapes : icons/elements
+    //--btn-dark-color-shapes: var(--color-grey);
+    //--btn-dark-color-shapes-hover: var(--color-dark);
+    //--btn-dark-color-shapes-active: var(--btn-color-text-hover);
+    --btn-dark-color-text: var(--color-dark-text);
+    --btn-dark-color-text-hover: var(--color-dark-text-hover);
+    // --btn-color-text-active: ;
+
+    background-color: var(--btn-dark-color-background);
+    border: 1px solid var(--btn-dark-color-border);
+    color: var(--btn-dark-color-text);
 
     &:hover {
-      background-color: var(--color-button-background-hover);
-      border: 1px solid var(--color-button-border-hover);
-      color: var(--color-button-text-hover);
+      background-color: var(--btn-dark-color-background-hover);
+      border: 1px solid var(--btn-dark-color-border-hover);
+      color: var(--btn-dark-color-text-hover);
     }
   }
 
   &.btn-grey {
-    --color-button-background: var(--color-grey);
-    --color-button-background-hover: var(--color-dark);
-    --color-button-border: var(--color-grey);
-    --color-button-border-hover: var(--color-dark);
-    --color-button-text: var(--color-text-light);
-    --color-button-text-hover: var(--color-text-light);
+    // color system
+    // =============================================================================
+    --btn-grey-color-background: var(--color-border);
+    --btn-grey-color-background-hover: var(--color-text-hover);
+    --btn-grey-color-border: var(--color-border);
+    --btn-grey-color-border-hover: var(--color-text-hover);
+    // Shapes : icons/elements
+    //--btn-grey-color-shapes: var(--btn-grey-color-border-hover);
+    --btn-grey-color-shapes: var(--btn-grey-color-text);
+    --btn-grey-color-shapes-hover: var(--btn-grey-color-text-hover);
+    //--btn-grey-color-shapes-active: ;
+    --btn-grey-color-text: var(--color-text-hover);
+    --btn-grey-color-text-hover: var(--color-border);
+    // --btn-color-text-active: ;
 
-    background-color: var(--color-button-background);
-    border: 1px solid var(--color-button-border);
-    color: var(--color-button-text);
+    background-color: var(--btn-grey-color-background);
+    border: 1px solid var(--btn-grey-color-border);
+    color: var(--btn-grey-color-text);
 
     &:hover {
-      background-color: var(--color-button-background-hover);
-      border: 1px solid var(--color-button-border-hover);
-      color: var(--color-button-text-hover);
+      background-color: var(--btn-grey-color-background-hover);
+      border: 1px solid var(--btn-grey-color-border-hover);
+      color: var(--btn-grey-color-text-hover);
+    }
+
+    svg {
+      color: var(--btn-grey-color-shapes);
+    }
+
+    &:hover {
+      svg {
+        color: var(--btn-grey-color-shapes-hover);
+      }
     }
   }
 }

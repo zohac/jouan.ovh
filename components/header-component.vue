@@ -16,9 +16,9 @@
 <script lang="ts">
 
 import Vue from "vue";
-import { About, Clear, Help } from "~/utils/terminal/src/application";
-import { Terminal } from "~/utils/terminal/src/terminal";
-
+// import { About, Clear, Help } from "~/utils/terminal/src/application";
+// import { Terminal } from "~/utils/terminal/src/terminal";
+//
 export default Vue.extend({
   name: 'HeaderComponent',
 
@@ -26,30 +26,30 @@ export default Vue.extend({
     const refs = this.$refs;
 
     const menuId = 'menu';
-    const terminal = new Terminal({
-      scheme: [
-        '\xa0\xa0\xa0\xa0/$$\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0/$$',
-        '\xa0\xa0\xa0/$$/\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0|\xa0\xa0$$',
-        '\xa0\xa0/$$/\xa0\xa0\xa0/$$$$$$$\xa0/$$\xa0\\\xa0\xa0$$',
-        '\xa0/$$/\xa0\xa0\xa0/$$_____/|__/\xa0\xa0\\\xa0\xa0$$',
-        '|\xa0\xa0$$\xa0\xa0|\xa0\xa0$$$$$$\xa0\xa0/$$\xa0\xa0\xa0/$$/',
-        '\xa0\\\xa0\xa0$$\xa0\xa0\\____\xa0\xa0$$|\xa0$$\xa0\xa0/$$/',
-        '\xa0\xa0\\\xa0\xa0$$\xa0/$$$$$$$/|\xa0$$\xa0/$$/',
-        '\xa0\xa0\xa0\\__/|_______/\xa0|\xa0$$|__/',
-        '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0/$$\xa0\xa0|\xa0$$',
-        '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0|\xa0\xa0$$$$$$/',
-        '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\\______/'
-      ]
-    });
-    const about = new About();
-
-    terminal.addApplication(new Help(terminal))
-      .addApplication(new Clear(terminal))
-      .addApplication(about);
-
-    document.body.append(terminal.render());
-    document.body.append(about.render());
-
+//     const terminal = new Terminal({
+//       scheme: [
+//         '\xa0\xa0\xa0\xa0/$$\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0/$$',
+//         '\xa0\xa0\xa0/$$/\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0|\xa0\xa0$$',
+//         '\xa0\xa0/$$/\xa0\xa0\xa0/$$$$$$$\xa0/$$\xa0\\\xa0\xa0$$',
+//         '\xa0/$$/\xa0\xa0\xa0/$$_____/|__/\xa0\xa0\\\xa0\xa0$$',
+//         '|\xa0\xa0$$\xa0\xa0|\xa0\xa0$$$$$$\xa0\xa0/$$\xa0\xa0\xa0/$$/',
+//         '\xa0\\\xa0\xa0$$\xa0\xa0\\____\xa0\xa0$$|\xa0$$\xa0\xa0/$$/',
+//         '\xa0\xa0\\\xa0\xa0$$\xa0/$$$$$$$/|\xa0$$\xa0/$$/',
+//         '\xa0\xa0\xa0\\__/|_______/\xa0|\xa0$$|__/',
+//         '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0/$$\xa0\xa0|\xa0$$',
+//         '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0|\xa0\xa0$$$$$$/',
+//         '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\\______/'
+//       ]
+//     });
+//     const about = new About();
+//
+//     terminal.addApplication(new Help(terminal))
+//       .addApplication(new Clear(terminal))
+//       .addApplication(about);
+//
+//     document.body.append(terminal.render());
+//     document.body.append(about.render());
+//
     if (refs['toggle-menu'] && refs['toggle-menu'] instanceof HTMLElement) {
       refs['toggle-menu'].addEventListener('click', (event: Event) => {
         event.preventDefault();
@@ -57,21 +57,21 @@ export default Vue.extend({
         toggle(menuId);
       });
     }
-    if (refs['menu-terminal'] && refs['menu-terminal'] instanceof HTMLElement) {
-      refs['menu-terminal'].addEventListener('click', () => {
-        terminal.open();
-
-        toggle(menuId);
-      });
-    }
-    if (refs['menu-about'] && refs['menu-about'] instanceof HTMLElement) {
-      refs['menu-about'].addEventListener('click', async () => {
-        about.openAbout();
-
-        toggle(menuId);
-      });
-    }
-
+//     if (refs['menu-terminal'] && refs['menu-terminal'] instanceof HTMLElement) {
+//       refs['menu-terminal'].addEventListener('click', () => {
+//         terminal.open();
+//
+//         toggle(menuId);
+//       });
+//     }
+//     if (refs['menu-about'] && refs['menu-about'] instanceof HTMLElement) {
+//       refs['menu-about'].addEventListener('click', async () => {
+//         about.openAbout();
+//
+//         toggle(menuId);
+//       });
+//     }
+//
     const closeMenuElement = document.getElementById('close-menu');
     closeMenuElement?.addEventListener('click',function () {
       const menu = document.getElementById('menu');
@@ -93,23 +93,23 @@ function toggle(id: string) {
 
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   @import '../utils/terminal/src/asset/css/ubuntu_theme.css';
 
   header {
-    // Button color
-    --color-button-background: var(--color-dark);
-    --color-button-border: var(--color-grey);
-    // Button hover
-    --color-button-background-hover: var(--color-grey);
-    --color-button-border-hover: var(--color-grey-light);
-    /*Shapes : icons/elements*/
-    /*--color-shapes: ;*/
-    /*--color-shapes-hover: ;*/
-    /*--color-shapes-active: ;*/
-    // Button text color
-    --color-button-text: var(--color-text-light);
-    --color-button-text-hover: var(--color-text-light);
+    // color system
+    // =============================================================================
+    --header-color-background: var(--color-dark-background);
+    --header-color-background-hover: var(--color-dark-background-hover);
+    // --header-color-border: ;
+    // --header-color-border-hover: var(--color-shapes);
+    // Shapes : icons/elements
+    // --header-color-shapes: ;
+    // --header-color-shapes-hover: var(--color-text);
+    // --header-color-shapes-active: var(--color-text-hover);
+    --header-color-text: var(--color-dark-text);
+    // --header-color-text-hover: ;
+    // --header-color-text-active: ;
 
     --header-height: 2.5rem;
     --margin-left-button: 0.25rem;
@@ -118,8 +118,8 @@ function toggle(id: string) {
     align-items: center;
     width: 100%;
     height: var(--header-height);
-    color: var(--color-text-light);
-    background-color: var(--color-dark);
+    color: var(--header-color-text);
+    background-color: var(--header-color-background);
 
     button {
       margin-left: var(--margin-left-button);
@@ -161,11 +161,10 @@ function toggle(id: string) {
             list-style-type: none;
             cursor: pointer;
             animation: menu-item-opacity 300ms ease-in-out forwards;
-            color: var(--color-text-light);
-            background-color: var(--color-dark);
+            background-color: var(--header-color-background);
 
             &:hover {
-              background-color: var(--color-grey);
+              background-color: var(--header-color-background-hover);
             }
           }
         }

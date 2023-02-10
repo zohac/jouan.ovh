@@ -60,11 +60,25 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
   article {
+    // color system
+    // =============================================================================
+    --article-color-background: var(--color-background);
+    //--article-color-background-hover: ;
+    //--article-color-border: ;
+    //--article-color-border-hover: ;
+    // Shapes : icons/elements
+    //--article-color-shapes: var(--article-color-border-hover);
+    //--article-color-shapes-hover: var(--color-text);
+    //--article-color-shapes-active: var(--color-text-hover);
+    --article-color-text: var(--color-text);
+    --article-color-text-hover: var(--color-text-hover);
+    //--article-color-text-active: ;
+
     animation: card-animation 1200ms linear both;
-    background-color: var(--color-card-background);
+    background-color: var(--article-color-background);
     border-radius: 0.25rem;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    color: var(--color-card-text);
+    color: var(--article-color-text);
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -125,8 +139,12 @@ export default Vue.extend({
       padding: 1.25rem;
       text-align: left;
 
+      h1 {
+        color: var(--article-color-text-hover);
+      }
+
       h2 {
-        color: var(--color-grey);
+        color: var(--article-color-text);
       }
 
       &.content {
@@ -165,11 +183,27 @@ export default Vue.extend({
           }
         }
 
+        ul {
+          height: 134px;
+        }
+
         &[open] {
           summary {
             svg {
               animation: rotate-90 0.2s linear forwards;
             }
+          }
+
+          ul {
+            transition: height 500ms ease-in;
+            height: 134px;
+          }
+        }
+
+        &:not([open]) {
+          ul {
+            transition: height 500ms ease-out;
+            height: 0;
           }
         }
 

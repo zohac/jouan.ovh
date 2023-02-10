@@ -34,11 +34,11 @@ export default {
     > div {
       border-radius: 0.25rem;
       padding: 1.25rem;
-      @include background-opacity($color-light, 0.8)
+      background: var(--color-background);
     }
 
     .tooltip {
-      border-bottom: 1px dashed var(--color-dark);
+      border-bottom: 1px dashed var(--color-text);
       display: inline-block;
       position: relative;
 
@@ -50,10 +50,10 @@ export default {
       }
 
       .tooltip-text {
-        background-color: var(--color-dark);
+        background-color: var(--color-dark-background);
         border-radius: 0.25rem;
         bottom: 120%;
-        color: var(--color-text-light);
+        color: var(--color-dark-text);
         left: 50%;
         margin-left: calc(-1 * var(--width-box) / 2);
         padding: 5px 0;
@@ -66,7 +66,7 @@ export default {
         z-index: 1;
 
         &::after {
-          border-color: var(--color-dark) transparent transparent transparent;
+          border-color: var(--color-dark-background) transparent transparent transparent;
           border-style: solid;
           border-width: 5px;
           content: " ";

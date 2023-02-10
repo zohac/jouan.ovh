@@ -30,7 +30,7 @@ export default {
     text-align: center;
     height: auto;
 
-    color: var(--color-text-light);
+    color: var(--color-dark-text);
     background-color: var(--color-aubergine-dark);
 
     .copyright {
