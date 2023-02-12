@@ -13,9 +13,9 @@
 </template>
 
 <script>
-import GithubComponent from '@/components/social/github-component';
-import TwitterComponent from '@/components/social/twitter-component';
-import LinkedinComponent from '@/components/social/linkedin-component';
+import GithubComponent from "@/components/social/github-component";
+import TwitterComponent from "@/components/social/twitter-component";
+import LinkedinComponent from "@/components/social/linkedin-component";
 
 export default {
   name: "SocialLinkListComponent",
@@ -52,9 +52,9 @@ export default {
   }
 
   a {
-    @media only screen and (min-width: $tablet) {
-      width: 100%;
-    }
+    //@media only screen and (min-width: $tablet) {
+    //  width: 100%;
+    //}
 
     &:last-child {
       margin: 0;

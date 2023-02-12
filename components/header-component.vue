@@ -15,17 +15,17 @@
 
 <script lang="ts">
 
-import Vue from "vue";
+// import Vue from "vue";
 // import { About, Clear, Help } from "~/utils/terminal/src/application";
 // import { Terminal } from "~/utils/terminal/src/terminal";
 //
-export default Vue.extend({
-  name: 'HeaderComponent',
-
-  mounted() {
-    const refs = this.$refs;
-
-    const menuId = 'menu';
+// export default Vue.extend({
+//   name: 'HeaderComponent',
+//
+//   mounted() {
+//     const refs = this.$refs;
+//
+//     const menuId = 'menu';
 //     const terminal = new Terminal({
 //       scheme: [
 //         '\xa0\xa0\xa0\xa0/$$\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0/$$',
@@ -50,13 +50,13 @@ export default Vue.extend({
 //     document.body.append(terminal.render());
 //     document.body.append(about.render());
 //
-    if (refs['toggle-menu'] && refs['toggle-menu'] instanceof HTMLElement) {
-      refs['toggle-menu'].addEventListener('click', (event: Event) => {
-        event.preventDefault();
-
-        toggle(menuId);
-      });
-    }
+//     if (refs['toggle-menu'] && refs['toggle-menu'] instanceof HTMLElement) {
+//       refs['toggle-menu'].addEventListener('click', (event: Event) => {
+//         event.preventDefault();
+//
+//         toggle(menuId);
+//       });
+//     }
 //     if (refs['menu-terminal'] && refs['menu-terminal'] instanceof HTMLElement) {
 //       refs['menu-terminal'].addEventListener('click', () => {
 //         terminal.open();
@@ -72,29 +72,29 @@ export default Vue.extend({
 //       });
 //     }
 //
-    const closeMenuElement = document.getElementById('close-menu');
-    closeMenuElement?.addEventListener('click',function () {
-      const menu = document.getElementById('menu');
-
-      if (menu) {
-        menu.hidden = true;
-      }
-    });
-  }
-});
-
-function toggle(id: string) {
-  const menu = document.getElementById(id);
-
-  if (menu) {
-    menu.hidden = !menu.hidden;
-  }
-}
+//     const closeMenuElement = document.getElementById('close-menu');
+//     closeMenuElement?.addEventListener('click',function () {
+//       const menu = document.getElementById('menu');
+//
+//       if (menu) {
+//         menu.hidden = true;
+//       }
+//     });
+//   }
+// });
+//
+// function toggle(id: string) {
+//   const menu = document.getElementById(id);
+//
+//   if (menu) {
+//     menu.hidden = !menu.hidden;
+//   }
+// }
 
 </script>
 
 <style lang="scss" scoped>
-  @import '../utils/terminal/src/asset/css/ubuntu_theme.css';
+  //@import '../utils/terminal/src/asset/css/ubuntu_theme.css';
 
   header {
     // color system

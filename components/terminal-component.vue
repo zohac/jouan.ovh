@@ -27,9 +27,9 @@ export default {
     justify-content: center;
     width: 50vw;
 
-    @media only screen and (min-width: $laptop) {
-      display: flex;
-    }
+    //@media only screen and (min-width: $laptop) {
+    //  display: flex;
+    //}
 
     > div {
       border-radius: 0.25rem;

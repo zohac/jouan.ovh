@@ -49,13 +49,7 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import SocialLinkListComponent from "~/components/social/social-link-list-component.vue";
 
-export default Vue.extend({
-  name: "ArticleComponent",
-  components: { SocialLinkListComponent },
-});
 </script>
 
 <style lang="scss" scoped>
@@ -85,9 +79,9 @@ export default Vue.extend({
     margin: auto;
     overflow: hidden;
 
-    @media only screen and (min-width: $tablet) {
-      flex-direction: row;
-    }
+    //@media only screen and (min-width: $tablet) {
+    //  flex-direction: row;
+    //}
 
     &:hover {
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
@@ -111,13 +105,13 @@ export default Vue.extend({
         transform: scaleX(0);
         transform-origin: top center;
 
-        @media only screen and (min-width: $tablet) {
-          animation: scaleXIn-small 750ms ease-out forwards 1000ms;
-          clip-path: polygon(0 0, 100% 0, 87% 100%, 0% 100%);
-          flex: 1;
-          min-height: 25vh;
-          transform-origin: left center;
-        }
+        //@media only screen and (min-width: $tablet) {
+        //  animation: scaleXIn-small 750ms ease-out forwards 1000ms;
+        //  clip-path: polygon(0 0, 100% 0, 87% 100%, 0% 100%);
+        //  flex: 1;
+        //  min-height: 25vh;
+        //  transform-origin: left center;
+        //}
 
         img {
           background-color: var(--color-light);
@@ -163,9 +157,9 @@ export default Vue.extend({
       details {
         width: 100%;
 
-        @media only screen and (min-width: $tablet) {
-          display: none;
-        }
+        //@media only screen and (min-width: $tablet) {
+        //  display: none;
+        //}
 
         summary {
           display: flex;
@@ -217,13 +211,13 @@ export default Vue.extend({
       div[hidden] {
         display: none;
 
-        @media only screen and (min-width: $tablet) {
-          display: flex;
-          align-items: center;
-          flex-direction: column;
-          justify-content: center;
-          width: 100%;
-        }
+        //@media only screen and (min-width: $tablet) {
+        //  display: flex;
+        //  align-items: center;
+        //  flex-direction: column;
+        //  justify-content: center;
+        //  width: 100%;
+        //}
       }
     }
   }
