@@ -1,0 +1,8 @@
+@mixin background-opacity($color, $opacity: 1) {
+  $red: red($color);
+  $green: green($color);
+  $blue: blue($color);
+
+  background: $color; /* The Fallback */
+  background: rgba($red, $green, $blue, $opacity);
+}
