@@ -1,9 +1,87 @@
+@use "../abstract/variables";
+@use "../abstract/color" as c;
+
+:root {
+  --header-height: #{variables.$header-height};
+  --footer-height: #{variables.$footer-height};
+
+  // Token name     Value
+  //============================================================================
+  // box-shadow-1   0 1px 4px #{color}
+  // box-shadow-2   0 2px 10px #{color}
+  --box-shadow-1: 0 1px 4px var(--color-shadow);
+  --box-shadow-2: 0 2px 10px var(--color-shadow);
+
+  --black: #{c.$black};
+  --white: #{c.$white};
+
+  --color-grey-0: #{c.$grey-0};
+  --color-grey-1: #{c.$grey-1};
+  --color-grey-2: #{c.$grey-2};
+  --color-grey-3: #{c.$grey-3};
+  --color-grey-4: #{c.$grey-4};
+  --color-grey-5: #{c.$grey-5};
+  --color-grey-6: #{c.$grey-6};
+
+  --color-background: #{c.$background};
+  --color-background-hover: #{c.$background-hover};
+  --color-border: #{c.$border};
+  --color-border-hover: #{c.$border-hover};
+  --color-shapes: var(--color-border-hover);
+  --color-shapes-hover: var(--color-text);
+  --color-shapes-active: var(--color-text-hover);
+  --color-text: #{c.$text};
+  --color-text-hover: #{c.$text-hover};
+  --color-text-active: #{c.$text-active};
+
+  --color-dark-background: #{c.$dark-background};
+  --color-dark-background-hover: #{c.$dark-background-hover};
+  --color-dark-border: #{c.$dark-border};
+  --color-dark-border-hover: #{c.$dark-border-hover};
+  --color-dark-shapes: var(--color-dark-border-hover);
+  --color-dark-shapes-hover: var(--color-dark-text);
+  --color-dark-shapes-active: var(--color-dark-text-hover);
+  --color-dark-text: #{c.$dark-text};
+  --color-dark-text-hover: #{c.$dark-text-hover};
+  --color-dark-text-active: #{c.$dark-text-active};
+
+  // Semantics
+  // Colors that help identify status,
+  // see actions, locate help, and understand next steps.
+  //============================================================================
+  --color-alert: #{c.$alert};
+  --color-success: #{c.$success};
+
+  --mark-color-background: #{c.$mark-color-background};
+
+  // Accent
+  // Colors you can use to distinguish elements between them such as tags.
+  // For now there is X colors because we think it is enough
+  // and avoid too much confusions.
+  //============================================================================
+  --color-red: #{c.$red};
+  --color-red-light: #{c.$red-light};
+  --color-aubergine-dark: #{c.$aubergine-dark};
+  --color-orange: #{c.$orange};
+
+  // Neutrals & Overlays
+  // They are essential for a perfect visual interface.
+
+  // Please note that Neutrals and Overlays should be influenced
+  // by your Primary Color.
+
+  // This is why we can't provide Neutral and Overlay palettes
+  // As Neutrals have more usages in our interfaces,
+  // we will update the section with the right matrix and we are currently
+  // working on specific parameters to help you define them.
+  //============================================================================
+  --color-overlay: #{c.$overlay};
+  --color-shadow: #{c.$shadow};
+}
+
 html,
 body {
-  font-family: 'UbuntuMono-Regular', 'Segoe UI', serif;
   height: auto;
-  margin: 0;
   min-height: 100vh;
-  padding: 0;
   width: 100vw;
 }

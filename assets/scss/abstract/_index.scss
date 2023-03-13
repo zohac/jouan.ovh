@@ -1,6 +1,8 @@
-@import 'variables';
-@import 'color';
-@import 'animations';
-@import 'function';
-@import 'fonts';
-@import 'mixin';
+@use "variables";
+@use "color";
+@use "animations";
+@use "function";
+@use "fonts";
+@use "typography";
+@use "mixin";
+@use "root";

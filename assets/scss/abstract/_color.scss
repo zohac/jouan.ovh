@@ -37,77 +37,68 @@
 //--color-dark-text-hover: ;
 //--color-dark-text-active: ;
 
-:root {
-  --black: #{gr.$color-20};
-  --white: #{gr.$color-0};
+$black: gr.$color-20;
+$white: gr.$color-0;
 
-  --color-grey-0: var(--white);
-  --color-grey-1: #{gr.$color-0-5};
-  --color-grey-2: #{gr.$color-1};
-  --color-grey-3: #{gr.$color-8};
-  --color-grey-4: #{gr.$color-12};
-  --color-grey-5: #{gr.$color-16};
-  --color-grey-6: var(--black);
+$grey-0: $white;
+$grey-1: gr.$color-0-5;
+$grey-2: gr.$color-1;
+$grey-3: gr.$color-8;
+$grey-4: gr.$color-13;
+$grey-5: gr.$color-17;
+$grey-6: $black;
 
-  --color-background: var(--color-grey-0);
-  --color-background-hover: var(--color-grey-1);
-  --color-border: var(--color-grey-2);
-  --color-border-hover: var(--color-grey-3);
-  --color-shapes: var(--color-border-hover);
-  --color-shapes-hover: var(--color-text);
-  --color-shapes-active: var(--color-text-hover);
-  --color-text: var(--color-grey-4);
-  --color-text-hover: var(--color-grey-5);
-  --color-text-active: var(--color-grey-6);
+$background: $grey-0;
+$background-hover: $grey-1;
+$border: $grey-2;
+$border-hover: $grey-3;
+$text: $grey-4;
+$text-hover: $grey-5;
+$text-active: $grey-6;
+$shapes: $border-hover;
+$shapes-hover: $text;
+$shapes-active: $text-hover;
 
-  --color-dark-background: var(--color-grey-6);
-  --color-dark-background-hover: var(--color-grey-5);
-  --color-dark-border: var(--color-grey-4);
-  --color-dark-border-hover: var(--color-grey-3);
-  --color-dark-shapes: var(--color-dark-border-hover);
-  --color-dark-shapes-hover: var(--color-dark-text);
-  --color-dark-shapes-active: var(--color-dark-text-hover);
-  --color-dark-text: var(--color-grey-2);
-  --color-dark-text-hover: var(--color-grey-1);
-  --color-dark-text-active: var(--color-grey-0);
+$dark-background: $grey-6;
+$dark-background-hover: $grey-5;
+$dark-border: $grey-4;
+$dark-border-hover: $grey-3;
+$dark-text: $grey-2;
+$dark-text-hover: $grey-1;
+$dark-text-active: $grey-0;
+$dark-shapes: $dark-border-hover;
+$dark-shapes-hover: $dark-text;
+$dark-shapes-active: $dark-text-hover;
 
-  // Semantics
-  // Colors that help identify status,
-  // see actions, locate help, and understand next steps.
-  //============================================================================
-  --color-alert: var(--color-red);
-  --color-success: #{g.$color-16};
+// Accent
+// Colors you can use to distinguish elements between them such as tags.
+// For now there is X colors because we think it is enough
+// and avoid too much confusions.
+//============================================================================
+$red: r.$color-13;
+$red-light: r.$color-3;
+$aubergine-dark: aub.$color-17;
+$orange: o.$color-12;
 
-  --mark-color-background: #{y.$color-2};
+// Semantics
+// Colors that help identify status,
+// see actions, locate help, and understand next steps.
+//============================================================================
+$alert: $red;
+$success: g.$color-16;
 
-  // Accent
-  // Colors you can use to distinguish elements between them such as tags.
-  // For now there is X colors because we think it is enough
-  // and avoid too much confusions.
-  //============================================================================
-  --color-red: #{r.$color-13};
-  --color-red-light: #{r.$color-3};
-  --color-aubergine-dark: #{aub.$color-17};
-  --color-orange: #{o.$color-12};
+$mark-color-background: y.$color-2;
 
-  // Neutrals & Overlays
-  // They are essential for a perfect visual interface.
+// Neutrals & Overlays
+// They are essential for a perfect visual interface.
 
-  // Please note that Neutrals and Overlays should be influenced
-  // by your Primary Color.
+// Please note that Neutrals and Overlays should be influenced
+// by your Primary Color.
 
-  // This is why we can't provide Neutral and Overlay palettes
-  // As Neutrals have more usages in our interfaces,
-  // we will update the section with the right matrix and we are currently
-  // working on specific parameters to help you define them.
-  //============================================================================
-  --color-overlay: #{overlays.$blackA11};
-  --color-shadow: #{overlays.$blackA9};
-
-  // Token name     Value
-  //============================================================================
-  // box-shadow-1   0 1px 4px #{color}
-  // box-shadow-2   0 2px 10px #{color}
-  --box-shadow-1: 0 1px 4px var(--color-shadow);
-  --box-shadow-2: 0 2px 10px var(--color-shadow);
-}
+// This is why we can't provide Neutral and Overlay palettes
+// As Neutrals have more usages in our interfaces,
+// we will update the section with the right matrix and we are currently
+// working on specific parameters to help you define them.
+//============================================================================
+$overlay: overlays.$blackA11;
+$shadow: overlays.$blackA9;

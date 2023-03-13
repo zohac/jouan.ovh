@@ -11,20 +11,21 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+  export default {
+    name: 'IndexPage'
+  }
 
-export default Vue.extend({
-  name: 'IndexPage'
-})
 </script>
 
 
 <style lang="scss" scoped>
+ @use "assets/scss/pages/home";
+
   .init {
     --init-color-red: var(--color-red);                         /*without text*/
     --init-color-aubergine-dark: var(--color-aubergine-dark);   /*with light text*/
     --init-color-orange: var(--color-orange);                   /*without text*/
-    
+
     background-image:
       linear-gradient(127deg, var(--init-color-aubergine-dark), transparent),
       linear-gradient(217deg, var(--init-color-orange), transparent),

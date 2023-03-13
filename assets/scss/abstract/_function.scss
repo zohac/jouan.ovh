@@ -1,11 +1,33 @@
-@use 'variables';
+@use "variables";
 @use "sass:map";
 
 @function breakpoint($key) {
-  @if map.has-key(variables.$breakpoints, $key) {
-    @return map.get(variables.$breakpoints, $key);
+  @if map.has-key(variables.$breakpoints-container, $key) {
+    @return map.get(variables.$breakpoints-container, $key);
   }
 
-  @warn "Unknown `#{$key}` in $breakpoint.";
+  @warn "Unknown `#{$key}` in $breakpoints-container.";
   @return null;
+}
+
+// line height = font size x 1.5
+//==========================================================
+$-font-height: variables.$font-height-default or 1;
+
+@function height($space-stack: 0, $font-size: 0) {
+  $result: calc(#{$space-stack} * 2 + #{$font-size});
+
+  @return $result;
+}
+
+@function line-height ($font-size) {
+  $result: calc(#{$font-size} * #{$-font-height});
+
+  @return $result;
+}
+
+@function min-width($height) {
+  $result: calc(#{$height} * 2);
+
+  @return $result;
 }

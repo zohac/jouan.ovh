@@ -24,44 +24,72 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  @use "assets/scss/components/list";
+  @use "assets/scss/abstract/color";
 
   ul {
+    $n-rows: 1;
+    $n-cols-min: 3;
+    $n-cols-max: $n-cols-min + 1;
+    $n-cols-sum: $n-cols-max + $n-cols-min;
+
+    --n-rows: #{$n-rows};
+    --n-cols: calc(2 * #{$n-cols-max});
+
+    --l: calc(20vh / (var(--n-rows) + 3));
+    --hl: calc(.5 * var(--l));
+    --ri: calc(.5 * 1.73205 * var(--l));
+
+    box-sizing: border-box;
+    display: grid;
+    place-content: center;
+    grid-template: repeat(var(--n-rows), var(--l))/repeat(var(--n-cols), var(--ri));
+    grid-gap: var(--hl) 0;
+    overflow: hidden;
     margin: 0;
-    padding: 0;
-    width: 100%;
+    padding: var(--hl) 0;
+    //filter: drop-shadow(0 1px 4px);
 
     li {
-      animation: slideInUp 1000ms ease-out forwards;
-      list-style-type: none;
-      margin: 0 0 0.625rem 0;
-      opacity: 0;
+      background: var(--color-border);
+      overflow: hidden;
+      grid-column-end: span 2;
+      margin: calc(-1 * var(--hl)) 0;
+      transform: scale(0.95);
+      clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+      display: grid;
+      justify-content: center;
+      align-content: center;
 
-      &:first-child {
-        animation-delay: 1050ms;
+      &:nth-of-type(#{$n-cols-sum}n+1) {
+        grid-column-start: 2;
       }
 
-      &:nth-child(2n) {
-        animation-delay: 1100ms;
+      a {
+        --hl: 0;
+
+        width: 100%;
+        height: 100%;
+
+        color: var(--color-text-hover);
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
       }
 
-      &:last-child {
-        animation-delay: 1150ms;
-        margin: 0;
+      &:hover {
+        background: var(--color-text-hover);
+
+        a {
+          --hl: 1;
+
+          color: var(--color-border);
+          transform: scale(calc(1 + 0.2 * var(--hl)));
+          transition: 700ms;
+        }
       }
-    }
-  }
-
-  a {
-    //@media only screen and (min-width: $tablet) {
-    //  width: 100%;
-    //}
-
-    &:last-child {
-      margin: 0;
-    }
-
-    &:hover {
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
   }
 </style>

@@ -1,5 +1,5 @@
 @charset "utf-8";
-@import 'abstract';
-@import 'base';
-@import 'pages';
-@import 'components';
+@use "abstract";
+@use "base";
+@use "pages";
+@use "components";

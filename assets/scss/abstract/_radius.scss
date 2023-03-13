@@ -1,0 +1,20 @@
+@use "sass:math";
+
+// Token name           Value
+//=====================================
+// radius-sharp         0px
+// radius-rounded-4px   4px
+// radius-rounded-8px   8px
+// radius-pill          Height/2
+// radius-circle        Height/2 (square)
+
+$radius-sharp: 0;
+$radius-rounded-4px: 4px;
+$radius-rounded-8px: 8px;
+$radius-circle: 50%;
+
+@function radius-pill ($height) {
+  $result: calc(#{$height} / 2);
+
+  @return $result;
+}

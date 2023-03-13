@@ -2,58 +2,73 @@
   <article>
     <header>
       <picture>
-        <!--      <source srcset="https://dummyimage.com/300x300/141414/ebebeb.png&text=desktop" media="(min-width: 1920px)" type="image/png">-->
-        <!--      <source srcset="https://dummyimage.com/250x250/141414/ebebeb.png&text=laptop" media="(min-width: 1280px)" type="image/png">-->
-        <!--      <source srcset="https://dummyimage.com/200x200/141414/ebebeb.png&text=tablet" media="(min-width: 768px)" type="image/png">-->
-        <!--      <source srcset="https://dummyimage.com/150x150/141414/ebebeb.png&text=mobile" media="(min-width: 375px)" type="image/png">-->
-        <source srcset="/images/BR.webp" type="image/webp">
         <img
           alt="Portrait de Simon JOUAN"
-          height="709"
-          src="/images/BR.jpeg"
+          height="256"
+          :src="getSrc"
           title="Portrait de Simon JOUAN"
-          width="512"
+          width="256"
           loading="eager"
-          decoding="async">
+          decoding="async"
+          type="image/webp">
       </picture>
     </header>
 
     <section class="content">
       <h1>Simon JOUAN</h1>
-      <h2>Développeur Web FullStack</h2>
+      <p>Développeur Web FullStack & Testeur/QA</p>
     </section>
 
     <footer id="social">
-      <details>
-        <summary>
-          Réseaux Sociaux
-          <svg
-            class="bi bi-chevron-right"
-            fill="currentColor"
-            height="16"
-            role="img"
-            viewBox="0 0 16 16"
-            width="16"
-            xmlns="http://www.w3.org/2000/svg">
-            <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" fill-rule="evenodd"/>
-          </svg>
-        </summary>
-          <SocialLinkListComponent />
-      </details>
-
-      <div hidden>
-          <SocialLinkListComponent />
-      </div>
+      <SocialLinkListComponent />
     </footer>
   </article>
+  
 </template>
 
 <script lang="ts">
 
+export default {
+  name: 'ArticleComponent',
+
+  computed: {
+    getSrc() {
+      const portraitUrl = [
+        '/images/portrait_512x512_drip_art_1.webp',
+        '/images/portrait_512x512_drip_art_2.webp',
+        // '/images/portrait_512x512_drip_art_3.webp',
+        '/images/portrait_512x512_drip_art_4.webp',
+        // '/images/portrait_512x512_drip_art_5.webp',
+        // '/images/portrait_512x512_drip_art_6.webp',
+        '/images/portrait_512x512_drip_art_7.webp',
+        '/images/portrait_512x512_drip_art_8.webp',
+        '/images/portrait_512x512_drip_art_9.webp',
+      ];
+
+      return `${portraitUrl[Math.floor(Math.random() * portraitUrl.length)]}`;
+    },
+  }
+}
 </script>
 
 <style lang="scss" scoped>
+  @use "assets/scss/abstract/space";
+  @use "assets/scss/abstract/radius";
+  @use "assets/scss/abstract/variables";
+  @use "assets/scss/abstract/function";
+  @use "sass:math";
+
   article {
+    --main-space-inset: #{space.$space-inset-16x};
+    --article-space-inset: #{space.$space-inset-16x};
+    --article-radius: #{radius.$radius-rounded-4px};
+    --article-height: 80vh;
+    --article-width: 600px;
+    --article-header-height: 30vw;
+    --article-footer-button-height: 32px;
+    --article-footer-height:
+      calc(var(--article-footer-button-height) * 3 + #{space.$space-stack-8x} * 2 + var(--article-space-inset) * 2);
+
     // color system
     // =============================================================================
     --article-color-background: var(--color-background);
@@ -70,68 +85,57 @@
 
     animation: card-animation 1200ms linear both;
     background-color: var(--article-color-background);
-    border-radius: 0.25rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: var(--article-radius);
+    box-shadow: var(--box-shadow-2), var(--box-shadow-1);
     color: var(--article-color-text);
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    margin: auto;
-    overflow: hidden;
+    //overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr var(--article-footer-height);
+    gap: 0 0;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "header"
+      "section"
+      "footer";
 
-    //@media only screen and (min-width: $tablet) {
-    //  flex-direction: row;
-    //}
-
-    &:hover {
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
-    }
+    //height: var(--article-height);
+    //min-height: 900px;
+    //width: var(--article-width);
+    //max-width: calc(100vw - (2 * var(--main-space-inset)));
+    aspect-ratio: 1/2;
 
     header {
-      display: flex;
-      flex: 1;
+      grid-area: header;
       background-color: transparent;
-      height: 100%;
+      //height: calc(var(--article-width) / 3 * 2 );
+      //max-height: calc(100vw - (2 * var(--main-space-inset)));
+      aspect-ratio: 4/3;
 
       picture {
-        align-items: center;
-        animation: scaleYIn-small 750ms ease-out forwards 1000ms;
-        clip-path: polygon(0 0, 100% 0, 100% 84%, 0% 100%);
+        display: flex;
+        align-items: flex-start;
         justify-content: center;
-        height: auto;
-        min-height: 33vh;
+        height: 100%;
         width: 100%;
-        opacity: 0;
-        transform: scaleX(0);
-        transform-origin: top center;
-
-        //@media only screen and (min-width: $tablet) {
-        //  animation: scaleXIn-small 750ms ease-out forwards 1000ms;
-        //  clip-path: polygon(0 0, 100% 0, 87% 100%, 0% 100%);
-        //  flex: 1;
-        //  min-height: 25vh;
-        //  transform-origin: left center;
-        //}
+        overflow: hidden;
 
         img {
-          background-color: var(--color-light);
-          height: auto;
-          left: 0;
-          position: absolute;
-          top: 0;
           width: 100%;
+          height: auto;
         }
       }
     }
 
-
     section {
-      align-items: center;
+      grid-area: section;
+      padding: var(--article-space-inset);
+
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 1.25rem;
-      text-align: left;
+
+      text-align: center;
 
       h1 {
         color: var(--article-color-text-hover);
@@ -143,82 +147,54 @@
 
       &.content {
         animation: fadeIn 1000ms ease-out forwards;
-        flex: 2;
       }
     }
 
     footer {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      padding: 1.25rem;
+      grid-area: footer;
+      padding: var(--article-space-inset);
 
-      details {
-        width: 100%;
+      //ul {
+      //  margin: 0;
+      //  padding: 0;
+      //}
+    }
 
-        //@media only screen and (min-width: $tablet) {
-        //  display: none;
-        //}
+    @media (min-width: function.breakpoint("xs")) {
+      aspect-ratio: 3/5;
 
-        summary {
-          display: flex;
-          justify-content: flex-end;
-          cursor: pointer;
-          list-style: none;
-          margin: 0.625rem auto;
-
-          &:focus {
-            outline: none;
-          }
-
-          &::-webkit-details-marker {
-            display: none;
-          }
-        }
-
-        ul {
-          height: 134px;
-        }
-
-        &[open] {
-          summary {
-            svg {
-              animation: rotate-90 0.2s linear forwards;
-            }
-          }
-
-          ul {
-            transition: height 500ms ease-in;
-            height: 134px;
-          }
-        }
-
-        &:not([open]) {
-          ul {
-            transition: height 500ms ease-out;
-            height: 0;
-          }
-        }
-
-        div {
-          align-items: center;
-          display: flex;
-          justify-content: center;
-        }
-      }
-
-      div[hidden] {
-        display: none;
-
-        //@media only screen and (min-width: $tablet) {
-        //  display: flex;
-        //  align-items: center;
-        //  flex-direction: column;
-        //  justify-content: center;
-        //  width: 100%;
-        //}
+      header {
+        aspect-ratio: 6/5;
       }
     }
+
+    @media (min-width: function.breakpoint("sm")) {
+      aspect-ratio: 2/3;
+
+      header {
+        aspect-ratio: 3/2;
+      }
+    }
+
+    //@media (min-width: function.breakpoint("md")) {
+    //  width: 60vw;
+    //}
+    //
+    //@media (min-width: function.breakpoint("lg")) {
+    //  width: 55vw;
+    //}
+    //
+    //@media (min-width: function.breakpoint("xl")) {
+    //  width: 50vw;
+    //}
+    //
+    //@media (min-width: function.breakpoint("xxl")) {
+    //  width: 45vw;
+    //}
+
+    &:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+    }
   }
+
 </style>

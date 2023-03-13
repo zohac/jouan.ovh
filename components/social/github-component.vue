@@ -1,5 +1,5 @@
 <template>
-  <a class="btn btn-grey btn-icon" href="https://github.com/zohac">
+  <a href="https://github.com/zohac">
     <svg
       class="bi bi-github"
       fill="currentColor"
