@@ -27,5 +27,7 @@ export default {
     justify-items: center;
 
     padding: var(--main-space-inset);
+
+    max-width: 100vw;
   }
 </style>

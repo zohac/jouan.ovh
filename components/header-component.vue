@@ -5,8 +5,18 @@
     <nav id="menu" :class="{'hidden': isHidden}">
       <div id="close-menu" @click="closeMenu"></div>
       <ul>
-        <li @click="closeMenu">terminal</li>
-        <li @click="closeMenu">À propos</li>
+        <li>
+          <NuxtLink to="/" @click="closeMenu">Accueil</NuxtLink>
+        </li>
+        <li>
+          <NuxtLink to="/blog" @click="closeMenu">Blog</NuxtLink>
+        </li>
+        <li>
+          <div @click="closeMenu">Terminal</div>
+        </li>
+        <li>
+          <div @click="closeMenu">À propos</div>
+        </li>
       </ul>
     </nav>
   </header>
@@ -89,6 +99,7 @@ export default {
     padding: var(--header-space-inset);
     color: var(--header-color-text);
     background-color: var(--header-color-background);
+    max-width: 100vw;
 
     nav {
       position: absolute;
@@ -102,9 +113,9 @@ export default {
         right: 0;
         bottom: 0;
         left: calc(-1 * var(--header-space-inset));
-        width: 0;
-        height: 0;
         background-color: transparent;
+        min-height: 100vh;
+        width: 100vw;
       }
 
       ul {
@@ -119,7 +130,6 @@ export default {
           font-weight: var(--header-list-item-font-weight);
           line-height: var(--header-list-item-line-height);
 
-          padding: var(--header-list-item-inset-x) var(--header-list-item-inset-y);
           list-style-type: none;
           cursor: pointer;
           animation: menu-item-opacity 300ms ease-in-out forwards;
@@ -127,6 +137,13 @@ export default {
 
           &:hover {
             background-color: var(--header-color-background-hover);
+          }
+
+          a, div {
+            color: var(--header-color-text);
+            text-decoration: none;
+            padding: var(--header-list-item-inset-x) var(--header-list-item-inset-y);
+            display: inline-block;
           }
         }
       }

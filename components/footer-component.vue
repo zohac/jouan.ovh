@@ -26,6 +26,7 @@ export default {
     -webkit-animation: 4s linear 0s 1 fadeIn;
     animation: 4s linear 0s 1 fadeIn;
     width: 100%;
+    max-width: 100vw;
 
     text-align: center;
     height: auto;

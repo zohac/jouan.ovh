@@ -17,6 +17,7 @@
     <section class="content">
       <h1>Simon JOUAN</h1>
       <p>Développeur Web FullStack & Testeur/QA</p>
+      <p>Freelance</p>
     </section>
 
     <footer id="social">
@@ -59,12 +60,11 @@ export default {
   @use "sass:math";
 
   article {
-    --main-space-inset: #{space.$space-inset-16x};
     --article-space-inset: #{space.$space-inset-16x};
     --article-radius: #{radius.$radius-rounded-4px};
     --article-height: 80vh;
     --article-width: 600px;
-    --article-header-height: 30vw;
+    --article-header-height: calc(100vh / 3);
     --article-footer-button-height: 32px;
     --article-footer-height:
       calc(var(--article-footer-button-height) * 3 + #{space.$space-stack-8x} * 2 + var(--article-space-inset) * 2);
@@ -83,12 +83,13 @@ export default {
     --article-color-text-hover: var(--color-text-hover);
     //--article-color-text-active: ;
 
-    animation: card-animation 1200ms linear both;
+    -webkit-animation: bounce-in-fwd 1.1s both;
+    animation: bounce-in-fwd 1.1s both;
     background-color: var(--article-color-background);
     border-radius: var(--article-radius);
     box-shadow: var(--box-shadow-2), var(--box-shadow-1);
     color: var(--article-color-text);
-    //overflow: hidden;
+    overflow: hidden;
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr var(--article-footer-height);
@@ -99,11 +100,8 @@ export default {
       "section"
       "footer";
 
-    //height: var(--article-height);
-    //min-height: 900px;
-    //width: var(--article-width);
-    //max-width: calc(100vw - (2 * var(--main-space-inset)));
-    aspect-ratio: 1/2;
+    min-width: calc(2 * var(--main-space-inset));
+    max-width: calc(100vw - (2 * var(--main-space-inset)));
 
     header {
       grid-area: header;
@@ -111,14 +109,13 @@ export default {
       //height: calc(var(--article-width) / 3 * 2 );
       //max-height: calc(100vw - (2 * var(--main-space-inset)));
       aspect-ratio: 4/3;
+      overflow: hidden;
+      position: relative;
 
       picture {
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
         height: 100%;
         width: 100%;
-        overflow: hidden;
+        position: absolute;
 
         img {
           width: 100%;
@@ -137,6 +134,8 @@ export default {
 
       text-align: center;
 
+      max-width: calc(100vw - 2 * var(--main-space-inset));
+
       h1 {
         color: var(--article-color-text-hover);
       }
@@ -154,27 +153,24 @@ export default {
       grid-area: footer;
       padding: var(--article-space-inset);
 
-      //ul {
-      //  margin: 0;
-      //  padding: 0;
-      //}
+      max-width: calc(100vw - 2 * var(--main-space-inset));
     }
 
-    @media (min-width: function.breakpoint("xs")) {
-      aspect-ratio: 3/5;
-
-      header {
-        aspect-ratio: 6/5;
-      }
-    }
-
-    @media (min-width: function.breakpoint("sm")) {
-      aspect-ratio: 2/3;
-
-      header {
-        aspect-ratio: 3/2;
-      }
-    }
+    //@media (min-width: function.breakpoint("xs")) {
+    //  aspect-ratio: 3/5;
+    //
+    //  header {
+    //    aspect-ratio: 6/5;
+    //  }
+    //}
+    //
+    //@media (min-width: function.breakpoint("sm")) {
+    //  aspect-ratio: 2/3;
+    //
+    //  header {
+    //    aspect-ratio: 3/2;
+    //  }
+    //}
 
     //@media (min-width: function.breakpoint("md")) {
     //  width: 60vw;
