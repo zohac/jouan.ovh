@@ -19,14 +19,20 @@
         </li>
       </ul>
     </nav>
+<!--    <terminal-manager-component />-->
+<!--    <new-terminal />-->
+    <terminal-component />
   </header>
 
 </template>
 
 <script lang="ts">
+import NewTerminal from "./terminal/new-terminal.vue";
+import TerminalManagerComponent from "./terminal/terminal-manager-component.vue";
 
 export default {
   name: 'HeaderComponent',
+  components: { NewTerminal, TerminalManagerComponent },
   data: () => ({
     isHidden: true,
   }),
