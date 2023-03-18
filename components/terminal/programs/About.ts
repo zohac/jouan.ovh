@@ -254,7 +254,11 @@ const about: IProgram = {
   initialData: new About().parseData(),
   run: (_, createNewTerminal, initialData?: string) => {
     if (createNewTerminal && initialData) {
-      createNewTerminal(initialData);
+      createNewTerminal({
+        height: "600px",
+        width: "800px",
+        initialData,
+      });
       return "Un nouveau terminal a été ouvert.";
     }
 

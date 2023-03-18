@@ -6,7 +6,7 @@ const newTerminal: IProgram = {
   initialData: "Data dans la nouvelle fenêtre.",
   run: (_, createNewTerminal, initialData?: string) => {
     if (createNewTerminal && initialData) {
-      createNewTerminal(initialData);
+      createNewTerminal({ initialData });
       return `Nouvelle fenêtre de terminal ouverte avec les données suivantes : ${initialData}`;
     }
 

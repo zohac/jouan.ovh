@@ -6,7 +6,7 @@
       @mousedown="handleHeaderMouseDown"
       @mouseup="handleMouseUp">
       <div class="close-button" @click="closeTerminal"></div>
-      <div class="header-text">{{ domainName }}</div>
+      <div class="header-text">{{ defaultConfig.domainName }}</div>
       <div></div>
     </div>
 
@@ -16,14 +16,14 @@
           <span v-html="line.text"></span>
         </template>
         <template v-else>
-          <span class="git-prompt">{{ userName }}@{{ domainName }}
+          <span class="git-prompt">{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}
             <span class="git-prompt-separator">:</span>
             <span class="git-prompt-directory">~</span>
             <span class="git-prompt-separator">$</span>
           </span>{{ line.text }}
         </template>
       </div>
-      <span class="git-prompt">{{ userName }}@{{ domainName }}
+      <span class="git-prompt">{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}
         <span class="git-prompt-separator">:</span>
         <span class="git-prompt-directory">~</span>
         <span class="git-prompt-separator">$</span>
@@ -48,8 +48,23 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watch } from "vue";
+import { ITerminalConfig } from "~/components/terminal/interfaces";
 import programManager from "~/components/terminal/programs/ProgramManager";
 
+let terminalDefaults = {
+  width: '800px',
+  height: '400px',
+  userName: 'anon.',
+  domainName: 'example.com',
+  initialData: '',
+};
+
+try {
+  const importedConfig = await import("@/terminal.config");
+  terminalDefaults = importedConfig.terminalDefaults;
+} catch (error) {
+  console.warn("Aucun fichier terminal.config.ts trouvé. Utilisation des valeurs par défaut.");
+}
 export default defineComponent({
   name: "TerminalComponent",
   props: {
@@ -58,32 +73,15 @@ export default defineComponent({
       required: true,
       default: 0,
     },
-    defaultWidth: {
-      type: String,
-      default: '600px',
-    },
-    defaultHeight: {
-      type: String,
-      default: '400px',
-    },
-    userName: {
-      type: String,
-      default: 'anon.',
-    },
-    domainName: {
-      type: String,
-      default: 'domain',
-    },
     createNewTerminal: {
       type: Function,
       required: false,
       default: () => {},
     },
-    initialData: {
-      type: String,
-      required: false,
-      default: '',
-    }
+    terminalConfig: {
+      type: Object,
+      default: () => ({}),
+    },
   },
 
   setup(props) {
@@ -96,14 +94,20 @@ export default defineComponent({
     const userInputRef = ref<HTMLInputElement | null>(null);
     const commandHistory = ref<string[]>([]);
     const commandHistoryPosition = ref<number>(-1);
+    const defaultConfig = ref({
+      width: props.terminalConfig.width || terminalDefaults.width,
+      height: props.terminalConfig.height || terminalDefaults.height,
+      userName: props.terminalConfig.userName || terminalDefaults.userName,
+      domainName: props.terminalConfig.domainName || terminalDefaults.domainName,
+      initialData: props.terminalConfig.initialData || terminalDefaults.initialData,
+    });
 
-    if (props.initialData) {
+    if (defaultConfig.value.initialData) {
       commandLines.value.push({
-        text: props.initialData,
+        text: defaultConfig.value.initialData,
         isResponse: true,
       });
     }
-
 
     const focusUserInput = () => {
       if (terminalElement.value) {
@@ -142,8 +146,8 @@ export default defineComponent({
       const program = programManager.get(command);
       if (program) {
         return program.run(
-          { userName: props.userName },
-          props.createNewTerminal as (initialData?: string) => {},
+          { userName: defaultConfig.value.userName },
+          props.createNewTerminal as (config?: ITerminalConfig) => {},
           program.initialData,
         );
       }
@@ -224,7 +228,7 @@ export default defineComponent({
       }
     };
 
-// Créer une nouvelle fonction pour gérer les événements globaux de relâchement de la souris
+    // Créer une nouvelle fonction pour gérer les événements globaux de relâchement de la souris
     const handleGlobalMouseUp = (_: MouseEvent): void => {
       if (dragging.value) {
         dragging.value = false;
@@ -237,8 +241,8 @@ export default defineComponent({
 
     const updateTerminalDimensions = (): void => {
       if (terminalElement.value) {
-        terminalElement.value.style.width = props.defaultWidth;
-        terminalElement.value.style.height = props.defaultHeight;
+        terminalElement.value.style.width = defaultConfig.value.width;
+        terminalElement.value.style.height = defaultConfig.value.height;
       }
     };
 
@@ -251,13 +255,14 @@ export default defineComponent({
     onMounted(updateTerminalDimensions);
 
     watch(
-      () => [props.defaultWidth, props.defaultHeight],
+      () => [defaultConfig.value.width, defaultConfig.value.height],
       () => {
         updateTerminalDimensions();
       }
     );
 
     return {
+      defaultConfig,
       commandLines,
       userInput,
       terminalElement,

@@ -1,5 +1,5 @@
-export { default as helloWorld } from "./hello-world";
-export { default as help } from "./help";
-export { default as newTerminal } from "./new-terminal";
-export { default as systemInfo } from "./system-infos";
-export { default as about } from "./about";
+export { default as helloWorld } from "./HelloWorld";
+export { default as help } from "./Help";
+export { default as newTerminal } from "./NewTerminal";
+export { default as systemInfo } from "./SystemInfos";
+export { default as about } from "./About";

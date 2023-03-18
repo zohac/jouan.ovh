@@ -34,7 +34,7 @@ const terminalManager = ref<InstanceType<typeof TerminalManager> | null>(null);
 
 const addNewTerminal = () => {
   if (terminalManager.value) {
-    terminalManager.value.addNewTerminal();
+    terminalManager.value.createNewTerminal();
   }
 };
 
