@@ -1,6 +1,5 @@
 <template>
   <div>
-    <button @click="addNewTerminal">Terminal</button>
     <div v-for="(terminal, index) in terminals" :key="index">
       <TerminalComponent :id="index" :create-new-terminal="createNewTerminal" :initial-data="terminal.initialData"/>
     </div>
@@ -38,7 +37,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 

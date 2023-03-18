@@ -1,6 +1,5 @@
-import about from "~/components/terminal/programs/about";
 import { IProgram, IProgramManager } from "../interfaces";
-import { helloWorld, help, newTerminal, systemInfo } from "./";
+import { about, helloWorld, help, newTerminal, systemInfo } from "./";
 
 class ProgramManager implements IProgramManager {
   public programs: { [key: string]: IProgram } = {};

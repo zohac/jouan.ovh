@@ -12,23 +12,31 @@
           <NuxtLink to="/blog" @click="closeMenu">Blog</NuxtLink>
         </li>
         <li>
-          <div @click="closeMenu">Terminal</div>
-        </li>
-        <li>
-          <div @click="closeMenu">À propos</div>
+          <TerminalButton @click="closeMenu" @open-terminal="addNewTerminal" />
         </li>
       </ul>
     </nav>
-    <TerminalManagerComponent />
+    <TerminalManagerComponent ref="terminalManager" />
   </header>
 
 </template>
 
 <script lang="ts" setup>
 
+import TerminalManagerComponent from "~/components/terminal/TerminalManagerComponent.vue";
+
 defineComponent({
   name: 'HeaderComponent',
 });
+
+const TerminalManager = defineComponent(TerminalManagerComponent);
+const terminalManager = ref<InstanceType<typeof TerminalManager> | null>(null);
+
+const addNewTerminal = () => {
+  if (terminalManager.value) {
+    terminalManager.value.addNewTerminal();
+  }
+};
 
 const isHidden = ref(true);
 
@@ -76,7 +84,7 @@ const closeMenu = () => {
     --header-list-item-font-size: #{variables.$font-size-base};
     --header-list-item-font-weight: #{variables.$font-weight-regular};
     --header-list-item-line-height: #{function.line-height(var(--header-list-item-font-size))};
-    --header-list-item-height: #{function.height(var(--header-list-item-inset-x), var(--header-list-item-font-size))};
+    //--header-list-item-height: #{function.height(var(--header-list-item-inset-x), var(--header-list-item-font-size))};
 
     // color system
     // =============================================================================
