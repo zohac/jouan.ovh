@@ -1,19 +1,4 @@
-import helloWorld from "./hello-World";
-import help from "./help";
-import newTerminal from "./new-terminal";
-import systemInfo from "./system-infos";
-
-export interface IProgram {
-  command: string;
-  description: string;
-  run: (config?: any, createNewTerminal?: () => void) => string | HTMLElement;
-}
-
-const programs: { [key: string]: IProgram } = {
-  helloWorld,
-  help,
-  systemInfo,
-  newTerminal,
-};
-
-export default programs;
+export { default as helloWorld } from "./hello-world";
+export { default as help } from "./help";
+export { default as newTerminal } from "./new-terminal";
+export { default as systemInfo } from "./system-infos";

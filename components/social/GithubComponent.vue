@@ -2,7 +2,6 @@
   <a href="https://github.com/zohac" class="hexagon">
     <div class="hexagon-content">
       <svg
-        class="bi bi-github"
         fill="currentColor"
         height="20"
         role="img"

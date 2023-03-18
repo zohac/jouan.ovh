@@ -2,7 +2,6 @@
   <a href="https://www.linkedin.com/in/simonjouan/" class="hexagon">
     <div  class="hexagon-content">
       <svg
-        class="bi bi-linkedin"
         fill="currentColor"
         height="20"
         role="img"

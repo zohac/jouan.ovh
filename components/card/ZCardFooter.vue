@@ -5,11 +5,10 @@
 </template>
 
 <script>
-import SocialLinkListComponent from "../social/social-link-list-component.vue";
 
 export default {
   name: "ZCardFooter",
-  components: { SocialLinkListComponent }
+  components: {}
 };
 </script>
 

@@ -13,13 +13,14 @@
 </template>
 
 <script>
-import GithubComponent from "@/components/social/github-component";
-import TwitterComponent from "@/components/social/twitter-component";
-import LinkedinComponent from "@/components/social/linkedin-component";
+
+import GithubComponent from "~/components/social/GithubComponent.vue";
+import TwitterComponent from "~/components/social/TwitterComponent.vue";
+import LinkedinComponent from "~/components/social/LinkedinComponent.vue";
 
 export default {
-  name: "SocialLinkListComponent",
-  components: {LinkedinComponent, TwitterComponent, GithubComponent}
+  name: "LinkListComponent",
+  components: { LinkedinComponent, TwitterComponent, GithubComponent }
 }
 </script>
 

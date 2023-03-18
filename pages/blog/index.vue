@@ -1,5 +1,5 @@
 <template>
-  <main-component>
+  <MainComponent>
     <ul>
       <ContentList path="/blog">
 
@@ -14,9 +14,9 @@
         </template>
 
         <template #not-found>
-          <z-card-component :class="'container-w50'">
-            <z-card-header :img="getImg" />
-            <z-card-body>
+          <ZCardComponent :class="'container-w50'">
+            <ZCardHeader :img="img" />
+            <ZCardBody>
               <template #title>
                 <h1>Oups, il n'y a pas encore d'articles sur mon blog pour le moment.</h1>
               </template>
@@ -28,35 +28,48 @@
                   revenir bientôt pour découvrir mes prochaines publications.
                 </p>
               </template>
-            </z-card-body>
-          </z-card-component>
+            </ZCardBody>
+          </ZCardComponent>
         </template>
 
       </ContentList>
     </ul>
-  </main-component>
+  </MainComponent>
 </template>
 
 <script lang="ts">
-import ZCardBody from "../../components/card/z-card-body.vue";
-import ZCardHeader, { ImageInterface } from "../../components/card/z-card-header.vue";
-import MainComponent from "../../components/main-component.vue";
-import ZCardComponent from "../../components/z-card-component.vue";
+import ZCardBody from "~/components/card/ZCardBody.vue";
+import ZCardComponent from "~/components/card/ZCardComponent.vue";
+import ZCardHeader, { ImageInterface } from "~/components/card/ZCardHeader.vue";
+import { getRandomUrl } from "~/utils/functions";
+
+const IMG_BLOG_URLS = [
+  '/images/00010-1600x896.png',
+  '/images/00011-1600x896.png',
+  '/images/00012-1600x896.png',
+  '/images/00013-1600x896.png',
+  '/images/00014-1600x896.png',
+  '/images/00015-1600x896.png',
+  '/images/00016-1600x896.png',
+  '/images/00017-1600x896.png',
+];
 
 export default {
   name: "Blog",
-  components: { ZCardBody, ZCardHeader, ZCardComponent, MainComponent },
+  components: { ZCardComponent, ZCardBody, ZCardHeader },
 
-  computed: {
-    getImg(): ImageInterface {
-      return {
-        src: '/images/00010-1600x896.png',
-        attr: {
-          loading: 'eager',
-          decoding: 'async',
-        }
+  setup() {
+    const img = reactive({
+      src: getRandomUrl(IMG_BLOG_URLS),
+      attr: {
+        loading: 'eager',
+        decoding: 'async',
       }
-    },
+    }) as ImageInterface;
+
+    return {
+      img,
+    }
   },
 };
 </script>

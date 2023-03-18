@@ -1,9 +1,9 @@
 <template>
-  <main-component class="home-center">
-    <z-card-component class="home-card-w">
-      <z-card-header :img="portraitImg" />
+  <MainComponent class="home-center">
+    <ZCardComponent class="home-card-w">
+      <ZCardHeader :img="img" />
 
-      <z-card-body>
+      <ZCardBody>
         <template #title>
           <h1>Simon Jouan</h1>
         </template>
@@ -12,20 +12,19 @@
           <p>Développeur Web FullStack & Testeur/QA</p>
           <p>Freelance</p>
         </template>
-      </z-card-body>
+      </ZCardBody>
 
-      <z-card-footer />
-    </z-card-component>
-  </main-component>
+      <ZCardFooter />
+    </ZCardComponent>
+  </MainComponent>
 </template>
 
 <script lang="ts">
+import ZCardBody from "~/components/card/ZCardBody.vue";
+import ZCardComponent from "~/components/card/ZCardComponent.vue";
+import ZCardFooter from "~/components/card/ZCardFooter.vue";
+import ZCardHeader, { ImageInterface } from "~/components/card/ZCardHeader.vue";
 import { getRandomUrl } from "~/utils/functions";
-import ZCardBody from "../components/card/z-card-body.vue";
-import ZCardFooter from "../components/card/z-card-footer.vue";
-import ZCardHeader, { ImageInterface } from "../components/card/z-card-header.vue";
-import MainComponent from "../components/main-component.vue";
-import ZCardComponent from "../components/z-card-component.vue";
 
 const PORTRAIT_URLS = [
   '/images/portrait_512x512_drip_art_1.webp',
@@ -40,24 +39,27 @@ const PORTRAIT_URLS = [
 ];
 
 export default {
-  components: { ZCardComponent, ZCardHeader, ZCardBody, ZCardFooter, MainComponent },
+  name: "Home",
+  components: { ZCardComponent, ZCardFooter, ZCardBody, ZCardHeader },
 
-  computed: {
-    portraitImg(): ImageInterface {
-      return {
-        src: getRandomUrl(PORTRAIT_URLS),
-        attr: {
-          alt: 'Portrait de Simon JOUAN',
-          title: 'Portrait de Simon JOUAN',
-          loading: 'eager',
-          height: 512,
-          width: 512,
-          decoding: 'async',
-        }
+  setup() {
+    const img = reactive({
+      src: getRandomUrl(PORTRAIT_URLS),
+      attr: {
+        alt: 'Portrait de Simon JOUAN',
+        title: 'Portrait de Simon JOUAN',
+        loading: 'eager',
+        height: 512,
+        width: 512,
+        decoding: 'async',
       }
-    },
+    }) as ImageInterface;
+
+    return {
+      img,
+    }
   },
-}
+};
 </script>
 
 <style lang="scss" scoped>

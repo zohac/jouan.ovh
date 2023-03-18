@@ -19,31 +19,25 @@
         </li>
       </ul>
     </nav>
-<!--    <terminal-manager-component />-->
-<!--    <new-terminal />-->
-    <terminal-component />
+    <TerminalManagerComponent />
   </header>
 
 </template>
 
-<script lang="ts">
-import NewTerminal from "./terminal/new-terminal.vue";
-import TerminalManagerComponent from "./terminal/terminal-manager-component.vue";
+<script lang="ts" setup>
 
-export default {
+defineComponent({
   name: 'HeaderComponent',
-  components: { NewTerminal, TerminalManagerComponent },
-  data: () => ({
-    isHidden: true,
-  }),
-  methods: {
-    toggle() {
-      this.isHidden = !this.isHidden;
-    },
-    closeMenu() {
-      this.isHidden = true
-    }
-  }
+});
+
+const isHidden = ref(true);
+
+const toggle = () => {
+  isHidden.value = !isHidden.value;
+}
+
+const closeMenu = () => {
+  isHidden.value = true
 }
 
 </script>

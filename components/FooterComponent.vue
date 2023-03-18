@@ -8,16 +8,13 @@
   </footer>
 </template>
 
-<script>
-export default {
-  name: "FooterComponent",
+<script setup>
 
-  data() {
-    return {
-      currentDate: new Date().getFullYear(),
-    }
-  }
-}
+defineComponent({
+name: 'FooterComponent',
+});
+
+const currentDate = ref(new Date().getFullYear());
 
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <div ref="terminalElement" class="terminal" @click="focusUserInput">
+  <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput">
 
     <div
       class="terminal-header"
@@ -47,16 +47,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, onMounted, ref, watch } from "vue";
-import programs from "./programs";
+import { defineComponent, onMounted, ref, watch } from "vue";
+import programManager from "~/components/terminal/programs/ProgramManager";
 
 export default defineComponent({
   name: "TerminalComponent",
   props: {
     id: {
-      type: String,
+      type: Number,
       required: true,
-      default: '0',
+      default: 0,
     },
     defaultWidth: {
       type: String,
@@ -74,6 +74,16 @@ export default defineComponent({
       type: String,
       default: 'domain',
     },
+    createNewTerminal: {
+      type: Function,
+      required: false,
+      default: () => {},
+    },
+    initialData: {
+      type: String,
+      required: false,
+      default: '',
+    }
   },
 
   setup(props) {
@@ -86,9 +96,21 @@ export default defineComponent({
     const userInputRef = ref<HTMLInputElement | null>(null);
     const commandHistory = ref<string[]>([]);
     const commandHistoryPosition = ref<number>(-1);
-    const createNewTerminal = inject('createNewTerminal');
+
+    if (props.initialData) {
+      commandLines.value.push({
+        text: props.initialData,
+        isResponse: true,
+      });
+    }
+
 
     const focusUserInput = () => {
+      if (terminalElement.value) {
+        // Garantir que la valeur de zIndex ne dépasse pas la limite du navigateur.
+        terminalElement.value.style.zIndex = (Date.now() % 2147483647).toString();
+      }
+
       // Mettre le focus sur l'élément input
       if (userInputRef.value) {
         userInputRef.value.focus();
@@ -117,9 +139,13 @@ export default defineComponent({
     };
 
     const runCommand = (command: string): string | HTMLElement => {
-      const program = Object.values(programs).find(p => p.command === command);
+      const program = programManager.get(command);
       if (program) {
-        return program.run({ userName: props.userName }, createNewTerminal as () => void);
+        return program.run(
+          { userName: props.userName },
+          props.createNewTerminal as (initialData?: string) => {},
+          program.initialData,
+        );
       }
       return `Commande inconnue : ${command}`;
     };
@@ -249,7 +275,7 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .terminal {
   --color-light: hsla(0, 0%, 92%, 1);                    /*with dark text*/
   --color-dark: hsla(0, 0%, 8%, 1);                       /*with light text*/
@@ -410,6 +436,50 @@ export default defineComponent({
     height: 16px;
     background-color: transparent;
     cursor: nwse-resize;
+  }
+}
+
+table,
+.table {
+  --color-light: hsla(0, 0%, 92%, 1);
+  --color-dark: hsla(0, 0%, 8%, 1);
+  --color-grey-light: hsl(0, 0%, 68%);
+  --margin: 1em;
+
+  border: 1px dashed var(--color-light);
+  margin: var(--margin);
+
+  thead {
+    color: var(--color-dark);
+    text-align: center;
+    background-color: var(--color-light);
+  }
+
+  td {
+    padding: 0 0.5em;
+  }
+
+  &.w-100 {
+    width: calc(100% - 2 * var(--margin));
+  }
+
+  &.w-50 {
+    width: calc(50% - 2 * var(--margin));
+  }
+
+  tbody {
+    tr:nth-child(even) {
+      background-color: var(--color-grey-light);
+      color: var(--color-text-dark);
+    }
+  }
+
+  &.w-100 {
+    width: calc(100% - 2 * var(--margin));
+  }
+
+  &.w-50 {
+    width: calc(50% - 2 * var(--margin));
   }
 }
 

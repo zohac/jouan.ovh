@@ -2,7 +2,6 @@
   <a href="https://twitter.com/fenrir0680" class="hexagon">
     <div class="hexagon-content">
       <svg
-        class="bi bi-twitter"
         fill="currentColor"
         height="20"
         role="img"

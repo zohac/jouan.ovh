@@ -1,10 +1,10 @@
 <template>
   <div class="init" role="img" title="">
-    <header-component />
+    <HeaderComponent />
 
     <slot />
 
-    <footer-component />
+    <FooterComponent />
   </div>
 </template>
 

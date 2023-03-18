@@ -7,6 +7,7 @@ specifiers:
   '@nuxt/webpack-builder': ^3.2.2
   '@nuxtjs/eslint-config-typescript': ^12.0.0
   '@types/ua-parser-js': ^0.7.36
+  autoprefixer: ^10.4.14
   eslint: ^8.34.0
   eslint-config-prettier: ^8.6.0
   eslint-plugin-nuxt: ^4.0.0
@@ -30,6 +31,7 @@ devDependencies:
   '@nuxt/webpack-builder': 3.3.1_typescript@4.9.5
   '@nuxtjs/eslint-config-typescript': 12.0.0_vgl77cfdswitgr47lm5swmv43m
   '@types/ua-parser-js': 0.7.36
+  autoprefixer: 10.4.14
   eslint: 8.36.0
   eslint-config-prettier: 8.7.0_eslint@8.36.0
   eslint-plugin-nuxt: 4.0.0_eslint@8.36.0
@@ -4530,6 +4532,21 @@ packages:
     resolution: {integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==}
     engines: {node: '>= 4.5.0'}
     hasBin: true
+    dev: true
+
+  /autoprefixer/10.4.14:
+    resolution: {integrity: sha512-FQzyfOsTlwVzjHxKEqRIAdJx9niO6VCBCoEwax/VLSoQF29ggECcPuBqUMZ+u8jCZOPSy8b8/8KnuFbp0SaFZQ==}
+    engines: {node: ^10 || ^12 || >=14}
+    hasBin: true
+    peerDependencies:
+      postcss: ^8.1.0
+    dependencies:
+      browserslist: 4.21.5
+      caniuse-lite: 1.0.30001466
+      fraction.js: 4.2.0
+      normalize-range: 0.1.2
+      picocolors: 1.0.0
+      postcss-value-parser: 4.2.0
     dev: true
 
   /autoprefixer/10.4.14_postcss@8.4.21:
