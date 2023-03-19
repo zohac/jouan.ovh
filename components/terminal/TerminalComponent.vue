@@ -59,12 +59,17 @@ let terminalDefaults = {
   initialData: '',
 };
 
-try {
-  const importedConfig = await import("@/terminal.config");
-  terminalDefaults = importedConfig.terminalDefaults;
-} catch (error) {
-  console.warn("Aucun fichier terminal.config.ts trouvé. Utilisation des valeurs par défaut.");
+const importedConfig = async () => {
+  try {
+    const importedConfig = await import("@/terminal.config");
+    terminalDefaults = importedConfig.terminalDefaults;
+  } catch (error) {
+    console.warn("Aucun fichier terminal.config.ts trouvé. Utilisation des valeurs par défaut.");
+  }
 }
+
+importedConfig();
+
 export default defineComponent({
   name: "TerminalComponent",
   props: {
