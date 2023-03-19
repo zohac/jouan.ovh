@@ -111,7 +111,7 @@ const closeMenu = () => {
 
     nav {
       position: absolute;
-      z-index: 1;
+      z-index: 9999999999;
       top: var(--header-height);
 
       #close-menu {
