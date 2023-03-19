@@ -17,7 +17,7 @@ export default defineNuxtConfig({
         },
       ],
     },
-    baseURL: "gh-pages",
+    baseURL: "jouan.ovh",
   },
   css: ["@/assets/scss/main.scss"],
   modules: ["@nuxt/content", "@nuxt/image-edge"],
