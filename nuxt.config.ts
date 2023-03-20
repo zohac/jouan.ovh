@@ -20,7 +20,6 @@ export default defineNuxtConfig({
         },
       ],
     },
-    // baseURL: "jouan.ovh",
   },
   css: ["@/assets/scss/main.scss"],
   modules: ["@nuxt/content", "@nuxt/image-edge"],
@@ -28,21 +27,6 @@ export default defineNuxtConfig({
   target: "static",
   experimental: {
     payloadExtraction: false,
-  },
-  nitro: {
-    prerender: {
-      crawlLinks: true,
-      routes: ["/", "/**"],
-    },
-    routeRules: {
-      "/": { static: true },
-      "/**": { static: true },
-    },
-  },
-  vite: {
-    build: {
-      ssr: true,
-    },
   },
   webpack: {
     extractCSS: true,
