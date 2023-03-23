@@ -41,9 +41,9 @@
 import ZCardBody from "~/components/card/ZCardBody.vue";
 import ZCardComponent from "~/components/card/ZCardComponent.vue";
 import ZCardHeader, { ImageInterface } from "~/components/card/ZCardHeader.vue";
-import { getRandomUrl } from "~/utils/functions";
 
 const IMG_BLOG_URLS = [
+  '/images/00004-1600x896.png',
   '/images/00010-1600x896.png',
   '/images/00011-1600x896.png',
   '/images/00012-1600x896.png',
@@ -60,7 +60,8 @@ export default {
 
   setup() {
     const img = reactive({
-      src: getRandomUrl(IMG_BLOG_URLS),
+      // src: getRandomUrl(IMG_BLOG_URLS),
+      src: '/images/00004-1600x896.png',
       attr: {
         loading: 'eager',
         decoding: 'async',

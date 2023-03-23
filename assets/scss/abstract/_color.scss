@@ -1,93 +1,149 @@
-@use "color/blue" as b;
-@use "color/red" as r;
-@use "color/yellow" as y;
-@use "color/green" as g;
-@use "color/grey" as gr;
-@use "color/aubergine" as aub;
-@use "color/orange" as o;
-@use "color/overlays";
+@use "color/blue" as _blue;
+@use "color/red" as _red;
+@use "color/yellow" as _yellow;
+@use "color/green" as _green;
+@use "color/gray" as _gray;
+@use "color/gray_dark" as _gray_dark;
+@use "color/orange" as _orange;
+@use "color/pink_dark" as _pinkDark;
 
-/* url: https://www.opensourcecolorsystem.design/ */
+/* https://www.radix-ui.com/docs/colors/palette-composition/understanding-the-scale */
 
-// color system
-// =============================================================================
-//--color-background: ;
-//--color-background-hover: ;
-//--color-border: ;
-//--color-border-hover: ;
-// Shapes : icons/elements
-//--color-shapes: var(--color-border-hover);
-//--color-shapes-hover: var(--color-text);
-//--color-shapes-active: var(--color-text-hover);
-//--color-text: ;
-//--color-text-hover: ;
-//--color-text-active: ;
+// Use Cases
+// There are 12 steps in each scale. Each step was designed for at least one specific use case.
+// This table is a simple overview of the most common use case for each step. However,
+// there are many exceptions and caveats to factor in, which are covered in further detail below.
 
-// dark color system
-// =============================================================================
-//--color-dark-background: ;
-//--color-dark-background-hover: ;
-//--color-dark-border: ;
-//--color-dark-border-hover: ;
-// Shapes : icons/elements
-//--color-dark-shapes: var(--color-dark-border-hover);
-//--color-dark-shapes-hover: var(--color-dark-text);
-//--color-dark-shapes-active: var(--color-dark-text-hover);
-//--color-dark-text: ;
-//--color-dark-text-hover: ;
-//--color-dark-text-active: ;
+// Step            Use Case
+//============================================================================
+// 1               App background
+// 2               Subtle background
+// 3               UI element background
+// 4               Hovered UI element background
+// 5               Active / Selected UI element background
+// 6               Subtle borders and separators
+// 7               UI element border and focus rings
+// 8               Hovered UI element border
+// 9               Solid backgrounds
+// 10              Hovered solid backgrounds
+// 11              Low-contrast text
+// 12              High-contrast text
 
-$black: gr.$color-20;
-$white: gr.$color-0;
+// Steps 1–2: Backgrounds
+//============================================================================
+// Steps 1 and 2 are designed for app backgrounds and subtle component backgrounds.
+// You can use them interchangeably, depending on the vibe you're going for.
+//
+// Appropriate applications include:
+// * Main app background
+// * Striped table background
+// * Code block background
+// * Card background
+// * Sidebar background
+// * Canvas area background
+//
+// You may want to use white for your app background in light mode,
+// and Step 1 or 2 from a gray or coloured scale in dark mode.
+// In this case, set up a mutable alias for AppBg and map it to a different color for each color mode.
 
-$grey-0: $white;
-$grey-1: gr.$color-0-5;
-$grey-2: gr.$color-1;
-$grey-3: gr.$color-8;
-$grey-4: gr.$color-13;
-$grey-5: gr.$color-17;
-$grey-6: $black;
+// Steps 3–5: Component backgrounds
+//============================================================================
+// Steps 3, 4, and 5 are designed for UI component backgrounds.
+// * Step 3 is for normal states.
+// * Step 4 is for hover states.
+// * Step 5 is for pressed or selected states.
+//
+// Even if your component has a transparent background in its default state,
+// you should skip Step 3 and use Step 4 for its hover state.
+//
+// For call-to-action components that you want to draw particular attention to,
+// you can bump each color one step higher to steps 4, 5, and 6.
+//
+// For complex components where you need many subtle colors to communicate different meanings,
+// you can get creative and do something like:
+// * Step 3 for hovered backgrounds.
+// * Step 4 for selected / pressed backgrounds.
+// * Step 5 for "unread" backgrounds.
+// * Step 6 for hovered "unread" backgrounds.
+//
+// Steps 11 and 12—which are designed for text—are guaranteed to pass 4.5:1 contrast ratio
+// on top of a step 3 background from the same scale.
 
-$background: $grey-0;
-$background-hover: $grey-1;
-$border: $grey-2;
-$border-hover: $grey-3;
-$text: $grey-4;
-$text-hover: $grey-5;
-$text-active: $grey-6;
+// Steps 6–8: Borders
+//============================================================================
+// Steps 6, 7, and 8 are designed for borders.
+// * Step 6 is designed for subtle borders on components which are not interactive.
+//      For example sidebars, headers, cards, alerts, and separators.
+// * Step 7 is designed for borders on interactive components, but can also be used for focus rings.
+// * Step 8 is designed for borders on interactive components in their hover state.
+
+// Steps 9–10: Solid backgrounds
+//============================================================================
+// Steps 9 and 10 are designed for solid backgrounds.
+// Step 9 has the highest chroma of all steps in the scale.
+// In other words, it's the purest step, the step mixed with the least amount of white or black.
+// Because 9 is the purest step, it has a wide range of applications:
+// * Website/App backgrounds
+// * Website section backgrounds
+// * Header backgrounds
+// * Component backgrounds
+// * Graphics/Logos
+// * Overlays
+// * Coloured shadows
+// * Accent borders
+//
+// Step 10 is designed for component hover states, where step 9 is the component's normal state background.
+// Most step 9 colors are designed for white foreground text. Sky, Mint, Lime, Yellow,
+// and Amber are designed for black foreground text and steps 9 and 10.
+
+// Steps 11–12: Text
+//============================================================================
+//Steps 11 and 12 are designed for text.
+// * Step 11 is designed for low-contrast text.
+// * Step 12 is designed for high-contrast text.
+
+$black: hsla(0, 0%, 0%, 1);
+$white: hsla(255, 255%, 255%, 1);
+
+$background: _gray.$gray2;
+$background-hover: _gray.$gray4;
+$border: _gray.$gray6;
+$border-hover: _gray.$gray7;
+$text: _gray.$gray11;
+$text-hover: _gray.$gray12;
+$text-active: _gray.$gray12;
 $shapes: $border-hover;
 $shapes-hover: $text;
 $shapes-active: $text-hover;
 
-$dark-background: $grey-6;
-$dark-background-hover: $grey-5;
-$dark-border: $grey-4;
-$dark-border-hover: $grey-3;
-$dark-text: $grey-2;
-$dark-text-hover: $grey-1;
-$dark-text-active: $grey-0;
-$dark-shapes: $dark-border-hover;
-$dark-shapes-hover: $dark-text;
-$dark-shapes-active: $dark-text-hover;
+$dark-background: _gray_dark.$gray2;
+$dark-background-hover: _gray_dark.$gray4;
+$dark-border: _gray_dark.$gray6;
+$dark-border-hover: _gray_dark.$gray7;
+$dark-text: _gray_dark.$gray11;
+$dark-text-hover: _gray_dark.$gray12;
+$dark-text-active: _gray_dark.$gray12;
+$dark-shapes: $border-hover;
+$dark-shapes-hover: $text;
+$dark-shapes-active: $text-hover;
 
 // Accent
 // Colors you can use to distinguish elements between them such as tags.
 // For now there is X colors because we think it is enough
 // and avoid too much confusions.
 //============================================================================
-$red: r.$color-13;
-$red-light: r.$color-3;
-$aubergine-dark: aub.$color-17;
-$orange: o.$color-12;
+$red: _red.$red11;
+$red-light: _red.$red7;
+$aubergine-dark: _pinkDark.$pink3;
+$orange: _orange.$orange10;
 
 // Semantics
 // Colors that help identify status,
 // see actions, locate help, and understand next steps.
 //============================================================================
 $alert: $red;
-$success: g.$color-16;
-
-$mark-color-background: y.$color-2;
+$success: _green.$green10;
+$mark-color-background: _yellow.$yellow3;
 
 // Neutrals & Overlays
 // They are essential for a perfect visual interface.
@@ -100,5 +156,5 @@ $mark-color-background: y.$color-2;
 // we will update the section with the right matrix and we are currently
 // working on specific parameters to help you define them.
 //============================================================================
-$overlay: overlays.$blackA11;
-$shadow: overlays.$blackA9;
+$overlay: _gray.$grayA11;
+$shadow: _gray.$grayA9;

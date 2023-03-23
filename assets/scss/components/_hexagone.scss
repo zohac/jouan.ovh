@@ -116,7 +116,7 @@
     height: var(--hexa-content-height);
     z-index: 2;
     background: inherit;
-    transition: var(hexa-hover-content-transition);
+    transition: var(--hexa-hover-content-transition);
   }
 
   &:hover {

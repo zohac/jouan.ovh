@@ -56,6 +56,7 @@ const closeMenu = () => {
   @use "assets/scss/abstract/function";
   @use "assets/scss/abstract/variables";
   @use "assets/scss/components/list";
+  @use "assets/scss/components/button";
 
   //Value     Token
   // =============================================================================
@@ -127,7 +128,8 @@ const closeMenu = () => {
       }
 
       ul {
-        z-index: 1;
+        z-index: 9999999999;
+        position: relative;
         overflow: hidden;
         margin: 0;
         padding: 0;

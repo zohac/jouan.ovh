@@ -24,7 +24,6 @@ import ZCardBody from "~/components/card/ZCardBody.vue";
 import ZCardComponent from "~/components/card/ZCardComponent.vue";
 import ZCardFooter from "~/components/card/ZCardFooter.vue";
 import ZCardHeader, { ImageInterface } from "~/components/card/ZCardHeader.vue";
-import { getRandomUrl } from "~/utils/functions";
 
 const PORTRAIT_URLS = [
   '/images/portrait_512x512_drip_art_1.webp',
@@ -44,7 +43,8 @@ export default {
 
   setup() {
     const img = reactive({
-      src: getRandomUrl(PORTRAIT_URLS),
+      // src: getRandomUrl(PORTRAIT_URLS),
+      src: '/images/portrait_512x512_drip_art_8.webp',
       attr: {
         alt: 'Portrait de Simon JOUAN',
         title: 'Portrait de Simon JOUAN',
