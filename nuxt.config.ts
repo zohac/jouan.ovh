@@ -24,7 +24,6 @@ export default defineNuxtConfig({
   css: ["@/assets/scss/main.scss"],
   modules: ["@nuxt/content", "@nuxt/image-edge"],
   ssr: true,
-  target: "static",
   experimental: {
     payloadExtraction: false,
   },
