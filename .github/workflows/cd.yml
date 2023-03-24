@@ -32,6 +32,9 @@ jobs:
       - name: Generate
         run: yarn generate
 
+      - name: Copy _headers
+        run: cp public/_headers .output/public/_headers
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
