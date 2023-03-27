@@ -102,30 +102,38 @@
 // * Step 11 is designed for low-contrast text.
 // * Step 12 is designed for high-contrast text.
 
-$black: hsla(0, 0%, 0%, 1);
-$white: hsla(255, 255%, 255%, 1);
+$black: _gray.$color-20;
+$white: _gray.$color-0;
 
-$background: _gray.$gray2;
-$background-hover: _gray.$gray4;
-$border: _gray.$gray6;
-$border-hover: _gray.$gray7;
-$text: _gray.$gray11;
-$text-hover: _gray.$gray12;
-$text-active: _gray.$gray12;
+$gray-0: _gray.$color-0;
+$gray-1: _gray.$color-0-5;
+$gray-2: _gray.$color-1;
+$gray-3: _gray.$color-8;
+$gray-4: _gray.$color-13;
+$gray-5: _gray.$color-17;
+$gray-6: _gray.$color-20;
+
+$background: $gray-0;
+$background-hover: $gray-1;
+$border: $gray-2;
+$border-hover: $gray-3;
+$text: $gray-4;
+$text-hover: $gray-5;
+$text-active: $gray-6;
 $shapes: $border-hover;
 $shapes-hover: $text;
 $shapes-active: $text-hover;
 
-$dark-background: _gray_dark.$gray2;
-$dark-background-hover: _gray_dark.$gray4;
-$dark-border: _gray_dark.$gray6;
-$dark-border-hover: _gray_dark.$gray7;
-$dark-text: _gray_dark.$gray11;
-$dark-text-hover: _gray_dark.$gray12;
-$dark-text-active: _gray_dark.$gray12;
-$dark-shapes: $border-hover;
-$dark-shapes-hover: $text;
-$dark-shapes-active: $text-hover;
+$dark-background: $gray-6;
+$dark-background-hover: $gray-5;
+$dark-border: $gray-4;
+$dark-border-hover: $gray-3;
+$dark-text: $gray-2;
+$dark-text-hover: $gray-1;
+$dark-text-active: $gray-0;
+$dark-shapes: $dark-border-hover;
+$dark-shapes-hover: $dark-text;
+$dark-shapes-active: $dark-text-hover;
 
 // Accent
 // Colors you can use to distinguish elements between them such as tags.
@@ -156,5 +164,5 @@ $mark-color-background: _yellow.$yellow3;
 // we will update the section with the right matrix and we are currently
 // working on specific parameters to help you define them.
 //============================================================================
-$overlay: _gray.$grayA11;
-$shadow: _gray.$grayA9;
+$overlay: hsla(0, 0%, 0%, 0.565);
+$shadow: hsla(0, 0%, 0%, 0.439);

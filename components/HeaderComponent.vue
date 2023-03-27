@@ -1,7 +1,9 @@
 <template>
 
   <header>
-    <button class="btn btn-small btn-dark" role="button" @click="toggle">&lt;sj &#47;&gt;</button>
+    <button class="btn btn-large btn-dark" role="button" aria-label="Ouvrir le menu" @click="toggle">
+      <nuxt-img src="/images/logo_white_32x32.png" preload loading="edger" alt="logo" height="32" width="32"/>
+    </button>
     <nav id="menu" :class="{'hidden': isHidden}">
       <div id="close-menu" @click="closeMenu"></div>
       <ul>
@@ -10,6 +12,9 @@
         </li>
         <li>
           <NuxtLink to="/blog" @click="closeMenu">Blog</NuxtLink>
+        </li>
+        <li>
+          <NuxtLink to="/about" @click="closeMenu">À propos</NuxtLink>
         </li>
         <li>
           <TerminalButton @click="closeMenu" @open-terminal="addNewTerminal" />
@@ -51,12 +56,13 @@ const closeMenu = () => {
 </script>
 
 <style lang="scss" scoped>
+  @use "assets/scss/abstract/color" as _color;
+  @use "assets/scss/abstract/variables";
+  @use "assets/scss/components/button";
   @use "assets/scss/abstract/space";
   @use "assets/scss/abstract/radius";
   @use "assets/scss/abstract/function";
-  @use "assets/scss/abstract/variables";
   @use "assets/scss/components/list";
-  @use "assets/scss/components/button";
 
   //Value     Token
   // =============================================================================
@@ -76,8 +82,8 @@ const closeMenu = () => {
   }
 
   header {
-    //--header-space-stack: #{space.$space-stack-16x};
-    //--header-space-inline: #{space.$space-inline-8x};
+    --header-height: #{variables.$header-height};
+    --header-space-inline: #{space.$space-inline-8x};
     --header-space-inset: #{space.$space-inset-16x};
     --header-radius: #{radius.$radius-rounded-4px};
     --header-list-item-inset-x: #{list.$list-space-inset-8x-x};
@@ -85,35 +91,48 @@ const closeMenu = () => {
     --header-list-item-font-size: #{variables.$font-size-base};
     --header-list-item-font-weight: #{variables.$font-weight-regular};
     --header-list-item-line-height: #{function.line-height(var(--header-list-item-font-size))};
-    //--header-list-item-height: #{function.height(var(--header-list-item-inset-x), var(--header-list-item-font-size))};
 
     // color system
     // =============================================================================
-    --header-color-background: var(--color-dark-background);
-    --header-color-background-hover: var(--color-dark-background-hover);
+    --header-color-background: #{_color.$dark-background};
+    --header-color-background-hover: #{_color.$dark-background-hover};
     //--header-color-border: ;
     //--header-color-border-hover: ;
-    // Shapes : icons/elements
+    --header-color-text: #{_color.$dark-text};
+    //--header-color-text-hover: var(--color-dark-text-hover);
+    //--header-color-text-active: ;
     //--header-color-shapes: var(--header-color-border-hover);
     //--header-color-shapes-hover: var(--color-text);
     //--header-color-shapes-active: var(--color-text-hover);
-    --header-color-text: var(--color-dark-text);
-    --header-color-text-hover: var(--color-dark-text-hover);
-    //--header-color-text-active: ;
 
     display: flex;
     align-items: center;
     width: 100%;
     height: var(--header-height);
-    padding: var(--header-space-inset);
     color: var(--header-color-text);
     background-color: var(--header-color-background);
     max-width: 100vw;
 
+    button {
+      &.btn {
+        --header-btn-space-inline: var(--header-space-inline);
+
+        margin-left: var(--header-btn-space-inline);
+      }
+
+      img {
+        width: 32px;
+        height: auto;
+      }
+    }
+
     nav {
+      --header-nav-space-inline: var(--header-space-inline);
+
       position: absolute;
       z-index: 9999999999;
       top: var(--header-height);
+      left: var(--header-nav-space-inline);
 
       #close-menu {
         position: absolute;

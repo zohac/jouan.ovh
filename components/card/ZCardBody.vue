@@ -13,28 +13,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  @use "assets/scss/abstract/color" as _color;
+  @use "assets/scss/abstract/animations";
+
   section {
+    --zcb-color-text: #{_color.$gray-5};
+
     grid-area: section;
     padding: var(--article-space-inset);
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    text-align: center;
-
     max-width: calc(100vw - 2 * var(--main-space-inset));
 
     h1 {
-      color: var(--article-color-text-hover);
-    }
-
-    h2 {
-      color: var(--article-color-text);
+      color: var(--zcb-color-text);
+      margin: 0;
     }
 
     &.content {
-      animation: fadeIn 1000ms ease-out forwards;
+      animation: fadeIn 2000ms ease-out forwards;
     }
   }
 </style>
