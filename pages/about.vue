@@ -63,21 +63,21 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @use "assets/scss/abstract/function";
+@use "assets/scss/abstract/function";
 
-  .home-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.home-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-card-w {
+  --home-card-width: 100%;
+
+  width: var(--home-card-width);
+
+  @media (min-width: function.breakpoint("xs")) {
+    --home-card-width: 475px;
   }
-
-  .home-card-w {
-    --home-card-width: 100%;
-
-    width: var(--home-card-width);
-
-    @media (min-width: function.breakpoint("xs")) {
-      --home-card-width: 475px;
-    }
-  }
+}
 </style>

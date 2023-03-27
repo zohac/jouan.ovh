@@ -2,6 +2,7 @@
 @use "../abstract/radius";
 @use "../abstract/variables";
 @use "../abstract/space";
+@use "../abstract/color" as _color;
 
 // Button size  Token
 //==============================================================================
@@ -63,26 +64,27 @@ $-space-inset-small: space.$space-inset-4x;
   --btn-border-radius: #{radius.$radius-rounded-4px};
   --btn-disabled-opacity: 0.65;
   --btn-min-width: #{function.min-width($-height)};
+  --btn-height: #{$-height};;
 
   // color system
   // =============================================================================
-  --btn-color-background: var(--color-background);
-  --btn-color-background-hover: var(--color-background-hover);
-  --btn-color-border: var(--color-border);
-  --btn-color-border-hover: var(--color-border-hover);
+  --btn-color-background: #{_color.$background};
+  --btn-color-background-hover: #{_color.$background-hover};
+  --btn-color-border: #{_color.$border};
+  --btn-color-border-hover: #{_color.$border-hover};
+  --btn-color-text: #{_color.$text};
+  --btn-color-text-hover: #{_color.$text-hover};
+  --btn-color-text-active: #{_color.$text-active};
   // Shapes : icons/elements
   --btn-color-shapes: var(--btn-color-border-hover);
   --btn-color-shapes-hover: var(--btn-color-text-hover);
   --btn-color-shapes-active: var(--btn-color-text-hover);
-  --btn-color-text: var(--color-text);
-  --btn-color-text-hover: var(--color-text-hover);
-  --btn-color-text-active: var(--color-text-active);
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  height: #{$-height};
+  height: var(--btn-height);
   min-width: var(--btn-min-width);
   width: auto;
   padding: var(--btn-space-inset) calc(var(--btn-space-inset) * 2);
@@ -173,17 +175,16 @@ $-space-inset-small: space.$space-inset-4x;
   &.btn-dark {
     // color system
     // =============================================================================
-    --btn-dark-color-background: var(--color-dark-background);
-    --btn-dark-color-background-hover: var(--color-dark-background-hover);
-    --btn-dark-color-border: var(--color-dark-border);
-    --btn-dark-color-border-hover: var(--color-dark-border-hover);
-    // Shapes : icons/elements
+    --btn-dark-color-background: #{_color.$dark-background};
+    --btn-dark-color-background-hover: #{_color.$dark-background-hover};
+    --btn-dark-color-border: #{_color.$dark-border};
+    --btn-dark-color-border-hover: #{_color.$dark-border-hover};
+    --btn-dark-color-text: #{_color.$dark-text};
+    --btn-dark-color-text-hover: #{_color.$dark-text-hover};
+    --btn-dark-color-text-active: #{_color.$dark-text-active};
     --btn-dark-color-shapes: var(--btn-dark-color-border-hover);
     --btn-dark-color-shapes-hover: var(--btn-dark-color-text-hover);
     --btn-dark-color-shapes-active: var(--btn-dark-color-text-hover);
-    --btn-dark-color-text: var(--color-dark-text);
-    --btn-dark-color-text-hover: var(--color-dark-text-hover);
-    --btn-dark-color-text-active: var(--color-dark-text-active);
 
     background-color: var(--btn-dark-color-background);
     border: 1px solid var(--btn-dark-color-border);
