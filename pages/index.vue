@@ -1,83 +1,115 @@
 <template>
-  <MainComponent class="home-center">
-    <ZCardComponent class="home-card-w">
-      <ZCardHeader :img="img" />
+  <section class="hero-banner">
+    <WindowWrapperComponent
+      background-color="hsla(0, 0%, 100%, 1)"
+      text-color="hsla(0, 0%, 32%, 1)"
+      height="auto"
+      width="600px"
+    >
+      <h1 class="fs-5x wwc-space-inline">Simon JOUAN</h1>
+      <p class="fs-2x wwc-space-inline wwc-space-stack">
+        Développeur Web FullStack & Testeur/QA
+      </p>
+      <NuxtLink
+        to="/about"
+        class="btn btn-large no-typewriting wwc-space-inline wwc-space-stack"
+        >En savoir plus</NuxtLink
+      >
+    </WindowWrapperComponent>
 
-      <ZCardBody>
-        <template #title>
-          <h1>Simon Jouan</h1>
-        </template>
-
-        <template #body>
-          <p>Développeur Web FullStack & Testeur/QA</p>
-          <p>Freelance</p>
-        </template>
-      </ZCardBody>
-
-      <ZCardFooter />
-    </ZCardComponent>
-  </MainComponent>
+    <WindowWrapperComponent height="512px" width="512px" overflow="hidden">
+      <nuxt-picture :src="getSrc" :img-attrs="getAttr" class="no-typewriting" />
+    </WindowWrapperComponent>
+  </section>
 </template>
 
-<script lang="ts">
-import ZCardBody from "~/components/card/ZCardBody.vue";
-import ZCardComponent from "~/components/card/ZCardComponent.vue";
-import ZCardFooter from "~/components/card/ZCardFooter.vue";
-import ZCardHeader, { ImageInterface } from "~/components/card/ZCardHeader.vue";
+<script lang="ts" setup>
+import WindowWrapperComponent from "~/components/WindowWrapperComponent.vue";
+import { getRandomUrl } from "~/utils/functions";
+
+defineComponent({
+  name: "Home",
+});
 
 const PORTRAIT_URLS = [
-  '/images/portrait_512x512_drip_art_1.webp',
-  '/images/portrait_512x512_drip_art_2.webp',
-  // '/images/portrait_512x512_drip_art_3.webp',
-  '/images/portrait_512x512_drip_art_4.webp',
-  // '/images/portrait_512x512_drip_art_5.webp',
-  // '/images/portrait_512x512_drip_art_6.webp',
-  '/images/portrait_512x512_drip_art_7.webp',
-  '/images/portrait_512x512_drip_art_8.webp',
-  '/images/portrait_512x512_drip_art_9.webp',
+  "/images/portrait_512x512_drip_art_1.webp",
+  "/images/portrait_512x512_drip_art_2.webp",
+  "/images/portrait_512x512_drip_art_3.webp",
+  "/images/portrait_512x512_drip_art_4.webp",
+  "/images/portrait_512x512_drip_art_5.webp",
+  "/images/portrait_512x512_drip_art_6.webp",
+  "/images/portrait_512x512_drip_art_7.webp",
+  "/images/portrait_512x512_drip_art_8.webp",
+  "/images/portrait_512x512_drip_art_9.webp",
 ];
 
-export default {
-  name: "Home",
-  components: { ZCardComponent, ZCardFooter, ZCardBody, ZCardHeader },
-
-  setup() {
-    const img = reactive({
-      // src: getRandomUrl(PORTRAIT_URLS),
-      src: '/images/portrait_512x512_drip_art_8.webp',
-      attr: {
-        alt: 'Portrait de Simon JOUAN',
-        title: 'Portrait de Simon JOUAN',
-        loading: 'eager',
-        height: 512,
-        width: 512,
-        decoding: 'async',
-      }
-    }) as ImageInterface;
-
-    return {
-      img,
-    }
-  },
+const getSrc = getRandomUrl(PORTRAIT_URLS);
+const getAttr = {
+  alt: "Portrait de Simon JOUAN",
+  title: "Portrait de Simon JOUAN",
+  loading: "eager",
+  height: 512,
+  width: 512,
+  decoding: "edger",
 };
 </script>
 
 <style lang="scss" scoped>
-  @use "assets/scss/abstract/function";
+@use "assets/scss/abstract/variables" as _variables;
+@use "assets/scss/abstract/space" as _space;
+@use "assets/scss/abstract/function" as _function;
+@use "assets/scss/components/button";
 
-  .home-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.home-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .home-card-w {
-    --home-card-width: 100%;
+.hero-banner {
+  height: calc(
+    100vh - #{_variables.$header-height} - #{_variables.$footer-height}
+  );
+  width: 100%;
 
-    width: var(--home-card-width);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 0 0;
+  grid-template-areas: ". .";
 
-    @media (min-width: function.breakpoint("xs")) {
-      --home-card-width: 475px;
-    }
-  }
+  align-items: center;
+  justify-items: center;
+}
+
+.wwc-space-inline {
+  margin: 0 #{_space.$space-inset-16x};
+}
+
+.wwc-space-stack {
+  margin-bottom: #{_space.$space-inset-16x};
+}
+
+.fs-5x {
+  $-font-size: _variables.$font-size-5x-large;
+
+  font-size: #{$-font-size};
+  font-weight: #{_variables.$font-weight-bold};
+  line-height: #{_function.line-height($-font-size)};
+}
+
+.fs-2x {
+  $-font-size: _variables.$font-size-2x-large;
+
+  font-size: #{$-font-size};
+  font-weight: #{_variables.$font-weight-regular};
+  line-height: #{_function.line-height($-font-size)};
+}
+
+picture {
+  height: 512px;
+  width: 512px;
+  overflow: hidden;
+  border-radius: 24px;
+}
 </style>

@@ -1,6 +1,6 @@
 <template>
   <header>
-    <nuxt-picture :src="img.src" :img-attrs="img.attr"/>
+    <nuxt-picture :src="img.src" :img-attrs="img.attr" />
   </header>
 </template>
 

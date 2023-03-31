@@ -10,6 +10,7 @@ $breakpoints-container: (
 
 // Token name          Value  rem       Usage
 //==========================================================
+// font-size-5x-large  64px   4rem      Header
 // font-size-4x-large  48px   3rem      Header
 // font-size-3x-large  32px   2rem      Header
 // font-size-2x-large  28px   1.75rem   Header
@@ -20,6 +21,7 @@ $breakpoints-container: (
 // font-size-small     14px   0.875rem  Description, caption
 // font-size-x-small   12px   0.75rem   Description, caption
 // font-size-2x-small  10px   0.625rem  Description, caption
+$font-size-5x-large: 4rem;
 $font-size-4x-large: 3rem;
 $font-size-3x-large: 2rem;
 $font-size-2x-large: 1.75rem;

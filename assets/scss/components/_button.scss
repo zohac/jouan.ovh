@@ -80,7 +80,7 @@ $-space-inset-small: space.$space-inset-4x;
   --btn-color-shapes-hover: var(--btn-color-text-hover);
   --btn-color-shapes-active: var(--btn-color-text-hover);
 
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 

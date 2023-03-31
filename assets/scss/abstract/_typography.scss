@@ -14,7 +14,7 @@ textarea {
   font-family: 'UbuntuMono-Regular', 'Segoe UI', serif;
   font-size: var(--font-size);
   font-weight: #{variables.$font-weight-regular};
-  line-height: function.line-height(var(--font-size));
+  line-height: #{function.line-height(var(--font-size))};
 
   @include mixin.font-style-normal;
 }
@@ -31,18 +31,18 @@ h6 {
 h1 {
   font-weight: #{variables.$font-weight-regular};
   font-size: #{variables.$font-size-3x-large};
-  line-height: function.line-height(variables.$font-size-3x-large);
+  line-height: #{function.line-height(variables.$font-size-3x-large)};
 }
 
 h2 {
   font-weight: #{variables.$font-weight-thin};
   font-size: #{variables.$font-size-2x-large};
-  line-height: function.line-height(variables.$font-size-2x-large);
+  line-height: #{function.line-height(variables.$font-size-2x-large)};
 }
 
 p {
   font-size: #{variables.$font-size-medium};
-  line-height: function.line-height(variables.$font-size-medium);
+  line-height: #{function.line-height(variables.$font-size-medium)};
 
   margin-bottom: #{space.$space-stack-24x};
 }
@@ -66,7 +66,7 @@ pre {
 
   font-family: "Courier 10 Pitch", courier, monospace;
   font-size: #{variables.$font-size-base};
-  line-height: function.line-height(variables.$font-size-base);
+  line-height: #{function.line-height(variables.$font-size-base)};
   overflow: auto;
   padding: #{space.$space-inset-16x};
   margin-bottom: #{space.$space-stack-16x};
@@ -94,5 +94,5 @@ ins {
 
 big {
   font-size: #{variables.$font-size-large};
-  line-height: function.line-height(variables.$font-size-large);
+  line-height: #{function.line-height(variables.$font-size-large)};
 }
