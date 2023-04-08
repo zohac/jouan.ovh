@@ -5,11 +5,10 @@
 </template>
 
 <script lang="ts">
-
 import { type PropType } from "vue";
 
-export type ImgLoadingType = 'eager' | 'lazy';
-export type ImgDecodingType = 'sync' | 'async' | 'auto';
+export type ImgLoadingType = "eager" | "lazy";
+export type ImgDecodingType = "sync" | "async" | "auto";
 export interface ImageInterface {
   src: string;
   attr: {
@@ -19,7 +18,8 @@ export interface ImageInterface {
     height?: number;
     width?: number;
     decoding?: ImgDecodingType;
-  }
+    class?: string;
+  };
 }
 
 export default {
@@ -35,23 +35,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+header {
+  --card-header-height: 256px;
 
-  header {
-    --card-header-height: 256px;
+  grid-area: header;
+  background-color: transparent;
+  max-height: var(--card-header-height);
+  width: 100%;
+  overflow: hidden;
 
-    grid-area: header;
-    background-color: transparent;
+  picture {
     max-height: var(--card-header-height);
     width: 100%;
-    overflow: hidden;
 
-    picture {
-      img {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 16/9;
-      }
+    img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16/9;
     }
   }
-
+}
 </style>

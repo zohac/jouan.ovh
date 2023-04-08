@@ -17,33 +17,29 @@
       >
     </WindowWrapperComponent>
 
-    <WindowWrapperComponent height="512px" width="512px" overflow="hidden">
-      <nuxt-picture :src="getSrc" :img-attrs="getAttr" class="no-typewriting" />
+    <WindowWrapperComponent
+      height="auto"
+      width="512px"
+      overflow="hidden"
+      background-color="hsla(0, 0%, 100%, 1)"
+      class="img"
+    >
+      <nuxt-picture
+        src="/images/undraw_programming_re_kg9v.svg"
+        :img-attrs="getAttr"
+        class="no-typewriting rotateY-180"
+      />
     </WindowWrapperComponent>
   </section>
 </template>
 
 <script lang="ts" setup>
 import WindowWrapperComponent from "~/components/WindowWrapperComponent.vue";
-import { getRandomUrl } from "~/utils/functions";
 
 defineComponent({
   name: "Home",
 });
 
-const PORTRAIT_URLS = [
-  "/images/portrait_512x512_drip_art_1.webp",
-  "/images/portrait_512x512_drip_art_2.webp",
-  "/images/portrait_512x512_drip_art_3.webp",
-  "/images/portrait_512x512_drip_art_4.webp",
-  "/images/portrait_512x512_drip_art_5.webp",
-  "/images/portrait_512x512_drip_art_6.webp",
-  "/images/portrait_512x512_drip_art_7.webp",
-  "/images/portrait_512x512_drip_art_8.webp",
-  "/images/portrait_512x512_drip_art_9.webp",
-];
-
-const getSrc = getRandomUrl(PORTRAIT_URLS);
 const getAttr = {
   alt: "Portrait de Simon JOUAN",
   title: "Portrait de Simon JOUAN",
@@ -67,19 +63,38 @@ const getAttr = {
 }
 
 .hero-banner {
-  height: calc(
-    100vh - #{_variables.$header-height} - #{_variables.$footer-height}
-  );
+  --main-space-inset: #{_space.$space-inset-16x};
+
+  padding: var(--main-space-inset);
+  height: 100%;
   width: 100%;
 
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 0 0;
-  grid-template-areas: ". .";
+  grid-template-areas:
+    "img"
+    ".";
 
   align-items: center;
   justify-items: center;
+
+  @media (min-width: _function.breakpoint("lg")) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0 0;
+    grid-template-areas: ". img";
+
+    height: calc(
+      100vh - #{_variables.$header-height} - #{_variables.$footer-height}
+    );
+  }
+
+  .img {
+    grid-area: img;
+  }
 }
 
 .wwc-space-inline {
@@ -111,5 +126,11 @@ picture {
   width: 512px;
   overflow: hidden;
   border-radius: 24px;
+}
+
+.rotateY-180 {
+  img {
+    transform: rotateY(180deg);
+  }
 }
 </style>

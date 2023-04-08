@@ -1,6 +1,6 @@
 <template>
   <div class="window-wrapper">
-    <div ref="windowElement" class="window">
+    <div ref="windowElement" class="window" @click="focus">
       <div
         class="window-header visible"
         @mousedown="handleHeaderMouseDown"
@@ -15,7 +15,7 @@
           backgroundColor: backgroundColor,
           color: textColor,
           height: height,
-          width: width,
+          width: responsiveWidth,
           overflow: overflow,
         }"
         @mouseenter="handleWindowBodyMouseEnter"
@@ -39,7 +39,7 @@ export default defineComponent({
   props: {
     backgroundColor: {
       type: String,
-      default: "var(--color-aubergine-dark)",
+      default: "var(--wwc-color-aubergine-dark)",
     },
     textColor: {
       type: String,
@@ -59,7 +59,7 @@ export default defineComponent({
     },
   },
 
-  setup() {
+  setup(props) {
     const isHoveringWindowBody = ref<boolean>(false);
     const commandLines = ref<{ text: string; isResponse: boolean }[]>([]);
     const dragging = ref<boolean>(false);
@@ -68,6 +68,7 @@ export default defineComponent({
     const slotWrapper = ref<HTMLElement | null>(null);
     const typewriting = ref<HTMLElement | null>(null);
     const isTypingStarted = ref<boolean>(false);
+    const responsiveWidth = ref(props.width);
 
     const animateTypewriting = async (element: HTMLElement, delay = 50) => {
       isTypingStarted.value = true;
@@ -185,6 +186,13 @@ export default defineComponent({
       }, 3000);
     };
 
+    const focus = () => {
+      if (windowElement.value) {
+        // Garantir que la valeur de zIndex ne dépasse pas la limite du navigateur.
+        windowElement.value.style.zIndex = (Date.now() % 2147483647).toString();
+      }
+    };
+
     watch(isHoveringWindowBody, (newValue) => {
       if (windowElement.value) {
         const headerElement = windowElement.value.querySelector(
@@ -215,6 +223,10 @@ export default defineComponent({
           slotWrapper.value.querySelector(".typewriting") as HTMLElement
         );
       }
+      if (typeof window !== "undefined") {
+        responsiveWidth.value =
+          window.innerWidth < parseInt(props.width) ? "100%" : props.width;
+      }
     });
 
     return {
@@ -228,6 +240,8 @@ export default defineComponent({
       slotWrapper,
       isTypingStarted,
       typewriting,
+      focus,
+      responsiveWidth,
     };
   },
 });
@@ -249,6 +263,8 @@ export default defineComponent({
 }
 
 .window {
+  --window-space-inline: #{_space.$space-inline-16x};
+
   // color system
   // =============================================================================
   --wwc-color-background: #{_color.$background};
@@ -272,7 +288,6 @@ export default defineComponent({
   --wwc-color-red: hsla(0, 100%, 43%, 1);
   --wwc-color-red-light: hsla(0, 72%, 72%, 1);
   --wwc-color-red-dark: hsla(0, 100%, 27%, 1);
-
   --wh-height: 24px;
 
   @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
@@ -280,13 +295,19 @@ export default defineComponent({
     -webkit-backdrop-filter: blur(5px);
   }
 
+  width: 100%;
   color: var(--wwc-color-text);
   font-size: 1rem;
   border-radius: 5px;
-  position: absolute;
+  position: relative;
   overflow: hidden;
   z-index: 100;
   box-shadow: #{_boxShadow.$box-shadow-2};
+
+  @media (min-width: _function.breakpoint("lg")) {
+    width: auto;
+    position: absolute;
+  }
 
   &-header {
     z-index: 1;
@@ -340,7 +361,7 @@ export default defineComponent({
   &-body {
     margin: 0;
     padding: 0;
-    height: calc(100% - 24px);
+    height: calc(100% - var(--wh-height));
     overflow: auto;
     background-color: var(--wwc-color-aubergine-dark);
     opacity: 0.85;

@@ -1,3 +1,13 @@
 @use "base/reset";
 @use "abstract/fonts";
 @use "abstract/typography";
+
+.fixed-height {
+  width: auto;
+  height: 100%;
+}
+
+.img-center {
+  display: flex;
+  margin: 0 auto;
+}
