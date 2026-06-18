@@ -34,7 +34,8 @@ so that le site repose sur une base moderne et supportée, prête pour la refont
 - [x] Tâche 2 — Passer le codemod officiel de migration (AC: #1, #2)
   - [x] Codemod automatique **non appliqué** : il vise surtout le déplacement des fichiers sous `app/`, incompatible avec l'option `srcDir:'.'` retenue. Migration équivalente faite **manuellement** + cohérence de `nuxt.config.ts` validée par démarrage.
 - [x] Tâche 3 — Décider et appliquer la structure de dossiers (AC: #2)
-  - [x] Structure racine conservée via `srcDir: "."` + `dir: { app: "app" }` dans `nuxt.config.ts`
+  - [x] **Structure Nuxt 4 par défaut adoptée** : code applicatif déplacé sous `app/` (`app.vue`, `components/`, `pages/`, `layouts/`, `assets/`, `utils/`, `terminal.config.ts`). `content/`, `public/`, `nuxt.config.ts`, `content.config.ts` restent à la racine. Aucun override `srcDir`/`dir` (défaut `srcDir: "app"`).
+  - [x] Alias `@/` / `~/` → `app/` ; `@use "assets/scss/..."` (chemins nus) résolus via les loadPaths sass du srcDir ; CSS bundlé vérifié au `generate`
   - [x] `ssr: true` et `experimental.payloadExtraction: false` conservés
 - [x] Tâche 4 — Basculer du builder webpack vers Vite (AC: #3)
   - [x] Bloc `webpack: { extractCSS: true }` retiré de `nuxt.config.ts`
@@ -117,7 +118,8 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 **Périmètre réel (décision utilisateur)** — la consigne « tout en latest » + « pnpm » a fusionné les stories 1.1 + 1.2 + 1.3 :
 
 - **Gestionnaire de paquets : pnpm** (`packageManager: pnpm@11.8.0`) à la place de Yarn. `yarn.lock` supprimé, `pnpm-lock.yaml` généré. `pnpm-workspace.yaml` autorise les build scripts (`allowBuilds`). `docker-compose.yml` ajouté (Node 22 LTS + pnpm) pour isoler le dev (l'hôte est en Node 24).
-- **Cœur Nuxt (1.1)** : `nuxt@^4.4.8`, retrait de `@nuxt/bridge`, `@nuxt/webpack*` ; passage Vite ; `srcDir:"."` + `dir.app` pour conserver la structure racine ; `ssr`/`payloadExtraction:false`/`app.head` préservés. Codemod automatique non exécuté (conflit avec `srcDir:"."`), migration faite à la main.
+- **Cœur Nuxt (1.1)** : `nuxt@^4.4.8`, retrait de `@nuxt/bridge`, `@nuxt/webpack*` ; passage Vite ; **structure Nuxt 4 `app/` adoptée** (code applicatif sous `app/`, défaut `srcDir:"app"`, sans override) ; `ssr`/`payloadExtraction:false`/`app.head` préservés. Codemod automatique non exécuté, migration + restructuration faites à la main puis validées au `generate`.
+  - Note : un override `srcDir:"."` avait d'abord été utilisé (structure racine), puis remplacé par la vraie arborescence `app/` à la demande. Override `vue/multi-word-component-names` ajouté pour pages/layouts (l'exemption auto de `@nuxt/eslint` ne couvrait pas le srcDir `app/`).
 - **Modules (1.2 absorbée)** : `@nuxt/content@^3.14` (v2→v3 : ajout de `content.config.ts`, adaptation du blog à `queryCollection`/`<ContentRenderer>`, ajout de `better-sqlite3`), `@nuxt/image@^2` (remplace `@nuxt/image-edge`), `sass@^1.101`. `ua-parser-js@^2` (import nommé `{ UAParser }`, `@types/ua-parser-js` retiré car types embarqués).
 - **Outillage lint (1.3 absorbée)** : ESLint **10** flat config via le module **`@nuxt/eslint`** (`eslint.config.mjs`), remplaçant `.eslintrc.js`/`.eslintignore` + l'outillage `@nuxtjs/eslint-config-typescript`/`@typescript-eslint`/`eslint-plugin-vue` legacy. Prettier **3** (`.prettierrc.json`, printWidth 120), Stylelint **17** + `stylelint-config-standard-scss`, TypeScript **6**. Scripts `lint`/`lint:style` ajoutés.
 - **Lint vert** : `docs/`, `_bmad/`, `.claude/`, `.agents/` exclus (matériel de référence, dont le DS React). 8 findings legacy résiduels corrigés (import type, vars inutilisées, `catch {}`, prop optionnelle, `any`→`ITerminalConfig`, `=> void`, disables justifiés pour `v-html` terminal et `no-dynamic-delete`).
@@ -157,3 +159,4 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 | Date | Version | Description | Auteur |
 |------|---------|-------------|--------|
 | 2026-06-18 | 0.1 | Migration cœur Nuxt 3→4 + pnpm + stack latest (absorbe 1.2/1.3). App démarre, lint vert. Status → review. | Amelia (dev-story) |
+| 2026-06-18 | 0.2 | Adoption de la structure Nuxt 4 `app/` (code applicatif déplacé sous `app/`, suppression de l'override `srcDir`). `generate` + `lint` re-validés verts. | Amelia (dev-story) |

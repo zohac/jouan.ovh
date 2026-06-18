@@ -22,11 +22,7 @@ export default defineNuxtConfig({
   css: ["@/assets/scss/main.scss"],
   modules: ["@nuxt/content", "@nuxt/image", "@nuxt/eslint"],
   ssr: true,
-  // Conserve la structure racine (pas de bascule vers app/) — recette officielle Nuxt 4.
-  srcDir: ".",
-  dir: {
-    app: "app",
-  },
+  // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
   experimental: {
     payloadExtraction: false,
   },

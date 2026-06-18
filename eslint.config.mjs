@@ -19,4 +19,13 @@ export default withNuxt(
       "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
     },
   },
+  {
+    // Pages, layouts et fichiers racine de l'app : noms à un seul mot autorisés
+    // (convention Nuxt). L'exemption auto de @nuxt/eslint ne couvre pas le srcDir
+    // app/ ici, on la rétablit explicitement.
+    files: ["app/pages/**/*.vue", "app/layouts/**/*.vue", "app/app.vue", "app/error.vue"],
+    rules: {
+      "vue/multi-word-component-names": "off",
+    },
+  },
 );

@@ -7,8 +7,8 @@
     "generate": "nuxi generate",
     "preview": "nuxi preview",
     "postinstall": "nuxi prepare",
-    "lint": "eslint . && stylelint \"assets/**/*.scss\"",
-    "lint:style": "stylelint \"assets/**/*.scss\"",
+    "lint": "eslint . && stylelint \"app/assets/**/*.scss\"",
+    "lint:style": "stylelint \"app/assets/**/*.scss\"",
     "deploy": "push-dir --dir=.output/public --branch=gh-pages --cleanup"
   },
   "devDependencies": {
