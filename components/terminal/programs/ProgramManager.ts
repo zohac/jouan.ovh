@@ -1,4 +1,4 @@
-import { IProgram, IProgramManager } from "../interfaces";
+import type { IProgram, IProgramManager } from "../interfaces";
 import { about, helloWorld, help, newTerminal, systemInfo } from "./";
 
 class ProgramManager implements IProgramManager {
@@ -25,6 +25,7 @@ class ProgramManager implements IProgramManager {
       throw new Error(error);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- clé dynamique par conception (registre de programmes)
     delete this.programs[key];
 
     return this;

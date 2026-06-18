@@ -4,13 +4,14 @@
       <TerminalComponent
         :id="index"
         :create-new-terminal="createNewTerminal"
-        :terminal-config="terminal.terminalConfig"/>
+        :terminal-config="terminal.terminalConfig"
+      />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { ITerminalConfig } from "~/components/terminal/interfaces";
+import type { ITerminalConfig } from "~/components/terminal/interfaces";
 import { uniqueId } from "~/utils/functions";
 
 export default {
@@ -18,7 +19,7 @@ export default {
   components: {},
 
   setup() {
-    const terminals = ref<Array<{ id: string; terminalConfig: ITerminalConfig; }>>([]);
+    const terminals = ref<Array<{ id: string; terminalConfig: ITerminalConfig }>>([]);
 
     const createNewTerminal = (terminalConfig: ITerminalConfig = {}) => {
       // Créez une nouvelle instance de terminal et ajoutez-la à la liste des terminaux.
@@ -27,7 +28,7 @@ export default {
         terminalConfig,
       };
       terminals.value.push(newTerminal);
-    }
+    };
 
     return {
       terminals,
@@ -37,6 +38,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

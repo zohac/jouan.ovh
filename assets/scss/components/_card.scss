@@ -4,7 +4,7 @@
 @use "../abstract/space";
 
 // Button size  Token
-//==============================================================================
+// ==============================================================================
 // Large        font-size-medium
 //              font-weight-regular
 //              font-style-normal
@@ -19,22 +19,22 @@
 //              font-height-default
 
 // Value  Token
-//==============================================================================
+// ==============================================================================
 // 4px    space-inline-4x
 // 8px    space-inline-8x
 
 // Value  Token
-//==============================================================================
+// ==============================================================================
 // 4px    space-stack-4x
 // 8px   space-stack-8x
 
 // Value  Token
-//==============================================================================
+// ==============================================================================
 // 8px    space-inset-8x
 // 16px   space-inset-16x
 
 // Fixed height
-//==============================================================================
+// ==============================================================================
 // Large        40px
 // Medium       32px
 // Small        24px
@@ -57,6 +57,7 @@ $-space-inset: space.$space-inset-16x;
   --card-color-background-hover: var(--color-background-hover);
   --card-color-border: var(--color-border);
   --card-color-border-hover: var(--color-border-hover);
+
   // Shapes : icons/elements
   --card-color-shapes: var(--card-color-border-hover);
   --card-color-shapes-hover: var(--card-color-text-hover);
@@ -72,6 +73,5 @@ $-space-inset: space.$space-inset-16x;
   padding: var(--card-space-inset);
   box-shadow: var(--box-shadow-2), var(--box-shadow-1);
   overflow: hidden;
-
   text-align: center;
 }

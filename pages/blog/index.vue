@@ -1,59 +1,45 @@
 <template>
   <MainComponent>
-    <ul>
-      <ContentList path="/blog">
-        <template #default="{ list }">
-          <li v-for="article in list" :key="article._path">
-            <NuxtLink :to="article._path">
-              <img
-                v-if="article.image"
-                :src="article.image.src"
-                :alt="article.image.alt"
-              />
-              <h2>{{ article.title }}</h2>
-              <p>{{ article.description }}</p>
-            </NuxtLink>
-          </li>
-        </template>
-
-        <template #not-found>
-          <ZCardComponent :class="'container-w50'">
-            <ZCardHeader :img="img" />
-            <ZCardBody>
-              <template #title>
-                <h1>
-                  Oups, il n'y a pas encore d'articles sur mon blog pour le
-                  moment.
-                </h1>
-              </template>
-
-              <template #body>
-                <p>
-                  Mais ne vous inquiétez pas, je travaille actuellement sur de
-                  nouveaux contenus passionnants pour partager mes connaissances
-                  en développement web et mobile. Restez connecté(e) et
-                  n'hésitez pas à revenir bientôt pour découvrir mes prochaines
-                  publications.
-                </p>
-              </template>
-            </ZCardBody>
-          </ZCardComponent>
-        </template>
-      </ContentList>
+    <ul v-if="articles && articles.length">
+      <li v-for="article in articles" :key="article.path">
+        <NuxtLink :to="article.path">
+          <img v-if="article.image" :src="article.image.src" :alt="article.image.alt" />
+          <h2>{{ article.title }}</h2>
+          <p>{{ article.description }}</p>
+        </NuxtLink>
+      </li>
     </ul>
+
+    <ZCardComponent v-else :class="'container-w50'">
+      <ZCardHeader :img="img" />
+      <ZCardBody>
+        <template #title>
+          <h1>Oups, il n'y a pas encore d'articles sur mon blog pour le moment.</h1>
+        </template>
+
+        <template #body>
+          <p>
+            Mais ne vous inquiétez pas, je travaille actuellement sur de nouveaux contenus passionnants pour partager
+            mes connaissances en développement web et mobile. Restez connecté(e) et n'hésitez pas à revenir bientôt pour
+            découvrir mes prochaines publications.
+          </p>
+        </template>
+      </ZCardBody>
+    </ZCardComponent>
   </MainComponent>
 </template>
 
 <script lang="ts">
 import ZCardBody from "~/components/card/ZCardBody.vue";
 import ZCardComponent from "~/components/card/ZCardComponent.vue";
-import ZCardHeader, { ImageInterface } from "~/components/card/ZCardHeader.vue";
+import type { ImageInterface } from "~/components/card/ZCardHeader.vue";
+import ZCardHeader from "~/components/card/ZCardHeader.vue";
 
 export default {
   name: "Blog",
   components: { ZCardComponent, ZCardBody, ZCardHeader },
 
-  setup() {
+  async setup() {
     const img = reactive({
       src: "/images/undraw_code_thinking_re_gka2.svg",
       attr: {
@@ -64,8 +50,12 @@ export default {
       },
     }) as ImageInterface;
 
+    // @nuxt/content v3 : queryCollection remplace <ContentList path="/blog">.
+    const { data: articles } = await useAsyncData("blog-list", () => queryCollection("blog").all());
+
     return {
       img,
+      articles,
     };
   },
 };

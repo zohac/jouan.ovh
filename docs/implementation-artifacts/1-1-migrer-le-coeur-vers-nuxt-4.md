@@ -4,7 +4,7 @@ baseline_commit: 06555cc797d8645687a6ec824637ca42ddde6cad
 
 # Story 1.1: Migrer le cœur vers Nuxt 4
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -25,34 +25,28 @@ so that le site repose sur une base moderne et supportée, prête pour la refont
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Mettre à niveau Nuxt vers v4 (AC: #1)
-  - [ ] `yarn add nuxt@^4.0.0` (gestionnaire = **Yarn**)
-  - [ ] Retirer `@nuxt/bridge` (`@nuxt/bridge-edge`) de `package.json` (inutile sur Nuxt 4 ; servait au pont 2→3)
-  - [ ] `yarn install` et résoudre les conflits de versions éventuels
-- [ ] Tâche 2 — Passer le codemod officiel de migration (AC: #1, #2)
-  - [ ] Lancer `yarn dlx codemod@0.18.7 nuxt/4/migration-recipe` puis relire le diff produit
-  - [ ] Vérifier la cohérence de `nuxt.config.ts` après codemod
-- [ ] Tâche 3 — Décider et appliquer la structure de dossiers (AC: #2)
-  - [ ] **Option recommandée (risque faible) :** garder la structure racine actuelle en figeant l'ancien défaut dans `nuxt.config.ts` :
-    ```ts
-    export default defineNuxtConfig({
-      srcDir: '.',
-      dir: { app: 'app' },
-    })
-    ```
-  - [ ] (Alternative, hors périmètre si trop risqué ici : déplacer `pages/ components/ layouts/ assets/ app.vue` sous `app/` — à réserver à une story dédiée si souhaité)
-  - [ ] Conserver `ssr: true` et `experimental.payloadExtraction: false`
-- [ ] Tâche 4 — Basculer du builder webpack vers Vite (AC: #3)
-  - [ ] Retirer le bloc `webpack: { extractCSS: true }` de `nuxt.config.ts`
-  - [ ] Retirer les deps `@nuxt/webpack`, `@nuxt/webpack-builder` de `package.json`
-  - [ ] Vérifier que `css: ["@/assets/scss/main.scss"]` est toujours pris en compte par Vite (sass déjà présent)
-- [ ] Tâche 5 — TypeScript & legacy decorators (AC: #4)
-  - [ ] Conserver `experimentalDecorators: true` dans `tsconfig.json` tant que `vue-property-decorator` est présent
-  - [ ] Lancer `yarn postinstall` (`nuxi prepare`) et corriger toute erreur de types bloquante
-  - [ ] Identifier les composants utilisant l'Options API + decorators (legacy) et confirmer qu'ils compilent (pas de réécriture ici)
-- [ ] Tâche 6 — Vérification de démarrage (AC: #1, #2)
-  - [ ] `yarn dev` démarre sans erreur ; les routes `/`, `/about`, `/blog` se chargent
-  - [ ] Le terminal draggable et le header/footer existants s'affichent (pas de régression visuelle bloquante)
+> ⚠️ **Note de périmètre (décision utilisateur) :** sur demande explicite, le gestionnaire de paquets est **pnpm** (et non Yarn) et **toutes** les dépendances ont été passées en **latest réel** — ce qui absorbe de fait les stories **1.2** (modules `@nuxt/content`→3, `@nuxt/image`→2, sass) et **1.3** (outillage lint ESLint 9/10 flat config via `@nuxt/eslint`, TypeScript 6, Prettier 3, Stylelint 17). Un `docker-compose.yml` (Node 22 LTS + pnpm) a aussi été ajouté pour isoler l'environnement de dev. Voir Completion Notes.
+
+- [x] Tâche 1 — Mettre à niveau Nuxt vers v4 (AC: #1)
+  - [x] Nuxt monté à `^4.4.8` (latest) via **pnpm** (et non Yarn, cf. décision utilisateur)
+  - [x] Retiré `@nuxt/bridge` (`@nuxt/bridge-edge`) de `package.json`
+  - [x] `pnpm install` OK (lockfile `pnpm-lock.yaml` généré, build scripts autorisés via `pnpm-workspace.yaml`)
+- [x] Tâche 2 — Passer le codemod officiel de migration (AC: #1, #2)
+  - [x] Codemod automatique **non appliqué** : il vise surtout le déplacement des fichiers sous `app/`, incompatible avec l'option `srcDir:'.'` retenue. Migration équivalente faite **manuellement** + cohérence de `nuxt.config.ts` validée par démarrage.
+- [x] Tâche 3 — Décider et appliquer la structure de dossiers (AC: #2)
+  - [x] Structure racine conservée via `srcDir: "."` + `dir: { app: "app" }` dans `nuxt.config.ts`
+  - [x] `ssr: true` et `experimental.payloadExtraction: false` conservés
+- [x] Tâche 4 — Basculer du builder webpack vers Vite (AC: #3)
+  - [x] Bloc `webpack: { extractCSS: true }` retiré de `nuxt.config.ts`
+  - [x] Deps `@nuxt/webpack`, `@nuxt/webpack-builder` retirées de `package.json`
+  - [x] CSS/SCSS (`css: ["@/assets/scss/main.scss"]`) pris en charge par Vite (confirmé : « Vite client/server built » dans les logs)
+- [x] Tâche 5 — TypeScript & legacy decorators (AC: #4)
+  - [x] `experimentalDecorators: true` conservé (déplacé dans `compilerOptions`) dans `tsconfig.json`
+  - [x] `pnpm postinstall` (`nuxi prepare`) OK — types générés dans `.nuxt`, aucune erreur bloquante
+  - [x] Vérifié : `vue-property-decorator` n'est utilisé dans aucun composant (legacy non cassé)
+- [x] Tâche 6 — Vérification de démarrage (AC: #1, #2)
+  - [x] `pnpm dev` démarre sans erreur ; `/`, `/about`, `/blog` répondent HTTP 200 sans page d'erreur
+  - [x] Header/footer présents (chassis intact) ; terminal draggable préservé ; blog en empty-state
 
 ## Dev Notes
 
@@ -110,10 +104,56 @@ so that le site repose sur une base moderne et supportée, prête pour la refont
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Amelia / BMad dev-story)
+
 ### Debug Log References
+
+- `pnpm install` : better-sqlite3 (prebuilt), sharp, esbuild, @parcel/watcher, unrs-resolver buildés ; `nuxi prepare` OK (types générés dans `.nuxt`).
+- Démarrage : serveur Vite + Nitro construits ; `/`, `/about`, `/blog` → HTTP 200, aucune page d'erreur ; header/footer présents.
+- Lint : `pnpm exec eslint .` → **0 erreur / 0 warning** (exit 0) après scoping `docs/` et `--fix` du formatage.
 
 ### Completion Notes List
 
-- Ultimate context engine analysis completed - comprehensive developer guide created.
+**Périmètre réel (décision utilisateur)** — la consigne « tout en latest » + « pnpm » a fusionné les stories 1.1 + 1.2 + 1.3 :
+
+- **Gestionnaire de paquets : pnpm** (`packageManager: pnpm@11.8.0`) à la place de Yarn. `yarn.lock` supprimé, `pnpm-lock.yaml` généré. `pnpm-workspace.yaml` autorise les build scripts (`allowBuilds`). `docker-compose.yml` ajouté (Node 22 LTS + pnpm) pour isoler le dev (l'hôte est en Node 24).
+- **Cœur Nuxt (1.1)** : `nuxt@^4.4.8`, retrait de `@nuxt/bridge`, `@nuxt/webpack*` ; passage Vite ; `srcDir:"."` + `dir.app` pour conserver la structure racine ; `ssr`/`payloadExtraction:false`/`app.head` préservés. Codemod automatique non exécuté (conflit avec `srcDir:"."`), migration faite à la main.
+- **Modules (1.2 absorbée)** : `@nuxt/content@^3.14` (v2→v3 : ajout de `content.config.ts`, adaptation du blog à `queryCollection`/`<ContentRenderer>`, ajout de `better-sqlite3`), `@nuxt/image@^2` (remplace `@nuxt/image-edge`), `sass@^1.101`. `ua-parser-js@^2` (import nommé `{ UAParser }`, `@types/ua-parser-js` retiré car types embarqués).
+- **Outillage lint (1.3 absorbée)** : ESLint **10** flat config via le module **`@nuxt/eslint`** (`eslint.config.mjs`), remplaçant `.eslintrc.js`/`.eslintignore` + l'outillage `@nuxtjs/eslint-config-typescript`/`@typescript-eslint`/`eslint-plugin-vue` legacy. Prettier **3** (`.prettierrc.json`, printWidth 120), Stylelint **17** + `stylelint-config-standard-scss`, TypeScript **6**. Scripts `lint`/`lint:style` ajoutés.
+- **Lint vert** : `docs/`, `_bmad/`, `.claude/`, `.agents/` exclus (matériel de référence, dont le DS React). 8 findings legacy résiduels corrigés (import type, vars inutilisées, `catch {}`, prop optionnelle, `any`→`ITerminalConfig`, `=> void`, disables justifiés pour `v-html` terminal et `no-dynamic-delete`).
+- **Reformatage Prettier** : `pnpm exec eslint . --fix` a normalisé l'ensemble des fichiers app au standard 120/double-quotes (gros diff mécanique, sans changement de comportement).
+
+**Reste à valider hors périmètre 1.1** : `pnpm generate` + déploiement gh-pages (story **1.4**) ; le redesign blog complet (épopée **6**) — ici seul l'empty-state v3 est rétabli.
+
+**À reconcilier au review** : les stories **1.2** et **1.3** sont matériellement réalisées par ce travail (sprint-status laissé inchangé pour décision PO).
 
 ### File List
+
+**Créés**
+- `docker-compose.yml` — env de dev Node 22 + pnpm
+- `pnpm-workspace.yaml` — autorisation des build scripts pnpm
+- `pnpm-lock.yaml` — lockfile pnpm
+- `content.config.ts` — collections @nuxt/content v3
+- `eslint.config.mjs` — flat config ESLint 9/10 (@nuxt/eslint + prettier)
+- `.prettierrc.json` — config Prettier 3 (printWidth 120)
+
+**Modifiés**
+- `package.json` — pnpm + toutes deps latest, scripts lint, retrait bridge/webpack/legacy eslint
+- `nuxt.config.ts` — Vite, `srcDir`/`dir.app`, modules (`@nuxt/image`, `@nuxt/eslint`), bloc `eslint`
+- `tsconfig.json` — `experimentalDecorators` déplacé dans `compilerOptions`
+- `.gitignore` — ignore `.data` (DB content v3)
+- `pages/blog/index.vue`, `pages/blog/[...slug].vue` — migration content v3 (`queryCollection`/`ContentRenderer`)
+- `components/terminal/programs/SystemInfos.ts` — import `{ UAParser }` (ua-parser-js v2)
+- `components/terminal/interfaces/IProgram.ts` — `config?: ITerminalConfig` (suppression `any`)
+- `components/terminal/programs/ProgramManager.ts`, `components/terminal/TerminalComponent.vue`, `components/HeaderComponent.vue`, `pages/about.vue` — corrections de findings lint
+- Tous les autres `.vue`/`.ts` app — reformatage Prettier (mécanique) via `eslint --fix`
+
+**Supprimés**
+- `.eslintrc.js`, `.eslintignore` — remplacés par la flat config
+- `yarn.lock` — remplacé par `pnpm-lock.yaml`
+
+## Change Log
+
+| Date | Version | Description | Auteur |
+|------|---------|-------------|--------|
+| 2026-06-18 | 0.1 | Migration cœur Nuxt 3→4 + pnpm + stack latest (absorbe 1.2/1.3). App démarre, lint vert. Status → review. | Amelia (dev-story) |

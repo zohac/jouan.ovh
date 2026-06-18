@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { type PropType } from "vue";
+import type { PropType } from "vue";
 
 export type ImgLoadingType = "eager" | "lazy";
 export type ImgDecodingType = "sync" | "async" | "auto";

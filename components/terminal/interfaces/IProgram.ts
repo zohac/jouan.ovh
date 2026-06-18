@@ -1,12 +1,12 @@
-import { ITerminalConfig } from "~/components/terminal/interfaces/ITerminalConfig";
+import type { ITerminalConfig } from "~/components/terminal/interfaces/ITerminalConfig";
 
 export interface IProgram {
   command: string;
   description: string;
   initialData?: string;
   run: (
-    config?: any,
+    config?: ITerminalConfig,
     createNewTerminal?: (config?: ITerminalConfig) => void,
-    initialData?: string
+    initialData?: string,
   ) => string | HTMLElement;
 }

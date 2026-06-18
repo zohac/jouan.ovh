@@ -37,6 +37,8 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+# pnpm
+.pnpm-store
 
 # TypeScript v1 declaration files
 typings/
@@ -68,6 +70,9 @@ typings/
 # nuxt.js build output
 .nuxt
 .output
+
+# @nuxt/content v3 local database
+.data
 
 # Nuxt generate
 dist

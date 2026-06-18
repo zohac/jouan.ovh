@@ -10,30 +10,33 @@ on:
 
 jobs:
   cd:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [18]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Setup node env
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 22
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn
+        run: pnpm install --frozen-lockfile
 
       - name: Generate
-        run: yarn generate
+        run: pnpm generate
 
-      - name: Copy _headers
-        run: cp public/_headers .output/public/_headers
+      # CNAME et _headers vivent dans public/ et sont émis automatiquement dans
+      # .output/public par `nuxi generate`. La copie reste par sécurité (no-op si déjà présent).
+      - name: Ensure _headers + CNAME in output
+        run: |
+          cp public/_headers .output/public/_headers
+          cp public/CNAME .output/public/CNAME
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

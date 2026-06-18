@@ -7,12 +7,8 @@
       width="600px"
     >
       <h1 class="fs-5x wwc-space-inline">Simon JOUAN</h1>
-      <p class="fs-2x wwc-space-inline wwc-space-stack">
-        Développeur Web FullStack & Testeur/QA
-      </p>
-      <NuxtLink
-        to="/about"
-        class="btn btn-large no-typewriting wwc-space-inline wwc-space-stack"
+      <p class="fs-2x wwc-space-inline wwc-space-stack">Développeur Web FullStack & Testeur/QA</p>
+      <NuxtLink to="/about" class="btn btn-large no-typewriting wwc-space-inline wwc-space-stack"
         >En savoir plus</NuxtLink
       >
     </WindowWrapperComponent>
@@ -87,9 +83,7 @@ const getAttr = {
     gap: 0 0;
     grid-template-areas: ". img";
 
-    height: calc(
-      100vh - #{_variables.$header-height} - #{_variables.$footer-height}
-    );
+    height: calc(100vh - #{_variables.$header-height} - #{_variables.$footer-height});
   }
 
   .img {

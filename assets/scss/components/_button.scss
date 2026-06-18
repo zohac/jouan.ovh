@@ -5,7 +5,7 @@
 @use "../abstract/color" as _color;
 
 // Button size  Token
-//==============================================================================
+// ==============================================================================
 // Large        font-size-medium
 //              font-weight-regular
 //              font-style-normal
@@ -20,17 +20,17 @@
 //              font-height-default
 
 // Value  Token
-//==============================================================================
+// ==============================================================================
 // 4px    space-inline-4x
 // 12px   space-inline-12x
 
 // Value  Token
-//==============================================================================
+// ==============================================================================
 // 4px    space-inset-4x
 // 12px   space-inset-8x
 
 // Fixed height
-//==============================================================================
+// ==============================================================================
 // Large        40px
 // Medium       32px
 // Small        24px
@@ -75,6 +75,7 @@ $-space-inset-small: space.$space-inset-4x;
   --btn-color-text: #{_color.$text};
   --btn-color-text-hover: #{_color.$text-hover};
   --btn-color-text-active: #{_color.$text-active};
+
   // Shapes : icons/elements
   --btn-color-shapes: var(--btn-color-border-hover);
   --btn-color-shapes-hover: var(--btn-color-text-hover);
@@ -83,25 +84,22 @@ $-space-inset-small: space.$space-inset-4x;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   height: var(--btn-height);
   min-width: var(--btn-min-width);
   width: auto;
   padding: var(--btn-space-inset) calc(var(--btn-space-inset) * 2);
   margin: 0;
-
   font-size: var(--btn-font-size);
   font-weight: var(--btn-font-weight);
   line-height: var(--btn-line-height);
   text-decoration: none;
   cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
+  user-select: none;
+  user-select: none;
   user-select: none;
   border: 1px solid;
   border-radius: var(--btn-border-radius);
   transition: color 0.15s ease-in-out, background 0.15s ease-in-out, border-color 0.15s ease-in-out;
-
   background-color: var(--btn-color-background);
   color: var(--btn-color-text);
   border-color: var(--btn-color-border);
@@ -211,13 +209,16 @@ $-space-inset-small: space.$space-inset-4x;
     --btn-grey-color-background-hover: var(--color-text-hover);
     --btn-grey-color-border: var(--color-border);
     --btn-grey-color-border-hover: var(--color-text-hover);
+
     // Shapes : icons/elements
-    //--btn-grey-color-shapes: var(--btn-grey-color-border-hover);
+    // --btn-grey-color-shapes: var(--btn-grey-color-border-hover);
     --btn-grey-color-shapes: var(--btn-grey-color-text);
     --btn-grey-color-shapes-hover: var(--btn-grey-color-text-hover);
-    //--btn-grey-color-shapes-active: ;
+
+    // --btn-grey-color-shapes-active: ;
     --btn-grey-color-text: var(--color-text-hover);
     --btn-grey-color-text-hover: var(--color-border);
+
     // --btn-color-text-active: ;
 
     background-color: var(--btn-grey-color-background);

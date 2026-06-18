@@ -11,7 +11,7 @@ optgroup,
 textarea {
   --font-size: #{variables.$font-size-base};
 
-  font-family: 'UbuntuMono-Regular', 'Segoe UI', serif;
+  font-family: UbuntuMono-Regular, 'Segoe UI', serif;
   font-size: var(--font-size);
   font-weight: #{variables.$font-weight-regular};
   line-height: #{function.line-height(var(--font-size))};
@@ -43,7 +43,6 @@ h2 {
 p {
   font-size: #{variables.$font-size-medium};
   line-height: #{function.line-height(variables.$font-size-medium)};
-
   margin-bottom: #{space.$space-stack-24x};
 }
 
@@ -63,7 +62,6 @@ address {
 }
 
 pre {
-
   font-family: "Courier 10 Pitch", courier, monospace;
   font-size: #{variables.$font-size-base};
   line-height: #{function.line-height(variables.$font-size-base)};

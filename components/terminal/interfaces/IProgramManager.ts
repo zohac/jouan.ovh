@@ -1,4 +1,4 @@
-import { IProgram } from "~/components/terminal/interfaces/IProgram";
+import type { IProgram } from "~/components/terminal/interfaces/IProgram";
 
 export interface IProgramManager {
   add(program: IProgram): void;

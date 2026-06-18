@@ -1,5 +1,3 @@
-// import { defineNuxtConfig } from "@nuxt/bridge";
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
@@ -22,12 +20,20 @@ export default defineNuxtConfig({
     },
   },
   css: ["@/assets/scss/main.scss"],
-  modules: ["@nuxt/content", "@nuxt/image-edge"],
+  modules: ["@nuxt/content", "@nuxt/image", "@nuxt/eslint"],
   ssr: true,
+  // Conserve la structure racine (pas de bascule vers app/) — recette officielle Nuxt 4.
+  srcDir: ".",
+  dir: {
+    app: "app",
+  },
   experimental: {
     payloadExtraction: false,
   },
-  webpack: {
-    extractCSS: true,
+  // Flat config gérée par @nuxt/eslint ; on laisse Prettier formater (stylistic off).
+  eslint: {
+    config: {
+      stylistic: false,
+    },
   },
 });

@@ -1,4 +1,4 @@
-/*Breakpoint*/
+/* Breakpoint */
 $breakpoints-container: (
   "xs": 475px,
   "sm": 576px,
@@ -9,7 +9,7 @@ $breakpoints-container: (
 );
 
 // Token name          Value  rem       Usage
-//==========================================================
+// ==========================================================
 // font-size-5x-large  64px   4rem      Header
 // font-size-4x-large  48px   3rem      Header
 // font-size-3x-large  32px   2rem      Header
@@ -34,7 +34,7 @@ $font-size-x-small: 0.75rem;
 $font-size-2x-small: 0.625rem;
 
 // Token name           Value
-//==========================================================
+// ==========================================================
 // font-weight-bolder   900
 // font-weight-bold     700
 // font-weight-medium   500
@@ -45,7 +45,6 @@ $font-weight-bold: 700;
 $font-weight-medium: 500;
 $font-weight-regular: 400;
 $font-weight-thin: 300;
-
 $font-height-default: 1.5;
 $header-height: 56px;
 $footer-height: 56px;

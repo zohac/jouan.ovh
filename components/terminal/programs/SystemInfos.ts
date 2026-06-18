@@ -1,5 +1,5 @@
-import UAParser from "ua-parser-js";
-import { IProgram } from "~/components/terminal/interfaces";
+import { UAParser } from "ua-parser-js";
+import type { IProgram } from "~/components/terminal/interfaces";
 
 const parser = new UAParser();
 

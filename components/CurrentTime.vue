@@ -5,7 +5,8 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref, Ref } from "vue";
+import type { Ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 defineComponent({
   name: "CurrentTime",

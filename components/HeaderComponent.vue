@@ -1,27 +1,13 @@
 <template>
   <header>
-    <button
-      class="btn btn-large btn-dark"
-      role="button"
-      aria-label="Ouvrir le menu"
-      @click="toggle"
-    >
-      <nuxt-img
-        src="/images/logo_white_32x32.png"
-        preload
-        loading="edger"
-        alt="logo"
-        height="32"
-        width="32"
-      />
+    <button class="btn btn-large btn-dark" role="button" aria-label="Ouvrir le menu" @click="toggle">
+      <nuxt-img src="/images/logo_white_32x32.png" preload loading="edger" alt="logo" height="32" width="32" />
     </button>
     <nav id="menu" :class="{ hidden: isHidden }">
       <div id="close-menu" @click="closeMenu"></div>
       <ul>
         <li>
-          <NuxtLink ref="firstMenuItem" to="/" @click="closeMenu"
-            >Accueil</NuxtLink
-          >
+          <NuxtLink ref="firstMenuItem" to="/" @click="closeMenu">Accueil</NuxtLink>
         </li>
         <li>
           <NuxtLink to="/blog" @click="closeMenu">Blog</NuxtLink>
@@ -47,8 +33,7 @@ defineComponent({
   name: "HeaderComponent",
 });
 
-const TerminalManager = defineComponent(TerminalManagerComponent);
-const terminalManager = ref<InstanceType<typeof TerminalManager> | null>(null);
+const terminalManager = ref<InstanceType<typeof TerminalManagerComponent> | null>(null);
 const firstMenuItem = ref<HTMLElement | null>(null);
 
 const addNewTerminal = () => {
@@ -110,9 +95,7 @@ header {
   --header-list-item-inset-y: #{list.$list-space-inset-8x-y};
   --header-list-item-font-size: #{variables.$font-size-base};
   --header-list-item-font-weight: #{variables.$font-weight-regular};
-  --header-list-item-line-height: #{function.line-height(
-      var(--header-list-item-font-size)
-    )};
+  --header-list-item-line-height: #{function.line-height(var(--header-list-item-font-size))};
 
   // color system
   // =============================================================================
@@ -200,8 +183,7 @@ header {
         div {
           color: var(--header-color-text);
           text-decoration: none;
-          padding: var(--header-list-item-inset-x)
-            var(--header-list-item-inset-y);
+          padding: var(--header-list-item-inset-x) var(--header-list-item-inset-y);
           display: inline-block;
         }
       }

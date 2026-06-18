@@ -1,4 +1,4 @@
-import { IProgram } from "~/components/terminal/interfaces";
+import type { IProgram } from "~/components/terminal/interfaces";
 
 const helloWorld: IProgram = {
   command: "helloWorld",

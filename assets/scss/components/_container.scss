@@ -3,7 +3,7 @@
 @use "sass:map";
 
 //                                .container
-//==============================================================================
+// ==============================================================================
 // Extra small : <576px            100%
 // Small       : sm      ≥576px    576px-2*1rem
 // Medium      : md      ≥768px    768px-2*1rem
@@ -12,14 +12,13 @@
 // XX-Large    : xxl     ≥1400px   87vw
 
 // Value  Token
-//==============================================================================
+// ==============================================================================
 // 16px   space-inline-16x
 
 $-space-inline: space.$space-inline-16x;
 
 .container {
   --container-space-inline: #{$-space-inline};
-
   --container-max-width-sm: calc(#{function.breakpoint("sm")} - ( var(--container-space-inline) * 2 ));
   --container-max-width-md: calc(#{function.breakpoint("md")} - ( var(--container-space-inline) * 2 ));
   --container-max-width-lg: calc(#{function.breakpoint("lg")} - ( var(--container-space-inline) * 2 ));

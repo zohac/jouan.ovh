@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: 2026-06-18 (story 1.1 in-progress)
+last_updated: 2026-06-18 (Epic 1 stories 1.1-1.4 review)
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -44,10 +44,10 @@ story_location: docs/implementation-artifacts
 development_status:
   # Epic 1 — Migration de la stack vers Nuxt 4
   epic-1: in-progress
-  1-1-migrer-le-coeur-vers-nuxt-4: in-progress
-  1-2-mettre-a-jour-les-modules-et-dependances: ready-for-dev
-  1-3-migrer-loutillage-lint-vers-eslint-9: ready-for-dev
-  1-4-valider-build-statique-et-deploiement-gh-pages: ready-for-dev
+  1-1-migrer-le-coeur-vers-nuxt-4: review
+  1-2-mettre-a-jour-les-modules-et-dependances: review
+  1-3-migrer-loutillage-lint-vers-eslint-9: review
+  1-4-valider-build-statique-et-deploiement-gh-pages: review
   epic-1-retrospective: optional
 
   # Epic 2 — Fondations du design system

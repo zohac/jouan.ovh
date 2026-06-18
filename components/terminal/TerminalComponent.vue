@@ -1,10 +1,6 @@
 <template>
   <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput">
-
-    <div
-      class="terminal-header"
-      @mousedown="handleHeaderMouseDown"
-      @mouseup="handleMouseUp">
+    <div class="terminal-header" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
       <div class="close-button" @click="closeTerminal"></div>
       <div class="header-text">{{ defaultConfig.domainName }}</div>
       <div></div>
@@ -13,17 +9,20 @@
     <div class="terminal-body">
       <div v-for="(line, index) in commandLines" :key="index">
         <template v-if="line.isResponse">
+          <!-- eslint-disable-next-line vue/no-v-html -- sortie générée en interne par les programmes du terminal (contenu maîtrisé) -->
           <span v-html="line.text"></span>
         </template>
         <template v-else>
-          <span class="git-prompt">{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}
+          <span class="git-prompt"
+            >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}
             <span class="git-prompt-separator">:</span>
             <span class="git-prompt-directory">~</span>
-            <span class="git-prompt-separator">$</span>
-          </span>{{ line.text }}
+            <span class="git-prompt-separator">$</span> </span
+          >{{ line.text }}
         </template>
       </div>
-      <span class="git-prompt">{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}
+      <span class="git-prompt"
+        >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}
         <span class="git-prompt-separator">:</span>
         <span class="git-prompt-directory">~</span>
         <span class="git-prompt-separator">$</span>
@@ -35,38 +34,40 @@
         class="user-input"
         @keydown.enter="submitInput"
         @keydown.arrow-up="handleHistoryNavigation"
-        @keydown.arrow-down="handleHistoryNavigation" />
+        @keydown.arrow-down="handleHistoryNavigation"
+      />
     </div>
 
     <div
       class="resize-handle"
       @mousedown="handleMouseDown"
       @mousemove="handleResizeMouseMove"
-      @mouseup="handleMouseUp"></div>
+      @mouseup="handleMouseUp"
+    ></div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watch } from "vue";
-import { ITerminalConfig } from "~/components/terminal/interfaces";
+import type { ITerminalConfig } from "~/components/terminal/interfaces";
 import programManager from "~/components/terminal/programs/ProgramManager";
 
 let terminalDefaults = {
-  width: '800px',
-  height: '400px',
-  userName: 'anon.',
-  domainName: 'example.com',
-  initialData: '',
+  width: "800px",
+  height: "400px",
+  userName: "anon.",
+  domainName: "example.com",
+  initialData: "",
 };
 
 const importedConfig = async () => {
   try {
     const importedConfig = await import("@/terminal.config");
     terminalDefaults = importedConfig.terminalDefaults;
-  } catch (error) {
+  } catch {
     console.warn("Aucun fichier terminal.config.ts trouvé. Utilisation des valeurs par défaut.");
   }
-}
+};
 
 importedConfig();
 
@@ -75,7 +76,7 @@ export default defineComponent({
   props: {
     id: {
       type: Number,
-      required: true,
+      required: false,
       default: 0,
     },
     createNewTerminal: {
@@ -91,7 +92,7 @@ export default defineComponent({
 
   setup(props) {
     const commandLines = ref<{ text: string; isResponse: boolean }[]>([]);
-    const userInput = ref<string>('');
+    const userInput = ref<string>("");
     const resizing = ref<boolean>(false);
     const dragging = ref<boolean>(false);
     const dragStartPosition = ref<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -124,7 +125,7 @@ export default defineComponent({
       if (userInputRef.value) {
         userInputRef.value.focus();
       }
-    }
+    };
 
     const submitInput = (): void => {
       const command = userInput.value.trim();
@@ -143,7 +144,7 @@ export default defineComponent({
 
         commandHistory.value.push(userInput.value);
         commandHistoryPosition.value = -1;
-        userInput.value = '';
+        userInput.value = "";
       }
     };
 
@@ -152,20 +153,19 @@ export default defineComponent({
       if (program) {
         return program.run(
           { userName: defaultConfig.value.userName },
-          props.createNewTerminal as (config?: ITerminalConfig) => {},
+          props.createNewTerminal as (config?: ITerminalConfig) => void,
           program.initialData,
         );
       }
       return `Commande inconnue : ${command}`;
     };
 
-
     const handleHistoryNavigation = (event: KeyboardEvent): void => {
-      if (event.key === 'ArrowUp') {
+      if (event.key === "ArrowUp") {
         if (commandHistoryPosition.value < commandHistory.value.length - 1) {
           commandHistoryPosition.value++;
         }
-      } else if (event.key === 'ArrowDown') {
+      } else if (event.key === "ArrowDown") {
         if (commandHistoryPosition.value > -1) {
           commandHistoryPosition.value--;
         }
@@ -174,12 +174,12 @@ export default defineComponent({
       if (commandHistoryPosition.value > -1 && commandHistoryPosition.value < commandHistory.value.length) {
         userInput.value = commandHistory.value[commandHistory.value.length - 1 - commandHistoryPosition.value];
       } else {
-        userInput.value = '';
+        userInput.value = "";
       }
     };
 
     const handleMouseDown = (event: MouseEvent): void => {
-      if (event.target instanceof HTMLElement && event.target.classList.contains('resize-handle')) {
+      if (event.target instanceof HTMLElement && event.target.classList.contains("resize-handle")) {
         resizing.value = true;
       }
     };
@@ -201,7 +201,7 @@ export default defineComponent({
         event.target instanceof HTMLElement &&
         event.currentTarget instanceof HTMLElement &&
         event.currentTarget.parentElement &&
-        event.target.classList.contains('terminal-header')
+        event.target.classList.contains("terminal-header")
       ) {
         dragging.value = true;
         dragStartPosition.value = {
@@ -210,8 +210,8 @@ export default defineComponent({
         };
 
         // Ajouter les écouteurs d'événements globaux
-        window.addEventListener('mousemove', handleGlobalMouseMove);
-        window.addEventListener('mouseup', handleGlobalMouseUp);
+        window.addEventListener("mousemove", handleGlobalMouseMove);
+        window.addEventListener("mouseup", handleGlobalMouseUp);
       }
     };
 
@@ -221,11 +221,11 @@ export default defineComponent({
         const terminalElementValue = terminalElement.value;
         const newLeft = Math.min(
           Math.max(0, event.clientX - dragStartPosition.value.x),
-          window.innerWidth - terminalElementValue.offsetWidth
+          window.innerWidth - terminalElementValue.offsetWidth,
         );
         const newTop = Math.min(
           Math.max(0, event.clientY - dragStartPosition.value.y),
-          window.innerHeight - terminalElementValue.offsetHeight
+          window.innerHeight - terminalElementValue.offsetHeight,
         );
 
         terminalElementValue.style.left = `${newLeft}px`;
@@ -239,8 +239,8 @@ export default defineComponent({
         dragging.value = false;
 
         // Supprimer les écouteurs d'événements globaux
-        window.removeEventListener('mousemove', handleGlobalMouseMove);
-        window.removeEventListener('mouseup', handleGlobalMouseUp);
+        window.removeEventListener("mousemove", handleGlobalMouseMove);
+        window.removeEventListener("mouseup", handleGlobalMouseUp);
       }
     };
 
@@ -255,7 +255,7 @@ export default defineComponent({
       if (terminalElement.value) {
         terminalElement.value.style.display = "none";
       }
-    }
+    };
 
     onMounted(() => {
       updateTerminalDimensions();
@@ -266,7 +266,7 @@ export default defineComponent({
       () => [defaultConfig.value.width, defaultConfig.value.height],
       () => {
         updateTerminalDimensions();
-      }
+      },
     );
 
     return {
@@ -290,32 +290,32 @@ export default defineComponent({
 
 <style lang="scss">
 .terminal {
-  --color-light: hsla(0, 0%, 92%, 1);                    /*with dark text*/
-  --color-dark: hsla(0, 0%, 8%, 1);                       /*with light text*/
+  --color-light: hsla(0, 0%, 92%, 1); /*with dark text*/
+  --color-dark: hsla(0, 0%, 8%, 1); /*with light text*/
 
   --color-text-dark: var(--color-dark);
   --color-text-light: var(--color-light);
 
-  --color-grey: hsl(0, 0%, 27%);               /*with light text*/
-  --color-grey-light: hsl(0, 0%, 68%);         /*with dark text*/
+  --color-grey: hsl(0, 0%, 27%); /*with light text*/
+  --color-grey-light: hsl(0, 0%, 68%); /*with dark text*/
   --color-grey-dark: hsl(0, 0%, 20%);
 
-  --color-aubergine: hsla(319, 33%, 30%, 1);       /*with light text*/
+  --color-aubergine: hsla(319, 33%, 30%, 1); /*with light text*/
   --color-aubergine-light: hsla(319, 26%, 70%, 1); /*with dark text*/
-  --color-aubergine-dark: hsla(319, 100%, 9%, 1);  /*with light text*/
+  --color-aubergine-dark: hsla(319, 100%, 9%, 1); /*with light text*/
 
-  --color-red: hsla(0, 100%, 43%, 1);           /*without text*/
-  --color-red-light: hsla(0, 72%, 72%, 1);      /*with dark text*/
-  --color-red-dark: hsla(0, 100%, 27%, 1);      /*with light text*/
-  --color-yellow: hsla(48, 89%, 50%, 1);        /*with dark text*/
-  --color-yellow-light: hsla(48, 89%, 79%, 1);  /*with dark text*/
-  --color-yellow-dark: hsla(48, 100%, 15%, 1);  /*with light text*/
-  --color-green: hsla(143, 60%, 50%, 1);        /*with dark text*/
-  --color-green-light: hsla(143, 60%, 75%, 1);  /*with dark text*/
-  --color-green-dark: hsla(143, 80%, 19%, 1);   /*with light text*/
-  --color-blue: hsla(204, 70%, 53%, 1);         /*without text*/
-  --color-blue-light: hsla(204, 69%, 80%, 1);   /*with dark text*/
-  --color-blue-dark: hsla(204, 75%, 24%, 1);    /*with light text*/
+  --color-red: hsla(0, 100%, 43%, 1); /*without text*/
+  --color-red-light: hsla(0, 72%, 72%, 1); /*with dark text*/
+  --color-red-dark: hsla(0, 100%, 27%, 1); /*with light text*/
+  --color-yellow: hsla(48, 89%, 50%, 1); /*with dark text*/
+  --color-yellow-light: hsla(48, 89%, 79%, 1); /*with dark text*/
+  --color-yellow-dark: hsla(48, 100%, 15%, 1); /*with light text*/
+  --color-green: hsla(143, 60%, 50%, 1); /*with dark text*/
+  --color-green-light: hsla(143, 60%, 75%, 1); /*with dark text*/
+  --color-green-dark: hsla(143, 80%, 19%, 1); /*with light text*/
+  --color-blue: hsla(204, 70%, 53%, 1); /*without text*/
+  --color-blue-light: hsla(204, 69%, 80%, 1); /*with dark text*/
+  --color-blue-dark: hsla(204, 75%, 24%, 1); /*with light text*/
 
   @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
     backdrop-filter: blur(5px);
@@ -323,7 +323,7 @@ export default defineComponent({
   }
 
   color: var(--color-light);
-  font-family: 'Ubuntu Mono', monospace;
+  font-family: "Ubuntu Mono", monospace;
   font-size: 1rem;
   border-radius: 5px;
   width: 600px;
@@ -380,7 +380,9 @@ export default defineComponent({
 
       background-image: linear-gradient(to bottom right, var(--color-red), var(--color-red-dark));
 
-      box-shadow: 2px 2px 3px var(--color-dark), -2px -2px 3px var(--color-grey);
+      box-shadow:
+        2px 2px 3px var(--color-dark),
+        -2px -2px 3px var(--color-grey);
 
       &:hover {
         filter: brightness(1.2);
@@ -495,5 +497,4 @@ table,
     width: calc(50% - 2 * var(--margin));
   }
 }
-
 </style>

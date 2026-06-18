@@ -1,11 +1,7 @@
 <template>
   <div class="window-wrapper">
     <div ref="windowElement" class="window" @click="focus">
-      <div
-        class="window-header visible"
-        @mousedown="handleHeaderMouseDown"
-        @mouseup="handleMouseUp"
-      >
+      <div class="window-header visible" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
         <div class="close-button" @click="closeWindow"></div>
       </div>
 
@@ -21,7 +17,7 @@
         @mouseenter="handleWindowBodyMouseEnter"
         @mouseleave="handleWindowBodyMouseLeave"
       >
-        <div ref="slotWrapper" v-show="isTypingStarted">
+        <div v-show="isTypingStarted" ref="slotWrapper">
           <div ref="typewriting" class="typewriting">
             <slot />
           </div>
@@ -77,10 +73,7 @@ export default defineComponent({
 
       // Cacher tous les éléments enfants sans la classe 'no-typewriting'
       for (const childElement of childElements) {
-        if (
-          childElement.nodeType === Node.ELEMENT_NODE &&
-          !childElement.classList.contains("no-typewriting")
-        ) {
+        if (childElement.nodeType === Node.ELEMENT_NODE && !childElement.classList.contains("no-typewriting")) {
           const htmlChildElement = childElement as HTMLElement;
           htmlChildElement.style.visibility = "hidden";
         }
@@ -88,10 +81,7 @@ export default defineComponent({
 
       // Effectuer le typewriting sur les éléments enfants sans la classe 'no-typewriting' les uns après les autres
       for (const childElement of childElements) {
-        if (
-          childElement.nodeType === Node.ELEMENT_NODE &&
-          !childElement.classList.contains("no-typewriting")
-        ) {
+        if (childElement.nodeType === Node.ELEMENT_NODE && !childElement.classList.contains("no-typewriting")) {
           const htmlChildElement = childElement as HTMLElement;
           const originalChildText = htmlChildElement.textContent || "";
           htmlChildElement.textContent = "";
@@ -141,11 +131,11 @@ export default defineComponent({
         const windowElementValue = windowElement.value;
         const newLeft = Math.min(
           Math.max(0, event.clientX - dragStartPosition.value.x),
-          window.innerWidth - windowElementValue.offsetWidth
+          window.innerWidth - windowElementValue.offsetWidth,
         );
         const newTop = Math.min(
           Math.max(0, event.clientY - dragStartPosition.value.y),
-          window.innerHeight - windowElementValue.offsetHeight
+          window.innerHeight - windowElementValue.offsetHeight,
         );
 
         windowElementValue.style.left = `${newLeft}px`;
@@ -195,9 +185,7 @@ export default defineComponent({
 
     watch(isHoveringWindowBody, (newValue) => {
       if (windowElement.value) {
-        const headerElement = windowElement.value.querySelector(
-          ".window-header"
-        ) as HTMLElement;
+        const headerElement = windowElement.value.querySelector(".window-header") as HTMLElement;
         if (headerElement) {
           if (newValue && !headerElement.classList.contains("visible")) {
             headerElement.classList.add("visible");
@@ -211,21 +199,16 @@ export default defineComponent({
     onMounted(async () => {
       await nextTick();
       if (windowElement.value) {
-        const headerElement = windowElement.value.querySelector(
-          ".window-header"
-        ) as HTMLElement;
+        const headerElement = windowElement.value.querySelector(".window-header") as HTMLElement;
         if (headerElement) {
           fadeOut(headerElement);
         }
       }
       if (slotWrapper.value) {
-        await animateTypewriting(
-          slotWrapper.value.querySelector(".typewriting") as HTMLElement
-        );
+        await animateTypewriting(slotWrapper.value.querySelector(".typewriting") as HTMLElement);
       }
       if (typeof window !== "undefined") {
-        responsiveWidth.value =
-          window.innerWidth < parseInt(props.width) ? "100%" : props.width;
+        responsiveWidth.value = window.innerWidth < parseInt(props.width) ? "100%" : props.width;
       }
     });
 
@@ -344,13 +327,11 @@ export default defineComponent({
       height: 1rem;
       margin: 0.25rem;
 
-      background-image: linear-gradient(
-        to bottom right,
-        var(--wwc-color-red),
-        var(--wwc-color-red-dark)
-      );
+      background-image: linear-gradient(to bottom right, var(--wwc-color-red), var(--wwc-color-red-dark));
 
-      box-shadow: #{_boxShadow.$box-shadow-2}, #{_boxShadow.$box-shadow-1};
+      box-shadow:
+        #{_boxShadow.$box-shadow-2},
+        #{_boxShadow.$box-shadow-1};
 
       &:hover {
         filter: brightness(1.2);

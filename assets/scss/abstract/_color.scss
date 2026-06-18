@@ -15,7 +15,7 @@
 // there are many exceptions and caveats to factor in, which are covered in further detail below.
 
 // Step            Use Case
-//============================================================================
+// ============================================================================
 // 1               App background
 // 2               Subtle background
 // 3               UI element background
@@ -30,7 +30,7 @@
 // 12              High-contrast text
 
 // Steps 1–2: Backgrounds
-//============================================================================
+// ============================================================================
 // Steps 1 and 2 are designed for app backgrounds and subtle component backgrounds.
 // You can use them interchangeably, depending on the vibe you're going for.
 //
@@ -47,7 +47,7 @@
 // In this case, set up a mutable alias for AppBg and map it to a different color for each color mode.
 
 // Steps 3–5: Component backgrounds
-//============================================================================
+// ============================================================================
 // Steps 3, 4, and 5 are designed for UI component backgrounds.
 // * Step 3 is for normal states.
 // * Step 4 is for hover states.
@@ -70,7 +70,7 @@
 // on top of a step 3 background from the same scale.
 
 // Steps 6–8: Borders
-//============================================================================
+// ============================================================================
 // Steps 6, 7, and 8 are designed for borders.
 // * Step 6 is designed for subtle borders on components which are not interactive.
 //      For example sidebars, headers, cards, alerts, and separators.
@@ -78,7 +78,7 @@
 // * Step 8 is designed for borders on interactive components in their hover state.
 
 // Steps 9–10: Solid backgrounds
-//============================================================================
+// ============================================================================
 // Steps 9 and 10 are designed for solid backgrounds.
 // Step 9 has the highest chroma of all steps in the scale.
 // In other words, it's the purest step, the step mixed with the least amount of white or black.
@@ -97,14 +97,13 @@
 // and Amber are designed for black foreground text and steps 9 and 10.
 
 // Steps 11–12: Text
-//============================================================================
-//Steps 11 and 12 are designed for text.
+// ============================================================================
+// Steps 11 and 12 are designed for text.
 // * Step 11 is designed for low-contrast text.
 // * Step 12 is designed for high-contrast text.
 
 $black: _gray.$color-20;
 $white: _gray.$color-0;
-
 $gray-0: _gray.$color-0;
 $gray-1: _gray.$color-0-5;
 $gray-2: _gray.$color-1;
@@ -112,7 +111,6 @@ $gray-3: _gray.$color-8;
 $gray-4: _gray.$color-13;
 $gray-5: _gray.$color-17;
 $gray-6: _gray.$color-20;
-
 $background: $gray-0;
 $background-hover: $gray-1;
 $border: $gray-2;
@@ -123,7 +121,6 @@ $text-active: $gray-6;
 $shapes: $border-hover;
 $shapes-hover: $text;
 $shapes-active: $text-hover;
-
 $dark-background: $gray-6;
 $dark-background-hover: $gray-5;
 $dark-border: $gray-4;
@@ -139,7 +136,7 @@ $dark-shapes-active: $dark-text-hover;
 // Colors you can use to distinguish elements between them such as tags.
 // For now there is X colors because we think it is enough
 // and avoid too much confusions.
-//============================================================================
+// ============================================================================
 $red: _red.$red11;
 $red-light: _red.$red7;
 $aubergine-dark: _pinkDark.$pink3;
@@ -148,7 +145,7 @@ $orange: _orange.$orange10;
 // Semantics
 // Colors that help identify status,
 // see actions, locate help, and understand next steps.
-//============================================================================
+// ============================================================================
 $alert: $red;
 $success: _green.$green10;
 $mark-color-background: _yellow.$yellow3;
@@ -163,6 +160,6 @@ $mark-color-background: _yellow.$yellow3;
 // As Neutrals have more usages in our interfaces,
 // we will update the section with the right matrix and we are currently
 // working on specific parameters to help you define them.
-//============================================================================
-$overlay: hsla(0, 0%, 0%, 0.565);
-$shadow: hsla(0, 0%, 0%, 0.439);
+// ============================================================================
+$overlay: hsl(0deg 0% 0% / 56.5%);
+$shadow: hsl(0deg 0% 0% / 43.9%);

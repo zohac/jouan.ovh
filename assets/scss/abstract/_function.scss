@@ -11,7 +11,7 @@
 }
 
 // line height = font size x 1.5
-//==========================================================
+// ==========================================================
 $-font-height: variables.$font-height-default or 1;
 
 @function height($space-stack: 0, $font-size: 0) {
@@ -20,7 +20,7 @@ $-font-height: variables.$font-height-default or 1;
   @return $result;
 }
 
-@function line-height ($font-size) {
+@function line-height($font-size) {
   $result: calc(#{$font-size} * #{$-font-height});
 
   @return $result;

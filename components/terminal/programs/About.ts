@@ -1,4 +1,4 @@
-import { IProgram } from "~/components/terminal/interfaces";
+import type { IProgram } from "~/components/terminal/interfaces";
 
 interface ExperienceInterface {
   date: string;
@@ -79,8 +79,7 @@ const aboutData = {
       date: "05/2020 - 12/2021",
       entreprise: "CINS",
       description: "Développeur Full Stack",
-      technology:
-        "PHP/MySQL HTML/CSS JS SASS Symfony-4/5 Drupal-7/8 Prestashop-1.7.* Wordpress Bootstrap Git Docker",
+      technology: "PHP/MySQL HTML/CSS JS SASS Symfony-4/5 Drupal-7/8 Prestashop-1.7.* Wordpress Bootstrap Git Docker",
     },
     {
       date: "07/2007 - 05/2019",
@@ -101,8 +100,7 @@ const aboutData = {
       date: "2017 - 2018",
       name: "Développeur d’application - PHP / Symfony",
       school: "OpenClassrooms",
-      description:
-        "Projet Wordpress • Projet Bootstrap • Projet Mysql • Projet PHP – POO • 3 Projet Symfony",
+      description: "Projet Wordpress • Projet Bootstrap • Projet Mysql • Projet PHP – POO • 3 Projet Symfony",
     },
     {
       date: "1999 - 2001",
@@ -114,8 +112,7 @@ const aboutData = {
       date: "1997 - 1999",
       name: "BAC STL PLPI",
       school: "Lycée A. de Tocqueville à Cherbourg",
-      description:
-        "Science et Technique de Laboratoire option Physique de Laboratoire et Procédé Industriel",
+      description: "Science et Technique de Laboratoire option Physique de Laboratoire et Procédé Industriel",
     },
   ],
   hobbies: ["crossfit"],
@@ -126,10 +123,7 @@ class About {
 
   parseData() {
     return (
-      this.getUserInformationsTable() +
-      this.getExperiencesTable() +
-      this.getDegreeTable() +
-      this.getHobbiesTable()
+      this.getUserInformationsTable() + this.getExperiencesTable() + this.getDegreeTable() + this.getHobbiesTable()
     );
   }
 

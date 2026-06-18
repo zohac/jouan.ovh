@@ -25,11 +25,8 @@ import HeaderComponent from "../components/HeaderComponent.vue";
   --header-height: #{_variables.$header-height};
   --footer-height: #{_variables.$footer-height};
 
-  background-image: linear-gradient(
-      127deg,
-      var(--init-color-aubergine-dark),
-      transparent
-    ),
+  background-image:
+    linear-gradient(127deg, var(--init-color-aubergine-dark), transparent),
     linear-gradient(217deg, var(--init-color-orange), transparent),
     linear-gradient(0deg, var(--init-color-red), transparent);
   //linear-gradient(120deg, rgb(11, 20, 60), transparent),

@@ -1,8 +1,10 @@
 # Story 1.2: Mettre à jour les modules et dépendances
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+
+> **Réalisée conjointement à la story 1.1** (décision utilisateur « tout en latest » + pnpm). Les modules ont été passés en latest réel dès la migration du cœur. Cette entrée consigne la vérification et l'état final.
 
 ## Story
 
@@ -19,31 +21,30 @@ so that toutes les dépendances sont alignées avec Nuxt 4 et sans deprecations 
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Remplacer `@nuxt/image-edge` par `@nuxt/image` stable (AC: #1)
-  - [ ] Retirer `@nuxt/image-edge` (`1.0.0-27968280.9739e4d`) de `package.json`
-  - [ ] `yarn add -D @nuxt/image` (version stable compatible Nuxt 4 ; ou via `yarn dlx nuxi module add image` qui ajoute le module et l'entrée `modules`)
-  - [ ] Dans `nuxt.config.ts`, remplacer l'entrée `"@nuxt/image-edge"` par `"@nuxt/image"` dans `modules`
-  - [ ] Vérifier que les composants `<nuxt-img>` / `<nuxt-picture>` continuent de rendre (auto-import du module)
-- [ ] Tâche 2 — Mettre à jour `@nuxt/content` (AC: #1)
-  - [ ] `yarn add -D @nuxt/content` (version stable compatible Nuxt 4)
-  - [ ] Conserver l'entrée `"@nuxt/content"` dans `modules` (déjà présente)
-  - [ ] Vérifier que le pipeline blog (route `blog/[...slug].vue`, dossier `content/`) se charge sans erreur de module
-  - [ ] Relire le CHANGELOG / guide de migration du module si la majeure a changé (collections, `queryContent` → API v3) et noter tout breaking change pour Epic 6
-- [ ] Tâche 3 — Aligner Vue 3, TypeScript 5 et sass (AC: #1, #2)
-  - [ ] Monter `typescript` de `^4.9.5` vers `^5` (cf. Decisions SPEC : TypeScript 5)
-  - [ ] S'assurer que `vue` est présent en version Nuxt 4 (généralement tiré par `nuxt@^4` ; ne pas figer un `vue` divergent)
-  - [ ] Conserver / mettre à jour `sass` (`^1.59.2`) à une version récente compatible avec le builder Vite
-  - [ ] `yarn install` et résoudre les conflits de versions éventuels
-- [ ] Tâche 4 — Neutraliser ou migrer `vue-property-decorator` (AC: #2)
-  - [ ] Recenser les composants legacy utilisant `vue-property-decorator` (Options API + décorateurs de classe)
-  - [ ] **Option recommandée (risque faible) : neutralisation/compat** — garder les composants legacy fonctionnels tels quels, en conservant `experimentalDecorators: true` dans `tsconfig.json` tant que la dépendance vit. Ne pas étendre ce pattern.
-  - [ ] Vérifier que `vue-property-decorator@^9.1.2` reste installable et compile sur Vue 3 + Nuxt 4 ; sinon, migrer le(s) composant(s) concerné(s) vers `<script setup lang="ts">` (port minimal, sans changement fonctionnel)
-  - [ ] `yarn postinstall` (`nuxi prepare`) ne doit pas remonter d'erreur de types bloquante
-- [ ] Tâche 5 — Vérification (AC: #1, #2)
-  - [ ] `yarn dev` démarre sans erreur ; `/`, `/about`, `/blog` se chargent
-  - [ ] Une page contenant `<nuxt-img>` / `<nuxt-picture>` affiche bien ses images
-  - [ ] Le blog liste / affiche le contenu `@nuxt/content` existant sans régression
-  - [ ] `yarn lint` ne se dégrade pas (la migration flat config est la story 1.3)
+- [x] Tâche 1 — Remplacer `@nuxt/image-edge` par `@nuxt/image` stable (AC: #1)
+  - [x] `@nuxt/image-edge` retiré de `package.json`
+  - [x] `@nuxt/image@^2.0.0` ajouté (latest)
+  - [x] `nuxt.config.ts` : `"@nuxt/image-edge"` → `"@nuxt/image"` dans `modules`
+  - [x] `<nuxt-img>` / `<nuxt-picture>` rendent (vérifié au dev ET au `generate` : variantes `_ipx` produites pour logo + portrait)
+- [x] Tâche 2 — Mettre à jour `@nuxt/content` (AC: #1)
+  - [x] `@nuxt/content@^3.14.0` (latest) — ajout de `better-sqlite3` (requis par v3)
+  - [x] Entrée `"@nuxt/content"` conservée dans `modules`
+  - [x] Pipeline blog se charge sans erreur (dump statique `__nuxt_content/blog/sql_dump.txt` généré)
+  - [x] **Breaking change v2→v3 traité ici** (et non reporté) : `content.config.ts` ajouté, blog migré vers `queryCollection`/`<ContentRenderer>` (cf. story 1.1). Le redesign blog complet reste l'épopée 6.
+- [x] Tâche 3 — Aligner Vue 3, TypeScript et sass (AC: #1, #2)
+  - [x] `typescript` monté à `^6.0.3` (au-delà de TS 5 visé — décision « latest »)
+  - [x] `vue` tiré par `nuxt@^4` (non figé)
+  - [x] `sass` monté à `^1.101.0` (compatible Vite)
+  - [x] `pnpm install` OK (lockfile généré, aucun conflit bloquant)
+- [x] Tâche 4 — Neutraliser ou migrer `vue-property-decorator` (AC: #2)
+  - [x] Recensement : **aucun composant** n'utilise `vue-property-decorator` (legacy déjà absent du code)
+  - [x] `experimentalDecorators: true` conservé (dans `compilerOptions`) ; dépendance gardée mais inutilisée
+  - [x] `nuxi prepare` ne remonte aucune erreur de types bloquante
+- [x] Tâche 5 — Vérification (AC: #1, #2)
+  - [x] `pnpm dev` démarre ; `/`, `/about`, `/blog` → HTTP 200
+  - [x] `<nuxt-picture>` (portrait about, logo header) affiche ses images (variantes `_ipx` au `generate`)
+  - [x] Blog se charge sans régression (empty-state v3)
+  - [x] `pnpm lint` ne se dégrade pas (flat config = story 1.3, désormais verte)
 
 ## Dev Notes
 
@@ -105,10 +106,25 @@ so that toutes les dépendances sont alignées avec Nuxt 4 et sans deprecations 
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Amelia / BMad dev-story)
+
 ### Debug Log References
+
+- Modules vérifiés au `pnpm generate` : `@nuxt/image` produit les variantes `_ipx` (logo + portrait), `@nuxt/content` v3 émet `__nuxt_content/blog/sql_dump.txt`.
 
 ### Completion Notes List
 
-- Ultimate context engine analysis completed - comprehensive developer guide created.
+- Versions finales : `@nuxt/content@3.14`, `@nuxt/image@2.0`, `sass@1.101`, `typescript@6.0`, `ua-parser-js@2.0`. Gestionnaire **pnpm** (et non Yarn).
+- **`@nuxt/content` v2→v3** : breaking change traité (pas seulement constaté) — `content.config.ts` + migration des requêtes blog (`queryCollection`/`<ContentRenderer>`). Redesign blog complet = épopée 6.
+- **`vue-property-decorator`** : aucun usage dans le code → AC #2 trivialement satisfait ; dépendance conservée mais inutilisée (à supprimer plus tard).
+- `ua-parser-js` v2 : import nommé `{ UAParser }` ; `@types/ua-parser-js` retiré (types embarqués).
 
 ### File List
+
+Voir story 1.1 (changements réalisés conjointement). Spécifiques aux modules : `package.json` (deps modules), `nuxt.config.ts` (`@nuxt/image`), `content.config.ts` (créé), `pages/blog/index.vue`, `pages/blog/[...slug].vue`, `components/terminal/programs/SystemInfos.ts`.
+
+## Change Log
+
+| Date | Version | Description | Auteur |
+|------|---------|-------------|--------|
+| 2026-06-18 | 0.1 | Modules en latest (content 3, image 2, sass, TS 6, ua-parser 2) — réalisé avec 1.1. Status → review. | Amelia (dev-story) |

@@ -1,0 +1,30 @@
+# Environnement de développement isolé pour jouan.ovh.
+# Node 22 LTS (cible supportée par Nuxt 4) + pnpm via corepack (pinné par package.json#packageManager).
+#
+# Usage :
+#   docker compose up        -> installe les deps puis lance `pnpm dev` (http://localhost:3000)
+#   docker compose run --rm web pnpm <cmd>   -> exécuter une commande ponctuelle (lint, generate…)
+#   docker compose down       -> stopper
+#
+# Les node_modules vivent dans un volume nommé pour éviter toute collision
+# avec l'hôte (arch macOS arm64 vs conteneur linux) et accélérer les I/O.
+services:
+  web:
+    image: node:22-bookworm-slim
+    working_dir: /app
+    environment:
+      - NODE_ENV=development
+      # Watch fiable sur bind mount macOS (Vite/chokidar)
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - NUXT_TELEMETRY_DISABLED=1
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    # corepack active la version de pnpm déclarée par package.json#packageManager
+    command: sh -c "corepack enable && pnpm install && pnpm dev --host 0.0.0.0"
+
+volumes:
+  node_modules:
