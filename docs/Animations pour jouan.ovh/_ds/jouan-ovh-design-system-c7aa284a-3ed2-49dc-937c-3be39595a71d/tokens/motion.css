@@ -1,0 +1,26 @@
+/* ============================================================
+   Motion — restrained, mechanical easing that suits a terminal.
+   Fades + short transl/scale. No bounce on UI; a subtle blink
+   is reserved for the terminal caret only.
+   ============================================================ */
+
+:root {
+  --dur-fast: 120ms;     /* @kind other */
+  --dur-base: 180ms;     /* @kind other */
+  --dur-slow: 320ms;     /* @kind other */
+  --dur-slower: 600ms;   /* @kind other */
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);    /* @kind other */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* @kind other */
+  --ease-standard: ease-in-out;                  /* @kind other */
+}
+
+@keyframes caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes fade-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

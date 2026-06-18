@@ -1,0 +1,117 @@
+# Story 6.1: Index du blog et empty-state
+
+Status: ready-for-dev
+
+<!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+
+## Story
+
+As a visiteur,
+I want une liste d'articles soignée,
+so that je trouve du contenu à lire (UX-DR15, FR8).
+
+## Acceptance Criteria
+
+1. **Given** le pipeline `@nuxt/content` et la référence `Blog.jsx`, **When** on crée le dossier `content/` et on refond `/blog` (index + empty-state), **Then** la liste rend en cartes conformes au DS.
+2. **Given** le pipeline `@nuxt/content` et la référence `Blog.jsx`, **When** la liste d'articles est vide, **Then** l'empty-state français soigné s'affiche quand il n'y a aucun article.
+
+> Périmètre : **index du blog (`pages/blog/index.vue`) + création du dossier `content/` + empty-state**. La vue article (`pages/blog/[...slug].vue`, prose + code) est la **story 6.2** — ne pas la traiter ici. Réutiliser les primitives livrées par l'Epic 2 (`ZCard`, `ZTag`/`ZBadge`) et les tokens (Epic 2). Ne pas créer de nouvelles primitives.
+
+## Tasks / Subtasks
+
+- [ ] Tâche 1 — Créer le dossier `content/` et un (ou plusieurs) article(s) markdown (AC: #1, #2)
+  - [ ] Créer le dossier `content/` à la racine du projet (n'existe pas encore)
+  - [ ] Y placer au moins un article markdown de démonstration (`content/blog/<slug>.md`) avec front-matter (`title`, `description`, `date`, `tags`, `image`/`img`, `read`) pour valider le rendu de la liste en cartes
+  - [ ] Vérifier que la collection/source `blog` est bien résolue par `@nuxt/content` (voir Dev Notes pour l'API v2 vs v3 selon ce qui est installé après story 1.2)
+- [ ] Tâche 2 — Refondre l'index `pages/blog/index.vue` selon `Blog.jsx` (AC: #1)
+  - [ ] Reproduire la structure d'en-tête : eyebrow `// ~/blog`, titre « Notes de dev » (`var(--fs-4xl)`, `var(--fw-light)`), sous-titre prose (`var(--text-muted)`, `max-width: 56ch`)
+  - [ ] Lister les articles en `ZCard` interactives cliquables (lien vers `article._path` / `article.path`), layout `.post` (grille `200px 1fr`, thumbnail `.post__thumb` arrondie `--radius-md`)
+  - [ ] Afficher pour chaque article : vignette (via `<nuxt-img>`), tags en `ZTag`, titre `h3`, description, méta mono (date · temps de lecture) — réf. `.post`, `.post__meta` de `kit.css`
+  - [ ] Récupérer les articles via l'API `@nuxt/content` (voir Dev Notes), triés par date décroissante
+- [ ] Tâche 3 — Conserver + restyler l'empty-state existant (AC: #2)
+  - [ ] Conserver le `ZCard` empty-state existant et son texte français (illustration + message « pas encore d'articles » + invitation à revenir)
+  - [ ] Le restyler selon le DS (tokens, dark-first) ; remplacer le contenu hardcodé blanc/`width: 50vw` par les tokens et la primitive `ZCard` refondue (Epic 2)
+  - [ ] L'empty-state s'affiche uniquement quand la requête de contenu ne renvoie aucun article
+- [ ] Tâche 4 — Style SCSS dark-first via tokens (AC: #1, #2)
+  - [ ] Styler en `<style lang="scss" scoped>`, via `@use` (jamais `@import`), en consommant les tokens (couleurs aubergine, espacement, rayons) — aucune valeur en dur
+  - [ ] Retirer les styles legacy de l'ancien index (fonds blancs, `width: 50vw`, etc.)
+- [ ] Tâche 5 — Vérification prerender (AC: #1, #2)
+  - [ ] `yarn dev` : `/blog` se charge, liste les articles présents dans `content/`
+  - [ ] Cas vide : retirer/vider temporairement le dossier `content/blog` → l'empty-state s'affiche
+  - [ ] `yarn generate` : la route `/blog` est bien prerendue (tokens chargés, pas d'accès DOM non gardé)
+
+## Dev Notes
+
+### Contexte & contraintes (depuis project-context.md et SPEC)
+
+- **Blog via `@nuxt/content` markdown** — le dossier `content/` n'existe PAS encore : à créer dans cette story. [Source: docs/project-context.md#Nuxt ; docs/specs/spec-design-system-revamp/pages.md#Notes par page]
+- **Port, pas copie** : `Blog.jsx` est la **référence visuelle cible**, pas à copier. Recréer en Vue 3 `<script setup>` + SCSS `@use`. [Source: docs/specs/spec-design-system-revamp/SPEC.md#Constraints ; docs/project-context.md#Port du design system]
+- **Tokens, pas de valeurs en dur** : couleurs/espaces/rayons via tokens (Epic 2). Pattern : CSS custom properties locales depuis les tokens SCSS, consommées via `var()`. [Source: docs/project-context.md#SCSS]
+- **Dark-first uniquement** : surfaces aubergine, aucun thème clair. [Source: docs/specs/spec-design-system-revamp/SPEC.md#Constraints]
+- **Compatibilité prerender** : tout passe `nuxi generate` ; pas d'accès `window`/`document` hors `onMounted`/`import.meta.client`. [Source: docs/project-context.md#Nuxt]
+- **Images** : toujours `<nuxt-img>` / `<nuxt-picture>`, jamais `<img>` brut. Assets statiques dans `public/images/`. [Source: docs/project-context.md#Nuxt]
+- **Langue & voix** : français, 1re personne « je », vouvoiement, pas d'emoji. [Source: docs/project-context.md#Langue]
+- **Lint = barre de qualité** (pas de tests auto) + build vert. [Source: docs/project-context.md#Tests]
+
+### Fichiers à modifier / créer
+
+- **`content/`** (CREATE) — dossier racine à créer. Sous-dossier `content/blog/` + au moins un `.md` de démonstration avec front-matter. C'est le pipeline `@nuxt/content` qui résout ce dossier.
+- **`pages/blog/index.vue`** (UPDATE / refonte) — état actuel : utilise `<ContentList path="/blog">` (API content v2) avec un slot `#default` (liste brute `<ul>`/`<li>`) et un slot `#not-found` portant l'empty-state en `ZCardComponent`/`ZCardHeader`/`ZCardBody`. Styles legacy : fonds blancs, `width: 50vw`, `.container-w50`. À refondre : header eyebrow/titre/sous-titre, cartes `ZCard` interactives, méta mono, empty-state restylé via tokens.
+- **L'empty-state existant** (CONSERVER + RESTYLER) — garder le message français (illustration `undraw_code_thinking`, titre « pas encore d'articles », paragraphe d'invitation). Le porter sur la primitive `ZCard` refondue (Epic 2) et les tokens dark-first.
+
+### API @nuxt/content — attention v2 vs v3 (selon story 1.2)
+
+> Le code actuel utilise l'API **content v2** (`<ContentList>`, `article._path`, slot `#not-found`). La **story 1.2** met à jour `@nuxt/content` ; si elle installe **v3 (sur Nuxt 4)**, l'API change. Vérifier la version réellement installée avant d'implémenter, et adapter :
+
+- **Content v2 (actuel `^2.5.2`)** : composants `<ContentList>` / `<ContentDoc>` ; requêtes via `queryContent("/blog").find()` ; champ chemin `_path`. Slot `#not-found` pour l'empty-state.
+- **Content v3 (cible probable Nuxt 4)** : **collections** définies dans `content.config.ts` (ex. collection `blog` typée) ; requêtes via `await queryCollection("blog").order("date", "DESC").all()` dans un `useAsyncData` ; rendu de liste en clair (plus de `<ContentList>` magique) ; champ chemin `path`. L'empty-state se gère par un `v-if` sur la longueur de la liste (plus de slot `#not-found`).
+- Recommandation : récupérer la liste via `useAsyncData` + l'API de requête de la version installée, puis brancher l'empty-state sur `!list?.length`. Garder le rendu prerender-safe (la requête de contenu est résolue côté build).
+- Si besoin de détails d'API à jour : consulter context7 (lib `/nuxt/content` pour content v3, ou `/websites/nuxt_4_x`).
+
+### Référence visuelle (Blog.jsx + kit.css)
+
+- En-tête index : `eyebrow` mono `// ~/blog`, `h1` « Notes de dev » `fs-4xl`/`fw-light`, sous-titre `.prose` `text-muted` `max-width: 56ch` (« WordPress, architecture, IA appliquée — ce que j'apprends en construisant des choses. »).
+- Carte article (`.post`) : grille `grid-template-columns: 200px 1fr; gap: var(--space-5)` ; `.post__thumb` `height: 130px; object-fit: cover; border-radius: var(--radius-md)`. Mobile : `grid-template-columns: 1fr`.
+- Titre `.post h3` `fs-xl` ; description `.post p` `font-sans` `fs-sm` `text-body` ; méta `.post__meta` `font-mono` `fs-xs` `text-faint`, items séparés par `·`.
+- Tags : primitive `ZTag` (radius pill, Epic 2). Carte : primitive `ZCard` interactive (Epic 2) — `interactive`/cliquable vers l'article.
+- [Source: docs/design_system/ui_kits/jouan-site/Blog.jsx ; docs/design_system/ui_kits/jouan-site/kit.css#.post,.eyebrow,.section,.container]
+
+### Pièges / régressions à éviter
+
+- **`content/` absent** : sans ce dossier, `@nuxt/content` n'a aucune source → s'assurer qu'il existe et qu'il contient au moins un article pour valider le rendu en cartes (AC #1), tout en validant aussi le cas vide (AC #2).
+- **Empty-state** : ne pas le supprimer — le **conserver** (texte français) et le **restyler**. Vérifier le bon mécanisme selon la version content (slot `#not-found` en v2 vs `v-if` sur liste vide en v3).
+- **Valeurs en dur** : supprimer les fonds blancs / `width: 50vw` legacy ; tout via tokens dark-first.
+- **Prerender** : ne pas accéder au DOM hors garde ; la requête content doit être résolue au build (`useAsyncData`).
+- **Champ chemin** : `_path` (v2) vs `path` (v3) — adapter selon la version installée par 1.2.
+- **Dépendances** : cette story dépend de l'Epic 1 (module content à jour) et de l'Epic 2 (primitives `ZCard`/`ZTag`/`ZBadge` + tokens). Ne pas dépendre de stories futures.
+
+### Project Structure Notes
+
+- Nouveau dossier racine `content/` (avec `content/blog/`). Cohérent avec la structure attendue par `@nuxt/content`.
+- L'index reste `pages/blog/index.vue` ; le layout/châssis global vient de l'Epic 2 (`MainComponent`/layout).
+- Aucune base de données / entité à créer (contenu = markdown).
+
+### Testing standards
+
+- Pas de framework de test. Validation = `yarn lint` (ne pas dégrader) + **`yarn dev`** (`/blog` liste les articles ; cas vide → empty-state) + **`yarn generate`** (route `/blog` prerendue sans erreur). [Source: docs/project-context.md#Tests]
+
+### References
+
+- [Source: docs/planning-artifacts/epics.md#Epic 6: Blog — Story 6.1: Index du blog et empty-state]
+- [Source: docs/specs/spec-design-system-revamp/SPEC.md#Capabilities (CAP-8), #Constraints]
+- [Source: docs/specs/spec-design-system-revamp/pages.md#/blog, #Notes par page (Blog)]
+- [Source: docs/design_system/ui_kits/jouan-site/Blog.jsx (fonction Blog — index)]
+- [Source: docs/design_system/ui_kits/jouan-site/kit.css (.post, .post__thumb, .post__meta, .eyebrow, .section, .container)]
+- [Source: docs/design_system/ui_kits/jouan-site/README.md (Blog — article index)]
+- [Source: docs/project-context.md#Technology Stack & Versions, #Règles Langage & Framework (Nuxt/SCSS), #Langue, #Tests]
+- [Source: pages/blog/index.vue (état actuel — ContentList + empty-state ZCard à conserver/restyler)]
+
+## Dev Agent Record
+
+### Agent Model Used
+
+### Debug Log References
+
+### Completion Notes List
+
+### File List

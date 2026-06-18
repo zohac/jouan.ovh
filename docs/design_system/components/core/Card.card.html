@@ -1,0 +1,65 @@
+<!-- @dsCard group="Components" viewport="700x260" name="Card" subtitle="Quiet, interactive, accent bar, featured glow" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); color: var(--text-body);
+    font-family: var(--font-mono); padding: var(--space-6); }
+  .lbl { font-size: var(--fs-xs); letter-spacing: var(--ls-wider); text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: var(--space-2); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); align-items: start; }
+  .title { font-family: var(--font-mono); color: var(--text-strong); font-size: var(--fs-base); margin-bottom: 4px; }
+  .body { font-family: var(--font-sans); font-size: var(--fs-sm); line-height: 1.5; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { Card } = window.JouanOvhDesignSystem_c7aa28;
+function Demo() {
+  return (
+    <div className="grid">
+      <div>
+        <div className="lbl">// quiet</div>
+        <Card>
+          <div className="title">Symfony</div>
+          <div className="body">Conteneur neutre — le contenu est le héros.</div>
+        </Card>
+      </div>
+      <div>
+        <div className="lbl">// interactive + accent</div>
+        <Card accent interactive>
+          <div className="title">Site WordPress</div>
+          <div className="body">Survol : bordure plus claire, légère élévation.</div>
+        </Card>
+      </div>
+      <div>
+        <div className="lbl">// featured</div>
+        <Card featured>
+          <div className="title">Offre recommandée</div>
+          <div className="body">Halo orange pour l'offre mise en avant.</div>
+        </Card>
+      </div>
+      <div>
+        <div className="lbl">// not padded</div>
+        <Card padded={false}>
+          <div style={{height:'2px',background:'linear-gradient(90deg,var(--accent),var(--aubergine-light))'}}></div>
+          <div style={{padding:'var(--space-4)'}}>
+            <div className="title">Média + corps</div>
+            <div className="body">Padding géré au cas par cas.</div>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script>
+</body>
+</html>

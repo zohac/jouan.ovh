@@ -1,0 +1,23 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Radius" subtitle="Small & controlled — nothing very round" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); font-family: var(--font-mono);
+    padding: var(--space-6); display: flex; gap: var(--space-5); align-items: flex-end; }
+  .sw { text-align: center; font-size: var(--fs-xs); color: var(--text-muted); }
+  .box { width: 78px; height: 64px; background: var(--bg-elevated);
+    border: 1px solid var(--border-strong); margin-bottom: var(--space-2); }
+  .sw b { color: var(--text-strong); display: block; }
+</style>
+</head>
+<body>
+  <div class="sw"><div class="box" style="border-radius:var(--radius-xs)"></div><b>xs</b>3px</div>
+  <div class="sw"><div class="box" style="border-radius:var(--radius-sm)"></div><b>sm</b>5px</div>
+  <div class="sw"><div class="box" style="border-radius:var(--radius-md)"></div><b>md</b>8px</div>
+  <div class="sw"><div class="box" style="border-radius:var(--radius-lg)"></div><b>lg</b>12px</div>
+  <div class="sw"><div class="box" style="border-radius:var(--radius-pill)"></div><b>pill</b>999px</div>
+</body>
+</html>

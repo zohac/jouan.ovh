@@ -1,0 +1,106 @@
+# generated: 2026-06-18
+# last_updated: 2026-06-18 (toutes les stories ready-for-dev)
+# project: jouan.ovh
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: docs/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-06-18
+last_updated: 2026-06-18 (story 1.1 in-progress)
+project: jouan.ovh
+project_key: NOKEY
+tracking_system: file-system
+story_location: docs/implementation-artifacts
+
+development_status:
+  # Epic 1 — Migration de la stack vers Nuxt 4
+  epic-1: in-progress
+  1-1-migrer-le-coeur-vers-nuxt-4: in-progress
+  1-2-mettre-a-jour-les-modules-et-dependances: ready-for-dev
+  1-3-migrer-loutillage-lint-vers-eslint-9: ready-for-dev
+  1-4-valider-build-statique-et-deploiement-gh-pages: ready-for-dev
+  epic-1-retrospective: optional
+
+  # Epic 2 — Fondations du design system
+  epic-2: in-progress
+  2-1-porter-les-tokens-du-design-system: ready-for-dev
+  2-2-polices-et-base-dark-first: ready-for-dev
+  2-3-primitive-zbutton: ready-for-dev
+  2-4-primitive-zcard: ready-for-dev
+  2-5-primitives-zbadge-et-ztag: ready-for-dev
+  2-6-primitives-zinput-et-zavatar: ready-for-dev
+  2-7-iconographie: ready-for-dev
+  2-8-chassis-global-header-footer-nav-socials: ready-for-dev
+  epic-2-retrospective: optional
+
+  # Epic 3 — Page d'accueil
+  epic-3: in-progress
+  3-1-hero-terminal-a: ready-for-dev
+  3-2-apercu-services-et-stats: ready-for-dev
+  3-3-projets-selectionnes: ready-for-dev
+  epic-3-retrospective: optional
+
+  # Epic 4 — Page Services
+  epic-4: in-progress
+  4-1-route-services-et-cartes-doffre: ready-for-dev
+  4-2-section-process: ready-for-dev
+  epic-4-retrospective: optional
+
+  # Epic 5 — Page À-propos
+  epic-5: in-progress
+  5-1-portrait-et-bio: ready-for-dev
+  5-2-timeline-formation-et-stack: ready-for-dev
+  epic-5-retrospective: optional
+
+  # Epic 6 — Blog
+  epic-6: in-progress
+  6-1-index-du-blog-et-empty-state: ready-for-dev
+  6-2-vue-article-prose-et-code: ready-for-dev
+  epic-6-retrospective: optional
+
+  # Epic 7 — Page Contact
+  epic-7: in-progress
+  7-1-route-contact-et-formulaire: ready-for-dev
+  7-2-infos-cta-terminal-et-socials: ready-for-dev
+  epic-7-retrospective: optional
+
+  # Epic 8 — Terminal easter-egg restylé
+  epic-8: in-progress
+  8-1-style-terminalwindow-et-prompt: ready-for-dev
+  8-2-preserver-les-commandes-et-louverture: ready-for-dev
+  epic-8-retrospective: optional
+
+  # Epic 9 — Accessibilité & finitions motion
+  epic-9: in-progress
+  9-1-etats-interactifs-coherents: ready-for-dev
+  9-2-motion-reduit-contraste-et-clavier: ready-for-dev
+  epic-9-retrospective: optional

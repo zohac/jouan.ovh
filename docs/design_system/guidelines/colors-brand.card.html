@@ -1,0 +1,32 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Brand — Orange & Aubergine" subtitle="Ubuntu heritage: orange hero accent + aubergine secondary" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); color: var(--text-body);
+    font-family: var(--font-mono); padding: var(--space-6); }
+  .row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+  .sw { flex: 1 1 0; min-width: 92px; border-radius: var(--radius-md);
+    overflow: hidden; border: 1px solid var(--border-subtle); }
+  .chip { height: 64px; display: flex; align-items: flex-end; padding: var(--space-2);
+    font-size: var(--fs-xs); color: var(--ink-on-accent); }
+  .meta { padding: var(--space-2); background: var(--bg-card); font-size: var(--fs-xs); }
+  .meta b { color: var(--text-strong); font-weight: var(--fw-bold); display: block; }
+  .meta span { color: var(--text-muted); }
+  .eyebrow { font-size: var(--fs-xs); letter-spacing: var(--ls-wider); text-transform: uppercase;
+    color: var(--text-muted); margin: 0 0 var(--space-4); }
+</style>
+</head>
+<body>
+  <p class="eyebrow">// Brand accents</p>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--orange-300)">300</div><div class="meta"><b>orange-300</b><span>soft / hover tint</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--orange-500)">500</div><div class="meta"><b>--accent</b><span>hero · primary CTA</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--orange-600)">600</div><div class="meta"><b>orange-600</b><span>active / pressed</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--aubergine);color:var(--ink-1)">au</div><div class="meta"><b>--aubergine</b><span>secondary</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--aubergine-deep);color:var(--ink-1)">deep</div><div class="meta"><b>--bg-terminal</b><span>terminal body</span></div></div>
+  </div>
+</body>
+</html>

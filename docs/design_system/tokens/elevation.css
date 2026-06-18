@@ -1,0 +1,22 @@
+/* ============================================================
+   Elevation — shadows tuned for a dark UI.
+   Dark surfaces lean on deep black shadows + faint top hairline.
+   Accent glow is reserved for primary/terminal focal points.
+   ============================================================ */
+
+:root {
+  --shadow-1: 0 1px 3px hsl(320 60% 2% / 0.5);
+  --shadow-2: 0 2px 8px hsl(320 60% 2% / 0.55);
+  --shadow-3: 0 8px 24px hsl(320 60% 2% / 0.6);
+  --shadow-4: 0 18px 48px hsl(320 60% 2% / 0.66);
+
+  /* Inset top-hairline that makes dark cards feel lit from above */
+  --shadow-hairline: inset 0 1px 0 hsl(30 20% 100% / 0.05);
+
+  /* Focal glows */
+  --glow-accent: 0 0 0 1px hsl(24 94% 53% / 0.4), 0 8px 30px hsl(24 94% 53% / 0.22);
+  --glow-terminal: 0 12px 40px hsl(319 100% 9% / 0.7), 0 0 0 1px hsl(319 40% 40% / 0.3);
+
+  /* Focus ring */
+  --ring-accent: 0 0 0 3px var(--accent-ring);
+}

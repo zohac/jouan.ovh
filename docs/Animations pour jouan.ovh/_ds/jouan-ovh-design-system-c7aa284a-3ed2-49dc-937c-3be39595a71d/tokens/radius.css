@@ -1,0 +1,15 @@
+/* ============================================================
+   Radius
+   Heritage: source used 0 / 4 / 8 / pill / 50%; terminal = 5px.
+   ============================================================ */
+
+:root {
+  --radius-none: 0;
+  --radius-xs: 3px;
+  --radius-sm: 5px;     /* terminal window, chips */
+  --radius-md: 8px;     /* cards, inputs, buttons */
+  --radius-lg: 12px;    /* large panels */
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+}

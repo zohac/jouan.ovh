@@ -1,0 +1,100 @@
+/* ============================================================
+   Colors — dark-first, Ubuntu/terminal heritage
+   Heritage: Ubuntu orange (#hsl 24 94% 50%) + aubergine purple.
+   Surfaces are warm-neutral with a faint aubergine tint so the
+   whole UI reads like a polished terminal at night.
+   Base scales first, semantic aliases below.
+   ============================================================ */
+
+:root {
+  /* ---- Brand: Ubuntu orange (primary accent) ---- */
+  --orange-50: hsl(24 100% 96%);
+  --orange-100: hsl(25 100% 92%);
+  --orange-300: hsl(24 100% 75%);
+  --orange-500: hsl(24 94% 53%);   /* hero accent */
+  --orange-600: hsl(24 100% 47%);
+  --orange-700: hsl(24 100% 37%);
+  --orange-900: hsl(15 60% 17%);
+
+  /* ---- Brand: Aubergine (Ubuntu purple) ---- */
+  --aubergine-light: hsl(319 26% 70%);
+  --aubergine: hsl(319 33% 30%);
+  --aubergine-deep: hsl(319 100% 9%);   /* terminal body */
+  --aubergine-black: hsl(320 60% 5%);
+
+  /* ---- Neutral surface ramp (aubergine-tinted, dark→light) ---- */
+  --surface-0: hsl(320 30% 6%);    /* page background, deepest */
+  --surface-1: hsl(319 22% 9%);    /* sunken sections */
+  --surface-2: hsl(318 18% 12%);   /* cards / panels */
+  --surface-3: hsl(317 16% 16%);   /* elevated / hover */
+  --surface-4: hsl(316 14% 21%);   /* popovers, inputs */
+
+  /* ---- Borders / hairlines ---- */
+  --line-subtle: hsl(316 14% 18%);
+  --line: hsl(315 12% 25%);
+  --line-strong: hsl(314 11% 34%);
+
+  /* ---- Text (warm off-whites on dark) ---- */
+  --ink-1: hsl(30 18% 95%);   /* high-contrast headings */
+  --ink-2: hsl(28 10% 74%);   /* body */
+  --ink-3: hsl(25 7% 54%);    /* muted / captions */
+  --ink-4: hsl(22 6% 40%);    /* faint / disabled */
+  --ink-on-accent: hsl(320 60% 5%);  /* dark text on orange */
+
+  /* ---- Terminal / syntax palette ---- */
+  --term-green: hsl(143 60% 52%);   /* prompt, success */
+  --term-blue: hsl(204 72% 62%);    /* directory, links */
+  --term-cyan: hsl(186 64% 56%);
+  --term-red: hsl(0 85% 64%);
+  --term-yellow: hsl(48 90% 58%);
+  --term-purple: hsl(280 60% 70%);
+
+  /* ---- Semantic ---- */
+  --success: hsl(143 58% 46%);
+  --success-soft: hsl(143 45% 14%);
+  --warning: hsl(38 92% 56%);
+  --warning-soft: hsl(38 60% 14%);
+  --danger: hsl(0 78% 60%);
+  --danger-soft: hsl(0 55% 15%);
+  --info: hsl(204 72% 56%);
+  --info-soft: hsl(204 55% 14%);
+
+  /* ============================================================
+     Semantic aliases — prefer these in components
+     ============================================================ */
+  --bg-page: var(--surface-0);
+  --bg-sunken: var(--surface-1);
+  --bg-card: var(--surface-2);
+  --bg-elevated: var(--surface-3);
+  --bg-input: var(--surface-4);
+  --bg-terminal: var(--aubergine-deep);
+
+  --text-strong: var(--ink-1);
+  --text-body: var(--ink-2);
+  --text-muted: var(--ink-3);
+  --text-faint: var(--ink-4);
+
+  --border-subtle: var(--line-subtle);
+  --border-default: var(--line);
+  --border-strong: var(--line-strong);
+
+  --accent: var(--orange-500);
+  --accent-hover: hsl(24 100% 60%);
+  --accent-active: var(--orange-600);
+  --accent-text: var(--ink-on-accent);
+  --accent-soft: hsl(24 94% 53% / 0.13);   /* tinted fill */
+  --accent-ring: hsl(24 94% 53% / 0.45);
+
+  --accent-2: var(--aubergine-light);       /* secondary accent */
+  --accent-2-soft: hsl(319 40% 30% / 0.28);
+
+  --link: var(--term-blue);
+  --prompt: var(--term-green);
+
+  --overlay: hsl(320 60% 3% / 0.66);
+  --selection: hsl(24 94% 53% / 0.28);
+}
+
+::selection {
+  background: var(--selection);
+}

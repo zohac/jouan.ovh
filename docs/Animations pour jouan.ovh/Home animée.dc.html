@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/tokens/radius.css">
+  <link rel="stylesheet" href="_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/tokens/elevation.css">
+  <link rel="stylesheet" href="_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/tokens/motion.css">
+  <link rel="stylesheet" href="_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/styles.css">
+  <script src="_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/_ds_bundle.js"></script>
+  <style>
+    @keyframes home-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+    @keyframes crt-boot-out {
+      0%   { opacity:1; filter:brightness(1); transform:scaleY(1); }
+      12%  { opacity:0.45; }
+      22%  { opacity:1; }
+      38%  { opacity:0.25; }
+      52%  { opacity:1; filter:brightness(1); }
+      60%  { filter:brightness(3.2); opacity:1; transform:scaleY(1); }
+      72%  { filter:brightness(1.4); transform:scaleY(0.012); opacity:1; }
+      86%  { transform:scaleY(0.012); opacity:0.9; filter:brightness(2.4); }
+      100% { transform:scaleY(0); opacity:0; filter:brightness(1); }
+    }
+  </style>
+</helmet>
+
+<div ref="{{ setRoot }}" style="background:var(--bg-page); color:var(--text-body); font-family:var(--font-sans); font-size:var(--fs-base); line-height:var(--lh-normal); min-height:100vh; -webkit-font-smoothing:antialiased; position:relative; overflow:hidden;">
+
+  <!-- ── Header ───────────────────────────────── -->
+  <header style="position:sticky; top:0; z-index:50; height:56px; background:hsl(320 40% 5% / 0.82); backdrop-filter:blur(10px); border-bottom:1px solid var(--border-subtle);">
+    <div style="height:100%; max-width:1200px; margin:0 auto; padding:0 24px; display:flex; align-items:center; gap:24px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <img src="assets/logo-gem.png" alt="jouan.ovh" style="width:24px; height:24px;">
+        <b style="font-family:var(--font-mono); color:var(--text-strong); font-size:18px; font-weight:700;">jouan.ovh</b>
+      </div>
+      <nav style="display:flex; align-items:center; gap:4px; margin-left:16px;">
+        <span style="font-family:var(--font-mono); font-size:14px; color:var(--accent); padding:8px 12px;">Accueil</span>
+        <span style="font-family:var(--font-mono); font-size:14px; color:var(--text-muted); padding:8px 12px;">Services</span>
+        <span style="font-family:var(--font-mono); font-size:14px; color:var(--text-muted); padding:8px 12px;">À propos</span>
+        <span style="font-family:var(--font-mono); font-size:14px; color:var(--text-muted); padding:8px 12px;">Blog</span>
+        <span style="font-family:var(--font-mono); font-size:14px; color:var(--text-muted); padding:8px 12px;">Contact</span>
+      </nav>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
+        <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Badge" tone="success" dot="{{ true }}" hint-size="auto,24px">Disponible</x-import>
+        <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Button" variant="primary" size="sm" hint-size="auto,36px">Démarrer un projet</x-import>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Hero ─────────────────────────────────── -->
+  <section style="position:relative; overflow:hidden; background:radial-gradient(900px 500px at 78% -10%, hsl(24 94% 53% / 0.16), transparent 60%), radial-gradient(700px 500px at 0% 110%, hsl(319 60% 30% / 0.28), transparent 60%), var(--bg-page);">
+    <div style="max-width:1200px; margin:0 auto; padding:96px 24px;">
+      <div style="display:grid; grid-template-columns:1.05fr 0.95fr; gap:48px; align-items:center;">
+        <div>
+          <p data-reveal data-delay="0ms" style="font-family:var(--font-mono); font-size:12px; letter-spacing:var(--ls-wider); text-transform:uppercase; color:var(--accent); margin:0 0 12px;">// développeur web freelance</p>
+          <h1 data-reveal data-delay="70ms" style="font-family:var(--font-mono); color:var(--text-strong); font-weight:300; line-height:var(--lh-tight); letter-spacing:var(--ls-tight); font-size:var(--fs-6xl); margin:0;">Du code <em style="font-style:normal; color:var(--accent);">sur-mesure</em>,<br>de l'IA <em style="font-style:normal; color:var(--accent);">utile</em>.</h1>
+          <p data-reveal data-delay="140ms" style="font-family:var(--font-sans); font-size:20px; color:var(--text-body); line-height:var(--lh-relaxed); max-width:46ch; margin:20px 0 24px;">Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils.</p>
+          <div data-reveal data-delay="210ms" style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+            <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Button" variant="primary" size="lg" hint-size="auto,48px">Démarrer un projet</x-import>
+            <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Button" variant="secondary" size="lg" hint-size="auto,48px">Voir les services</x-import>
+          </div>
+          <div data-reveal data-delay="280ms" style="display:flex; flex-wrap:wrap; gap:8px;">
+            <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">php</x-import>
+            <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">symfony</x-import>
+            <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">wordpress</x-import>
+            <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">nest.js</x-import>
+            <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">nuxt.js</x-import>
+          </div>
+        </div>
+        <div data-reveal data-delay="180ms">
+          <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.TerminalWindow" title="anon.@jouan.ovh: ~" height="{{ termHeight }}" hint-size="100%,300px">{{ terminalEl }}</x-import>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Services ─────────────────────────────── -->
+  <section style="padding:96px 0;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <p data-reveal data-delay="0ms" style="font-family:var(--font-mono); font-size:12px; letter-spacing:var(--ls-wider); text-transform:uppercase; color:var(--accent); margin:0 0 12px;">// ce que je fais</p>
+      <h2 data-reveal data-delay="60ms" style="font-family:var(--font-mono); color:var(--text-strong); font-weight:400; line-height:var(--lh-tight); font-size:var(--fs-3xl); margin:0 0 40px;">Trois façons de travailler ensemble</h2>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;">
+        <div data-reveal data-delay="0ms">
+          <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Card" interactive="{{ true }}" hint-size="100%,220px">
+            <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md); background:var(--accent-soft); color:var(--accent); margin-bottom:16px;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 1.5a8.5 8.5 0 0 1 4.9 1.55h-.34c-.62 0-1.06.54-1.06 1.12 0 .52.3.96.62 1.48.24.42.52.96.52 1.74 0 .54-.2 1.18-.48 2.06l-.64 2.12-2.3-6.84c.38-.02.72-.06.72-.06.34-.04.3-.54-.04-.52 0 0-1.02.08-1.68.08-.62 0-1.66-.08-1.66-.08-.34-.02-.38.5-.04.52 0 0 .32.04.66.06l.96 2.62-1.34 4.02L7.2 7.34c.38-.02.72-.06.72-.06.34-.04.3-.54-.04-.52 0 0-1.02.08-1.68.08-.12 0-.26 0-.4-.01A8.5 8.5 0 0 1 12 3.5zM3.6 8.7l3.7 10.16A8.5 8.5 0 0 1 3.6 8.7zm8.76 3.18 2.34 6.4c.02.04.04.08.06.1a8.5 8.5 0 0 1-5.04.16l2.64-6.66zm5.96-3.4a8.5 8.5 0 0 1-2.16 9.42l2.58-7.46c.24-.6.4-1.18.48-1.7l.06.04c.24.46.42 1.02.42 1.64 0 .8-.16 1.7-.62 2.86z"/></svg>
+            </div>
+            <h3 style="font-family:var(--font-mono); color:var(--text-strong); font-weight:400; font-size:var(--fs-xl); margin:0 0 8px;">WordPress sur-mesure</h3>
+            <p style="font-family:var(--font-sans); font-size:14px; color:var(--text-body); line-height:var(--lh-relaxed); margin:0 0 16px;">Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.</p>
+            <span style="font-family:var(--font-mono); font-size:14px; color:var(--accent);">En savoir plus →</span>
+          </x-import>
+        </div>
+        <div data-reveal data-delay="120ms">
+          <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Card" interactive="{{ true }}" accent="{{ true }}" featured="{{ true }}" hint-size="100%,220px">
+            <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md); background:var(--accent-soft); color:var(--accent); margin-bottom:16px;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            </div>
+            <h3 style="font-family:var(--font-mono); color:var(--text-strong); font-weight:400; font-size:var(--fs-xl); margin:0 0 8px;">Applications web</h3>
+            <p style="font-family:var(--font-sans); font-size:14px; color:var(--text-body); line-height:var(--lh-relaxed); margin:0 0 16px;">Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.</p>
+            <span style="font-family:var(--font-mono); font-size:14px; color:var(--accent);">En savoir plus →</span>
+          </x-import>
+        </div>
+        <div data-reveal data-delay="240ms">
+          <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Card" interactive="{{ true }}" hint-size="100%,220px">
+            <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md); background:var(--accent-soft); color:var(--accent); margin-bottom:16px;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.6L19.5 10l-5.7 1.4L12 17l-1.8-5.6L4.5 10l5.7-1.4z"></path><path d="M19 15l.7 2.1L22 18l-2.3.9L19 21l-.7-2.1L16 18l2.3-.9z"></path></svg>
+            </div>
+            <h3 style="font-family:var(--font-mono); color:var(--text-strong); font-weight:400; font-size:var(--fs-xl); margin:0 0 8px;">IA &amp; automatisation</h3>
+            <p style="font-family:var(--font-sans); font-size:14px; color:var(--text-body); line-height:var(--lh-relaxed); margin:0 0 16px;">L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.</p>
+            <span style="font-family:var(--font-mono); font-size:14px; color:var(--accent);">En savoir plus →</span>
+          </x-import>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Stats + projets ──────────────────────── -->
+  <section style="padding:96px 0; background:var(--bg-sunken); border-top:1px solid var(--border-subtle); border-bottom:1px solid var(--border-subtle);">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <div data-reveal data-delay="0ms" style="display:flex; gap:48px; flex-wrap:wrap; margin-bottom:64px;">
+        <div style="font-family:var(--font-mono);">
+          <b data-count="8+" style="display:block; font-size:var(--fs-4xl); color:var(--text-strong); font-weight:300;">0</b>
+          <span style="font-size:14px; color:var(--text-muted);">ans dans la tech</span>
+        </div>
+        <div style="font-family:var(--font-mono);">
+          <b data-count="3" style="display:block; font-size:var(--fs-4xl); color:var(--text-strong); font-weight:300;">0</b>
+          <span style="font-size:14px; color:var(--text-muted);">stacks maîtrisés</span>
+        </div>
+        <div style="font-family:var(--font-mono);">
+          <b data-count="1" style="display:block; font-size:var(--fs-4xl); color:var(--text-strong); font-weight:300;">0</b>
+          <span style="font-size:14px; color:var(--text-muted);">SaaS fondé · keova.app</span>
+        </div>
+      </div>
+      <p data-reveal data-delay="0ms" style="font-family:var(--font-mono); font-size:12px; letter-spacing:var(--ls-wider); text-transform:uppercase; color:var(--accent); margin:0 0 20px;">// projets sélectionnés</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+        <div data-reveal data-delay="0ms">
+          <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Card" interactive="{{ true }}" hint-size="100%,180px">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <h3 style="font-family:var(--font-mono); color:var(--text-strong); font-weight:400; font-size:var(--fs-xl); margin:0;">keova.app</h3>
+              <span style="font-family:var(--font-mono); font-size:12px; color:var(--text-muted);">Fondateur · SaaS</span>
+            </div>
+            <p style="font-family:var(--font-sans); font-size:14px; color:var(--text-body); line-height:var(--lh-relaxed); margin:12px 0 16px;">Plateforme SaaS que je conçois et opère de bout en bout.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">nest.js</x-import>
+              <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">nuxt</x-import>
+              <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">saas</x-import>
+            </div>
+          </x-import>
+        </div>
+        <div data-reveal data-delay="140ms">
+          <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Card" interactive="{{ true }}" hint-size="100%,180px">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <h3 style="font-family:var(--font-mono); color:var(--text-strong); font-weight:400; font-size:var(--fs-xl); margin:0;">patio-conseil.fr</h3>
+              <span style="font-family:var(--font-mono); font-size:12px; color:var(--text-muted);">Client</span>
+            </div>
+            <p style="font-family:var(--font-sans); font-size:14px; color:var(--text-body); line-height:var(--lh-relaxed); margin:12px 0 16px;">Site et outils pour un cabinet de conseil.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">wordpress</x-import>
+              <x-import component-from-global-scope="JouanOvhDesignSystem_c7aa28.Tag" hint-size="auto,24px">conseil</x-import>
+            </div>
+          </x-import>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Boot / POST overlay (jouanOS) ────────── -->
+  <div ref="{{ setBoot }}" style="position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; justify-content:flex-end; padding:34px 30px; background:#04060a; overflow:hidden; font-family:var(--font-mono); transform-origin:center;">
+    <div style="position:absolute; inset:0; pointer-events:none; background:repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.22) 3px, rgba(0,0,0,0) 4px);"></div>
+    <div style="position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 180px 50px rgba(0,0,0,0.72);"></div>
+    <pre style="margin:0; max-height:100%; white-space:pre-wrap; font-size:14px; line-height:1.55; color:var(--term-green); text-shadow:0 0 6px hsl(143 60% 52% / 0.45); overflow:hidden;">{{ bootText }}<span style="display:inline-block; width:9px; height:15px; background:var(--term-green); margin-left:2px; vertical-align:text-bottom; box-shadow:0 0 7px hsl(143 60% 52% / 0.65); animation:home-blink 1s steps(1) infinite;"></span></pre>
+  </div>
+
+  <!-- ── Replay chip ──────────────────────────── -->
+  <button onClick="{{ replay }}" style="position:fixed; right:16px; bottom:16px; z-index:80; display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:14px; color:var(--term-green); background:var(--bg-terminal); border:1px solid hsl(319 40% 30% / 0.6); border-radius:var(--radius-pill); padding:8px 16px; cursor:pointer; box-shadow:var(--shadow-3);">⏻ Redémarrer jouanOS</button>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;bootSequence&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;typeSpeed&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;lent&quot;,&quot;normal&quot;,&quot;rapide&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;reduceMotion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;orange&quot;,&quot;aubergine&quot;,&quot;vert&quot;],&quot;default&quot;:&quot;orange&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { typed: {}, revealed: -1, caretIdx: -1, done: false, bootText: "" };
+
+  setRoot = (el) => { this.root = el; };
+  setBoot = (el) => { this.bootEl = el; };
+
+  bootScript = [
+    { t: "jouanOS BIOS v2.6.1 — (C) 2026 Simon Jouan", d: 280 },
+    { t: "", d: 130 },
+    { t: "Détection du processeur ......... OK", d: 200 },
+    { t: "Test mémoire : 65536 Ko ......... OK", d: 270 },
+    { t: "", d: 110 },
+    { t: "Détection des disques :", d: 200 },
+    { t: "  /dev/sda  keova.app ........... OK", d: 190 },
+    { t: "  /dev/sdb  patio-conseil.fr .... OK", d: 190 },
+    { t: "", d: 130 },
+    { t: "Chargement du noyau ............. done", d: 320 },
+    { t: "Montage de /home/simon .......... done", d: 230 },
+    { t: "", d: 130 },
+    { t: "Démarrage des services :", d: 200 },
+    { t: "  [ OK ]  php-fpm · symfony", d: 160 },
+    { t: "  [ OK ]  node · nest · nuxt", d: 160 },
+    { t: "  [ OK ]  wordpress", d: 160 },
+    { t: "  [ OK ]  n8n — ia", d: 160 },
+    { t: "", d: 180 },
+    { t: "Démarrage de jouan.ovh ...", d: 650 },
+  ];
+
+  script = [
+    { kind: "cmd", dir: "~", full: "whoami" },
+    { kind: "out", color: "var(--ink-1)", full: "Simon Jouan — Développeur web freelance" },
+    { kind: "cmd", dir: "~", full: "cat stack.txt" },
+    { kind: "out", color: "var(--term-blue)", full: "PHP/Symfony · WordPress · Node/Nest · Nuxt" },
+    { kind: "cmd", dir: "~", full: "ls ~/projets" },
+    { kind: "out", color: "var(--term-green)", full: "keova.app/   patio-conseil.fr/" },
+  ];
+
+  speed() {
+    const s = this.props.typeSpeed || "normal";
+    return s === "lent" ? 95 : s === "rapide" ? 26 : 52;
+  }
+  reduce() { return this.props.reduceMotion === true; }
+  accentColor() {
+    const a = this.props.accent || "orange";
+    return a === "aubergine" ? "hsl(319 26% 70%)" : a === "vert" ? "hsl(143 60% 52%)" : "hsl(24 94% 53%)";
+  }
+
+  applyAccent() {
+    if (!this.root) return;
+    const c = this.accentColor();
+    this.root.style.setProperty("--accent", c);
+    this.root.style.setProperty("--accent-hover", c);
+    this.root.style.setProperty("--accent-soft", c.replace(")", " / 0.14)").replace("hsl(", "hsl("));
+  }
+
+  componentDidMount() {
+    this.timers = [];
+    this.booted = false;
+    this._booting = true;
+    this.applyAccent();
+    this.rearm();
+    this.onScroll = () => this.checkReveals();
+    window.addEventListener("scroll", this.onScroll, { passive: true });
+    this.poll = setInterval(() => this.checkReveals(), 200);
+    if (this.props.bootSequence === false || this.reduce()) this.finishBoot();
+    else this.startBoot();
+    requestAnimationFrame(() => this.checkReveals());
+  }
+
+  startBoot() {
+    if (this.reduce() || this.props.bootSequence === false) { this.finishBoot(); return; }
+    (this.timers || []).forEach(clearTimeout);
+    this.timers = [];
+    const runId = (this.runId = (this.runId || 0) + 1);
+    const alive = () => runId === this.runId;
+    const wait = (ms, fn) => { const t = setTimeout(() => { if (alive()) fn(); }, ms); this.timers.push(t); };
+    this.booted = false;
+    this.rearm();
+    this.setState({ typed: {}, revealed: -1, caretIdx: -1, done: false, bootText: "" });
+    if (this.bootEl) { this.bootEl.style.display = "flex"; this.bootEl.style.opacity = "1"; this.bootEl.style.animation = "none"; this.bootEl.style.filter = "none"; this.bootEl.style.transform = "none"; }
+    let k = 0;
+    const next = () => {
+      if (!alive()) return;
+      if (k >= this.bootScript.length) { wait(520, () => this.bootOut(alive)); return; }
+      const ln = this.bootScript[k++];
+      this.setState((s) => ({ bootText: (s.bootText ? s.bootText + "\n" : "") + ln.t }));
+      wait(ln.d, next);
+    };
+    wait(260, next);
+  }
+
+  bootOut(alive) {
+    if (alive && !alive()) return;
+    if (this.reduce() || !this.bootEl) { this.finishBoot(); return; }
+    this.bootEl.style.animation = "crt-boot-out 0.78s cubic-bezier(0.6,0,0.2,1) forwards";
+    const done = () => this.finishBoot();
+    this.bootEl.addEventListener("animationend", done, { once: true });
+    const t = setTimeout(done, 1000);
+    this.timers.push(t);
+  }
+
+  finishBoot() {
+    if (this.booted) return;
+    this.booted = true;
+    if (this.bootEl) this.bootEl.style.display = "none";
+    this.startTerminal();
+    this.checkReveals();
+  }
+
+  componentDidUpdate(prev) {
+    if (prev.accent !== this.props.accent) this.applyAccent();
+    if (prev.reduceMotion !== this.props.reduceMotion || prev.typeSpeed !== this.props.typeSpeed) {
+      this.rearm();
+      requestAnimationFrame(() => this.checkReveals());
+      this.startTerminal();
+    }
+  }
+
+  componentWillUnmount() {
+    (this.timers || []).forEach(clearTimeout);
+    if (this.poll) clearInterval(this.poll);
+    if (this.onScroll) window.removeEventListener("scroll", this.onScroll);
+  }
+
+  rearm() {
+    if (!this.root) return;
+    this.revealedSet = new Set();
+    const reduce = this.reduce();
+    this.root.querySelectorAll("[data-reveal]").forEach((el) => {
+      const c = el.querySelector("[data-count]");
+      const counts = el.querySelectorAll("[data-count]");
+      if (reduce) {
+        el.style.opacity = "1"; el.style.transform = "none";
+        counts.forEach((x) => { x.textContent = x.dataset.count; });
+        this.revealedSet.add(el);
+        return;
+      }
+      el.style.opacity = "0";
+      el.style.transform = "translateY(14px)";
+      el.style.transition = "opacity 540ms var(--ease-out), transform 540ms var(--ease-out)";
+      el.style.transitionDelay = el.dataset.delay || "0ms";
+      counts.forEach((x) => { x.textContent = "0"; });
+    });
+  }
+
+  checkReveals() {
+    if (!this.booted || !this.root || !this.revealedSet) return;
+    const vh = window.innerHeight || 800;
+    this.root.querySelectorAll("[data-reveal]").forEach((el) => {
+      if (this.revealedSet.has(el)) return;
+      const r = el.getBoundingClientRect();
+      if (r.top < vh * 0.9 && r.bottom > 0) { this.revealedSet.add(el); this.revealEl(el); }
+    });
+  }
+
+  revealEl(el) {
+    el.style.opacity = "1";
+    el.style.transform = "none";
+    el.querySelectorAll("[data-count]").forEach((c) => this.countUp(c, c.dataset.count));
+  }
+
+  countUp(el, target) {
+    const plus = /\+$/.test(target);
+    const num = parseFloat(target);
+    if (this.reduce() || isNaN(num)) { el.textContent = target; return; }
+    const dur = 900, start = performance.now();
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      if (p < 1) { el.textContent = String(Math.round(num * eased)); requestAnimationFrame(tick); }
+      else el.textContent = target;
+    };
+    requestAnimationFrame(tick);
+    const ft = setTimeout(() => { el.textContent = target; }, dur + 200);
+    this.timers.push(ft);
+  }
+
+  startTerminal() {
+    (this.timers || []).forEach(clearTimeout);
+    this.timers = [];
+    const runId = (this.runId = (this.runId || 0) + 1);
+    const alive = () => runId === this.runId;
+    const wait = (ms, fn) => { const t = setTimeout(() => { if (alive()) fn(); }, ms); this.timers.push(t); };
+    this.setState({ typed: {}, revealed: -1, caretIdx: -1, done: false });
+    const reduce = this.reduce();
+    const speed = this.speed();
+    const go = (k) => {
+      if (!alive()) return;
+      if (k >= this.script.length) { this.setState({ done: true, caretIdx: -1 }); return; }
+      const ln = this.script[k];
+      this.setState({ revealed: k });
+      if (ln.kind === "cmd") {
+        this.setState({ caretIdx: k });
+        if (reduce) { this.setState((s) => ({ typed: { ...s.typed, [k]: ln.full } })); wait(220, () => go(k + 1)); return; }
+        let i = 0;
+        const type = () => {
+          if (!alive()) return;
+          i++;
+          this.setState((s) => ({ typed: { ...s.typed, [k]: ln.full.slice(0, i) } }));
+          if (i < ln.full.length) wait(speed, type);
+          else wait(430, () => go(k + 1));
+        };
+        type();
+      } else {
+        this.setState((s) => ({ typed: { ...s.typed, [k]: ln.full }, caretIdx: -1 }));
+        wait(reduce ? 180 : 560, () => go(k + 1));
+      }
+    };
+    wait(reduce ? 80 : 480, () => go(0));
+  }
+
+  buildTerminal() {
+    const ns = window.JouanOvhDesignSystem_c7aa28 || {};
+    const Prompt = ns.Prompt;
+    if (!Prompt) return null;
+    const { typed = {}, revealed = -1, caretIdx = -1, done } = this.state;
+    const kids = [];
+    for (let i = 0; i < this.script.length; i++) {
+      if (i > revealed) break;
+      const ln = this.script[i];
+      if (ln.kind === "cmd") {
+        kids.push(React.createElement(Prompt, { key: i, dir: ln.dir, command: typed[i] || "", caret: caretIdx === i }));
+        kids.push("\n");
+      } else {
+        kids.push(React.createElement("span", { key: i, style: { color: ln.color } }, typed[i] || ""));
+        kids.push("\n\n");
+      }
+    }
+    if (done) kids.push(React.createElement(Prompt, { key: "idle", dir: "~", command: "", caret: true }));
+    return React.createElement("div", { style: { whiteSpace: "pre-wrap" } }, kids);
+  }
+
+  renderVals() {
+    if (!this._booting && !this.booted) {
+      this._booting = true;
+      this.timers = this.timers || [];
+      this.revealedSet = this.revealedSet || new Set();
+      setTimeout(() => {
+        if (!this.onScroll) { this.onScroll = () => this.checkReveals(); window.addEventListener("scroll", this.onScroll, { passive: true }); }
+        if (!this.poll) this.poll = setInterval(() => this.checkReveals(), 200);
+        this.applyAccent();
+        if (this.props.bootSequence === false || this.reduce()) this.finishBoot();
+        else this.startBoot();
+      }, 0);
+    }
+    return {
+      setRoot: this.setRoot,
+      terminalEl: this.buildTerminal(),
+      termHeight: 300,
+      bootText: this.state.bootText || "",
+      setBoot: this.setBoot,
+      replay: () => {
+        if (this.props.bootSequence === false || this.reduce()) {
+          this.rearm(); this.startTerminal(); requestAnimationFrame(() => this.checkReveals());
+        } else {
+          this.startBoot();
+        }
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

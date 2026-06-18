@@ -1,0 +1,34 @@
+<!-- @dsCard group="Brand" viewport="700x230" name="Logo — the diamond mark" subtitle="Minimalist 3-D gem; white on dark, on accent, and on imagery" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); font-family: var(--font-mono);
+    padding: var(--space-6); display: flex; gap: var(--space-5); }
+  .tile { flex: 1; height: 150px; border-radius: var(--radius-md); display: flex;
+    flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3);
+    border: 1px solid var(--border-subtle); }
+  .tile img { width: 56px; height: 56px; }
+  .tile span { font-size: var(--fs-xs); color: var(--text-muted); }
+  .wordmark { display: flex; align-items: center; gap: var(--space-2); }
+  .wordmark b { color: var(--text-strong); font-size: var(--fs-lg); }
+  .wordmark img { width: 26px; height: 26px; }
+</style>
+</head>
+<body>
+  <div class="tile" style="background:var(--surface-1)">
+    <img src="../assets/brand/logo-white.png" alt="logo">
+    <span>on dark</span>
+  </div>
+  <div class="tile" style="background:var(--accent)">
+    <img src="../assets/brand/logo-black.png" alt="logo">
+    <span style="color:var(--ink-on-accent)">on accent</span>
+  </div>
+  <div class="tile" style="background:var(--surface-2);flex:1.4">
+    <div class="wordmark"><img src="../assets/brand/logo-white.png" alt="logo"><b>jouan.ovh</b></div>
+    <span>lockup</span>
+  </div>
+</body>
+</html>

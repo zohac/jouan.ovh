@@ -1,0 +1,31 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Surfaces" subtitle="Aubergine-tinted dark surface ramp, deepest → elevated" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); color: var(--text-body);
+    font-family: var(--font-mono); padding: var(--space-6); }
+  .row { display: flex; gap: var(--space-3); }
+  .sw { flex: 1 1 0; border-radius: var(--radius-md); overflow: hidden;
+    border: 1px solid var(--border-subtle); }
+  .chip { height: 70px; }
+  .meta { padding: var(--space-2); background: var(--bg-card); font-size: var(--fs-xs); }
+  .meta b { color: var(--text-strong); font-weight: var(--fw-bold); display: block; }
+  .meta span { color: var(--text-muted); }
+  .eyebrow { font-size: var(--fs-xs); letter-spacing: var(--ls-wider); text-transform: uppercase;
+    color: var(--text-muted); margin: 0 0 var(--space-4); }
+</style>
+</head>
+<body>
+  <p class="eyebrow">// Surface ramp</p>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--surface-0)"></div><div class="meta"><b>--bg-page</b><span>surface-0</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-1)"></div><div class="meta"><b>--bg-sunken</b><span>surface-1</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-2)"></div><div class="meta"><b>--bg-card</b><span>surface-2</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-3)"></div><div class="meta"><b>--bg-elevated</b><span>surface-3</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-4)"></div><div class="meta"><b>--bg-input</b><span>surface-4</span></div></div>
+  </div>
+</body>
+</html>
