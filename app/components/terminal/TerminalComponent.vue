@@ -172,17 +172,21 @@ export default defineComponent({
 
     const handleGlobalResizeMouseMove = (event: MouseEvent): void => {
       if (resizing.value && terminalElement.value) {
-        terminalElement.value.style.width = `${event.clientX - terminalElement.value.offsetLeft}px`;
-        terminalElement.value.style.height = `${event.clientY - terminalElement.value.offsetTop}px`;
+        const terminalRect = terminalElement.value.getBoundingClientRect();
+        const minWidth = 320;
+        const minHeight = 180;
+        const newWidth = Math.max(minWidth, event.clientX - terminalRect.left);
+        const newHeight = Math.max(minHeight, event.clientY - terminalRect.top);
+
+        terminalElement.value.style.width = `${newWidth}px`;
+        terminalElement.value.style.height = `${newHeight}px`;
       }
     };
 
     const handleGlobalResizeMouseUp = (): void => {
-      if (resizing.value) {
-        resizing.value = false;
-        window.removeEventListener("mousemove", handleGlobalResizeMouseMove);
-        window.removeEventListener("mouseup", handleGlobalResizeMouseUp);
-      }
+      resizing.value = false;
+      window.removeEventListener("mousemove", handleGlobalResizeMouseMove);
+      window.removeEventListener("mouseup", handleGlobalResizeMouseUp);
     };
 
     const handleMouseUp = (): void => {

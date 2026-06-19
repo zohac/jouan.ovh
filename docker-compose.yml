@@ -3,7 +3,7 @@
 #
 # Usage :
 #   docker compose up        -> installe les deps puis lance `pnpm dev` (http://localhost:3000)
-#   docker compose run --rm web pnpm <cmd>   -> exécuter une commande ponctuelle (lint, generate…)
+#   docker compose run --rm web sh -c "corepack enable && pnpm <cmd>"   -> commande ponctuelle
 #   docker compose down       -> stopper
 #
 # Les node_modules vivent dans un volume nommé pour éviter toute collision

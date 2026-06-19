@@ -4,7 +4,7 @@ baseline_commit: 06555cc797d8645687a6ec824637ca42ddde6cad
 
 # Story 1.1: Migrer le cœur vers Nuxt 4
 
-Status: in-progress
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -62,6 +62,9 @@ so that le site repose sur une base moderne et supportée, prête pour la refont
 - [x] [Review][Patch] Corriger le focus du premier lien de menu si la ref `NuxtLink` n'expose pas directement `focus()` [app/components/HeaderComponent.vue:10]
 - [x] [Review][Patch] Positionner le bouton de fermeture de `WindowWrapperComponent` relativement à la fenêtre [app/components/WindowWrapperComponent.vue:319]
 - [x] [Review][Patch] Corriger les valeurs image invalides `edger` [app/components/HeaderComponent.vue:4]
+- [x] [Review][Patch] Synchroniser le statut story/sprint avant passage à `done` [docs/implementation-artifacts/1-1-migrer-le-coeur-vers-nuxt-4.md:7]
+- [x] [Review][Patch] Corriger la commande Docker ponctuelle documentée dans `CLAUDE.md` et `docker-compose.yml` [CLAUDE.md:11]
+- [x] [Review][Patch] Durcir le resize du terminal avec bornes de taille et cleanup inconditionnel des listeners globaux [app/components/terminal/TerminalComponent.vue:173]
 
 ## Dev Notes
 

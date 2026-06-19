@@ -8,9 +8,9 @@ pas les dépendances installées. Toute commande pnpm doit donc passer par Docke
 
 ```sh
 docker compose up                          # dev server -> http://localhost:3000
-docker compose run --rm web pnpm <cmd>     # commande ponctuelle (lint, generate, add…)
-docker compose run --rm web pnpm lint      # lint (eslint + stylelint)
-docker compose run --rm web pnpm add -D <pkg>   # ajouter une dépendance
+docker compose run --rm web sh -c "corepack enable && pnpm <cmd>"     # commande ponctuelle
+docker compose run --rm web sh -c "corepack enable && pnpm lint"      # lint (eslint + stylelint)
+docker compose run --rm web sh -c "corepack enable && pnpm add -D <pkg>"   # ajouter une dépendance
 docker compose down                        # stopper
 ```
 
