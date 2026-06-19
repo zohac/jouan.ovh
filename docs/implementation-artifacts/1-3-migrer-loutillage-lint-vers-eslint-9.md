@@ -1,6 +1,6 @@
 # Story 1.3: Migrer l'outillage lint vers ESLint 9 (flat config)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
