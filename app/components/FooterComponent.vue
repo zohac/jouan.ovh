@@ -25,18 +25,19 @@ footer {
   // color system
   // =============================================================================
   --footer-color-background: #{_color.$aubergine-dark};
-  //--footer-color-background-hover: #{_color.$dark-background-hover};
-  //--footer-color-border: ;
-  //--footer-color-border-hover: ;
+
+  // --footer-color-background-hover: #{_color.$dark-background-hover};
+  // --footer-color-border: ;
+  // --footer-color-border-hover: ;
   --footer-color-text: #{_color.$dark-text};
-  //--footer-color-text-hover: var(--color-dark-text-hover);
-  //--footer-color-text-active: ;
-  //--footer-color-shapes: var(--footer-color-border-hover);
-  //--footer-color-shapes-hover: var(--color-text);
-  //--footer-color-shapes-active: var(--color-text-hover);
+
+  // --footer-color-text-hover: var(--color-dark-text-hover);
+  // --footer-color-text-active: ;
+  // --footer-color-shapes: var(--footer-color-border-hover);
+  // --footer-color-shapes-hover: var(--color-text);
+  // --footer-color-shapes-active: var(--color-text-hover);
   --footer-color-red-light: #{_color.$red-light};
 
-  -webkit-animation: 4s linear 0s 1 fadeIn;
   animation: 4s linear 0s 1 fadeIn;
   height: var(--footer-height);
   width: 100%;

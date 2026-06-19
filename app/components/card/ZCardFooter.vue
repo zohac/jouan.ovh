@@ -22,7 +22,6 @@ footer {
   grid-area: footer;
   padding: var(--zcf-space-inset);
   height: auto;
-
   max-width: calc(100vw - 2 * var(--zcf-space-inset));
 }
 </style>

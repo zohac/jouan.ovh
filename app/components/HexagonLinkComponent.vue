@@ -34,7 +34,6 @@ export default {
   --hexa-border-width: 0px;
   --hexa-shadow-blur: 0px;
   --hexa-content-text-size: 18px;
-
   --hexa-hover-width: 100px;
   --hexa-hover-border-width: 0px;
   --hexa-hover-shadow-blur: 10px;
@@ -48,10 +47,12 @@ export default {
   --hexa-grey-color-border-hover: #{_color.$gray-5};
   --hexa-grey-color-text: #{_color.$gray-5};
   --hexa-grey-color-text-hover: #{_color.$gray-2};
+
   // --hexa-color-text-active: ;
   --hexa-grey-color-shapes: var(--hexa-grey-color-text);
   --hexa-grey-color-shapes-hover: var(--hexa-grey-color-text-hover);
-  //--hexa-grey-color-shapes-active: ;
+
+  // --hexa-grey-color-shapes-active: ;
 
   --hexa-cursor: pointer;
   --hexa-height: calc(var(--hexa-width) / #{$-math-sqrt3});
@@ -67,7 +68,6 @@ export default {
   --hexa-content-top: calc(var(--hexa-border-width) * var(--hexa-tan));
   --hexa-content-width: calc(var(--hexa-width) - (var(--hexa-border-width) * 2));
   --hexa-content-height: var(--hexa-height);
-
   --hexa-hover-cursor: pointer;
   --hexa-hover-height: calc(var(--hexa-hover-width) / #{$-math-sqrt3});
   --hexa-hover-margin-top: calc(var(--hexa-hover-height) / 2);
@@ -97,8 +97,8 @@ export default {
   display: grid;
   transition: var(--hexa-hover-transition);
 
-  &:before,
-  &:after {
+  &::before,
+  &::after {
     content: "";
     position: absolute;
     z-index: 1;
@@ -111,13 +111,13 @@ export default {
     transition: var(--hexa-hover-transition);
   }
 
-  &:before {
+  &::before {
     top: var(--hexa-beforeafter-topbottom);
     border-top: solid var(--hexa-border-beforeafter-width) var(--hexa-border-color);
     border-right: solid var(--hexa-border-beforeafter-width) var(--hexa-border-color);
   }
 
-  &:after {
+  &::after {
     bottom: var(--hexa-beforeafter-topbottom);
     border-bottom: solid var(--hexa-border-beforeafter-width) var(--hexa-border-color);
     border-left: solid var(--hexa-border-beforeafter-width) var(--hexa-border-color);
@@ -149,8 +149,8 @@ export default {
     border-left: solid var(--hexa-hover-border-width) var(--hexa-hover-border-color);
     border-right: solid var(--hexa-hover-border-width) var(--hexa-hover-border-color);
 
-    &:before,
-    &:after {
+    &::before,
+    &::after {
       width: var(--hexa-hover-beforeafter-widthheight);
       height: var(--hexa-hover-beforeafter-widthheight);
       transform: scaleY(0.5774) rotate(-45deg);
@@ -158,13 +158,13 @@ export default {
       box-shadow: 0 0 var(--hexa-hover-shadow-blur) var(--hexa-hover-shadow-color);
     }
 
-    &:before {
+    &::before {
       top: var(--hexa-hover-beforeafter-topbottom);
       border-top: solid var(--hexa-hover-border-beforeafter-width) var(--hexa-hover-border-color);
       border-right: solid var(--hexa-hover-border-beforeafter-width) var(--hexa-hover-border-color);
     }
 
-    &:after {
+    &::after {
       bottom: var(--hexa-hover-beforeafter-topbottom);
       border-bottom: solid var(--hexa-hover-border-beforeafter-width) var(--hexa-hover-border-color);
       border-left: solid var(--hexa-hover-border-beforeafter-width) var(--hexa-hover-border-color);

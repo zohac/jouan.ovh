@@ -23,7 +23,7 @@
       <nuxt-picture
         src="/images/undraw_programming_re_kg9v.svg"
         :img-attrs="getAttr"
-        class="no-typewriting rotateY-180"
+        class="no-typewriting rotate-y-180"
       />
     </WindowWrapperComponent>
   </section>
@@ -64,25 +64,15 @@ const getAttr = {
   padding: var(--main-space-inset);
   height: 100%;
   width: 100%;
-
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 0 0;
-  grid-template-areas:
-    "img"
-    ".";
-
-  align-items: center;
-  justify-items: center;
+  grid-template: "img" 1fr "." 1fr / 1fr;
+  gap: 0;
+  place-items: center center;
 
   @media (min-width: _function.breakpoint("lg")) {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
-    gap: 0 0;
-    grid-template-areas: ". img";
-
+    grid-template: ". img" 1fr / 1fr 1fr;
+    gap: 0;
     height: calc(100vh - #{_variables.$header-height} - #{_variables.$footer-height});
   }
 
@@ -122,7 +112,7 @@ picture {
   border-radius: 24px;
 }
 
-.rotateY-180 {
+.rotate-y-180 {
   img {
     transform: rotateY(180deg);
   }

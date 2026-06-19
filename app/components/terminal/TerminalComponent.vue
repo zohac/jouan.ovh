@@ -289,36 +289,33 @@ export default defineComponent({
 
 <style lang="scss">
 .terminal {
-  --color-light: hsla(0, 0%, 92%, 1); /*with dark text*/
-  --color-dark: hsla(0, 0%, 8%, 1); /*with light text*/
-
+  --color-light: hsl(0deg 0% 92% / 100%); /* with dark text */
+  --color-dark: hsl(0deg 0% 8% / 100%); /* with light text */
   --color-text-dark: var(--color-dark);
   --color-text-light: var(--color-light);
-
-  --color-grey: hsl(0, 0%, 27%); /*with light text*/
-  --color-grey-light: hsl(0, 0%, 68%); /*with dark text*/
-  --color-grey-dark: hsl(0, 0%, 20%);
-
-  --color-aubergine: hsla(319, 33%, 30%, 1); /*with light text*/
-  --color-aubergine-light: hsla(319, 26%, 70%, 1); /*with dark text*/
-  --color-aubergine-dark: hsla(319, 100%, 9%, 1); /*with light text*/
-
-  --color-red: hsla(0, 100%, 43%, 1); /*without text*/
-  --color-red-light: hsla(0, 72%, 72%, 1); /*with dark text*/
-  --color-red-dark: hsla(0, 100%, 27%, 1); /*with light text*/
-  --color-yellow: hsla(48, 89%, 50%, 1); /*with dark text*/
-  --color-yellow-light: hsla(48, 89%, 79%, 1); /*with dark text*/
-  --color-yellow-dark: hsla(48, 100%, 15%, 1); /*with light text*/
-  --color-green: hsla(143, 60%, 50%, 1); /*with dark text*/
-  --color-green-light: hsla(143, 60%, 75%, 1); /*with dark text*/
-  --color-green-dark: hsla(143, 80%, 19%, 1); /*with light text*/
-  --color-blue: hsla(204, 70%, 53%, 1); /*without text*/
-  --color-blue-light: hsla(204, 69%, 80%, 1); /*with dark text*/
-  --color-blue-dark: hsla(204, 75%, 24%, 1); /*with light text*/
+  --color-grey: hsl(0deg 0% 27%); /* with light text */
+  --color-grey-light: hsl(0deg 0% 68%); /* with dark text */
+  --color-grey-dark: hsl(0deg 0% 20%);
+  --color-aubergine: hsl(319deg 33% 30% / 100%); /* with light text */
+  --color-aubergine-light: hsl(319deg 26% 70% / 100%); /* with dark text */
+  --color-aubergine-dark: hsl(319deg 100% 9% / 100%); /* with light text */
+  --color-red: hsl(0deg 100% 43% / 100%); /* without text */
+  --color-red-light: hsl(0deg 72% 72% / 100%); /* with dark text */
+  --color-red-dark: hsl(0deg 100% 27% / 100%); /* with light text */
+  --color-yellow: hsl(48deg 89% 50% / 100%); /* with dark text */
+  --color-yellow-light: hsl(48deg 89% 79% / 100%); /* with dark text */
+  --color-yellow-dark: hsl(48deg 100% 15% / 100%); /* with light text */
+  --color-green: hsl(143deg 60% 50% / 100%); /* with dark text */
+  --color-green-light: hsl(143deg 60% 75% / 100%); /* with dark text */
+  --color-green-dark: hsl(143deg 80% 19% / 100%); /* with light text */
+  --color-blue: hsl(204deg 70% 53% / 100%); /* without text */
+  --color-blue-light: hsl(204deg 69% 80% / 100%); /* with dark text */
+  --color-blue-dark: hsl(204deg 75% 24% / 100%); /* with light text */
 
   @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
-    backdrop-filter: blur(5px);
+    /* stylelint-disable-next-line property-no-vendor-prefix -- Safari: autoprefixer non activé, préfixe manuel requis */
     -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
   }
 
   color: var(--color-light);
@@ -337,32 +334,27 @@ export default defineComponent({
   box-shadow: var(--box-shadow-2);
 
   &-header {
-    //display: flex;
-    //align-items: center;
-    //background-color: var(--color-grey);
-    //color: var(--color-light);
-    //height: 24px;
-    //border-top-left-radius: 5px;
-    //border-top-right-radius: 5px;
-    //padding: 0 10px;
-    //font-size: 12px;
+    // display: flex;
+    // align-items: center;
+    // background-color: var(--color-grey);
+    // color: var(--color-light);
+    // height: 24px;
+    // border-top-left-radius: 5px;
+    // border-top-right-radius: 5px;
+    // padding: 0 10px;
+    // font-size: 12px;
 
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
     z-index: 1;
-
     height: 24px;
     padding: 0.25rem;
-
     border-top-left-radius: 0.25rem;
     border-top-right-radius: 0.25rem;
-
     text-align: center;
-
     background-color: var(--color-grey-dark);
-
     cursor: move;
 
     .header-text {
@@ -372,13 +364,10 @@ export default defineComponent({
     .close-button {
       cursor: pointer;
       border-radius: 9999px;
-
       width: 1rem;
       height: 1rem;
       margin: 0.25rem;
-
       background-image: linear-gradient(to bottom right, var(--color-red), var(--color-red-dark));
-
       box-shadow:
         2px 2px 3px var(--color-dark),
         -2px -2px 3px var(--color-grey);
@@ -455,9 +444,9 @@ export default defineComponent({
 
 table,
 .table {
-  --color-light: hsla(0, 0%, 92%, 1);
-  --color-dark: hsla(0, 0%, 8%, 1);
-  --color-grey-light: hsl(0, 0%, 68%);
+  --color-light: hsl(0deg 0% 92% / 100%);
+  --color-dark: hsl(0deg 0% 8% / 100%);
+  --color-grey-light: hsl(0deg 0% 68%);
   --margin: 1em;
 
   border: 1px dashed var(--color-light);

@@ -81,12 +81,10 @@ export default {
 
 <style lang="scss" scoped>
 @use "assets/scss/abstract/function";
-
 @use "assets/scss/abstract/color/gray" as _gray;
 
 main {
   padding: 1rem;
-
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -103,7 +101,6 @@ ul {
     width: 50vw;
     padding: 1rem;
     margin-bottom: 1rem;
-
     border-radius: 4px;
     overflow: hidden;
   }

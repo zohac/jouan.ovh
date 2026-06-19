@@ -14,5 +14,11 @@
     "property-no-deprecated": [true, { "severity": "warning" }],
     "declaration-property-value-keyword-no-deprecated": [true, { "severity": "warning" }],
     "font-family-no-duplicate-names": [true, { "severity": "warning" }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.vue"],
+      "customSyntax": "postcss-html"
+    }
+  ]
 }

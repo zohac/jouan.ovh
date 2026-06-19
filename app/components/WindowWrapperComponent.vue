@@ -255,31 +255,34 @@ export default defineComponent({
   // color system
   // =============================================================================
   --wwc-color-background: #{_color.$background};
-  //--wwc-color-background-hover: #{_color.$background-hover};
-  //--wwc-color-border: ;
-  //--wwc-color-border-hover: ;
-  --wwc-color-text: #{_color.$text};
-  //--wwc-color-text-hover: var(--color-dark-text-hover);
-  //--wwc-color-text-active: ;
-  //--wwc-color-shapes: var(--wwc-color-border-hover);
-  //--wwc-color-shapes-hover: var(--color-text);
-  //--wwc-color-shapes-active: var(--color-text-hover);
 
-  --wwc-color-dark: hsla(0, 0%, 8%, 1);
-  --wwc-color-grey: hsl(0, 0%, 27%);
-  --wwc-color-grey-light: hsl(0, 0%, 68%);
-  --wwc-color-grey-dark: hsl(0, 0%, 20%);
-  --wwc-color-aubergine: hsla(319, 33%, 30%, 1);
-  --wwc-color-aubergine-light: hsla(319, 26%, 70%, 1);
-  --wwc-color-aubergine-dark: hsla(319, 100%, 9%, 1);
-  --wwc-color-red: hsla(0, 100%, 43%, 1);
-  --wwc-color-red-light: hsla(0, 72%, 72%, 1);
-  --wwc-color-red-dark: hsla(0, 100%, 27%, 1);
+  // --wwc-color-background-hover: #{_color.$background-hover};
+  // --wwc-color-border: ;
+  // --wwc-color-border-hover: ;
+  --wwc-color-text: #{_color.$text};
+
+  // --wwc-color-text-hover: var(--color-dark-text-hover);
+  // --wwc-color-text-active: ;
+  // --wwc-color-shapes: var(--wwc-color-border-hover);
+  // --wwc-color-shapes-hover: var(--color-text);
+  // --wwc-color-shapes-active: var(--color-text-hover);
+
+  --wwc-color-dark: hsl(0deg 0% 8% / 100%);
+  --wwc-color-grey: hsl(0deg 0% 27%);
+  --wwc-color-grey-light: hsl(0deg 0% 68%);
+  --wwc-color-grey-dark: hsl(0deg 0% 20%);
+  --wwc-color-aubergine: hsl(319deg 33% 30% / 100%);
+  --wwc-color-aubergine-light: hsl(319deg 26% 70% / 100%);
+  --wwc-color-aubergine-dark: hsl(319deg 100% 9% / 100%);
+  --wwc-color-red: hsl(0deg 100% 43% / 100%);
+  --wwc-color-red-light: hsl(0deg 72% 72% / 100%);
+  --wwc-color-red-dark: hsl(0deg 100% 27% / 100%);
   --wh-height: 24px;
 
   @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
-    backdrop-filter: blur(5px);
+    /* stylelint-disable-next-line property-no-vendor-prefix -- Safari: autoprefixer non activé, préfixe manuel requis */
     -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
   }
 
   width: 100%;
@@ -298,21 +301,15 @@ export default defineComponent({
 
   &-header {
     z-index: 1;
-
     height: var(--wh-height);
     padding: 0.25rem;
-
     border-top-left-radius: 0.25rem;
     border-top-right-radius: 0.25rem;
-
     text-align: center;
-
     background-color: var(--wwc-color-grey-dark);
-
     position: absolute;
     width: 100%;
     cursor: move;
-
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
 
@@ -326,13 +323,10 @@ export default defineComponent({
       left: 0;
       cursor: pointer;
       border-radius: 9999px;
-
       width: 1rem;
       height: 1rem;
       margin: 0.25rem;
-
       background-image: linear-gradient(to bottom right, var(--wwc-color-red), var(--wwc-color-red-dark));
-
       box-shadow:
         #{_boxShadow.$box-shadow-2},
         #{_boxShadow.$box-shadow-1};
@@ -363,6 +357,7 @@ export default defineComponent({
   50% {
     opacity: 1;
   }
+
   50.1%,
   100% {
     opacity: 0;

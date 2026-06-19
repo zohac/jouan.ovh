@@ -45,6 +45,11 @@ so that le lint reste la barre de qualité après la montée de version.
   - [x] Violation volontaire détectée (preuve) : `prefer-const` (error), double quote (prettier), ligne > 120 (prettier wrap)
   - [x] Seules les violations triviales nouvellement remontées ont été corrigées (8 findings legacy) + reformatage Prettier mécanique
 
+### Review Findings
+
+- [x] [Review][Patch] Couvrir les styles SCSS des SFC Vue avec Stylelint [package.json:10] — `lint` / `lint:style` ciblent seulement `app/assets/**/*.scss`, alors que l'app contient de nombreux `<style lang="scss">` dans les `.vue`; ajouter le support SFC Vue (ex. `postcss-html` + override `.stylelintrc`) et élargir le glob sans provoquer de `CssSyntaxError`. **→ Résolu** : `postcss-html@^1.8.1` installé ; override `{ files: ["**/*.vue"], customSyntax: "postcss-html" }` dans `.stylelintrc.json` ; globs `lint`/`lint:style` élargis à `app/**/*.vue`. 19 SFC désormais lintés, **0 `CssSyntaxError`**.
+- [x] [Review][Patch] Mettre Prettier en dernière position de la flat config ESLint [eslint.config.mjs:14] — `eslint-plugin-prettier/recommended` est injecté avant les règles projet alors que le commentaire promet que Prettier prime en dernier; déplacer Prettier à la fin ou corriger explicitement la structure pour éviter de futurs conflits stylistiques. **→ Résolu** : `eslintPluginPrettierRecommended` déplacé en dernière position du tableau `withNuxt(...)` (après les règles projet et l'override Vue) ; commentaire corrigé pour refléter l'ordre réel.
+
 ## Dev Notes
 
 ### Contexte & contraintes (depuis project-context.md et SPEC)
@@ -120,12 +125,25 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 - **Régression `no-undef` évitée** : exclusion de `docs/`, `_bmad/`, `.claude/`, `.agents/` (matériel hors-app).
 - 8 findings legacy corrigés (import type, vars inutilisées, `catch {}`, prop optionnelle, `any`→type, `=> void`, disables justifiés v-html/dynamic-delete).
 
+#### Correctifs de revue (2026-06-19)
+
+- ✅ Résolu review finding [Patch] : **couverture Stylelint des SFC Vue**. Ajout de `postcss-html@^1.8.1` (dev) + override `.stylelintrc.json` (`customSyntax: "postcss-html"` sur `**/*.vue`) ; globs `lint`/`lint:style` élargis à `app/**/*.vue`. Les 19 SFC sont lintés sans `CssSyntaxError`.
+- ✅ Résolu review finding [Patch] : **Prettier en dernière position** de la flat config (`eslint-plugin-prettier/recommended` placé après les règles projet pour que `eslint-config-prettier` prime).
+- Violations Stylelint nouvellement remontées dans les `<style>` Vue corrigées via `stylelint --fix` (notation couleur moderne `hsl(... / ...)`, espaces de commentaires, lignes vides, dédup de déclarations strictement identiques) — transformations mécaniques fonctionnellement neutres.
+- **Régression `--fix` rattrapée** : `--fix` retirait les préfixes `-webkit-` (autoprefixer non câblé dans ce projet). `-webkit-backdrop-filter` restauré (Safari) dans `TerminalComponent.vue` et `WindowWrapperComponent.vue` avec `stylelint-disable-next-line property-no-vendor-prefix` documenté ; doublons `animation` issus du strip de `-webkit-animation` (préfixe obsolète) nettoyés dans `FooterComponent.vue` et `ZCardComponent.vue`.
+- Classe `.rotateY-180` → `.rotate-y-180` (kebab-case, `selector-class-pattern`) dans `app/pages/index.vue` (template + style).
+- Modifications `--fix` sur les SCSS d'`app/assets/` **écartées** (hors périmètre des findings, déjà lint-clean ; un fix réécrivait `appearance: button`→`auto`, contraire à la politique « dépréciations en warning »). Baseline rétablie : **0 erreur / 43 warnings** non bloquants.
+- Convention projet : dev & outillage **via Docker** (`docker compose run --rm web pnpm lint`) — `node_modules` en volume nommé. Consigné dans `CLAUDE.md`.
+
 ### File List
 
 Créés : `eslint.config.mjs`, `.prettierrc.json`, `.stylelintrc.json`. Modifiés : `package.json` (deps lint + scripts `lint`/`lint:style`), `nuxt.config.ts` (module + bloc `eslint`), fichiers app (reformatage + 8 fixes). Supprimés : `.eslintrc.js`, `.eslintignore`. (Détail complet : story 1.1.)
+
+**Correctifs de revue (2026-06-19)** — Créés : `CLAUDE.md` (convention Docker). Modifiés : `.stylelintrc.json` (override `postcss-html` pour `**/*.vue`), `package.json` + `pnpm-lock.yaml` (`postcss-html` + globs `lint`/`lint:style` élargis aux `.vue`), `eslint.config.mjs` (Prettier en dernier), `app/pages/index.vue` (`.rotate-y-180` + `--fix`), `app/components/terminal/TerminalComponent.vue` & `app/components/WindowWrapperComponent.vue` (restauration `-webkit-backdrop-filter` + `--fix`), `app/components/FooterComponent.vue` & `app/components/card/ZCardComponent.vue` (dédup `animation` + `--fix`), `app/components/HeaderComponent.vue`, `app/components/HexagonLinkComponent.vue`, `app/components/card/ZCardFooter.vue`, `app/components/terminal/TerminalButton.vue`, `app/layouts/default.vue`, `app/pages/blog/index.vue` (reformatage `--fix` mécanique des `<style>`).
 
 ## Change Log
 
 | Date | Version | Description | Auteur |
 |------|---------|-------------|--------|
 | 2026-06-18 | 0.1 | ESLint 10 flat config (@nuxt/eslint) + Prettier 3 + Stylelint 17, script lint chaîné, lint vert. Status → review. | Amelia (dev-story) |
+| 2026-06-19 | 0.2 | Correctifs de revue : 2 findings résolus (couverture Stylelint des SFC Vue via `postcss-html` ; Prettier en dernière position de la flat config). Régression `--fix` sur préfixes `-webkit-` rattrapée. `pnpm lint` vert (0 erreur / 43 warnings). | Amelia (dev-story) |

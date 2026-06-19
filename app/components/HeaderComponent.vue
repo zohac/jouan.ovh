@@ -70,18 +70,18 @@ const closeMenu = () => {
 @use "assets/scss/abstract/function";
 @use "assets/scss/components/list";
 
-//Value     Token
+// Value     Token
 // =============================================================================
-//4px       space-stack-4x
-//16px      space-stack-16x
+// 4px       space-stack-4x
+// 16px      space-stack-16x
 
-//Value     Token
+// Value     Token
 // =============================================================================
-//8px       space-inline-8x
+// 8px       space-inline-8x
 
-//Value     Token
+// Value     Token
 // =============================================================================
-//16px      space-inset-16x
+// 16px      space-inset-16x
 
 .hidden {
   display: none;
@@ -102,21 +102,20 @@ header {
   // =============================================================================
   --header-color-background: #{_color.$dark-background};
   --header-color-background-hover: #{_color.$dark-background-hover};
-  //--header-color-border: ;
-  //--header-color-border-hover: ;
+
+  // --header-color-border: ;
+  // --header-color-border-hover: ;
   --header-color-text: #{_color.$dark-text};
-  //--header-color-text-hover: var(--color-dark-text-hover);
-  //--header-color-text-active: ;
-  //--header-color-shapes: var(--header-color-border-hover);
-  //--header-color-shapes-hover: var(--color-text);
-  //--header-color-shapes-active: var(--color-text-hover);
+
+  // --header-color-text-hover: var(--color-dark-text-hover);
+  // --header-color-text-active: ;
+  // --header-color-shapes: var(--header-color-border-hover);
+  // --header-color-shapes-hover: var(--color-text);
+  // --header-color-shapes-active: var(--color-text-hover);
 
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: 1fr;
-  gap: 0 0;
-  grid-template-areas: ". . .";
-
+  grid-template: ". . ." 1fr / auto 1fr auto;
+  gap: 0;
   align-items: center;
   width: 100%;
   height: var(--header-height);
@@ -149,10 +148,7 @@ header {
     #close-menu {
       position: absolute;
       z-index: 0;
-      top: calc(-1 * var(--header-height));
-      right: 0;
-      bottom: 0;
-      left: calc(-1 * var(--header-space-inset));
+      inset: calc(-1 * var(--header-height)) 0 0 calc(-1 * var(--header-space-inset));
       background-color: transparent;
       min-height: 100vh;
       width: 100vw;
@@ -170,7 +166,6 @@ header {
         font-size: var(--header-list-item-font-size);
         font-weight: var(--header-list-item-font-weight);
         line-height: var(--header-list-item-line-height);
-
         list-style-type: none;
         cursor: pointer;
         animation: menu-item-opacity 300ms ease-in-out forwards;

@@ -3,15 +3,16 @@ import withNuxt from "./.nuxt/eslint.config.mjs";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 
 // Flat config ESLint 9/10. La base Nuxt est générée par le module @nuxt/eslint
-// (.nuxt/eslint.config.mjs). On ajoute Prettier en dernier pour qu'il prime sur
-// les règles de mise en forme, puis nos règles projet.
+// (.nuxt/eslint.config.mjs). Nos règles projet sont déclarées d'abord, puis
+// Prettier est appliqué EN DERNIER : eslint-plugin-prettier/recommended embarque
+// eslint-config-prettier, qui doit primer pour désactiver toute règle de mise en
+// forme conflictuelle (best practice flat config).
 export default withNuxt(
   {
     // Matériel de référence / outillage hors application — non linté.
     // docs/ contient notamment le design system source en React (.jsx).
     ignores: ["docs/**", "_bmad/**", ".claude/**", ".agents/**"],
   },
-  eslintPluginPrettierRecommended,
   {
     rules: {
       "prefer-const": "error",
@@ -28,4 +29,6 @@ export default withNuxt(
       "vue/multi-word-component-names": "off",
     },
   },
+  // Prettier en dernier : prime sur toutes les règles de formatage ci-dessus.
+  eslintPluginPrettierRecommended,
 );

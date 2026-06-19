@@ -30,17 +30,18 @@ article {
   // color system
   // =============================================================================
   --article-color-background: #{_color.$background};
-  //--article-color-background-hover: ;
-  //--article-color-border: ;
-  //--article-color-border-hover: ;
+
+  // --article-color-background-hover: ;
+  // --article-color-border: ;
+  // --article-color-border-hover: ;
   --article-color-text: #{_color.$text};
   --article-color-text-hover: #{_color.$text-hover};
-  //--article-color-text-active: ;
-  //--article-color-shapes: var(--article-color-border-hover);
-  //--article-color-shapes-hover: var(--color-text);
-  //--article-color-shapes-active: var(--color-text-hover);
 
-  -webkit-animation: bounce-in-fwd 1.1s both;
+  // --article-color-text-active: ;
+  // --article-color-shapes: var(--article-color-border-hover);
+  // --article-color-shapes-hover: var(--color-text);
+  // --article-color-shapes-active: var(--color-text-hover);
+
   animation: bounce-in-fwd 1.1s both;
   background-color: var(--article-color-background);
   border-radius: var(--article-radius);
@@ -50,15 +51,9 @@ article {
   color: var(--article-color-text);
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr auto;
-  gap: 0 0;
+  grid-template: "header" auto "section" 1fr "footer" auto / 1fr;
+  gap: 0;
   grid-auto-flow: row;
-  grid-template-areas:
-    "header"
-    "section"
-    "footer";
-
   min-width: calc(2 * var(--main-space-inset));
   max-width: calc(100vw - (2 * var(--main-space-inset)));
 }
