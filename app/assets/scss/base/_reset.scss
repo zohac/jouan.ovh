@@ -372,8 +372,16 @@ html {
 
 /* Elements
 --------------------------------------------- */
+
+/* Base dark-first : fond sombre par défaut (tokens DS, story 2.1).
+   Neutralise l'ancien `background: #fff` du reset (incompatible dark-first). */
+html {
+  background: var(--bg-page);
+}
+
 body {
-  background: #fff;
+  background: var(--bg-page);
+  color: var(--text-body);
 }
 
 hr {

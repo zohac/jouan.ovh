@@ -11,7 +11,8 @@ optgroup,
 textarea {
   --font-size: #{variables.$font-size-base};
 
-  font-family: UbuntuMono-Regular, 'Segoe UI', serif;
+  // Corps long : Ubuntu sans (token DS). Les titres/labels/code passent en mono ci-dessous.
+  font-family: var(--font-sans);
   font-size: var(--font-size);
   font-weight: #{variables.$font-weight-regular};
   line-height: #{function.line-height(var(--font-size))};
@@ -26,6 +27,9 @@ h4,
 h5,
 h6 {
   clear: both;
+
+  // Ubuntu Mono = voix signature pour les titres (token DS).
+  font-family: var(--font-mono);
 }
 
 h1 {
@@ -42,7 +46,9 @@ h2 {
 
 p {
   font-size: #{variables.$font-size-medium};
-  line-height: #{function.line-height(variables.$font-size-medium)};
+
+  // Long-form lisible : interligne détendu (token DS).
+  line-height: var(--lh-relaxed);
   margin-bottom: #{space.$space-stack-24x};
 }
 
@@ -62,7 +68,7 @@ address {
 }
 
 pre {
-  font-family: "Courier 10 Pitch", courier, monospace;
+  font-family: var(--font-mono);
   font-size: #{variables.$font-size-base};
   line-height: #{function.line-height(variables.$font-size-base)};
   overflow: auto;
@@ -75,7 +81,7 @@ code,
 kbd,
 tt,
 var {
-  font-family: monaco, consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+  font-family: var(--font-mono);
 }
 
 abbr,

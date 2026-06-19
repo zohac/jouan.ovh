@@ -1,6 +1,10 @@
+---
+baseline_commit: ac5658dd27bab4b10fb6085cfd7eba3f6d5d5f96
+---
+
 # Story 2.2: Polices et base dark-first
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,22 +23,22 @@ so that le site adopte l'identité « OS de nuit » (UX-DR1, NFR1, NFR7).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Configurer les polices (AC: #1)
-  - [ ] Ubuntu Mono : les `.ttf` sont **déjà présents** dans `assets/fonts/Ubuntu_Mono/` (Regular/Italic/Bold/BoldItalic). Déclarer (ou réutiliser) les `@font-face` sous le nom de famille **`"Ubuntu Mono"`** (avec espace) pour matcher `--font-mono` du DS, et non l'ancien `'UbuntuMono-Regular'`.
-  - [ ] Ubuntu sans : ajouter l'import Google Fonts (`@import url("https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,400;1,700&display=swap")`) tel que prescrit par `tokens/fonts.css`. Préférer un `<link>` dans `nuxt.config.ts > app.head` plutôt qu'un `@import` CSS (perf + règle « jamais `@import` » côté SCSS) — sinon documenter le choix.
-  - [ ] Vérifier que les chemins `url(...)` des `@font-face` résolvent en Nuxt 4 + Vite (l'ancien `_fonts.scss` utilise `url('assets/fonts/Ubuntu_Mono/...')`).
-- [ ] Tâche 2 — Base dark-first (AC: #2)
-  - [ ] Mettre `body` (et `html`) sur fond sombre : `background: var(--bg-page)` (= `--surface-0`), couleur `color: var(--text-body)`, famille par défaut `font-family: var(--font-sans)`.
-  - [ ] **Neutraliser** le `body { background: #fff; }` du reset legacy (`assets/scss/base/_reset.scss`, ligne ~1284) qui force un fond blanc — incompatible dark-first.
-  - [ ] Titres/labels/code en `--font-mono` (Ubuntu Mono = voix signature) ; paragraphes/corps long en `--font-sans` (Ubuntu).
-- [ ] Tâche 3 — Réglages typographiques de base (AC: #1)
-  - [ ] `h1…h6`, eyebrows/labels, `code`/`pre`/`kbd` → `--font-mono`.
-  - [ ] `p`, corps de texte, prose → `--font-sans`, `line-height: var(--lh-relaxed)` pour le long-form.
-  - [ ] Sélection de texte : déjà gérée par `::selection` (token 2.1), vérifier le rendu.
-- [ ] Tâche 4 — Vérification (AC: #1, #2)
-  - [ ] `yarn dev` : le fond du site est sombre (plus de flash blanc) sur `/`, `/about`, `/blog`.
-  - [ ] Ubuntu Mono s'applique aux titres ; Ubuntu sans au corps ; pas de FOUT bloquant (`font-display: swap`).
-  - [ ] `yarn lint` (stylelint) vert ; `yarn generate` reste vert.
+- [x] Tâche 1 — Configurer les polices (AC: #1)
+  - [x] Ubuntu Mono : `@font-face` (4 graisses/styles) renommés de `'UbuntuMono-Regular'` vers **`"Ubuntu Mono"`** (avec espace) dans `abstract/_fonts.scss` pour matcher `--font-mono`. Le rename répare aussi `TerminalComponent.vue` (qui référençait déjà `"Ubuntu Mono"` sans `@font-face` correspondant → tombait sur `monospace`).
+  - [x] Ubuntu sans : ajouté via **`<link>` Google Fonts** (preconnect + stylesheet, `display=swap`) dans `nuxt.config.ts > app.head.link` — et non un `@import` SCSS (respecte la règle « jamais `@import` » + non bloquant).
+  - [x] Chemins `url("assets/fonts/Ubuntu_Mono/...")` confirmés résolus par Vite (ttf fingerprintés émis dans `.output/public/_nuxt/`, CSS pointe dessus).
+- [x] Tâche 2 — Base dark-first (AC: #2)
+  - [x] `html` + `body` sur fond sombre : `background: var(--bg-page)`, `color: var(--text-body)` ; famille par défaut `font-family: var(--font-sans)` (via `abstract/_typography.scss`).
+  - [x] **Neutralisé** le `body { background: #fff; }` du reset legacy (`base/_reset.scss`) → `var(--bg-page)` (+ `html` pour éviter tout flash blanc).
+  - [x] Titres/labels/code en `--font-mono` ; corps long en `--font-sans`.
+- [x] Tâche 3 — Réglages typographiques de base (AC: #1)
+  - [x] `h1…h6`, `code`/`pre`/`kbd`/`tt`/`var` → `--font-mono` (`_typography.scss`).
+  - [x] `p`/corps → `--font-sans` (hérité du `body`), `line-height: var(--lh-relaxed)` sur `p` pour le long-form.
+  - [x] Sélection de texte : `::selection` géré par le token 2.1 (`_root.scss`), présent dans la sortie.
+- [x] Tâche 4 — Vérification (AC: #1, #2)
+  - [x] Fond sombre prouvé dans la sortie : `body,html{background:var(--bg-page)}` + `body{color:var(--text-body)}` ; **plus aucun `#fff` sur `body`** (plus de flash blanc). (Preuve par build `generate`, même compilation que `dev`.)
+  - [x] Ubuntu Mono (titres/code, `@font-face` → ttf locaux) + Ubuntu sans (corps, `<link>` Google Fonts) ; `font-display: swap` (pas de FOUT bloquant).
+  - [x] `pnpm lint` (stylelint) vert (0 erreur ; 43 warnings baseline) ; `pnpm generate` exit 0 (24 routes).
 
 ## Dev Notes
 
@@ -92,8 +96,32 @@ so that le site adopte l'identité « OS de nuit » (UX-DR1, NFR1, NFR7).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Amelia / BMad dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` → exit 0 (0 erreur, 43 warnings baseline). 1 erreur transitoire `comment-empty-line-before` dans `_reset.scss` corrigée (ligne vide avant commentaire).
+- `pnpm generate` → exit 0, « Prerendered 24 routes ».
+- Preuves dans `.output/public` : `@font-face` `Ubuntu Mono` (4 styles) → `url(./UbuntuMono-*.ttf)` (ttf émis/fingerprintés) ; `body,html{background:var(--bg-page)}` + `body{color:var(--text-body)}` ; aucun `body{…#fff…}` ; `font-family:var(--font-sans)` sur body ; `h1…h6{…--font-mono}` ; `index.html` contient `<link rel="preconnect">` + `…fonts.googleapis.com/css2?family=Ubuntu…&display=swap`.
 
 ### Completion Notes List
 
+- **Polices Ubuntu Mono** : `abstract/_fonts.scss` réécrit — famille `'UbuntuMono-Regular'` → `"Ubuntu Mono"` (match `--font-mono`), 4 graisses/styles conservées, `font-display: swap`, `format("truetype")`. Le chemin `url("assets/fonts/Ubuntu_Mono/*.ttf")` résout déjà sous Vite (vérifié : ttf fingerprintés dans le build). **Bonus** : le rename répare `TerminalComponent.vue` (déjà sur `"Ubuntu Mono"`, qui tombait sur `monospace` faute de `@font-face`).
+- **Ubuntu sans** : `<link>` Google Fonts (`preconnect` ×2 + `stylesheet` `display=swap`) dans `nuxt.config.ts > app.head.link`. Choix du `<link>` plutôt que `@import` SCSS : respecte la règle projet « jamais `@import` » et évite un import bloquant.
+- **Base dark-first** : `base/_reset.scss` — `body { background: #fff }` legacy remplacé par `background: var(--bg-page)` (+ `html` pour couvrir overscroll/flash) et `color: var(--text-body)`.
+- **Typo de base** (`abstract/_typography.scss`) : corps (`body`/form) en `var(--font-sans)` (était mono partout) ; `h1…h6` + `pre` + `code/kbd/tt/var` en `var(--font-mono)` ; `p` en `line-height: var(--lh-relaxed)`. Tailles/line-heights legacy (`$variables.*`) conservées pour éviter toute régression de mise en page.
+- **Legacy préservé** : aucun token SCSS `$` supprimé ; `appearance: button` du reset laissé intact (un `--fix` Stylelint le réécrivait en `auto` — changement sémantique annulé, cohérent avec la politique « dépréciations en warning » de la story 1.3).
+- **Prerender / dark-first** : polices statiques (neutre `generate`) ; aucun thème clair introduit ; `#fff` du body supprimé (NFR1).
+
 ### File List
+
+- `app/assets/scss/abstract/_fonts.scss` (MODIFIÉ) — `@font-face` famille `"Ubuntu Mono"` (4 styles), urls double-quote.
+- `app/assets/scss/abstract/_typography.scss` (MODIFIÉ) — body→`--font-sans` ; h1–h6/pre/code→`--font-mono` ; p→`--lh-relaxed`.
+- `app/assets/scss/base/_reset.scss` (MODIFIÉ) — base dark-first `html`/`body` (`--bg-page`/`--text-body`), suppression du fond blanc.
+- `nuxt.config.ts` (MODIFIÉ) — `<link>` preconnect + stylesheet Ubuntu (Google Fonts).
+
+## Change Log
+
+| Date | Version | Description | Auteur |
+|------|---------|-------------|--------|
+| 2026-06-19 | 0.1 | Polices (`@font-face "Ubuntu Mono"` + `<link>` Ubuntu sans) et base dark-first (`html`/`body` sur `--bg-page`/`--text-body`, corps `--font-sans`, titres/code `--font-mono`). Lint vert, `generate` vert, preuves dans la sortie. Status → review. | Amelia (dev-story) |
