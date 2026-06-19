@@ -1,6 +1,10 @@
+---
+baseline_commit: 37b9c4b23ea6a97805e23959e0bc2a3930111a80
+---
+
 # Story 2.1: Porter les tokens du design system
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,24 +23,24 @@ so that tout composant style via une source unique de vérité (UX-DR1, FR2, NFR
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Créer le fichier d'entrée des tokens CSS globaux (AC: #1)
-  - [ ] Créer `assets/scss/abstract/_root.scss` (le partiel `root` est déjà référencé par `assets/scss/abstract/_index.scss` mais **n'existe pas encore** — il fait actuellement échouer toute compilation de `abstract/_index`). Y déclarer un bloc `:root { … }` portant les CSS custom properties.
-  - [ ] Y porter **à l'identique** les valeurs de `docs/design_system/tokens/colors.css` (échelles orange/aubergine, ramp `--surface-0…4`, hairlines `--line*`, encres `--ink-1…4`, palette terminale `--term-*`, sémantiques `--success/--warning/--danger/--info`, puis tous les alias `--bg-*`, `--text-*`, `--border-*`, `--accent*`, `--link`, `--prompt`, `--overlay`, `--selection`).
-  - [ ] Ajouter la règle `::selection { background: var(--selection); }` (cf. `colors.css`).
-- [ ] Tâche 2 — Porter typographie, espacement, rayons (AC: #1)
-  - [ ] Porter `typography.css` : `--font-mono`/`--font-sans`/`--font-display`, échelle `--fs-xs…6xl`, poids `--fw-*`, line-heights `--lh-*`, letter-spacing `--ls-*`.
-  - [ ] Porter `spacing.css` : `--space-0…24`, conteneurs `--container-*`, `--header-height`/`--footer-height` (56px), `--gutter`.
-  - [ ] Porter `radius.css` : `--radius-none/xs/sm/md/lg/xl/pill/circle`.
-- [ ] Tâche 3 — Porter élévation et motion (AC: #1)
-  - [ ] Porter `elevation.css` : `--shadow-1…4`, `--shadow-hairline`, `--glow-accent`, `--glow-terminal`, `--ring-accent`.
-  - [ ] Porter `motion.css` : durées `--dur-*`, easings `--ease-*`, et les keyframes `caret-blink` + `fade-rise` (les déclarer au niveau global, hors `:root`).
-- [ ] Tâche 4 — Brancher les tokens dans la chaîne SCSS globale (AC: #1)
-  - [ ] Vérifier que `assets/scss/abstract/_index.scss` charge bien `_root.scss` via `@use "root";` (déjà présent) — la création du partiel doit lever l'erreur de compilation.
-  - [ ] S'assurer que `assets/scss/main.scss` (point d'entrée global déclaré dans `nuxt.config.ts` via `css: ["@/assets/scss/main.scss"]`) importe la couche tokens : ajouter `@use "abstract/index";` (ou `@use "abstract";`) si `main.scss` ne charge pas déjà `abstract/_index`. Aujourd'hui `main.scss` ne charge que `base/reset`, `abstract/fonts`, `abstract/typography` — les CSS vars ne sont donc pas globales tant qu'on ne branche pas la couche.
-- [ ] Tâche 5 — Vérification (AC: #1, #2)
-  - [ ] `yarn dev` démarre ; inspecter le DOM : `:root` expose les nouvelles CSS vars (`--accent`, `--bg-page`, `--space-4`, `--radius-md`, etc.).
-  - [ ] `yarn lint` (stylelint inclus) passe sans erreur sur le nouveau `_root.scss`.
-  - [ ] Documenter dans le code (commentaire en tête de `_root.scss`) que ces tokens sont la source de vérité et qu'aucune valeur ne doit être hardcodée.
+- [x] Tâche 1 — Créer le fichier d'entrée des tokens CSS globaux (AC: #1)
+  - [x] Créer `assets/scss/abstract/_root.scss` (le partiel `root` est déjà référencé par `assets/scss/abstract/_index.scss` mais **n'existe pas encore** — il fait actuellement échouer toute compilation de `abstract/_index`). Y déclarer un bloc `:root { … }` portant les CSS custom properties.
+  - [x] Y porter **à l'identique** les valeurs de `docs/design_system/tokens/colors.css` (échelles orange/aubergine, ramp `--surface-0…4`, hairlines `--line*`, encres `--ink-1…4`, palette terminale `--term-*`, sémantiques `--success/--warning/--danger/--info`, puis tous les alias `--bg-*`, `--text-*`, `--border-*`, `--accent*`, `--link`, `--prompt`, `--overlay`, `--selection`).
+  - [x] Ajouter la règle `::selection { background: var(--selection); }` (cf. `colors.css`).
+- [x] Tâche 2 — Porter typographie, espacement, rayons (AC: #1)
+  - [x] Porter `typography.css` : `--font-mono`/`--font-sans`/`--font-display`, échelle `--fs-xs…6xl`, poids `--fw-*`, line-heights `--lh-*`, letter-spacing `--ls-*`.
+  - [x] Porter `spacing.css` : `--space-0…24`, conteneurs `--container-*`, `--header-height`/`--footer-height` (56px), `--gutter`.
+  - [x] Porter `radius.css` : `--radius-none/xs/sm/md/lg/xl/pill/circle`.
+- [x] Tâche 3 — Porter élévation et motion (AC: #1)
+  - [x] Porter `elevation.css` : `--shadow-1…4`, `--shadow-hairline`, `--glow-accent`, `--glow-terminal`, `--ring-accent`.
+  - [x] Porter `motion.css` : durées `--dur-*`, easings `--ease-*`, et les keyframes `caret-blink` + `fade-rise` (les déclarer au niveau global, hors `:root`).
+- [x] Tâche 4 — Brancher les tokens dans la chaîne SCSS globale (AC: #1)
+  - [x] Vérifier que `assets/scss/abstract/_index.scss` charge bien `_root.scss` via `@use "root";` (déjà présent) — la création du partiel lève l'erreur de compilation latente (seule dépendance manquante d'`_index`).
+  - [x] Brancher la couche tokens dans `assets/scss/main.scss` (point d'entrée global déclaré dans `nuxt.config.ts`). **Décision** : `@use "abstract/root";` (et non `@use "abstract/index";`) — voir Completion Notes : `index` ré-émettrait les `@keyframes` legacy de `_animations.scss` globalement, sans bénéfice pour l'AC ; `root` expose exactement les tokens sans effet de bord legacy.
+- [x] Tâche 5 — Vérification (AC: #1, #2)
+  - [x] Build vert (`pnpm generate`, exit 0, 24 routes) : `:root` expose les nouvelles CSS vars (`--accent`, `--bg-page`, `--space-4`, `--radius-md`, `--shadow-2`, `--dur-base`, `--font-mono`…) — prouvé par grep dans `.output/public/_nuxt/*.css` ; `::selection` et keyframes `caret-blink`/`fade-rise` émis. (Preuve par build, plus forte que l'inspection DOM en `dev` : même compilation Sass.)
+  - [x] `pnpm lint` (stylelint inclus) passe sans erreur sur le nouveau `_root.scss` (0 erreur ; 43 warnings baseline inchangés).
+  - [x] Documenter dans le code (commentaire en tête de `_root.scss`) que ces tokens sont la source de vérité et qu'aucune valeur ne doit être hardcodée.
 
 ## Dev Notes
 
@@ -99,8 +103,31 @@ so that tout composant style via une source unique de vérité (UX-DR1, FR2, NFR
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Amelia / BMad dev-story)
+
 ### Debug Log References
+
+- `pnpm stylelint app/assets/scss/abstract/_root.scss --fix` → notation couleur normalisée (`hsl(24 94% 53%)` → `hsl(24deg 94% 53%)`, alpha `0.13` → `13%`), valeurs colorimétriques inchangées. Lint du fichier ensuite : exit 0.
+- `pnpm lint` (global) → exit 0 (0 erreur, 43 warnings baseline inchangés).
+- `pnpm generate` → exit 0, « Prerendered 24 routes ». Tokens vérifiés dans `.output/public/_nuxt/*.css` : bloc `:root{--orange-50…--selection}` présent (le minifieur Nuxt convertit hsl→hex, couleurs identiques), `::selection{background:var(--selection)}`, `@keyframes caret-blink`/`fade-rise` présents. Grep OK sur `--accent`, `--accent-soft`, `--bg-page`, `--text-body`, `--space-4`, `--radius-md`, `--shadow-2`, `--ring-accent`, `--dur-base`, `--ease-out`, `--font-mono`, `--selection`.
 
 ### Completion Notes List
 
+- **Tokens portés en CSS custom properties globales** dans `app/assets/scss/abstract/_root.scss` (`:root`) : couleurs (échelles orange/aubergine, surfaces, lignes, encres, palette terminale, sémantiques + tous les alias), typographie, espacement, conteneurs, rayons, élévation/glows/ring, motion. + règle `::selection` et keyframes globaux `caret-blink`/`fade-rise`.
+- **Branchement** : `main.scss` charge désormais `@use "abstract/root";` → les CSS vars sont globales et consommables via `var(--token)` depuis n'importe quel composant (CAP-2 / AC#1).
+- **Décision de wiring (Tâche 4)** : branché `abstract/root` directement plutôt que `abstract/index`. `abstract/_index` agrège aussi `_animations.scss` (keyframes legacy `fadeIn`/`bounce-in-fwd`/…), `_color.scss`, `_typography.scss`, etc. ; le charger dans `main.scss` ré-émettrait ces keyframes globalement (doublons avec ceux déjà injectés par `ZCardBody.vue`), sans aucun apport pour l'exposition des tokens. `root` est chirurgical, zéro effet de bord legacy. La création de `_root.scss` lève par ailleurs l'erreur de compilation latente d'`_index` (sa seule dépendance manquante).
+- **Notation couleur** : valeurs reproduites à l'identique des tokens source ; seule la notation a été normalisée (`deg`/`%`) pour respecter la barre Stylelint déjà en place dans le codebase (cohérence avec le reste des SFC après story 1.3). Couleurs/alphas strictement équivalents.
+- **Legacy préservé** : aucun `$`-token SCSS legacy (`_color.scss`, `_space.scss`, `_radius.scss`, `_box_shadow.scss`, `_variables.scss`) supprimé ni modifié ; les deux systèmes coexistent comme prévu (retrait composant par composant en 2.4/2.8).
+- **AC#2** (aucune valeur hardcodée dans le nouveau code) : contrainte forward-looking outillée par cette story (tokens globaux disponibles) ; cette story ne crée aucun composant `.vue`. Règle documentée en tête de `_root.scss`.
+- **Prerender/dark-first** : tokens = CSS statique, aucun accès DOM (neutre pour `nuxi generate`) ; aucun token de thème clair introduit, reset clair non réintroduit (story 2.2).
+
 ### File List
+
+- `app/assets/scss/abstract/_root.scss` (CRÉÉ) — couche tokens DS en CSS custom properties globales (`:root`) + `::selection` + keyframes `caret-blink`/`fade-rise`.
+- `app/assets/scss/main.scss` (MODIFIÉ) — ajout `@use "abstract/root";` pour rendre les tokens globaux.
+
+## Change Log
+
+| Date | Version | Description | Auteur |
+|------|---------|-------------|--------|
+| 2026-06-19 | 0.1 | Portage des tokens DS (couleurs, typo, espacement, rayons, élévation, motion) en CSS custom properties globales (`_root.scss`) + `::selection` + keyframes, branché via `main.scss`. Lint vert, `generate` vert, tokens prouvés sur `:root`. Status → review. | Amelia (dev-story) |

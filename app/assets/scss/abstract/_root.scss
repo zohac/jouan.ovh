@@ -1,0 +1,230 @@
+// ============================================================
+//  Tokens du design system — SOURCE DE VÉRITÉ du style
+//  Porté depuis docs/design_system/tokens/*.css (dark-first,
+//  héritage Ubuntu/terminal : orange + aubergine).
+//
+//  RÈGLE : aucune valeur de couleur / espace / rayon / ombre /
+//  motion ne doit être hardcodée dans un composant. Tout passe
+//  par ces CSS custom properties via var(--token). (NFR2 / CAP-2)
+//
+//  Les valeurs sont reproduites à l'identique des tokens source
+//  (notation couleur normalisée par Stylelint : hsl angle/%).
+// ============================================================
+
+:root {
+  // ---- Brand : Ubuntu orange (accent primaire) ----
+  --orange-50: hsl(24deg 100% 96%);
+  --orange-100: hsl(25deg 100% 92%);
+  --orange-300: hsl(24deg 100% 75%);
+  --orange-500: hsl(24deg 94% 53%); // accent héros
+  --orange-600: hsl(24deg 100% 47%);
+  --orange-700: hsl(24deg 100% 37%);
+  --orange-900: hsl(15deg 60% 17%);
+
+  // ---- Brand : Aubergine (violet Ubuntu) ----
+  --aubergine-light: hsl(319deg 26% 70%);
+  --aubergine: hsl(319deg 33% 30%);
+  --aubergine-deep: hsl(319deg 100% 9%); // corps terminal
+  --aubergine-black: hsl(320deg 60% 5%);
+
+  // ---- Rampe de surfaces neutres (teintées aubergine, sombre→clair) ----
+  --surface-0: hsl(320deg 30% 6%); // fond de page, le plus profond
+  --surface-1: hsl(319deg 22% 9%); // sections en creux
+  --surface-2: hsl(318deg 18% 12%); // cartes / panneaux
+  --surface-3: hsl(317deg 16% 16%); // éléments surélevés / hover
+  --surface-4: hsl(316deg 14% 21%); // popovers, inputs
+
+  // ---- Bordures / hairlines ----
+  --line-subtle: hsl(316deg 14% 18%);
+  --line: hsl(315deg 12% 25%);
+  --line-strong: hsl(314deg 11% 34%);
+
+  // ---- Texte (off-whites chauds sur fond sombre) ----
+  --ink-1: hsl(30deg 18% 95%); // titres haut contraste
+  --ink-2: hsl(28deg 10% 74%); // corps
+  --ink-3: hsl(25deg 7% 54%); // discret / légendes
+  --ink-4: hsl(22deg 6% 40%); // estompé / désactivé
+  --ink-on-accent: hsl(320deg 60% 5%); // texte sombre sur orange
+
+  // ---- Palette terminale / syntaxe ----
+  --term-green: hsl(143deg 60% 52%); // prompt, succès
+  --term-blue: hsl(204deg 72% 62%); // répertoires, liens
+  --term-cyan: hsl(186deg 64% 56%);
+  --term-red: hsl(0deg 85% 64%);
+  --term-yellow: hsl(48deg 90% 58%);
+  --term-purple: hsl(280deg 60% 70%);
+
+  // ---- Sémantique ----
+  --success: hsl(143deg 58% 46%);
+  --success-soft: hsl(143deg 45% 14%);
+  --warning: hsl(38deg 92% 56%);
+  --warning-soft: hsl(38deg 60% 14%);
+  --danger: hsl(0deg 78% 60%);
+  --danger-soft: hsl(0deg 55% 15%);
+  --info: hsl(204deg 72% 56%);
+  --info-soft: hsl(204deg 55% 14%);
+
+  // ============================================================
+  //  Alias sémantiques — à préférer dans les composants
+  // ============================================================
+  --bg-page: var(--surface-0);
+  --bg-sunken: var(--surface-1);
+  --bg-card: var(--surface-2);
+  --bg-elevated: var(--surface-3);
+  --bg-input: var(--surface-4);
+  --bg-terminal: var(--aubergine-deep);
+  --text-strong: var(--ink-1);
+  --text-body: var(--ink-2);
+  --text-muted: var(--ink-3);
+  --text-faint: var(--ink-4);
+  --border-subtle: var(--line-subtle);
+  --border-default: var(--line);
+  --border-strong: var(--line-strong);
+  --accent: var(--orange-500);
+  --accent-hover: hsl(24deg 100% 60%);
+  --accent-active: var(--orange-600);
+  --accent-text: var(--ink-on-accent);
+  --accent-soft: hsl(24deg 94% 53% / 13%); // fond teinté
+  --accent-ring: hsl(24deg 94% 53% / 45%);
+  --accent-2: var(--aubergine-light); // accent secondaire
+  --accent-2-soft: hsl(319deg 40% 30% / 28%);
+  --link: var(--term-blue);
+  --prompt: var(--term-green);
+  --overlay: hsl(320deg 60% 3% / 66%);
+  --selection: hsl(24deg 94% 53% / 28%);
+
+  // ============================================================
+  //  Typographie
+  // ============================================================
+  --font-mono: "Ubuntu Mono", "SF Mono", ui-monospace, monospace;
+  --font-sans: "Ubuntu", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-mono);
+
+  // Tailles de police (échelle px : 12 14 16 18 20 24 28 32 40 48 56)
+  --fs-xs: 0.75rem; // 12
+  --fs-sm: 0.875rem; // 14
+  --fs-base: 1rem; // 16
+  --fs-md: 1.125rem; // 18
+  --fs-lg: 1.25rem; // 20
+  --fs-xl: 1.5rem; // 24
+  --fs-2xl: 1.75rem; // 28
+  --fs-3xl: 2rem; // 32
+  --fs-4xl: 2.5rem; // 40
+  --fs-5xl: 3rem; // 48
+  --fs-6xl: 3.5rem; // 56
+
+  // Graisses
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 700;
+
+  // Interlignes
+  --lh-tight: 1.1;
+  --lh-snug: 1.3;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.65;
+
+  // Interlettrage — les eyebrows/labels mono reçoivent des capitales espacées
+  --ls-tight: -0.02em;
+  --ls-normal: 0;
+  --ls-wide: 0.04em;
+  --ls-wider: 0.14em;
+
+  // ============================================================
+  //  Espacement — base 4px (token = px / 4)
+  // ============================================================
+  --space-0: 0;
+  --space-1: 0.25rem; // 4
+  --space-2: 0.5rem; // 8
+  --space-3: 0.75rem; // 12
+  --space-4: 1rem; // 16
+  --space-5: 1.25rem; // 20
+  --space-6: 1.5rem; // 24
+  --space-8: 2rem; // 32
+  --space-10: 2.5rem; // 40
+  --space-12: 3rem; // 48
+  --space-16: 4rem; // 64
+  --space-20: 5rem; // 80
+  --space-24: 6rem; // 96
+
+  // Layout
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 992px;
+  --container-xl: 1200px;
+  --container-2xl: 1400px;
+  --header-height: 56px;
+  --footer-height: 56px;
+  --gutter: var(--space-6);
+
+  // ============================================================
+  //  Rayons (héritage : 0 / 4 / 8 / pill / 50% ; terminal = 5px)
+  // ============================================================
+  --radius-none: 0;
+  --radius-xs: 3px;
+  --radius-sm: 5px; // fenêtre terminal, chips
+  --radius-md: 8px; // cartes, inputs, boutons
+  --radius-lg: 12px; // grands panneaux
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+
+  // ============================================================
+  //  Élévation — ombres calibrées pour une UI sombre
+  // ============================================================
+  --shadow-1: 0 1px 3px hsl(320deg 60% 2% / 50%);
+  --shadow-2: 0 2px 8px hsl(320deg 60% 2% / 55%);
+  --shadow-3: 0 8px 24px hsl(320deg 60% 2% / 60%);
+  --shadow-4: 0 18px 48px hsl(320deg 60% 2% / 66%);
+
+  // Hairline interne en haut : donne l'impression d'une carte éclairée du dessus
+  --shadow-hairline: inset 0 1px 0 hsl(30deg 20% 100% / 5%);
+
+  // Glows focaux
+  --glow-accent: 0 0 0 1px hsl(24deg 94% 53% / 40%), 0 8px 30px hsl(24deg 94% 53% / 22%);
+  --glow-terminal: 0 12px 40px hsl(319deg 100% 9% / 70%), 0 0 0 1px hsl(319deg 40% 40% / 30%);
+
+  // Anneau de focus
+  --ring-accent: 0 0 0 3px var(--accent-ring);
+
+  // ============================================================
+  //  Motion — easings sobres et mécaniques (esprit terminal)
+  // ============================================================
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 320ms;
+  --dur-slower: 600ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-standard: ease-in-out;
+}
+
+::selection {
+  background: var(--selection);
+}
+
+// Keyframes globaux (hors :root). Seul caret-blink est une boucle UI (caret terminal).
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

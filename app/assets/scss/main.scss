@@ -1,4 +1,5 @@
 @use "base/reset";
+@use "abstract/root"; // tokens DS globaux (:root CSS custom properties) — source de vérité
 @use "abstract/fonts";
 @use "abstract/typography";
 
