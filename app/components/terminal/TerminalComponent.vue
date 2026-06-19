@@ -38,38 +38,18 @@
       />
     </div>
 
-    <div
-      class="resize-handle"
-      @mousedown="handleMouseDown"
-      @mousemove="handleResizeMouseMove"
-      @mouseup="handleMouseUp"
-    ></div>
+    <div class="resize-handle" @mousedown="handleResizeMouseDown"></div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, watch } from "vue";
+import { defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import type { ITerminalConfig } from "~/components/terminal/interfaces";
 import programManager from "~/components/terminal/programs/ProgramManager";
-
-let terminalDefaults = {
-  width: "800px",
-  height: "400px",
-  userName: "anon.",
-  domainName: "example.com",
-  initialData: "",
-};
-
-const importedConfig = async () => {
-  try {
-    const importedConfig = await import("@/terminal.config");
-    terminalDefaults = importedConfig.terminalDefaults;
-  } catch {
-    console.warn("Aucun fichier terminal.config.ts trouvé. Utilisation des valeurs par défaut.");
-  }
-};
-
-importedConfig();
+import { escapeHtml } from "~/utils/functions";
+// Import statique : les valeurs par défaut sont disponibles dès l'exécution de setup(),
+// sans course asynchrone qui laissait parfois la config vide à l'initialisation.
+import { terminalDefaults } from "~/terminal.config";
 
 export default defineComponent({
   name: "TerminalComponent",
@@ -157,7 +137,8 @@ export default defineComponent({
           program.initialData,
         );
       }
-      return `Commande inconnue : ${command}`;
+      // La commande provient de la saisie utilisateur : on l'échappe car la réponse est rendue via v-html.
+      return `Commande inconnue : ${escapeHtml(command)}`;
     };
 
     const handleHistoryNavigation = (event: KeyboardEvent): void => {
@@ -172,22 +153,35 @@ export default defineComponent({
       }
 
       if (commandHistoryPosition.value > -1 && commandHistoryPosition.value < commandHistory.value.length) {
-        userInput.value = commandHistory.value[commandHistory.value.length - 1 - commandHistoryPosition.value];
+        userInput.value = commandHistory.value[commandHistory.value.length - 1 - commandHistoryPosition.value] ?? "";
       } else {
         userInput.value = "";
       }
     };
 
-    const handleMouseDown = (event: MouseEvent): void => {
+    const handleResizeMouseDown = (event: MouseEvent): void => {
       if (event.target instanceof HTMLElement && event.target.classList.contains("resize-handle")) {
         resizing.value = true;
+
+        // Écouteurs globaux : le redimensionnement continue même si le curseur sort
+        // de la poignée de 16px pendant le glissement.
+        window.addEventListener("mousemove", handleGlobalResizeMouseMove);
+        window.addEventListener("mouseup", handleGlobalResizeMouseUp);
       }
     };
 
-    const handleResizeMouseMove = (event: MouseEvent): void => {
+    const handleGlobalResizeMouseMove = (event: MouseEvent): void => {
       if (resizing.value && terminalElement.value) {
         terminalElement.value.style.width = `${event.clientX - terminalElement.value.offsetLeft}px`;
         terminalElement.value.style.height = `${event.clientY - terminalElement.value.offsetTop}px`;
+      }
+    };
+
+    const handleGlobalResizeMouseUp = (): void => {
+      if (resizing.value) {
+        resizing.value = false;
+        window.removeEventListener("mousemove", handleGlobalResizeMouseMove);
+        window.removeEventListener("mouseup", handleGlobalResizeMouseUp);
       }
     };
 
@@ -219,14 +213,12 @@ export default defineComponent({
     const handleGlobalMouseMove = (event: MouseEvent): void => {
       if (dragging.value && terminalElement.value) {
         const terminalElementValue = terminalElement.value;
-        const newLeft = Math.min(
-          Math.max(0, event.clientX - dragStartPosition.value.x),
-          window.innerWidth - terminalElementValue.offsetWidth,
-        );
-        const newTop = Math.min(
-          Math.max(0, event.clientY - dragStartPosition.value.y),
-          window.innerHeight - terminalElementValue.offsetHeight,
-        );
+        // Borne haute clampée à 0 : si le terminal est plus large/haut que le viewport,
+        // on le garde collé au bord (0) plutôt que de le pousser hors écran (valeur négative).
+        const maxLeft = Math.max(0, window.innerWidth - terminalElementValue.offsetWidth);
+        const maxTop = Math.max(0, window.innerHeight - terminalElementValue.offsetHeight);
+        const newLeft = Math.min(Math.max(0, event.clientX - dragStartPosition.value.x), maxLeft);
+        const newTop = Math.min(Math.max(0, event.clientY - dragStartPosition.value.y), maxTop);
 
         terminalElementValue.style.left = `${newLeft}px`;
         terminalElementValue.style.top = `${newTop}px`;
@@ -269,6 +261,14 @@ export default defineComponent({
       },
     );
 
+    onUnmounted(() => {
+      // Filet de sécurité : retrait des écouteurs globaux si le composant est démonté en plein drag/resize.
+      window.removeEventListener("mousemove", handleGlobalMouseMove);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+      window.removeEventListener("mousemove", handleGlobalResizeMouseMove);
+      window.removeEventListener("mouseup", handleGlobalResizeMouseUp);
+    });
+
     return {
       defaultConfig,
       commandLines,
@@ -277,8 +277,7 @@ export default defineComponent({
       userInputRef,
       submitInput,
       handleHistoryNavigation,
-      handleMouseDown,
-      handleResizeMouseMove,
+      handleResizeMouseDown,
       handleMouseUp,
       handleHeaderMouseDown,
       closeTerminal,

@@ -39,10 +39,10 @@ defineComponent({
 const getAttr = {
   alt: "Portrait de Simon JOUAN",
   title: "Portrait de Simon JOUAN",
-  loading: "eager",
+  loading: "eager" as const,
   height: 512,
   width: 512,
-  decoding: "edger",
+  decoding: "async" as const,
 };
 </script>
 

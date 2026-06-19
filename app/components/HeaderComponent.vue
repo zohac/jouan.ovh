@@ -1,7 +1,7 @@
 <template>
   <header>
     <button class="btn btn-large btn-dark" role="button" aria-label="Ouvrir le menu" @click="toggle">
-      <nuxt-img src="/images/logo_white_32x32.png" preload loading="edger" alt="logo" height="32" width="32" />
+      <nuxt-img src="/images/logo_white_32x32.png" preload loading="eager" alt="logo" height="32" width="32" />
     </button>
     <nav id="menu" :class="{ hidden: isHidden }">
       <div id="close-menu" @click="closeMenu"></div>
@@ -27,6 +27,7 @@
 
 <script lang="ts" setup>
 import { nextTick, ref } from "vue";
+import type { ComponentPublicInstance } from "vue";
 import TerminalManagerComponent from "~/components/terminal/TerminalManagerComponent.vue";
 
 defineComponent({
@@ -34,7 +35,8 @@ defineComponent({
 });
 
 const terminalManager = ref<InstanceType<typeof TerminalManagerComponent> | null>(null);
-const firstMenuItem = ref<HTMLElement | null>(null);
+// NuxtLink expose une instance de composant : on récupère son élément racine (<a>) pour le focus.
+const firstMenuItem = ref<ComponentPublicInstance | null>(null);
 
 const addNewTerminal = () => {
   if (terminalManager.value) {
@@ -48,9 +50,8 @@ const toggle = () => {
   isHidden.value = !isHidden.value;
   if (!isHidden.value) {
     nextTick(() => {
-      if (firstMenuItem.value) {
-        firstMenuItem.value.focus();
-      }
+      const linkElement = firstMenuItem.value?.$el as HTMLElement | undefined;
+      linkElement?.focus();
     });
   }
 };

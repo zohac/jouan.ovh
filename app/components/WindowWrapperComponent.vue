@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, nextTick, onMounted, ref, watch } from "vue";
+import { defineComponent, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 export default defineComponent({
   name: "WindowWrapperComponent",
@@ -129,14 +129,12 @@ export default defineComponent({
     const handleGlobalMouseMove = (event: MouseEvent): void => {
       if (dragging.value && windowElement.value) {
         const windowElementValue = windowElement.value;
-        const newLeft = Math.min(
-          Math.max(0, event.clientX - dragStartPosition.value.x),
-          window.innerWidth - windowElementValue.offsetWidth,
-        );
-        const newTop = Math.min(
-          Math.max(0, event.clientY - dragStartPosition.value.y),
-          window.innerHeight - windowElementValue.offsetHeight,
-        );
+        // Borne haute clampée à 0 : si la fenêtre est plus large/haute que le viewport,
+        // on la garde collée au bord (0) plutôt que de la pousser hors écran (valeur négative).
+        const maxLeft = Math.max(0, window.innerWidth - windowElementValue.offsetWidth);
+        const maxTop = Math.max(0, window.innerHeight - windowElementValue.offsetHeight);
+        const newLeft = Math.min(Math.max(0, event.clientX - dragStartPosition.value.x), maxLeft);
+        const newTop = Math.min(Math.max(0, event.clientY - dragStartPosition.value.y), maxTop);
 
         windowElementValue.style.left = `${newLeft}px`;
         windowElementValue.style.top = `${newTop}px`;
@@ -210,6 +208,12 @@ export default defineComponent({
       if (typeof window !== "undefined") {
         responsiveWidth.value = window.innerWidth < parseInt(props.width) ? "100%" : props.width;
       }
+    });
+
+    onUnmounted(() => {
+      // Filet de sécurité : retrait des écouteurs globaux si le composant est démonté en plein drag.
+      window.removeEventListener("mousemove", handleGlobalMouseMove);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
     });
 
     return {
@@ -317,7 +321,7 @@ export default defineComponent({
     }
 
     .close-button {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       cursor: pointer;

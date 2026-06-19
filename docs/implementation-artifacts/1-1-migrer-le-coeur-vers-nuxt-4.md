@@ -4,7 +4,7 @@ baseline_commit: 06555cc797d8645687a6ec824637ca42ddde6cad
 
 # Story 1.1: Migrer le cœur vers Nuxt 4
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -48,6 +48,20 @@ so that le site repose sur une base moderne et supportée, prête pour la refont
 - [x] Tâche 6 — Vérification de démarrage (AC: #1, #2)
   - [x] `pnpm dev` démarre sans erreur ; `/`, `/about`, `/blog` répondent HTTP 200 sans page d'erreur
   - [x] Header/footer présents (chassis intact) ; terminal draggable préservé ; blog en empty-state
+
+### Review Findings
+
+- [x] [Review][Patch] Échapper les sorties terminal non fiables avant `v-html` [app/components/terminal/TerminalComponent.vue:13]
+- [x] [Review][Patch] Corriger les erreurs `tsc --noEmit` et ajouter une validation typecheck au workflow [package.json:10]
+- [x] [Review][Patch] Déclarer `push-dir` ou adapter le script `deploy` pnpm [package.json:12]
+- [x] [Review][Patch] Retourner une vraie 404 quand un article blog est introuvable [app/pages/blog/[...slug].vue:3]
+- [x] [Review][Patch] Rafraîchir la requête blog lors d'une navigation client entre slugs [app/pages/blog/[...slug].vue:10]
+- [x] [Review][Patch] Borner le drag des fenêtres quand l'élément est plus large ou haut que le viewport [app/components/terminal/TerminalComponent.vue:222]
+- [x] [Review][Patch] Gérer le resize du terminal avec des écouteurs globaux et nettoyage au `mouseup`/unmount [app/components/terminal/TerminalComponent.vue:41]
+- [x] [Review][Patch] Charger `terminalDefaults` sans course async avant l'initialisation du terminal [app/components/terminal/TerminalComponent.vue:55]
+- [x] [Review][Patch] Corriger le focus du premier lien de menu si la ref `NuxtLink` n'expose pas directement `focus()` [app/components/HeaderComponent.vue:10]
+- [x] [Review][Patch] Positionner le bouton de fermeture de `WindowWrapperComponent` relativement à la fenêtre [app/components/WindowWrapperComponent.vue:319]
+- [x] [Review][Patch] Corriger les valeurs image invalides `edger` [app/components/HeaderComponent.vue:4]
 
 ## Dev Notes
 
@@ -127,6 +141,20 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 
 **Reste à valider hors périmètre 1.1** : `pnpm generate` + déploiement gh-pages (story **1.4**) ; le redesign blog complet (épopée **6**) — ici seul l'empty-state v3 est rétabli.
 
+**Correction de la revue (2026-06-19)** — les 11 findings `[Patch]` sont résolus, sans dette technique :
+
+- ✅ Résolu finding [Sécurité] : ajout de `escapeHtml()` (`app/utils/functions.ts`) ; échappement de l'écho de commande inconnue (`TerminalComponent`) et des valeurs user-agent (`SystemInfos`) avant rendu `v-html`.
+- ✅ Résolu finding [Qualité] : 8 erreurs `tsc` corrigées (`export type` du barrel d'interfaces, signatures `IProgram`/`IProgramManager`, garde `getRandomUrl`, `HelloWorld`) + ajout du script `typecheck` (`nuxi typecheck` via **vue-tsc**). vue-tsc a aussi révélé et fait corriger 4 erreurs latentes de SFC (index history `?? ""`, schéma `image` de la collection blog, `decoding`/`loading` invalides `as const`, typo `decoding: "edger"`).
+- ✅ Résolu finding [Build] : `push-dir@^0.4.1` déclaré en devDependencies (script `deploy` désormais exécutable).
+- ✅ Résolu finding [Blog] : `createError({ statusCode: 404, fatal: true })` si article introuvable + clé `useAsyncData` réactive avec `watch: [() => route.path]` (refetch sur navigation client).
+- ✅ Résolu finding [Terminal] : bornage du drag clampé à `0` (terminal **et** WindowWrapper) ; resize via écouteurs globaux `window` avec retrait au `mouseup` ; `onUnmounted` retire tous les écouteurs drag/resize (terminal + WindowWrapper) ; `terminalDefaults` chargé par import statique (course async supprimée).
+- ✅ Résolu finding [Header] : focus du premier lien via `firstMenuItem.value?.$el` (instance NuxtLink) ; `loading="eager"` (au lieu de `edger`).
+- ✅ Résolu finding [WindowWrapper] : bouton de fermeture en `position: absolute` (relatif à la fenêtre, plus au viewport).
+
+**Environnement de dev = Docker** (décision utilisateur) : toutes les validations (`pnpm install/typecheck/lint/generate`) sont lancées via `docker compose run --rm web …` (Node 22 + pnpm). Noté dans `docs/project-context.md`.
+
+**Validation finale (via Docker)** : `pnpm typecheck` → **0 erreur** ; `pnpm lint` → **0 erreur** (43 warnings Stylelint pré-existants dans `assets/scss/abstract/_keyframe.scss`/`_mixin.scss`, fichiers non touchés, hors périmètre — relèvent de l'épopée design) ; `pnpm generate` → **OK**, 24 routes prérendues dont `/404.html`.
+
 **À reconcilier au review** : les stories **1.2** et **1.3** sont matériellement réalisées par ce travail (sprint-status laissé inchangé pour décision PO).
 
 ### File List
@@ -154,9 +182,26 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 - `.eslintrc.js`, `.eslintignore` — remplacés par la flat config
 - `yarn.lock` — remplacé par `pnpm-lock.yaml`
 
+**Modifiés (correction de revue, 2026-06-19)**
+- `app/utils/functions.ts` — ajout `escapeHtml()` + garde `getRandomUrl`
+- `app/components/terminal/TerminalComponent.vue` — échappement v-html, import statique config, resize global + cleanup `onUnmounted`, bornage drag, garde historique
+- `app/components/terminal/programs/SystemInfos.ts` — échappement des valeurs user-agent
+- `app/components/terminal/programs/HelloWorld.ts` — signature `run` alignée sur `IProgram`
+- `app/components/terminal/interfaces/index.ts` — `export type` (verbatimModuleSyntax)
+- `app/components/terminal/interfaces/IProgramManager.ts` — signatures `add`/`remove`/`get` alignées sur l'implémentation
+- `app/components/HeaderComponent.vue` — focus via `$el` du NuxtLink, `loading="eager"`
+- `app/components/WindowWrapperComponent.vue` — bouton fermer `position: absolute`, bornage drag, cleanup `onUnmounted`
+- `app/pages/blog/[...slug].vue` — 404 + clé `useAsyncData` réactive (`watch`)
+- `app/pages/index.vue` — `decoding: "async"`/`loading: "eager"` (`as const`), correction typo `edger`
+- `content.config.ts` — schéma `image` optionnel de la collection blog
+- `package.json` — script `typecheck`, deps `push-dir` + `vue-tsc`
+- `pnpm-lock.yaml` — ajout `push-dir`, `vue-tsc`
+- `docs/project-context.md` — dev via Docker, pnpm, validation typecheck
+
 ## Change Log
 
 | Date | Version | Description | Auteur |
 |------|---------|-------------|--------|
 | 2026-06-18 | 0.1 | Migration cœur Nuxt 3→4 + pnpm + stack latest (absorbe 1.2/1.3). App démarre, lint vert. Status → review. | Amelia (dev-story) |
 | 2026-06-18 | 0.2 | Adoption de la structure Nuxt 4 `app/` (code applicatif déplacé sous `app/`, suppression de l'override `srcDir`). `generate` + `lint` re-validés verts. | Amelia (dev-story) |
+| 2026-06-19 | 0.3 | Correction des 11 findings de revue (sécurité v-html, typecheck + vue-tsc, push-dir, 404/refresh blog, drag/resize/race terminal, focus header, close button WindowWrapper). Dev via Docker noté. `typecheck`/`lint`/`generate` verts. | Amelia (dev-story) |

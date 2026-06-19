@@ -23,7 +23,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - **Styles :** SCSS (`sass ^1.59.2`) via le système de modules `@use ... as`. Architecture à tokens sous `assets/scss/abstract/` (échelle de couleurs Radix 12 paliers).
 - **Contenu :** `@nuxt/content ^2.5.2` (blog), `@nuxt/image-edge` (`<nuxt-img>` / `<nuxt-picture>`).
 - **Lint :** ESLint (`@nuxtjs/eslint-config-typescript` + `plugin:prettier/recommended`, `max-len: 120`), Prettier (double quotes, points-virgules), Stylelint + `stylelint-scss`.
-- **Gestionnaire de paquets :** Yarn (`yarn.lock`).
+- **Gestionnaire de paquets :** pnpm (`pnpm-lock.yaml`) — dev via Docker (cf. Workflow).
 - **Déploiement :** site statique (`nuxi generate`) → `push-dir` vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME`).
 - **Divers :** `ua-parser-js` (détection device, terminal).
 
@@ -102,17 +102,30 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   feature (ex. refonte en cours : `feat/design-system-revamp`).
 - Commits conventionnels : `feat:`, `fix:`, `style:`, etc. (cf. historique).
 
+**Environnement de dev : Docker (obligatoire)**
+- ⚠️ **Tout le dev passe par Docker** (`docker-compose.yml`, Node 22 LTS + pnpm
+  via corepack). Ne PAS lancer `pnpm`/`nuxi` directement sur l'hôte (macOS arm64) :
+  les `node_modules` natifs (better-sqlite3, sharp, esbuild…) sont compilés pour
+  le conteneur Linux et vivent dans un volume nommé isolé de l'hôte.
+- Lancer le dev : `docker compose up` → `pnpm dev` sur http://localhost:3000.
+- Commande ponctuelle (lint, typecheck, generate…) :
+  `docker compose run --rm web sh -c "corepack enable && pnpm <cmd>"`.
+- Stopper : `docker compose down`.
+
 **Build & déploiement**
-- Gestionnaire de paquets : **Yarn** (utiliser `yarn`, pas `npm`).
-- Build statique : `yarn generate` → sortie `.output/public`.
-- Déploiement : `yarn deploy` (`push-dir` vers la branche `gh-pages`).
+- Gestionnaire de paquets : **pnpm** (`packageManager: pnpm@…`, lockfile
+  `pnpm-lock.yaml`). Ne pas utiliser `npm`/`yarn`.
+- Validation : `pnpm lint` (eslint + stylelint) + `pnpm typecheck` (`nuxi typecheck`
+  / vue-tsc) + build `pnpm generate` — tout doit passer (cf. section Tests).
+- Build statique : `pnpm generate` → sortie `.output/public`.
+- Déploiement : `pnpm deploy` (`push-dir` vers la branche `gh-pages`).
 - ⚠️ Le domaine custom dépend du fichier `CNAME` — ne pas le perdre lors du
   déploiement gh-pages (régression déjà survenue, cf. commit `cf1829e`).
 
 ### Tests
 - ❌ Aucun framework de test configuré à ce jour (pas de Vitest/Jest/Playwright).
-- Validation actuelle = lint (`eslint`, `stylelint`) + build `yarn generate` qui
-  doit passer sans erreur. C'est la barre de qualité minimale.
+- Validation actuelle = lint (`eslint`, `stylelint`) + `pnpm typecheck` (vue-tsc) +
+  build `pnpm generate`, le tout via Docker et sans erreur. Barre de qualité minimale.
 - Si des tests sont introduits pendant la migration, documenter la convention ici.
 
 ### Règles critiques à ne pas manquer

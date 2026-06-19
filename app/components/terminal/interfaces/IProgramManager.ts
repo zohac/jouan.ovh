@@ -1,9 +1,9 @@
 import type { IProgram } from "~/components/terminal/interfaces/IProgram";
 
 export interface IProgramManager {
-  add(program: IProgram): void;
+  add(program: IProgram): IProgramManager;
 
-  remove(key: string): void;
+  remove(key: string): IProgramManager;
 
-  get(key: string): IProgram;
+  get(key: string): IProgram | undefined;
 }

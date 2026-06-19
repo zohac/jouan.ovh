@@ -1,7 +1,12 @@
 import { UAParser } from "ua-parser-js";
 import type { IProgram } from "~/components/terminal/interfaces";
+import { escapeHtml } from "~/utils/functions";
 
 const parser = new UAParser();
+
+// Les valeurs issues du user-agent sont contrôlées par le client : on les échappe
+// systématiquement avant de les injecter dans la sortie rendue via v-html.
+const safe = (value: string | undefined, fallback = "Inconnu"): string => escapeHtml(value || fallback);
 
 const systemInfo: IProgram = {
   command: "system-info",
@@ -15,13 +20,13 @@ const systemInfo: IProgram = {
 
     return `
 <ul>
-  <li>Navigateur: ${browser.name} ${browser.version}</li>
-  <li>Moteur de rendu: ${engine.name} ${engine.version}</li>
-  <li>Système d'exploitation: ${os.name} ${os.version}</li>
-  <li>Architecture CPU: ${cpu.architecture}</li>
-  <li>Type d'appareil: ${device.type || "Inconnu"}</li>
-  <li>Marque d'appareil: ${device.vendor || "Inconnu"}</li>
-  <li>Modèle d'appareil: ${device.model || "Inconnu"}</li>
+  <li>Navigateur: ${safe(browser.name)} ${safe(browser.version, "")}</li>
+  <li>Moteur de rendu: ${safe(engine.name)} ${safe(engine.version, "")}</li>
+  <li>Système d'exploitation: ${safe(os.name)} ${safe(os.version, "")}</li>
+  <li>Architecture CPU: ${safe(cpu.architecture)}</li>
+  <li>Type d'appareil: ${safe(device.type)}</li>
+  <li>Marque d'appareil: ${safe(device.vendor)}</li>
+  <li>Modèle d'appareil: ${safe(device.model)}</li>
 </ul>`;
   },
 };
