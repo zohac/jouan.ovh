@@ -3,12 +3,28 @@
     <ul v-if="articles && articles.length">
       <li v-for="article in articles" :key="article.path">
         <NuxtLink :to="article.path">
-          <img v-if="article.image" :src="article.image.src" :alt="article.image.alt" />
+          <NuxtImg v-if="article.image" :src="article.image.src" :alt="article.image.alt" />
           <h2>{{ article.title }}</h2>
           <p>{{ article.description }}</p>
         </NuxtLink>
       </li>
     </ul>
+
+    <ZCardComponent v-else-if="error" :class="'container-w50'">
+      <ZCardHeader :img="img" />
+      <ZCardBody>
+        <template #title>
+          <h1>Oups, le chargement des articles a échoué.</h1>
+        </template>
+
+        <template #body>
+          <p>
+            Une erreur est survenue lors de la récupération des articles du blog. Ce n'est pas vous, c'est moi : merci
+            de réessayer dans quelques instants.
+          </p>
+        </template>
+      </ZCardBody>
+    </ZCardComponent>
 
     <ZCardComponent v-else :class="'container-w50'">
       <ZCardHeader :img="img" />
@@ -51,11 +67,13 @@ export default {
     }) as ImageInterface;
 
     // @nuxt/content v3 : queryCollection remplace <ContentList path="/blog">.
-    const { data: articles } = await useAsyncData("blog-list", () => queryCollection("blog").all());
+    // On expose `error` pour distinguer un échec de chargement d'un véritable empty-state.
+    const { data: articles, error } = await useAsyncData("blog-list", () => queryCollection("blog").all());
 
     return {
       img,
       articles,
+      error,
     };
   },
 };

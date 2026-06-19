@@ -1,6 +1,9 @@
 {
   "private": true,
   "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "build": "nuxi build",
     "dev": "nuxi dev",

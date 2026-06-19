@@ -46,6 +46,15 @@ so that toutes les dépendances sont alignées avec Nuxt 4 et sans deprecations 
   - [x] Blog se charge sans régression (empty-state v3)
   - [x] `pnpm lint` ne se dégrade pas (flat config = story 1.3, désormais verte)
 
+### Review Findings
+
+- [x] [Review][Patch] Remplacer la vignette brute `<img>` des articles par `NuxtImg`/`NuxtPicture` [app/pages/blog/index.vue:6]
+- [x] [Review][Patch] Faire remonter les erreurs `@nuxt/content` article au lieu de les convertir en faux 404 [app/pages/blog/[...slug].vue:10]
+- [x] [Review][Patch] Déclencher la 404 article sur les refetchs client et retirer le `fatal: true` inutile [app/pages/blog/[...slug].vue:17]
+- [x] [Review][Patch] Normaliser le chemin article avant `queryCollection().path(...)` pour éviter les faux 404 avec slash final [app/pages/blog/[...slug].vue:12]
+- [x] [Review][Patch] Distinguer erreur de chargement de la liste blog et vrai empty-state [app/pages/blog/index.vue:54]
+- [x] [Review][Patch] Déclarer l'engine Node compatible avec les dépendances latest dans `package.json` [package.json:3]
+
 ## Dev Notes
 
 ### Contexte & contraintes (depuis project-context.md et SPEC)
@@ -119,12 +128,29 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 - **`vue-property-decorator`** : aucun usage dans le code → AC #2 trivialement satisfait ; dépendance conservée mais inutilisée (à supprimer plus tard).
 - `ua-parser-js` v2 : import nommé `{ UAParser }` ; `@types/ua-parser-js` retiré (types embarqués).
 
+**Correction de la revue (2026-06-19)** — les 6 findings `[Patch]` sont résolus, sans dette technique :
+
+- ✅ Résolu finding [Image] : la vignette d'article utilise `<NuxtImg>` (plus de `<img>` brut), conforme à la règle « images toujours via @nuxt/image ».
+- ✅ Résolu finding [Erreur vs 404] : `useAsyncData` expose désormais `error` ; une vraie erreur de requête `@nuxt/content` remonte en **500** au lieu d'un faux 404 (`blog/[...slug].vue`).
+- ✅ Résolu finding [404 client + fatal] : la résolution d'erreur/404 est réactive (`watch [page, error]` côté client via `showError`/`clearError`) → la 404 se déclenche aussi lors d'une navigation client entre slugs ; `fatal: true` retiré (un throw au niveau setup est déjà fatal).
+- ✅ Résolu finding [Normalisation path] : le chemin est normalisé (`route.path` sans slash final) avant `queryCollection().path(...)` → plus de faux 404 sur `/blog/article/`.
+- ✅ Résolu finding [Empty-state vs erreur liste] : `blog/index.vue` distingue trois états — liste d'articles, **état d'erreur de chargement** (nouvelle carte), et empty-state légitime.
+- ✅ Résolu finding [Engine Node] : champ `engines.node: ">=22.0.0"` déclaré dans `package.json` (aligné sur l'env de dev Docker Node 22 LTS).
+
+**Validation finale (via Docker)** : `pnpm typecheck` → **0 erreur** ; `pnpm lint` → **0 erreur** (43 warnings Stylelint pré-existants dans `assets/scss/abstract|components/*.scss`, hors périmètre — épopée design) ; `pnpm generate` → **OK**, 24 routes prérendues.
+
 ### File List
 
 Voir story 1.1 (changements réalisés conjointement). Spécifiques aux modules : `package.json` (deps modules), `nuxt.config.ts` (`@nuxt/image`), `content.config.ts` (créé), `pages/blog/index.vue`, `pages/blog/[...slug].vue`, `components/terminal/programs/SystemInfos.ts`.
+
+**Modifiés (correction de revue, 2026-06-19)**
+- `app/pages/blog/index.vue` — `<NuxtImg>` pour la vignette + état d'erreur de chargement distinct de l'empty-state (`error` exposé)
+- `app/pages/blog/[...slug].vue` — erreurs content en 500 (vs faux 404), 404 réactive sur refetch client (`showError`/`clearError`), retrait `fatal: true`, normalisation du chemin
+- `package.json` — champ `engines.node: ">=22.0.0"`
 
 ## Change Log
 
 | Date | Version | Description | Auteur |
 |------|---------|-------------|--------|
 | 2026-06-18 | 0.1 | Modules en latest (content 3, image 2, sass, TS 6, ua-parser 2) — réalisé avec 1.1. Status → review. | Amelia (dev-story) |
+| 2026-06-19 | 0.2 | Correction des 6 findings de revue (NuxtImg vignette, erreurs content vs faux 404, 404 client réactive + retrait fatal, normalisation path, état d'erreur liste vs empty-state, engines Node). `typecheck`/`lint`/`generate` verts. Status → review. | Amelia (dev-story) |
