@@ -41,6 +41,14 @@ so that la chaîne de production est verte avant d'entamer la refonte.
   - [x] Le site généré rend les mêmes pages qu'avant (parité ; portrait about restauré après suppression accidentelle en `06555cc`)
   - [x] `CNAME` présent dans `.output/public` → domaine custom préservé après déploiement
 
+### Review Findings
+
+- [x] [Review][Patch] Empêcher le déploiement gh-pages sur les événements pull_request [.github/workflows/cd.yml:41] — le workflow est déclenché sur `pull_request` et le step `Deploy` n'a pas de garde; ajouter `if: github.event_name == 'push'` pour garder la validation PR sans publication. **→ Résolu** : step `Deploy` gardé par `if: github.event_name == 'push'` ; les PR exécutent lint/typecheck/generate/assertions sans publier.
+- [x] [Review][Patch] Déclarer explicitement les permissions d'écriture pour publier `gh-pages` [.github/workflows/cd.yml:1] — le déploiement utilise `GITHUB_TOKEN`, mais le workflow ne fixe pas `permissions: contents: write`; selon les réglages du dépôt, le publish peut échouer en 403. **→ Résolu** : bloc `permissions: contents: write` au niveau workflow.
+- [x] [Review][Patch] Ajouter `pnpm lint` et `pnpm typecheck` dans la gate CI avant `pnpm generate` [.github/workflows/cd.yml:28] — le contexte projet définit la validation minimale comme lint + typecheck + generate, mais `cd.yml` n'exécute aujourd'hui que install puis generate. **→ Résolu** : steps `Lint` (`pnpm lint`) et `Typecheck` (`pnpm typecheck`) ajoutés avant `Generate` (vérifiés exit 0 sous Node 22).
+- [x] [Review][Patch] Ajouter des assertions CI sur la sortie statique avant publication [.github/workflows/cd.yml:31] — la story exige `.output/public` avec pages existantes, `_headers`, `CNAME` et portrait restauré; le workflow publie après generate sans tester explicitement ces artefacts. **→ Résolu** : step `Verify static output` (`set -euo pipefail`) vérifie `index.html`, `200.html`, `404.html`, `about/index.html`, `blog/index.html`, `_headers`, `CNAME` (+ contenu `dev.jouan.ovh`) et le portrait `portrait_512x512_drip_art_8.webp`, avant `Deploy`.
+- [x] [Review][Patch] Sérialiser les déploiements pour éviter qu'un ancien run écrase un plus récent [.github/workflows/cd.yml:3] — sans `concurrency`, deux pushes rapprochés sur `main` peuvent finir dans le désordre et publier l'ancien build en dernier. **→ Résolu** : bloc `concurrency: { group: deploy-gh-pages, cancel-in-progress: false }`.
+
 ## Dev Notes
 
 ### Contexte & contraintes (depuis project-context.md et SPEC)
@@ -114,10 +122,22 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 - **Asset restauré** : portraits supprimés par erreur en `06555cc` rétablis (sinon prerender cassé). Le vrai portrait du nouveau DS reste à traiter en story 5.1.
 - Déploiement gh-pages réel non exécuté ici (push outward-facing depuis une branche feature) — se fera via la CI au merge sur `main`.
 
+#### Correctifs de revue (2026-06-19)
+
+Durcissement du workflow `.github/workflows/cd.yml` — 5 findings résolus :
+
+- ✅ [Patch] **Garde déploiement PR** : step `Deploy` conditionné par `if: github.event_name == 'push'`. Les PR valident (lint/typecheck/generate/assertions) sans publier.
+- ✅ [Patch] **Permissions explicites** : `permissions: contents: write` au niveau workflow (publish gh-pages via `GITHUB_TOKEN` sans risque de 403).
+- ✅ [Patch] **Gate qualité CI** : steps `Lint` + `Typecheck` avant `Generate`. Vérifiés localement sous Node 22 (Docker) : `pnpm lint` exit 0 (0 erreur / 43 warnings baseline), `pnpm typecheck` exit 0.
+- ✅ [Patch] **Assertions sortie statique** : step `Verify static output` (`set -euo pipefail`) qui échoue si une page (`index/200/404/about/blog`), `_headers`, `CNAME` (+ contenu `dev.jouan.ovh`) ou le portrait `portrait_512x512_drip_art_8.webp` manquent — testé contre `.output/public` réel (8/8 OK).
+- ✅ [Patch] **Sérialisation** : `concurrency: { group: deploy-gh-pages, cancel-in-progress: false }` empêche deux pushes rapprochés de publier dans le désordre.
+- Validation : `pnpm generate` exit 0 (24 routes), YAML du workflow validé (parseur), script d'assertions vert contre la sortie réelle. La CI réelle s'exécutera au merge sur `main`.
+- Convention : outillage exécuté **via Docker** (`docker compose run --rm web pnpm <cmd>`), cf. `CLAUDE.md`.
+
 ### File List
 
 - `CNAME` (supprimé de la racine) → `public/CNAME` (créé)
-- `.github/workflows/cd.yml` (réécrit : pnpm + Node 22)
+- `.github/workflows/cd.yml` (réécrit : pnpm + Node 22 ; **correctifs de revue** : permissions, concurrency, gate lint/typecheck, assertions sortie, garde déploiement push-only)
 - `public/images/portrait*` (24 fichiers restaurés depuis `faacdb2`)
 
 ## Change Log
@@ -125,3 +145,4 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 | Date | Version | Description | Auteur |
 |------|---------|-------------|--------|
 | 2026-06-18 | 0.1 | `pnpm generate` vert + CNAME→public + cd.yml pnpm/Node22 + restauration portraits. Clôt l'Epic 1. Status → review. | Amelia (dev-story) |
+| 2026-06-19 | 0.2 | Correctifs de revue : 5 findings résolus (durcissement `cd.yml` — permissions, concurrency, gate lint/typecheck, assertions sortie statique, garde déploiement push-only). Validations vertes. Status → review. | Amelia (dev-story) |

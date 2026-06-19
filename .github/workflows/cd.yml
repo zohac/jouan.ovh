@@ -8,6 +8,16 @@ on:
     branches:
       - main
 
+# Le déploiement publie sur la branche gh-pages via GITHUB_TOKEN → écriture requise.
+permissions:
+  contents: write
+
+# Sérialise les exécutions : deux pushes rapprochés sur main ne peuvent pas
+# publier dans le désordre (un ancien build écrasant un plus récent).
+concurrency:
+  group: deploy-gh-pages
+  cancel-in-progress: false
+
 jobs:
   cd:
     runs-on: ubuntu-latest
@@ -28,6 +38,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Gate de qualité : lint + typecheck avant le build (validation minimale du projet).
+      # S'exécute aussi sur les PR pour valider sans publier.
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
       - name: Generate
         run: pnpm generate
 
@@ -38,7 +56,20 @@ jobs:
           cp public/_headers .output/public/_headers
           cp public/CNAME .output/public/CNAME
 
+      # Garde-fou avant publication : la sortie statique doit contenir les pages,
+      # _headers, le CNAME du domaine custom et le portrait référencé par about.vue.
+      - name: Verify static output
+        run: |
+          set -euo pipefail
+          for f in index.html 200.html 404.html about/index.html blog/index.html _headers CNAME images/portrait_512x512_drip_art_8.webp; do
+            test -f ".output/public/$f" || { echo "::error::Fichier manquant dans la sortie statique : $f"; exit 1; }
+          done
+          grep -qx "dev.jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
+          echo "Sortie statique validée."
+
       - name: Deploy
+        # Publication uniquement sur push (main) ; les PR exécutent la validation sans déployer.
+        if: github.event_name == 'push'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
