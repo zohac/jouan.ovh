@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: 2026-06-19 (Story 2.2 polices + base dark-first → review)
+last_updated: 2026-06-20 (Story 2.2 polices + base dark-first → done)
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -53,7 +53,7 @@ development_status:
   # Epic 2 — Fondations du design system
   epic-2: in-progress
   2-1-porter-les-tokens-du-design-system: done
-  2-2-polices-et-base-dark-first: review
+  2-2-polices-et-base-dark-first: done
   2-3-primitive-zbutton: ready-for-dev
   2-4-primitive-zcard: ready-for-dev
   2-5-primitives-zbadge-et-ztag: ready-for-dev

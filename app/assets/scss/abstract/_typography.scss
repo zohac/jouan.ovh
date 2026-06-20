@@ -44,6 +44,12 @@ h2 {
   line-height: #{function.line-height(variables.$font-size-2x-large)};
 }
 
+label,
+legend {
+  // Labels : Ubuntu Mono = voix signature pour les micro-libelles.
+  font-family: var(--font-mono);
+}
+
 p {
   font-size: #{variables.$font-size-medium};
 
