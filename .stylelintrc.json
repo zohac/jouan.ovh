@@ -13,7 +13,11 @@
     "scss/no-global-function-names": [true, { "severity": "warning" }],
     "property-no-deprecated": [true, { "severity": "warning" }],
     "declaration-property-value-keyword-no-deprecated": [true, { "severity": "warning" }],
-    "font-family-no-duplicate-names": [true, { "severity": "warning" }]
+    "font-family-no-duplicate-names": [true, { "severity": "warning" }],
+    "selector-pseudo-class-no-unknown": [
+      true,
+      { "ignorePseudoClasses": ["deep", "slotted", "global"] }
+    ]
   },
   "overrides": [
     {

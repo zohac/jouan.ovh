@@ -1,6 +1,10 @@
+---
+baseline_commit: a18e484894356470812ded548b0dc3144880d08b
+---
+
 # Story 2.3: Primitive ZButton
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,25 +23,34 @@ so that les CTA sont cohérents (UX-DR2, FR3).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Créer le composant `components/ui/ZButton.vue` (AC: #1)
-  - [ ] `<script setup lang="ts">` avec `defineProps` typé d'après `Button.d.ts`.
-  - [ ] Élément polymorphe via prop `as` (`"button" | "a"` …) — `<component :is="as">` ; transmettre `href`, `disabled`, etc. via `$attrs` (inheritAttrs par défaut OK).
-  - [ ] Slot par défaut pour le label ; slots/props `icon` et `iconRight` pour les icônes inline (placeholders en attendant la story 2.7).
-- [ ] Tâche 2 — Variantes et tailles (AC: #1)
-  - [ ] Variantes : `primary` (orange), `secondary` (surface + bordure), `ghost` (texte seul), `terminal` (aubergine + vert), `danger`. Défaut `primary`.
-  - [ ] Tailles : `sm` (28px), `md` (36px, défaut), `lg` (44px) via les variables locales `--_h`/`--_px`/`--_fs`.
-- [ ] Tâche 3 — États interactifs via tokens (AC: #2)
-  - [ ] `primary` : `background var(--accent)` → hover `var(--accent-hover)` → active `var(--accent-active)` + `transform: translateY(1px)`.
-  - [ ] `:focus-visible` : `box-shadow: var(--ring-accent)`, `outline: none`.
-  - [ ] `:disabled`/`[aria-disabled="true"]` : `opacity .45`, `cursor: not-allowed`, `pointer-events: none`.
-  - [ ] `terminal` : fond `--bg-terminal`, texte `--term-green`, hover → bordure `--term-green` + `box-shadow: var(--glow-terminal)`.
-- [ ] Tâche 4 — Style scoped via tokens (AC: #1, #2)
-  - [ ] `<style lang="scss" scoped>` ; label en `--font-mono`, `--fw-medium`, `letter-spacing: var(--ls-wide)`, `border-radius: var(--radius-md)`.
-  - [ ] Transitions sur background/border-color/color/transform en `--dur-fast var(--ease-standard)`.
-  - [ ] Aucune valeur hardcodée — tout via `var(--token)`.
-- [ ] Tâche 5 — Vérification (AC: #1, #2)
-  - [ ] `yarn dev` : poser un `ZButton` de test (ex. dans une page existante) et vérifier les 5 variantes + 3 tailles + hover/press/focus.
-  - [ ] `yarn lint` (eslint + stylelint) vert ; `yarn generate` reste vert.
+- [x] Tâche 1 — Créer le composant `components/ui/ZButton.vue` (AC: #1)
+  - [x] `<script setup lang="ts">` avec `defineProps` typé (interface `Props` + `withDefaults`) d'après `Button.d.ts`.
+  - [x] Élément polymorphe via prop `as` — `<component :is="as">` ; `href`/`type`/`@click`… via `$attrs` (inheritAttrs par défaut).
+  - [x] Slot par défaut (label) ; props `icon` / `iconRight` + slots nommés `icon` / `iconRight` rendus dans `.zbtn__icon` quand fournis (placeholders avant la story 2.7).
+- [x] Tâche 2 — Variantes et tailles (AC: #1)
+  - [x] Variantes `primary` / `secondary` / `ghost` / `terminal` / `danger`, défaut `primary`.
+  - [x] Tailles `sm` (28px) / `md` (36px, défaut) / `lg` (44px) via `--_h`/`--_px`/`--_fs`.
+- [x] Tâche 3 — États interactifs via tokens (AC: #2)
+  - [x] `primary` : `var(--accent)` → hover `var(--accent-hover)` → active `var(--accent-active)` + `translateY(1px)`.
+  - [x] `:focus-visible` : `box-shadow: var(--ring-accent)`, `outline: none`.
+  - [x] `:disabled` / `[aria-disabled="true"]` : `opacity .45`, `cursor: not-allowed`, `pointer-events: none`.
+  - [x] `terminal` : `--bg-terminal` + `--term-green`, hover bordure `--term-green` + `var(--glow-terminal)`.
+- [x] Tâche 4 — Style scoped via tokens (AC: #1, #2)
+  - [x] `<style lang="scss" scoped>` ; label `--font-mono` / `--fw-medium` / `letter-spacing: var(--ls-wide)` / `border-radius: var(--radius-md)`.
+  - [x] Transitions background/border-color/color/transform en `--dur-fast var(--ease-standard)`.
+  - [x] Aucune valeur hardcodée : les nuances terminal/danger utilisent des tokens existants (`--accent-2-soft`, `--ink-on-accent`).
+- [x] Tâche 5 — Vérification (AC: #1, #2)
+  - [x] Rendu prouvé par build : page de smoke-test temporaire (5 variantes + 3 tailles + `as="a"` + disabled) générée → HTML `<button class="zbtn zbtn--primary zbtn--md">`, CSS scoped émis (`.zbtn--primary{background:var(--accent)…}`), `as="a"`→`<a href>`, lien disabled→`aria-disabled="true"`, bouton disabled→attribut natif. Page de test supprimée ensuite (zéro résidu).
+  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` **exit 0** (24 routes).
+
+### Review Findings
+
+- [x] [Review][Patch] Ajouter aussi le support props d'icône `icon` / `iconRight`, en complément des slots nommés [app/components/ui/ZButton.vue:21]
+- [x] [Review][Patch] Remplacer les deux couleurs hardcodées par des tokens existants [app/components/ui/ZButton.vue:155]
+- [x] [Review][Patch] Retirer/localiser les changements Stylelint globaux non strictement nécessaires à `ZButton` [.stylelintrc.json:16]
+- [x] [Review][Patch] Ajouter un `type="button"` par défaut au rendu natif `<button>` [app/components/ui/ZButton.vue:2]
+- [x] [Review][Patch] Bloquer réellement l'activation des rendus non natifs disabled (`as="a"`, `NuxtLink`, etc.) [app/components/ui/ZButton.vue:2]
+- [x] [Review][Patch] Refaire/documenter la validation via Docker avec `lint + typecheck + generate` [docs/implementation-artifacts/2-3-primitive-zbutton.md:43]
 
 ## Dev Notes
 
@@ -106,8 +119,34 @@ so that les CTA sont cohérents (UX-DR2, FR3).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Amelia / BMad dev-story)
+
 ### Debug Log References
+
+- `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` → exit 0.
+- Validation détaillée : lint vert (0 erreur ; 43 warnings baseline), `typecheck` vert, `generate` vert (« Prerendered 24 routes »).
+- **Diagnostic auto-import** : 1er `generate` rendait `<main><!----> …</main>` (ZButton non résolu). Cause : le défaut Nuxt préfixe les sous-dossiers (`ui/ZButton` → `UiZButton`), or la story attend `<ZButton>`. Corrigé via `components: [{ path: "~/components/ui", pathPrefix: false }, "~/components"]`. 2e `generate` → `<button class="zbtn zbtn--primary zbtn--md">Primary</button>` (+ secondary/ghost/terminal/danger), `<a class="zbtn…" href="#test">`, `<a … aria-disabled="true">`, `<button … disabled>`.
+- Preuve CSS scoped : `.zbtn--primary[data-v-…]{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}` et les 5 variantes émises dans `.output/public/_nuxt/*.css`.
 
 ### Completion Notes List
 
+- **`components/ui/ZButton.vue` créé** (`<script setup lang="ts">`) : props typées `variant`/`size`/`icon`/`iconRight`/`as`/`disabled` (`withDefaults`), polymorphe `<component :is="as">`, slots `default`/`icon`/`iconRight`. CSS porté de `Button.jsx` en `<style scoped>` (pas de portage de `ensureStyles()`/`document` → compatible prerender).
+- **Disabled polymorphe** : `disabled` natif sur `<button>` ; `type="button"` par défaut pour éviter les submits implicites ; `aria-disabled="true"`, `tabindex="-1"`, suppression de `href`/listeners et guard events sur les autres tags (`<a>` n'a pas d'attribut `disabled`).
+- **Press = nudge** : `translateY(1px)` (jamais `scale`), conforme à la règle motion DS.
+- **Config Nuxt** (`nuxt.config.ts`) : `components` ajouté pour auto-importer `components/ui/` **sans préfixe** (`<ZButton>`), le reste de `components/` garde le scan par défaut. Enabler pour toutes les primitives `ui/` (2.4→2.6).
+- **Config Stylelint** (`.stylelintrc.json`) : seul `selector-pseudo-class-no-unknown` ignore `:deep`/`:slotted`/`:global` de Vue. Les exceptions BEM/custom properties restent localisées dans le SFC via `stylelint-disable` ciblé.
+- **Tokens-only rétabli** : bordure terminal `--accent-2-soft`, encre danger `--ink-on-accent`.
+- **Legacy intact** : `assets/scss/components/_button.scss` (ancien `.btn`) non touché.
+
 ### File List
+
+- `app/components/ui/ZButton.vue` (CRÉÉ) — primitive bouton DS.
+- `nuxt.config.ts` (MODIFIÉ) — `components` : auto-import `components/ui/` sans préfixe.
+- `.stylelintrc.json` (MODIFIÉ) — pseudo-classes Vue autorisées pour `:deep`/`:slotted`/`:global`.
+
+## Change Log
+
+| Date | Version | Description | Auteur |
+|------|---------|-------------|--------|
+| 2026-06-20 | 0.1 | Primitive `ZButton.vue` (5 variantes, 3 tailles, états hover/press/focus, polymorphe `as`, slots icône) 100 % tokens. Auto-import `ui/` sans préfixe + patterns Stylelint BEM/Vue. Lint/typecheck/generate verts, rendu prouvé. Status → review. | Amelia (dev-story) |
+| 2026-06-21 | 0.2 | Findings de code review résolus : props icône, disabled polymorphe renforcé, `type="button"` par défaut, tokens-only, Stylelint localisé, validation Docker complète. Status → done. | Codex (code-review) |

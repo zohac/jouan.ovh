@@ -31,6 +31,9 @@ export default defineNuxtConfig({
   },
   css: ["@/assets/scss/main.scss"],
   modules: ["@nuxt/content", "@nuxt/image", "@nuxt/eslint"],
+  // Primitives DS dans components/ui/ auto-importées sans préfixe de dossier
+  // (<ZButton> et non <UiZButton>). Le reste de components/ garde le scan par défaut.
+  components: [{ path: "~/components/ui", pathPrefix: false }, "~/components"],
   ssr: true,
   // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
   experimental: {
