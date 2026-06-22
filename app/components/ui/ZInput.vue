@@ -6,13 +6,13 @@
 
     <textarea
       v-if="multiline"
+      v-bind="controlAttrs"
       :id="fieldId"
       class="ztextarea"
       :value="modelValue"
       :required="required || undefined"
       :aria-invalid="error || undefined"
-      :aria-describedby="hint ? hintId : undefined"
-      v-bind="$attrs"
+      :aria-describedby="describedBy"
       @input="onInput"
     />
 
@@ -22,14 +22,14 @@
         <slot v-else name="icon" />
       </span>
       <input
+        v-bind="controlAttrs"
         :id="fieldId"
         class="zinput"
         :class="{ 'zinput--has-icon': icon || $slots.icon }"
         :value="modelValue"
         :required="required || undefined"
         :aria-invalid="error || undefined"
-        :aria-describedby="hint ? hintId : undefined"
-        v-bind="$attrs"
+        :aria-describedby="describedBy"
         @input="onInput"
       />
     </span>
@@ -43,7 +43,7 @@
 // Porté de docs/design_system/components/core/Input.jsx (CSS en <style scoped>, prerender-safe).
 // API React (attrs natifs forwarded) → Vue : v-model (modelValue/update:modelValue) + $attrs sur le contrôle.
 import type { Component } from "vue";
-import { computed, useId } from "vue";
+import { computed, useAttrs, useId } from "vue";
 
 defineOptions({
   inheritAttrs: false,
@@ -87,6 +87,37 @@ const emit = defineEmits<{
 const generatedId = useId();
 const fieldId = computed(() => props.id ?? generatedId);
 const hintId = computed(() => `${fieldId.value}-hint`);
+const attrs = useAttrs();
+
+const controlledAttrs = new Set([
+  "aria-describedby",
+  "ariaDescribedby",
+  "aria-invalid",
+  "ariaInvalid",
+  "id",
+  "modelValue",
+  "required",
+  "value",
+]);
+
+const controlAttrs = computed(() => {
+  return Object.fromEntries(
+    Object.entries(attrs).filter(([key]) => {
+      return !controlledAttrs.has(key);
+    }),
+  );
+});
+
+const describedBy = computed(() => {
+  const attrDescribedBy = attrs["aria-describedby"] ?? attrs.ariaDescribedby;
+  const externalIds = typeof attrDescribedBy === "string" ? attrDescribedBy.trim() : "";
+
+  if (!props.hint) {
+    return externalIds || undefined;
+  }
+
+  return [externalIds, hintId.value].filter(Boolean).join(" ");
+});
 
 function onInput(event: Event) {
   emit("update:modelValue", (event.target as HTMLInputElement | HTMLTextAreaElement).value);

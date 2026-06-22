@@ -1,7 +1,7 @@
 <template>
-  <span class="zavatar" :class="[`zavatar--${size}`, { 'zavatar--ring': ring }]">
-    <NuxtImg v-if="src" class="zavatar__img" :src="src" :alt="alt" />
-    <template v-else>{{ initials || "?" }}</template>
+  <span class="zavatar" :class="[`zavatar--${safeSize}`, { 'zavatar--ring': ring }]">
+    <NuxtImg v-if="showImage" class="zavatar__img" :src="src" :alt="alt" @error="onImageError" />
+    <template v-else>{{ fallbackInitials }}</template>
   </span>
 </template>
 
@@ -9,6 +9,11 @@
 // Primitive avatar du DS — image ou initiales, anneau accent optionnel.
 // Porté de docs/design_system/components/core/Avatar.jsx. Image via <NuxtImg>
 // (jamais <img> brut — règle images projet). CSS en <style scoped>, prerender-safe.
+import { computed, ref, watch } from "vue";
+
+const avatarSizes = ["sm", "md", "lg", "xl"] as const;
+
+type AvatarSize = (typeof avatarSizes)[number];
 
 interface Props {
   /** URL de l'image. Repli sur les initiales si absent. */
@@ -18,18 +23,36 @@ interface Props {
   /** Initiales affichées sans image. */
   initials?: string;
   /** @default "md" — tailles 32 / 44 / 64 / 96 */
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: AvatarSize;
   /** Anneau accent orange. @default false */
   ring?: boolean;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   src: undefined,
   alt: "",
   initials: undefined,
   size: "md",
   ring: false,
 });
+
+const imageFailed = ref(false);
+const safeSize = computed(() => {
+  return avatarSizes.includes(props.size) ? props.size : "md";
+});
+const fallbackInitials = computed(() => props.initials || "?");
+const showImage = computed(() => Boolean(props.src) && !imageFailed.value);
+
+watch(
+  () => props.src,
+  () => {
+    imageFailed.value = false;
+  },
+);
+
+function onImageError() {
+  imageFailed.value = true;
+}
 </script>
 
 <style lang="scss" scoped>

@@ -4,7 +4,7 @@ baseline_commit: 34f112905e05db48357018c5f6ba19c56f6b1a8a
 
 # Story 2.6: Primitives ZInput et ZAvatar
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -41,7 +41,13 @@ so that les formulaires et identités visuelles sont cohérents (UX-DR6, UX-DR7,
   - [x] Taille via `--_sz` ; police initiales `calc(var(--_sz) * 0.4)` ; `ring` → `box-shadow: 0 0 0 2px var(--bg-page), 0 0 0 4px var(--accent)`.
 - [x] Tâche 5 — Vérification (AC: #1)
   - [x] Rendu prouvé par build (page de smoke-test temporaire, supprimée après) : `<label for="v-0-0">`↔`<input id="v-0-0" class="zinput">`, `<textarea class="ztextarea">` (multiline), `zfield--error`+`aria-invalid="true"`+`aria-describedby`, `zfield__req`, `zinput--has-icon`/`zinput__icon` ; `<img data-nuxt-img srcset="/_ipx/…">` (NuxtImg), `zavatar--sm/md/lg/xl`, `zavatar--ring` (box-shadow double `--bg-page`+`--accent`).
-  - [x] `pnpm lint` **exit 0** ; `pnpm typecheck` **exit 0** ; `pnpm generate` **exit 0** (24 routes).
+  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` **exit 0** (`lint` : 43 warnings existants, 0 error ; `typecheck` vert ; `generate` : 24 routes).
+
+### Review Findings
+
+- [x] [Review][Patch] Protéger les attributs contrôlés de `ZInput` contre l'écrasement par `$attrs` [app/components/ui/ZInput.vue:14]
+- [x] [Review][Patch] Garder une taille avatar valide si `size` reçoit une valeur runtime invalide [app/components/ui/ZAvatar.vue:44]
+- [x] [Review][Patch] Revenir aux initiales si l'image de `ZAvatar` échoue au chargement [app/components/ui/ZAvatar.vue:3]
 
 ## Dev Notes
 
@@ -111,16 +117,16 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 
 ### Debug Log References
 
-- `pnpm lint` → exit 0 ; `pnpm typecheck` → exit 0 ; `pnpm generate` → exit 0 (24 routes). 1 erreur Prettier transitoire (`<input>` auto-fermé) corrigée via `eslint --fix` ; 7 erreurs Stylelint `custom-property-pattern` sur `--_sz` (ZAvatar) corrigées en ajoutant `custom-property-pattern` au `stylelint-disable` inline (comme `--_h` de ZButton).
+- `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` → exit 0 ; `lint` : 43 warnings existants, 0 error ; `typecheck` → exit 0 ; `generate` → exit 0 (24 routes). 1 erreur Prettier transitoire (`<input>` auto-fermé) corrigée via `eslint --fix` ; 7 erreurs Stylelint `custom-property-pattern` sur `--_sz` (ZAvatar) corrigées en ajoutant `custom-property-pattern` au `stylelint-disable` inline (comme `--_h` de ZButton).
 - Preuves sortie (page smoke temporaire) : `<label for="v-0-0">` ↔ `<input id="v-0-0" class="zinput">` (lien `useId`), `<textarea class="ztextarea">`, `zfield--error` + `aria-invalid="true"` + `aria-describedby="v-0-1-hint"`, `zfield__req`, `zinput--has-icon`/`zinput__icon` ; `<img data-nuxt-img srcset="/_ipx/_/images/…">` (NuxtImg, pas de `<img>` brut), `zavatar--{sm,md,lg,xl}`, `.zavatar--ring{box-shadow:0 0 0 2px var(--bg-page),0 0 0 4px var(--accent)}`.
 
 ### Completion Notes List
 
 - **`components/ui/ZInput.vue` créé** : `<div>` field + label mono uppercase + `<input>`/`<textarea>` (selon `multiline`) + hint. CSS porté de `Input.jsx` 100 % tokens.
   - **v-model** : `modelValue` + `update:modelValue` (`@input`). `inheritAttrs: false` → `$attrs` (placeholder, type, name…) forwardés sur le contrôle, pas le wrapper.
-  - **a11y** : `id` via `useId()` (Vue 3.5, déterministe & hydration-safe — résout le piège « pas d'id aléatoire ») surchargeable par prop `id` ; `label[for]`↔contrôle, `required` natif + `*` visuel, `aria-invalid` si error, hint lié par `aria-describedby`. `prefers-reduced-motion` neutralise la transition.
+  - **a11y** : `id` via `useId()` (Vue 3.5, déterministe & hydration-safe — résout le piège « pas d'id aléatoire ») surchargeable par prop `id` ; `label[for]`↔contrôle, `required` natif + `*` visuel, `aria-invalid` si error, hint lié par `aria-describedby`. Revue : les attrs contrôlés (`id`/`value`/`required`/ARIA) sont protégés contre `$attrs`, et les ids externes `aria-describedby` sont fusionnés avec le hint. `prefers-reduced-motion` neutralise la transition.
   - **icon** : prop (composant) + slot nommé `icon` (cohérent avec `ZButton`), placeholder avant le set Lucide (2.7).
-- **`components/ui/ZAvatar.vue` créé** : `<span>` rond (`--radius-circle`, suit `Avatar.jsx` — pas pill), image via **`<NuxtImg>`** (optimisée `_ipx`, jamais `<img>` brut) ou initiales (fallback `"?"`). Tailles `sm/md/lg/xl` via `--_sz`, `ring` → double box-shadow (`--bg-page` + `--accent`).
+- **`components/ui/ZAvatar.vue` créé** : `<span>` rond (`--radius-circle`, suit `Avatar.jsx` — pas pill), image via **`<NuxtImg>`** (optimisée `_ipx`, jamais `<img>` brut) ou initiales (fallback `"?"`). Tailles `sm/md/lg/xl` via `--_sz`, `ring` → double box-shadow (`--bg-page` + `--accent`). Revue : taille runtime invalide ramenée à `md`, et échec image → fallback initiales.
 - **Conventions revues 2.3/2.4/2.5** : `/* stylelint-disable selector-class-pattern[, custom-property-pattern] */` inline (BEM + `--_sz`), `prefers-reduced-motion`, focus accessible, tokens partout, prerender-safe (pas de `ensureStyles()`). Aucun changement Stylelint global.
 - Vérif par page de smoke-test temporaire (`app/pages/__zinputavatar_smoke.vue`) générée puis **supprimée** (zéro résidu). Le portrait `docs/design_system/assets/brand/portrait.jpeg` sera copié vers `public/images/` à l'usage réel (Epics 3/5) — hors périmètre de cette primitive.
 
@@ -134,3 +140,4 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 | Date | Version | Description | Auteur |
 |------|---------|-------------|--------|
 | 2026-06-22 | 0.1 | Primitives `ZInput.vue` (v-model, a11y label/id via useId, focus ring, error, icon) et `ZAvatar.vue` (NuxtImg/initiales, 4 tailles, ring) 100 % tokens. Lint/typecheck/generate verts, rendu prouvé. Status → review. | Amelia (dev-story) |
+| 2026-06-22 | 0.2 | Correctifs review : attrs contrôlés de `ZInput` protégés/fusion `aria-describedby`, fallback taille `ZAvatar`, fallback initiales sur erreur image, validation Docker documentée. Status → done. | Codex (code-review) |
