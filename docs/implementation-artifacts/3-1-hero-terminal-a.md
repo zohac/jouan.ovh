@@ -1,6 +1,10 @@
+---
+baseline_commit: d010077872a594a62da828f5aec69abf29ed3f0d
+---
+
 # Story 3.1: Hero Terminal (A)
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -17,33 +21,33 @@ so that je perçois immédiatement l'identité de marque (« OS de nuit », Ubun
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Refondre `pages/index.vue` pour accueillir le hero Terminal (A) (AC: #1)
-  - [ ] Retirer l'ancien hero (`WindowWrapperComponent` + image `undraw_programming`) — il sera remplacé par le hero terminal
-  - [ ] Mettre en place la structure `<section class="hero hero__grad">` → `.hero__in.container` → `.hero__grid` à deux colonnes (texte à gauche, fenêtre terminal à droite), conforme à `kit.css` (`.hero__grid { grid-template-columns: 1.05fr 0.95fr; }`)
-  - [ ] Colonne gauche : eyebrow `// développeur web freelance`, titre `<h1>` avec `<em>` sur les mots accentués (orange via `.hero h1 em`), sous-titre `S.tagline`, zone CTA, zone tags
-  - [ ] Colonne droite : fenêtre terminal stylée (réutiliser le `TerminalWindow`/`Prompt` du DS portés en Epic 2 si disponibles, sinon voir Dev Notes)
-- [ ] Tâche 2 — Accroche et contenu français 1re personne (AC: #1)
-  - [ ] Titre : `Du code sur-mesure, de l'IA utile.` (`sur-mesure` et `utile` en `<em>` accent orange) — repris de `Home.jsx`
-  - [ ] Sous-titre = `tagline` de `data.js` : « Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils. » (1re personne « je », vouvoiement, pas d'emoji)
-  - [ ] Eyebrow : `// développeur web freelance`
-- [ ] Tâche 3 — Bloc terminal avec prompt + caret (AC: #1)
-  - [ ] Reproduire le contenu terminal de `HeroTerminal` (`Home.jsx`) : titre fenêtre `anon.@jouan.ovh: ~`, puis suite de lignes :
+- [x] Tâche 1 — Refondre `pages/index.vue` pour accueillir le hero Terminal (A) (AC: #1)
+  - [x] Retirer l'ancien hero (`WindowWrapperComponent` + image `undraw_programming`) — il sera remplacé par le hero terminal
+  - [x] Mettre en place la structure `<section class="hero hero__grad">` → `.hero__in.container` → `.hero__grid` à deux colonnes (texte à gauche, fenêtre terminal à droite), conforme à `kit.css` (`.hero__grid { grid-template-columns: 1.05fr 0.95fr; }`)
+  - [x] Colonne gauche : eyebrow `// développeur web freelance`, titre `<h1>` avec `<em>` sur les mots accentués (orange via `.hero h1 em`), sous-titre `S.tagline`, zone CTA, zone tags
+  - [x] Colonne droite : fenêtre terminal stylée (réutiliser le `TerminalWindow`/`Prompt` du DS portés en Epic 2 si disponibles, sinon voir Dev Notes)
+- [x] Tâche 2 — Accroche et contenu français 1re personne (AC: #1)
+  - [x] Titre : `Du code sur-mesure, de l'IA utile.` (`sur-mesure` et `utile` en `<em>` accent orange) — repris de `Home.jsx`
+  - [x] Sous-titre = `tagline` de `data.js` : « Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils. » (1re personne « je », vouvoiement, pas d'emoji)
+  - [x] Eyebrow : `// développeur web freelance`
+- [x] Tâche 3 — Bloc terminal avec prompt + caret (AC: #1)
+  - [x] Reproduire le contenu terminal de `HeroTerminal` (`Home.jsx`) : titre fenêtre `anon.@jouan.ovh: ~`, puis suite de lignes :
     - `whoami` → `Simon Jouan — Développeur web freelance`
     - `cat stack.txt` → `PHP/Symfony · WordPress · Node/Nest · Nuxt` (couleur `--term-blue`)
     - `ls ~/projets` → `keova.app/   patio-conseil.fr/` (couleur `--term-green`)
     - dernière ligne `help` avec **caret clignotant** (`caret`), cliquable pour ouvrir l'easter-egg terminal
-  - [ ] Le prompt suit le format DS `anon.@jouan.ovh:~$ <commande>` (réf. `Prompt.jsx` / `Prompt.d.ts`) ; le caret clignotant est la **seule** animation en boucle
-  - [ ] Le clic sur la dernière ligne ouvre l'easter-egg terminal existant (déléguer au gestionnaire terminal ; voir Dev Notes — si l'API d'ouverture n'est pas encore exposée, câbler a minima un handler no-op et noter la dépendance vers Epic 8)
-- [ ] Tâche 4 — CTA principal + secondaire + tags (AC: #2)
-  - [ ] CTA principal : `ZButton` variante `primary` (orange), taille `lg`, libellé `Démarrer un projet`, icône flèche à droite → `NuxtLink`/navigation vers `/contact`
-  - [ ] CTA secondaire : `ZButton` variante `secondary`, taille `lg`, libellé `Voir les services` → `/services`
-  - [ ] Rangée de tags `ZTag` : `php`, `symfony`, `wordpress`, `nest.js`, `nuxt.js` (réf. `Home.jsx`)
-- [ ] Tâche 5 — Styles & responsive (AC: #1)
-  - [ ] Porter les classes layout du hero (`.hero`, `.hero__grad`, `.hero__in`, `.hero__grid`, `.hero h1`, `.hero__sub`, `.hero__cta`, `.hero__tags`) depuis `kit.css` vers le SCSS scoped de la page (ou un partial `pages/`), **en consommant les tokens** (aucune valeur hardcodée)
-  - [ ] Sur mobile (`max-width: 720px` dans `kit.css`), `.hero__grid` passe en une seule colonne et `.hero h1` réduit à `--fs-4xl`
-- [ ] Tâche 6 — Vérification prerender & qualité (AC: #1, #2)
-  - [ ] Tout accès DOM lié au terminal est gardé (`onMounted` / `import.meta.client`) — compatibilité `nuxi generate`
-  - [ ] `yarn dev` charge `/` sans erreur ; `yarn lint` ne régresse pas
+  - [x] Le prompt suit le format DS `anon.@jouan.ovh:~$ <commande>` (réf. `Prompt.jsx` / `Prompt.d.ts`) ; le caret clignotant est la **seule** animation en boucle
+  - [x] Le clic sur la dernière ligne ouvre l'easter-egg terminal existant (déléguer au gestionnaire terminal ; voir Dev Notes — si l'API d'ouverture n'est pas encore exposée, câbler a minima un handler no-op et noter la dépendance vers Epic 8)
+- [x] Tâche 4 — CTA principal + secondaire + tags (AC: #2)
+  - [x] CTA principal : `ZButton` variante `primary` (orange), taille `lg`, libellé `Démarrer un projet`, icône flèche à droite → `NuxtLink`/navigation vers `/contact`
+  - [x] CTA secondaire : `ZButton` variante `secondary`, taille `lg`, libellé `Voir les services` → `/services`
+  - [x] Rangée de tags `ZTag` : `php`, `symfony`, `wordpress`, `nest.js`, `nuxt.js` (réf. `Home.jsx`)
+- [x] Tâche 5 — Styles & responsive (AC: #1)
+  - [x] Porter les classes layout du hero (`.hero`, `.hero__grad`, `.hero__in`, `.hero__grid`, `.hero h1`, `.hero__sub`, `.hero__cta`, `.hero__tags`) depuis `kit.css` vers le SCSS scoped de la page (ou un partial `pages/`), **en consommant les tokens** (aucune valeur hardcodée)
+  - [x] Sur mobile (`max-width: 720px` dans `kit.css`), `.hero__grid` passe en une seule colonne et `.hero h1` réduit à `--fs-4xl`
+- [x] Tâche 6 — Vérification prerender & qualité (AC: #1, #2)
+  - [x] Tout accès DOM lié au terminal est gardé (`onMounted` / `import.meta.client`) — compatibilité `nuxi generate`
+  - [x] `yarn dev` charge `/` sans erreur ; `yarn lint` ne régresse pas
 
 ## Dev Notes
 
@@ -125,8 +129,49 @@ so that je perçois immédiatement l'identité de marque (« OS de nuit », Ubun
 
 ### Agent Model Used
 
+Claude Opus 4.8 (1M context) — `claude-opus-4-8[1m]`
+
 ### Debug Log References
+
+- `pnpm lint` (eslint + stylelint) : 0 erreur / 0 warning (via Docker).
+- `pnpm typecheck` (nuxi/vue-tsc) : vert.
+- `pnpm generate` : vert, 24 routes prérendues, `/` inclus (hero rendu côté SSR — vérifié par grep des marqueurs `hero__grad`, `hero-term__open`, `prm__caret`, `whoami`, etc. dans `.output/public/index.html`).
+- Findings stylelint corrigés en cours de route : `word-break: break-word` → `overflow-wrap: break-word` ; ligne vide avant commentaire `//` ; formatage Prettier des spans de prompt (`eslint --fix`).
 
 ### Completion Notes List
 
+**Implémenté (port de `Home.jsx` → Vue 3, tokens-only) :**
+
+- `pages/index.vue` entièrement refondu : ancien hero (`WindowWrapperComponent` + image `undraw_programming`) retiré, remplacé par le hero Terminal (A) en `<script setup lang="ts">`. Structure `<main class="home">` → `<section class="hero hero__grad">` → `.hero__in.container` → `.hero__grid` deux colonnes.
+- Colonne gauche : eyebrow `// développeur web freelance`, `<h1>` avec `<em>` accent orange (`Du code sur-mesure, de l'IA utile.`), sous-titre = `tagline` de `data.js` (1re personne, vouvoiement, pas d'emoji), CTA, tags.
+- CTA : `ZButton` primary `lg` → `/contact` (`Démarrer un projet`, icône `ZIcon name="arrow"` via slot `#iconRight`) + `ZButton` secondary `lg` → `/services` (`Voir les services`). `:as="NuxtLink"` importé de `#components` (évite le piège `<component :is="string">`).
+- Tags : `ZTag` × 5 (`php`, `symfony`, `wordpress`, `nest.js`, `nuxt.js`).
+- Colonne droite : fenêtre terminal **statique décorative** (port de `TerminalWindow.jsx` + `Prompt.jsx`), barre titre `anon.@jouan.ovh: ~`, 3 pastilles, puis prompts `whoami` / `cat stack.txt` (sortie `--term-blue`) / `ls ~/projets` (sortie `--term-green`), et ligne `help` avec **caret clignotant** (seule animation en boucle, keyframe globale `caret-blink`, neutralisée sous `prefers-reduced-motion`).
+- Format prompt fidèle au DS : `anon.@jouan.ovh:~$ <commande>` (user/dir colorés `--prompt` / `--term-blue`).
+
+**Ouverture du terminal (Tâche 3) — délégation au gestionnaire existant :**
+
+- Le `TerminalManagerComponent` (méthode `createNewTerminal()`) est monté dans `HeaderComponent` sans API globale. Plutôt qu'un handler no-op, j'ai exposé l'ouverture via un composable launcher minimal et additif `app/composables/useTerminal.ts` (`register` / `open`). `HeaderComponent` enregistre son lanceur en `onMounted` ; le hero appelle `open()` au clic sur la ligne `help` (bouton natif → clavier OK, `aria-label`).
+- Prerender-safe : `register` se fait côté client (`onMounted`), `open()` est un no-op tant qu'aucun lanceur n'est enregistré (rendu statique). La **restylisation** du terminal lui-même reste explicitement du périmètre d'**Epic 8** ; cette story ne touche pas à `components/terminal/`.
+
+**a11y & tokens (checklist pré-revue) :**
+
+- Tokens-only : couleurs/rayons/ombres/typo via `var(--…)`. Dégradés `.hero__grad` dérivés des tokens via `color-mix` (pas de HSL en dur). Dérogations px du chrome terminal (fenêtre 300px, barre 30px, pastilles 13px/gap 7px, caret en em, délai 80ms) **commentées explicitement** — specs DS sans token équivalent (cf. tolérance documentée Epic 2).
+- Focus visible (`--ring-accent`) sur la ligne `help` ; pastilles décoratives `aria-hidden` ; `prefers-reduced-motion` neutralise l'entrée `.anim` et le caret.
+
+**Écarts signalés :**
+
+- Breakpoint mobile : la fiche citait `max-width: 720px`, mais `kit.css` (source de vérité) utilise `@media (max-width: 900px)` pour `.hero__grid` (1 colonne) et `.hero h1` (`--fs-4xl`). J'ai suivi `kit.css` (900px).
+- `WindowWrapperComponent.vue` et l'image `undraw_programming_re_kg9v.svg` ne sont plus référencés par `/` mais ne sont pas supprimés (hors périmètre ; possiblement utilisés ailleurs / legacy à traiter séparément).
+
 ### File List
+
+- `app/pages/index.vue` (refonte complète — hero Terminal A)
+- `app/components/HeaderComponent.vue` (enregistre le lanceur terminal partagé en `onMounted` — +4 lignes)
+- `app/composables/useTerminal.ts` (nouveau — registre/launcher du terminal partagé)
+- `docs/implementation-artifacts/3-1-hero-terminal-a.md` (frontmatter `baseline_commit`, statut, Dev Agent Record)
+- `docs/implementation-artifacts/sprint-status.yaml` (statut 3-1 → in-progress → review)
+
+## Change Log
+
+- 2026-06-22 — Implémentation story 3.1 (hero Terminal A) : refonte `pages/index.vue`, composable `useTerminal`, câblage ouverture terminal depuis le header. Lint/typecheck/generate verts. Statut → review.

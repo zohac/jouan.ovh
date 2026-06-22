@@ -106,6 +106,11 @@ function addNewTerminal() {
   terminalManager.value?.createNewTerminal();
 }
 
+// Expose l'ouverture du terminal au reste du site via le lanceur partagé
+// (ex. ligne « help » du hero d'accueil, story 3.1). Le gestionnaire reste
+// monté ici ; on enregistre seulement une référence vers sa méthode.
+const { register: registerTerminalLauncher } = useTerminal();
+
 // --- Menu mobile accessible ---
 const menuOpen = ref(false);
 const firstMenuLink = ref<HTMLElement | null>(null);
@@ -169,6 +174,7 @@ onMounted(() => {
   document.addEventListener("keydown", onKeydown);
   desktopMq = window.matchMedia("(min-width: 901px)");
   desktopMq.addEventListener("change", onDesktopChange);
+  registerTerminalLauncher(addNewTerminal);
 });
 
 onBeforeUnmount(() => {
