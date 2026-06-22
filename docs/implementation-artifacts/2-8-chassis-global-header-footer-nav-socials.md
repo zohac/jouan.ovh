@@ -4,7 +4,7 @@ baseline_commit: a811354968e53578b1a0108a881c23a7bc9f038f
 
 # Story 2.8: Châssis global (header, footer, nav, socials)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -158,7 +158,7 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 
 ## Change Log
 
-| Date | Version | Description | Auteur |
-|------|---------|-------------|--------|
-| 2026-06-22 | 0.1 | Châssis global refondu : header sticky 56px (brand gem, nav 5 liens, badge+boutons, terminal préservé, menu mobile accessible), footer riche + hexagones DS, stubs /services + /contact, layout flex. Fix CTA `as="NuxtLink"` (référence via #components). Lint/typecheck/generate verts, CNAME intact. Clôt l'Epic 2. Status → review. | Amelia (dev-story) |
-| 2026-06-22 | 0.2 | Correctifs de revue : 4 findings résolus (aria-current sur nav, durcissement menu mobile focus/breakpoint + overlay desktop, dégradé tablette anti-overflow horloge/badge, couleur header via `color-mix` de token). Lint/typecheck/generate verts. | Amelia (dev-story) |
+| Date       | Version | Description                                                                                                                                                                                                                                                                                                                             | Auteur             |
+| ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| 2026-06-22 | 0.1     | Châssis global refondu : header sticky 56px (brand gem, nav 5 liens, badge+boutons, terminal préservé, menu mobile accessible), footer riche + hexagones DS, stubs /services + /contact, layout flex. Fix CTA `as="NuxtLink"` (référence via #components). Lint/typecheck/generate verts, CNAME intact. Clôt l'Epic 2. Status → review. | Amelia (dev-story) |
+| 2026-06-22 | 0.2     | Correctifs de revue : 4 findings résolus (aria-current sur nav, durcissement menu mobile focus/breakpoint + overlay desktop, dégradé tablette anti-overflow horloge/badge, couleur header via `color-mix` de token). Lint/typecheck/generate verts.                                                                                     | Amelia (dev-story) |

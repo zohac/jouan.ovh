@@ -1,7 +1,7 @@
 ---
 project_name: 'jouan.ovh'
 user_name: 'Simon'
-date: '2026-06-18'
+date: '2026-06-22'
 sections_completed:
   ['technology_stack', 'language_framework', 'code_quality', 'workflow_testing', 'critical_rules']
 status: 'complete'
@@ -17,25 +17,19 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 
 ## Technology Stack & Versions
 
-- **Framework :** Nuxt 3 (`^3.3.1`), SSR activé, avec `@nuxt/bridge-edge` (configuration hybride). `experimental.payloadExtraction: false`.
-- **UI :** Vue 3 — majoritairement `<script setup lang="ts">`, mais certains composants legacy utilisent l'Options API (`export default { name }`) et `vue-property-decorator` (`experimentalDecorators: true` dans tsconfig).
-- **Langage :** TypeScript `^4.9.5`.
-- **Styles :** SCSS (`sass ^1.59.2`) via le système de modules `@use ... as`. Architecture à tokens sous `assets/scss/abstract/` (échelle de couleurs Radix 12 paliers).
-- **Contenu :** `@nuxt/content ^2.5.2` (blog), `@nuxt/image-edge` (`<nuxt-img>` / `<nuxt-picture>`).
-- **Lint :** ESLint (`@nuxtjs/eslint-config-typescript` + `plugin:prettier/recommended`, `max-len: 120`), Prettier (double quotes, points-virgules), Stylelint + `stylelint-scss`.
-- **Gestionnaire de paquets :** pnpm (`pnpm-lock.yaml`) — dev via Docker (cf. Workflow).
-- **Déploiement :** site statique (`nuxi generate`) → `push-dir` vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME`).
-- **Divers :** `ua-parser-js` (détection device, terminal).
+> ✅ **Migration de stack terminée (Epic 1).** Les versions ci-dessous sont l'état
+> ACTUEL, post-migration. `@nuxt/bridge-edge` a été abandonné ; le code applicatif
+> vit désormais sous `app/` (structure Nuxt 4 par défaut, `srcDir = "app"`).
 
-> ⚠️ **PRÉREQUIS — Mise à jour complète de la stack avant la refonte.**
-> Les versions ci-dessus sont l'état AVANT migration. Le projet doit être
-> entièrement mis à niveau **avant** d'implémenter le nouveau design system :
-> - **Nuxt 3 → Nuxt 4** (et abandon de `@nuxt/bridge-edge`, devenu inutile).
-> - Vue 3, TypeScript 5.x, `sass`, `@nuxt/content`, `@nuxt/image`, ESLint 9 /
->   flat config, Prettier, Stylelint — toutes les dépendances à jour.
-> - Re-valider la chaîne `nuxi generate` → `gh-pages` après migration.
-> Cette migration est la **première étape** du plan (épic « Migration stack »),
-> en amont des fondations design.
+- **Framework :** Nuxt 4 (`^4.4.8`), SSR activé. `experimental.payloadExtraction: false`. Code applicatif sous `app/` (`srcDir = "app"`).
+- **UI :** Vue 3 — `<script setup lang="ts">` pour tout nouveau composant. Du legacy en Options API + `vue-property-decorator` (`^9.1.2`, `experimentalDecorators: true`) subsiste mais est **inutilisé** — à retirer (ne pas l'étendre).
+- **Langage :** TypeScript `^6.0.3`.
+- **Styles :** SCSS (`sass ^1.101.0`) via `@use ... as`. **Deux couches de tokens coexistent :** (1) tokens DS portés en **CSS custom properties globales** dans `app/assets/scss/abstract/_root.scss` (chargé via `main.scss`) = source de vérité du nouveau code ; (2) anciens tokens SCSS `$` sous `abstract/` encore consommés par le legacy restant. Cf. règle SCSS.
+- **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
+- **Lint :** ESLint `^10` en **flat config** via `@nuxt/eslint` (`eslint.config.mjs`, `eslint: { config: { stylistic: false } }` → Prettier formate). Prettier `^3` (double quotes, points-virgules). Stylelint `^17` + `stylelint-config-standard-scss` + `stylelint-scss`. Script : `eslint . && stylelint "app/assets/**/*.scss" "app/**/*.vue"`.
+- **Gestionnaire de paquets :** pnpm (`packageManager: pnpm@11.8.0`, `pnpm-lock.yaml`), Node `>=22` — dev via Docker (cf. Workflow).
+- **Déploiement :** site statique (`nuxi generate`) → `push-dir` vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME`). ⚠️ La chaîne CI de déploiement n'a pas encore été prouvée en réel sur `main` (cf. rétros Epic 1/2) — validation prévue en fin de refonte.
+- **Divers :** `ua-parser-js ^2` (détection device, terminal).
 
 ## Critical Implementation Rules
 
@@ -53,21 +47,34 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Cible de build = site **STATIQUE** (`nuxi generate`) → tout code doit être
   compatible prerender : pas d'accès `window`/`document` hors `onMounted` ou
   garde `import.meta.client`.
-- Pages dans `pages/`, layout `layouts/default.vue`, auto-import des composants
-  activé (pas d'import manuel pour la plupart).
-- Images TOUJOURS via `<nuxt-img>` / `<nuxt-picture>` (@nuxt/image), jamais
+- Pages dans `app/pages/`, layout `app/layouts/default.vue`, auto-import des
+  composants activé (pas d'import manuel pour la plupart).
+- **Primitives DS sous `app/components/ui/` auto-importées SANS préfixe de dossier**
+  (`<ZButton>`, pas `<UiZButton>`) via `components: [{ path: "~/components/ui", pathPrefix: false }, "~/components"]`.
+  Le reste de `components/` garde le scan par défaut.
+- ⚠️ **Piège `<component :is>` :** un nom de composant passé en *string*
+  (`<component :is="'NuxtLink'">`) **ne résout pas** l'auto-import. Importer la
+  référence depuis `#components` (`import { NuxtLink } from "#components"`) et la
+  passer comme valeur. (Régression rencontrée en story 2.8.)
+- Images TOUJOURS via `<NuxtImg>` / `<NuxtPicture>` (@nuxt/image), jamais
   `<img>` brut. Assets statiques dans `public/images/`.
-- Blog alimenté par `@nuxt/content` (markdown) — route `blog/[...slug].vue`.
+- Blog alimenté par `@nuxt/content` v3 (markdown) — route `blog/[...slug].vue`.
 
 **SCSS (règle critique)**
 - Système `@use ... as _alias` UNIQUEMENT — jamais `@import` (déprécié).
-- Pattern de theming : un composant déclare des CSS custom properties locales à
-  partir des tokens SCSS, puis les consomme via `var()`. Ex :
-  `--header-color-background: #{_color.$dark-background};` puis
-  `background-color: var(--header-color-background);`
-- Styles dans `<style lang="scss" scoped>` par composant. Tokens sous
-  `assets/scss/abstract/` ; ne pas hardcoder couleurs/espaces/rayons — passer
-  par les tokens.
+- **Nouveau code (DS) : consommer directement les tokens CSS globaux via `var(--token)`**
+  (ex. `background: var(--bg-card); border-radius: var(--radius-md);`). Les tokens
+  sont exposés sur `:root` par `app/assets/scss/abstract/_root.scss` — source unique
+  de vérité (couleurs, typo, espacement, rayons, élévation, motion).
+- **Aucune valeur en dur** (couleur/espace/rayon/durée) dans le nouveau code — tout
+  passe par un token. Si aucun token n'existe pour un besoin légitime (ex. teintes de
+  palette syntaxe), commenter explicitement la dérogation.
+- Legacy : certains composants déclarent encore des CSS props locales à partir des
+  anciens tokens SCSS `$` (ex. `--header-color-background: #{_color.$dark-background};`).
+  Ne pas étendre ce pattern ; migrer vers `var(--token)` lors d'une refonte.
+- Styles dans `<style lang="scss" scoped>` par composant. Exceptions Stylelint
+  (`:deep`/`:slotted`/`:global`) en `/* stylelint-disable */` **inline et commenté**,
+  pas en config globale.
 
 ### Qualité de code & conventions
 
@@ -77,9 +84,14 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - `no-console` / `no-debugger` : warning en production uniquement.
 
 **Conventions de nommage**
-- Composants : PascalCase suffixé `Component` (`HeaderComponent.vue`,
-  `FooterComponent.vue`). Les cartes sont préfixées `Z` (`ZCardComponent`,
-  `ZCardHeader`, `ZCardBody`, `ZCardFooter`).
+- **Primitives du design system : préfixe `Z`, sous `app/components/ui/`**
+  (`ZButton`, `ZCard`, `ZBadge`, `ZTag`, `ZInput`, `ZAvatar`, `ZIcon`) — `<script setup>`,
+  auto-importées sans préfixe de dossier.
+- Sous-blocs de carte : `app/components/card/` (`ZCardHeader`, `ZCardBody`,
+  `ZCardFooter`), restylés via tokens et composés avec `<ZCard>`. (L'ancien
+  `ZCardComponent` monolithique a été supprimé en story 2.4.)
+- Composants applicatifs legacy : PascalCase suffixé `Component`
+  (`HeaderComponent.vue`, `FooterComponent.vue`, `HexagonLinkComponent.vue`…).
 - Sous-système terminal sous `components/terminal/` : `programs/` = classes TS
   implémentant `IProgram`, `interfaces/` = contrats (`I*` + barrel `index.ts`).
 - Tokens SCSS : fichiers partiels `_nom.scss`, importés en `_alias`
@@ -113,8 +125,11 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Stopper : `docker compose down`.
 
 **Build & déploiement**
-- Gestionnaire de paquets : **pnpm** (`packageManager: pnpm@…`, lockfile
-  `pnpm-lock.yaml`). Ne pas utiliser `npm`/`yarn`.
+- Gestionnaire de paquets : **pnpm** (`packageManager: pnpm@11.8.0`, lockfile
+  `pnpm-lock.yaml`). **Ne JAMAIS utiliser `npm`/`yarn`.**
+- ⚠️ **Toutes les commandes `pnpm` ci-dessous passent par Docker** (cf. section
+  « Environnement de dev »), jamais directement sur l'hôte :
+  `docker compose run --rm web sh -c "corepack enable && pnpm <cmd>"`.
 - Validation : `pnpm lint` (eslint + stylelint) + `pnpm typecheck` (`nuxi typecheck`
   / vue-tsc) + build `pnpm generate` — tout doit passer (cf. section Tests).
 - Build statique : `pnpm generate` → sortie `.output/public`.
@@ -140,6 +155,16 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Le `ui_kits/jouan-site/` est la **référence visuelle cible** des pages (Home,
   Services, About, Blog, Contact, Terminal) — s'y reporter pour le rendu.
 
+**Accessibilité (à intégrer dès l'écriture, pas seulement en revue)**
+- Tout élément interactif : **focus visible** (ring `--ring-accent`, jamais
+  `outline: none` sans alternative), **navigation clavier** (Enter/Space sur les
+  éléments non natifs cliquables, retour de focus après fermeture d'overlay/menu),
+  attributs `aria-*` pertinents (`aria-current`, `aria-label`, `aria-describedby`…).
+- Respecter `prefers-reduced-motion: reduce` (neutraliser transitions/lifts).
+- Images via `<NuxtImg>` avec `alt` ; fallback visuel si l'image échoue.
+- Leçon rétro Epic 2 : ces points étaient systématiquement rattrapés en revue —
+  les traiter en amont (checklist pré-revue dans la consigne de story).
+
 **À préserver pendant la refonte**
 - La **fonctionnalité terminal** draggable (`components/terminal/`) est un
   easter-egg à conserver — le design system la garde comme feature secondaire.
@@ -149,9 +174,11 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   terminal.
 
 **Pièges**
-- Compatibilité prerender (site statique) : tout accès DOM doit être gardé.
+- Compatibilité prerender (site statique) : tout accès DOM doit être gardé ;
+  IDs déterministes via `useId()` (pas d'aléatoire qui casse l'hydration).
 - Ne pas casser `CNAME` / le déploiement gh-pages.
-- Faire la migration de stack AVANT la refonte (cf. prérequis en tête de fichier).
+- `<component :is="...">` : passer une référence importée, jamais un nom en string
+  (cf. règles Nuxt).
 
 ---
 
@@ -164,7 +191,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 
 **Pour les humains :**
 - Garder le fichier court et focalisé sur les besoins des agents.
-- Mettre à jour quand la stack change (notamment après la migration Nuxt 4).
+- Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-06-18
+Dernière mise à jour : 2026-06-22 (post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)

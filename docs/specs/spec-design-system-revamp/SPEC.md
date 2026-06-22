@@ -21,7 +21,7 @@ Une **vision à réaliser** : le site personnel de Simon Jouan (développeur web
 
 - id: CAP-1
   intent: Le projet est migré vers une stack à jour (Nuxt 4, abandon de `@nuxt/bridge-edge`, toutes dépendances actuelles) avant tout travail de refonte visuelle.
-  success: `yarn install` puis `yarn generate` réussissent sans erreur sur Nuxt 4 ; le site pré-refonte rend les mêmes pages qu'avant et se déploie sur `gh-pages` avec `CNAME` intact.
+  success: `pnpm install` puis `pnpm generate` (exécutés via Docker) réussissent sans erreur sur Nuxt 4 ; le site pré-refonte rend les mêmes pages qu'avant et se déploie sur `gh-pages` avec `CNAME` intact.
 
 - id: CAP-2
   intent: Les tokens du design system (couleurs, typographie, espacement, rayons, élévation, motion, polices) sont disponibles dans le codebase comme source unique de vérité du style.
@@ -66,11 +66,12 @@ Une **vision à réaliser** : le site personnel de Simon Jouan (développeur web
 ## Constraints
 
 - **Migration d'abord** : CAP-1 doit être livrée et verte (build + déploiement) avant d'entamer CAP-2 et au-delà.
+- **Outillage : pnpm + Docker** : le gestionnaire de paquets est **pnpm** (jamais `npm`/`yarn`) ; tout le dev et l'outillage (install, lint, typecheck, generate) passe **par Docker** (`docker compose`), pas sur l'hôte.
 - **Dark-first uniquement** : aucun thème clair. Surfaces sombres teintées aubergine ; orange Ubuntu = unique couleur accent héros.
 - **Tokens, pas de valeurs en dur** : la source de vérité du style est `docs/design_system/tokens/` ; les composants consomment des tokens (SCSS `@use` / CSS vars).
 - **Port, pas copie** : les `.jsx`/CSS du DS ne sont pas copiés tels quels ; recréation en Vue 3 `<script setup>` + SCSS `@use` (jamais `@import`).
 - **Compatibilité prerender** : tout doit passer `nuxi generate` (site statique) ; accès DOM gardés (`onMounted` / `import.meta.client`).
-- **Déploiement préservé** : `CNAME` et la chaîne `yarn generate` → `gh-pages` ne doivent pas régresser.
+- **Déploiement préservé** : `CNAME` et la chaîne `pnpm generate` → `gh-pages` ne doivent pas régresser.
 - **Langue & voix** : français, 1re personne « je », vouvoiement, pas d'emoji.
 - **Typo signature** : Ubuntu Mono (titres/labels/code), Ubuntu sans (corps long).
 - **Easter-egg terminal conservé** : feature secondaire à préserver, pas à supprimer.
@@ -92,7 +93,7 @@ Le site jouan.ovh, reconstruit sur Nuxt 4, rend toutes ses pages (Accueil, Servi
 
 - **Hero d'accueil** : direction **Terminal (A)** retenue (CAP-5).
 - **Routes** : `/services` et `/contact` ajoutées comme pages dédiées (CAP-6, CAP-9).
-- **Cible de migration (CAP-1)** : **Nuxt 4 + Vue 3 + TypeScript 5 + ESLint 9 (flat config)**, abandon de `@nuxt/bridge-edge`, toutes deps à jour.
+- **Cible de migration (CAP-1, livrée en Epic 1)** : **Nuxt 4 + Vue 3 + TypeScript 6 + ESLint 10 (flat config via `@nuxt/eslint`)**, abandon de `@nuxt/bridge-edge`, code sous `app/`, toutes deps à jour. **Gestionnaire de paquets : pnpm** (migration depuis Yarn) ; **dev et outillage via Docker** (`docker compose`). `@nuxt/content` v3, `@nuxt/image` v2.
 
 ## Assumptions
 
