@@ -4,7 +4,7 @@ baseline_commit: d010077872a594a62da828f5aec69abf29ed3f0d
 
 # Story 3.1: Hero Terminal (A)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -195,3 +195,4 @@ Validation post-fix (Docker) : `pnpm lint` 0/0, `typecheck` vert, `generate` ver
 
 - 2026-06-22 — Implémentation story 3.1 (hero Terminal A) : refonte `pages/index.vue`, composable `useTerminal`, câblage ouverture terminal depuis le header. Lint/typecheck/generate verts. Statut → review.
 - 2026-06-22 — Corrections de revue de code : 4 findings [Patch] résolus (a11y prompts décoratifs, token `--aubergine-vivid`, unregister du lanceur, clé v-for stable). Lint/typecheck/generate verts. Statut → review.
+- 2026-06-22 — Re-revue (vérification post-fix) : 4/4 findings [Patch] confirmés dans le code réel (commit `7a0a836`) — `aria-hidden` sur les lignes de prompt avec sorties conservées lisibles, `--aubergine-vivid` = fidélité `kit.css` en tokens-only, `unregister` symétrique guardé, clé v-for `row.id` stable. `pnpm lint` (0/0) + `pnpm typecheck` revérifiés verts via Docker ; aucune régression. Statut → done.

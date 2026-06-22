@@ -131,7 +131,10 @@ const { open: openTerminal } = useTerminal();
 .hero__in {
   position: relative;
   z-index: 1;
-  padding: var(--space-20) 0;
+
+  // padding-block uniquement : le gutter horizontal vient de .container
+  // (longhands distincts → pas de conflit de shorthand entre les deux classes).
+  padding-block: var(--space-20);
 }
 
 .hero__grid {
@@ -145,7 +148,7 @@ const { open: openTerminal } = useTerminal();
   width: 100%;
   max-width: var(--container-xl);
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding-inline: var(--space-6);
 }
 
 // ---- Colonne texte ----
@@ -194,14 +197,16 @@ const { open: openTerminal } = useTerminal();
 }
 
 // ---- Fenêtre terminal décorative (porté de TerminalWindow.jsx / Prompt.jsx) ----
-// Dérogation tokens-only assumée : les dimensions fixes du chrome (hauteur de
-// fenêtre 300px, barre 30px, pastilles 13px / gap 7px) reproduisent à l'identique
-// la spec du composant DS et n'ont pas de token d'espacement équivalent (échelle
-// base-4). Couleurs, rayons et ombres restent en tokens.
+// Dérogation tokens-only assumée : les dimensions fixes du chrome (hauteur min
+// de fenêtre 300px, barre 30px, pastilles 13px / gap 7px) reproduisent à
+// l'identique la spec du composant DS et n'ont pas de token d'espacement
+// équivalent (échelle base-4). Couleurs, rayons et ombres restent en tokens.
+// `min-height` (et non `height`) : la fenêtre s'étend au contenu — pas de
+// scrollbar parasite si le rendu mono dépasse de quelques px.
 .hero-term {
   display: flex;
   flex-direction: column;
-  height: 300px;
+  min-height: 300px;
   overflow: hidden;
   border: 1px solid var(--accent-2-soft);
   border-radius: var(--radius-sm);
