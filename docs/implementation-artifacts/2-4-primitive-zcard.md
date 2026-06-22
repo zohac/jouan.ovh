@@ -1,6 +1,10 @@
+---
+baseline_commit: 3f208e6e0ce2dbba70e7aea246a073833c9c6e57
+---
+
 # Story 2.4: Primitive ZCard
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,23 +23,23 @@ so that le contenu est présenté de façon cohérente (UX-DR3, FR3).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Créer `components/ui/ZCard.vue` (AC: #1)
-  - [ ] `<script setup lang="ts">`, `defineProps` typé d'après `Card.d.ts` : `interactive`, `accent`, `featured`, `padded` (défaut `true`), `as` (défaut `"div"`).
-  - [ ] Élément polymorphe via `as` (`<component :is="as">`), slot par défaut pour le contenu.
-- [ ] Tâche 2 — Style scoped via tokens (AC: #1)
-  - [ ] Base : `background var(--bg-card)`, `color var(--text-body)`, `border 1px solid var(--border-subtle)`, `border-radius var(--radius-md)`, `box-shadow var(--shadow-2), var(--shadow-hairline)`, `overflow: hidden`, `position: relative`.
-  - [ ] `padded` → `padding var(--space-6)`.
-  - [ ] `interactive` → `cursor:pointer` ; hover : `border-color var(--border-strong)`, `transform translateY(-2px)`, `box-shadow var(--shadow-3), var(--shadow-hairline)`.
-  - [ ] `accent` → pseudo `::before` barre 2px en haut : `linear-gradient(90deg, var(--accent), var(--aubergine-light))`.
-  - [ ] `featured` → `border-color hsl(24 94% 53% / 0.35)`, `box-shadow var(--glow-accent), var(--shadow-hairline)`.
-  - [ ] Transitions border-color/transform/box-shadow en `--dur-base` (`--ease-out` pour transform).
-- [ ] Tâche 3 — Migrer les usages existants de `ZCard*` (AC: #2)
-  - [ ] Recenser les consommateurs de `ZCardComponent` / `ZCardHeader` / `ZCardBody` / `ZCardFooter` (cf. `pages/`, `layouts/`, autres composants).
-  - [ ] Décider de la stratégie : (a) remplacer par `ZCard` + composition slots, ou (b) restyler le sous-système `card/*` existant via tokens. **Recommandé** : introduire `ZCard.vue` comme conteneur DS et migrer les usages vers lui, en conservant `ZCardHeader`/`ZCardBody`/`ZCardFooter` comme sous-blocs restylés si besoin (image header, body, footer socials).
-  - [ ] Migrer chaque usage **sans régression visuelle bloquante** (la carte reste fonctionnelle : image, titre, contenu, footer socials).
-- [ ] Tâche 4 — Vérification (AC: #1, #2)
-  - [ ] `yarn dev` : les pages qui utilisaient `ZCard*` rendent toujours (pas d'erreur de composant manquant), avec le nouveau style DS.
-  - [ ] `yarn lint` (eslint + stylelint) vert ; `yarn generate` reste vert (cartes prerendues OK).
+- [x] Tâche 1 — Créer `components/ui/ZCard.vue` (AC: #1)
+  - [x] `<script setup lang="ts">`, `defineProps` typé (`withDefaults`) d'après `Card.d.ts` : `interactive`, `accent`, `featured`, `padded` (défaut `true`), `as` (défaut `"div"`).
+  - [x] Élément polymorphe via `as` (`<component :is="as">`), slot par défaut. `class`/attrs hérités sur la racine (inheritAttrs par défaut → `class="home-card-w"` fusionne).
+- [x] Tâche 2 — Style scoped via tokens (AC: #1)
+  - [x] Base : `var(--bg-card)`, `var(--text-body)`, `1px solid var(--border-subtle)`, `var(--radius-md)`, `box-shadow var(--shadow-2), var(--shadow-hairline)`, `overflow:hidden`, `position:relative`.
+  - [x] `padded` → `padding var(--space-6)`.
+  - [x] `interactive` → `cursor:pointer` + hover `border-color var(--border-strong)`, `translateY(-2px)`, `box-shadow var(--shadow-3), var(--shadow-hairline)`.
+  - [x] `accent` → `::before` barre 2px haut `linear-gradient(90deg, var(--accent), var(--aubergine-light))`.
+  - [x] `featured` → `box-shadow var(--glow-accent), var(--shadow-hairline)` + bordure `var(--accent-ring)` (token le plus proche de la réf. `hsl(24 94% 53% / 0.35)` — même teinte accent translucide ; évite une valeur hardcodée, cf. revue 2.3).
+  - [x] Transitions border-color/transform/box-shadow en `--dur-base` (`--ease-out` pour transform).
+- [x] Tâche 3 — Migrer les usages existants de `ZCard*` (AC: #2)
+  - [x] Consommateurs recensés : `pages/about.vue` (1 carte) et `pages/blog/index.vue` (2 cartes états erreur/vide). Aucun autre (layouts/composants).
+  - [x] Stratégie **(a)** retenue : `ZCard` conteneur DS + sous-blocs `ZCardHeader`/`ZCardBody`/`ZCardFooter` **restylés via tokens**. Les pages passent `:padded="false"` (header image pleine largeur) ; les sous-blocs portent leur propre padding token.
+  - [x] Migration sans régression : `<ZCardComponent>` → `<ZCard :padded="false">` dans les 2 pages ; sous-blocs débarrassés de leur dépendance au grid/vars du parent. **Régression dark-first corrigée** : titre `ZCardBody` passait de gris foncé (fond clair legacy) → `--text-strong` (lisible sur `--bg-card` sombre). `ZCardComponent.vue` legacy (fond gris + `bounce-in-fwd`) supprimé (orphelin).
+- [x] Tâche 4 — Vérification (AC: #1, #2)
+  - [x] Rendu prouvé par build : `about/index.html` → `<div class="zcard home-card-w">` (0 `<article>` legacy restant) ; `blog/index.html` → `<div class="zcard container-w50">`. CSS scoped émis : `.zcard{background:var(--bg-card)…}` + modifiers `--pad`/`--interactive`/`--accent`/`--featured` ; body title `color:var(--text-strong)`.
+  - [x] `pnpm lint` **exit 0** ; `pnpm typecheck` **exit 0** ; `pnpm generate` **exit 0** (24 routes prerendues, cartes incluses).
 
 ## Dev Notes
 
@@ -94,8 +98,38 @@ so that le contenu est présenté de façon cohérente (UX-DR3, FR3).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Amelia / BMad dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` → exit 0 ; `pnpm typecheck` → exit 0 ; `pnpm generate` → exit 0 (24 routes).
+- Preuves sortie : `about/index.html` `<div class="zcard home-card-w">` (grep `<article` = 0) ; `blog/index.html` `<div class="zcard container-w50">` ; `.zcard[data-v-…]{position:relative;overflow:hidden;background:var(--bg-card);color:var(--text-body);border:1px solid var(--border-subtle)…}` ; 4 modifiers `.zcard--{pad,interactive,accent,featured}` émis ; `color:var(--text-strong)` (titre body).
 
 ### Completion Notes List
 
+- **`components/ui/ZCard.vue` créé** (`<script setup lang="ts">`) : props `interactive`/`accent`/`featured`/`padded`(def. true)/`as`(def. "div"), polymorphe `<component :is>`, slot par défaut. CSS porté de `Card.jsx` en `<style scoped>` 100 % tokens (pas de `ensureStyles()`/`document` → prerender-safe). Auto-import `ui/` sans préfixe (`<ZCard>`, config posée en 2.3).
+- **Convention DS** : classes BEM `zcard--*` → `/* stylelint-disable selector-class-pattern */` inline en tête du `<style>` (même approche que `ZButton` après revue 2.3, pas de changement Stylelint global).
+- **`featured`** : bordure via token `--accent-ring` (réf. `hsl(24 94% 53% / 0.35)` sans token exact ; `--accent-ring` = même teinte accent translucide, choix cohérent avec la revue 2.3 « tokens plutôt que valeurs hardcodées »).
+- **Migration (AC#2)** : `about.vue` + `blog/index.vue` (3 cartes) passées de `<ZCardComponent>` à `<ZCard :padded="false">`. `:padded="false"` car l'image `ZCardHeader` est pleine largeur ; les sous-blocs portent leur propre padding `var(--space-4)` (= 16px, parité avec le legacy `$space-inset-16x`).
+- **Sous-blocs restylés via tokens** (retrait de la dépendance au grid `header/section/footer` et aux vars du parent `--article-space-inset`/`--main-space-inset`) :
+  - `ZCardHeader.vue` : retrait `grid-area: header` (image pleine largeur conservée, `<nuxt-picture>` intact).
+  - `ZCardBody.vue` : `padding var(--space-4)`, `color var(--text-body)`, **titre `color var(--text-strong)`** — corrige la régression dark-first (le titre était en gris foncé, illisible sur le fond sombre `--bg-card`). Animation `fadeIn` conservée (fade conforme motion DS).
+  - `ZCardFooter.vue` : `padding var(--space-4)` (token), retrait `grid-area`/vars parent. `LinkListComponent` (hexagones socials) intact — refonte = story 2.8.
+- **`ZCardComponent.vue` supprimé** : conteneur grille legacy (fond gris clair `$gray-0` + `bounce-in-fwd`, incompatibles dark-first/motion DS) devenu orphelin après migration → supprimé (zéro dette). Remplacé par `ZCard` + sous-blocs.
+- **Legacy non concerné préservé** : tokens SCSS `$` et `_button.scss` intacts.
+
 ### File List
+
+- `app/components/ui/ZCard.vue` (CRÉÉ) — primitive carte DS.
+- `app/components/card/ZCardComponent.vue` (SUPPRIMÉ) — conteneur grille legacy orphelin (remplacé par `ZCard`).
+- `app/components/card/ZCardBody.vue` (MODIFIÉ) — restyle tokens, titre `--text-strong` (fix dark-first), padding `--space-4`.
+- `app/components/card/ZCardHeader.vue` (MODIFIÉ) — retrait `grid-area`.
+- `app/components/card/ZCardFooter.vue` (MODIFIÉ) — padding token, retrait `grid-area`/vars parent.
+- `app/pages/about.vue` (MODIFIÉ) — `<ZCard :padded="false">`, import `ZCardComponent` retiré.
+- `app/pages/blog/index.vue` (MODIFIÉ) — 2 cartes `<ZCard :padded="false">`, import `ZCardComponent` retiré.
+
+## Change Log
+
+| Date | Version | Description | Auteur |
+|------|---------|-------------|--------|
+| 2026-06-21 | 0.1 | Primitive `ZCard.vue` (interactive/accent/featured/padded/as) 100 % tokens. Migration des 3 cartes (about + blog) vers `ZCard` + sous-blocs restylés ; suppression du conteneur grille legacy `ZCardComponent` ; fix dark-first du titre. Lint/typecheck/generate verts, rendu prouvé. Status → review. | Amelia (dev-story) |

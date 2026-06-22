@@ -1,6 +1,6 @@
 <template>
   <MainComponent class="home-center">
-    <ZCardComponent class="home-card-w">
+    <ZCard class="home-card-w" :padded="false">
       <ZCardHeader :img="img" />
 
       <ZCardBody>
@@ -15,13 +15,12 @@
       </ZCardBody>
 
       <ZCardFooter />
-    </ZCardComponent>
+    </ZCard>
   </MainComponent>
 </template>
 
 <script lang="ts">
 import ZCardBody from "~/components/card/ZCardBody.vue";
-import ZCardComponent from "~/components/card/ZCardComponent.vue";
 import ZCardFooter from "~/components/card/ZCardFooter.vue";
 import type { ImageInterface } from "~/components/card/ZCardHeader.vue";
 import ZCardHeader from "~/components/card/ZCardHeader.vue";
@@ -40,7 +39,7 @@ const _PORTRAIT_URLS = [
 
 export default {
   name: "Home",
-  components: { ZCardComponent, ZCardFooter, ZCardBody, ZCardHeader },
+  components: { ZCardFooter, ZCardBody, ZCardHeader },
 
   setup() {
     const img = reactive({

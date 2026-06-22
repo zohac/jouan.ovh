@@ -12,18 +12,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use "assets/scss/abstract/color" as _color;
 @use "assets/scss/abstract/animations";
 
 section {
-  --zcb-color-text: #{_color.$gray-5};
-
-  grid-area: section;
-  padding: var(--article-space-inset);
-  max-width: calc(100vw - 2 * var(--main-space-inset));
+  // Tokens DS (dark-first) : le titre était en gris foncé (fond clair legacy),
+  // illisible sur le fond sombre --bg-card de ZCard → encre claire --text-strong.
+  padding: var(--space-4);
+  color: var(--text-body);
 
   h1 {
-    color: var(--zcb-color-text);
+    color: var(--text-strong);
     margin: 0;
   }
 

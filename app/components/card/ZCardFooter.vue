@@ -14,14 +14,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use "assets/scss/abstract/space" as _space;
-
 footer {
-  --zcf-space-inset: #{_space.$space-inset-16x};
-
-  grid-area: footer;
-  padding: var(--zcf-space-inset);
+  // Padding aligné sur le token DS (--space-4 = 16px, parité avec le legacy).
+  padding: var(--space-4);
   height: auto;
-  max-width: calc(100vw - 2 * var(--zcf-space-inset));
 }
 </style>

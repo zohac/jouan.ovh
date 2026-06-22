@@ -10,7 +10,7 @@
       </li>
     </ul>
 
-    <ZCardComponent v-else-if="error" :class="'container-w50'">
+    <ZCard v-else-if="error" class="container-w50" :padded="false">
       <ZCardHeader :img="img" />
       <ZCardBody>
         <template #title>
@@ -24,9 +24,9 @@
           </p>
         </template>
       </ZCardBody>
-    </ZCardComponent>
+    </ZCard>
 
-    <ZCardComponent v-else :class="'container-w50'">
+    <ZCard v-else class="container-w50" :padded="false">
       <ZCardHeader :img="img" />
       <ZCardBody>
         <template #title>
@@ -41,19 +41,18 @@
           </p>
         </template>
       </ZCardBody>
-    </ZCardComponent>
+    </ZCard>
   </MainComponent>
 </template>
 
 <script lang="ts">
 import ZCardBody from "~/components/card/ZCardBody.vue";
-import ZCardComponent from "~/components/card/ZCardComponent.vue";
 import type { ImageInterface } from "~/components/card/ZCardHeader.vue";
 import ZCardHeader from "~/components/card/ZCardHeader.vue";
 
 export default {
   name: "Blog",
-  components: { ZCardComponent, ZCardBody, ZCardHeader },
+  components: { ZCardBody, ZCardHeader },
 
   async setup() {
     const img = reactive({

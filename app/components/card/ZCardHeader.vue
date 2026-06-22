@@ -38,7 +38,6 @@ export default {
 header {
   --card-header-height: 256px;
 
-  grid-area: header;
   background-color: transparent;
   max-height: var(--card-header-height);
   width: 100%;
