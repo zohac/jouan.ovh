@@ -4,7 +4,7 @@ baseline_commit: 3f208e6e0ce2dbba70e7aea246a073833c9c6e57
 
 # Story 2.4: Primitive ZCard
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -38,8 +38,17 @@ so that le contenu est présenté de façon cohérente (UX-DR3, FR3).
   - [x] Stratégie **(a)** retenue : `ZCard` conteneur DS + sous-blocs `ZCardHeader`/`ZCardBody`/`ZCardFooter` **restylés via tokens**. Les pages passent `:padded="false"` (header image pleine largeur) ; les sous-blocs portent leur propre padding token.
   - [x] Migration sans régression : `<ZCardComponent>` → `<ZCard :padded="false">` dans les 2 pages ; sous-blocs débarrassés de leur dépendance au grid/vars du parent. **Régression dark-first corrigée** : titre `ZCardBody` passait de gris foncé (fond clair legacy) → `--text-strong` (lisible sur `--bg-card` sombre). `ZCardComponent.vue` legacy (fond gris + `bounce-in-fwd`) supprimé (orphelin).
 - [x] Tâche 4 — Vérification (AC: #1, #2)
-  - [x] Rendu prouvé par build : `about/index.html` → `<div class="zcard home-card-w">` (0 `<article>` legacy restant) ; `blog/index.html` → `<div class="zcard container-w50">`. CSS scoped émis : `.zcard{background:var(--bg-card)…}` + modifiers `--pad`/`--interactive`/`--accent`/`--featured` ; body title `color:var(--text-strong)`.
-  - [x] `pnpm lint` **exit 0** ; `pnpm typecheck` **exit 0** ; `pnpm generate` **exit 0** (24 routes prerendues, cartes incluses).
+  - [x] Rendu prouvé par build : `about/index.html`/`blog/index.html` → `<article class="zcard ...">` pour préserver la sémantique legacy ; CSS scoped émis : `.zcard{background:var(--bg-card)…}` + modifiers `--pad`/`--interactive`/`--accent`/`--featured` ; body title `color:var(--text-strong)`.
+  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` **exit 0** (`lint` : 43 warnings existants, 0 error ; `typecheck` vert ; `generate` : 24 routes prerendues, cartes incluses).
+
+### Review Findings
+
+- [x] [Review][Patch] Appliquer le style du titre slotté avec `:slotted(h1)` [app/components/card/ZCardBody.vue:23]
+- [x] [Review][Patch] Respecter `prefers-reduced-motion` pour les transitions/lift de `ZCard` et l'animation de `ZCardBody` [app/components/ui/ZCard.vue:54]
+- [x] [Review][Patch] Remplacer ou justifier les valeurs hardcodées restantes dans les sous-blocs migrés (`2000ms`, `256px`) [app/components/card/ZCardBody.vue:29]
+- [x] [Review][Patch] Ajouter `type="button"` par défaut quand `ZCard` est rendu avec `as="button"` [app/components/ui/ZCard.vue:2]
+- [x] [Review][Patch] Conserver la sémantique `article` des usages migrés [app/pages/about.vue:3]
+- [x] [Review][Patch] Refaire/documenter la validation via Docker avec `lint + typecheck + generate` [docs/implementation-artifacts/2-4-primitive-zcard.md:46]
 
 ## Dev Notes
 
@@ -102,18 +111,19 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 
 ### Debug Log References
 
-- `pnpm lint` → exit 0 ; `pnpm typecheck` → exit 0 ; `pnpm generate` → exit 0 (24 routes).
-- Preuves sortie : `about/index.html` `<div class="zcard home-card-w">` (grep `<article` = 0) ; `blog/index.html` `<div class="zcard container-w50">` ; `.zcard[data-v-…]{position:relative;overflow:hidden;background:var(--bg-card);color:var(--text-body);border:1px solid var(--border-subtle)…}` ; 4 modifiers `.zcard--{pad,interactive,accent,featured}` émis ; `color:var(--text-strong)` (titre body).
+- `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` → exit 0 ; `lint` : 43 warnings existants, 0 error ; `typecheck` → exit 0 ; `generate` → exit 0 (24 routes).
+- Preuves sortie initiales : `.zcard[data-v-…]{position:relative;overflow:hidden;background:var(--bg-card);color:var(--text-body);border:1px solid var(--border-subtle)…}` ; 4 modifiers `.zcard--{pad,interactive,accent,featured}` émis ; `color:var(--text-strong)` (titre body). Revue : usages migrés rendus en `as="article"` pour préserver la sémantique.
 
 ### Completion Notes List
 
 - **`components/ui/ZCard.vue` créé** (`<script setup lang="ts">`) : props `interactive`/`accent`/`featured`/`padded`(def. true)/`as`(def. "div"), polymorphe `<component :is>`, slot par défaut. CSS porté de `Card.jsx` en `<style scoped>` 100 % tokens (pas de `ensureStyles()`/`document` → prerender-safe). Auto-import `ui/` sans préfixe (`<ZCard>`, config posée en 2.3).
+- **Revue `ZCard`** : `as="button"` injecte `type="button"` par défaut tout en respectant un `type` explicite ; les autres attrs restent passthrough. `prefers-reduced-motion` neutralise la transition et le lift hover.
 - **Convention DS** : classes BEM `zcard--*` → `/* stylelint-disable selector-class-pattern */` inline en tête du `<style>` (même approche que `ZButton` après revue 2.3, pas de changement Stylelint global).
 - **`featured`** : bordure via token `--accent-ring` (réf. `hsl(24 94% 53% / 0.35)` sans token exact ; `--accent-ring` = même teinte accent translucide, choix cohérent avec la revue 2.3 « tokens plutôt que valeurs hardcodées »).
-- **Migration (AC#2)** : `about.vue` + `blog/index.vue` (3 cartes) passées de `<ZCardComponent>` à `<ZCard :padded="false">`. `:padded="false"` car l'image `ZCardHeader` est pleine largeur ; les sous-blocs portent leur propre padding `var(--space-4)` (= 16px, parité avec le legacy `$space-inset-16x`).
+- **Migration (AC#2)** : `about.vue` + `blog/index.vue` (3 cartes) passées de `<ZCardComponent>` à `<ZCard as="article" :padded="false">`. `as="article"` conserve la sémantique legacy ; `:padded="false"` car l'image `ZCardHeader` est pleine largeur ; les sous-blocs portent leur propre padding `var(--space-4)` (= 16px, parité avec le legacy `$space-inset-16x`).
 - **Sous-blocs restylés via tokens** (retrait de la dépendance au grid `header/section/footer` et aux vars du parent `--article-space-inset`/`--main-space-inset`) :
-  - `ZCardHeader.vue` : retrait `grid-area: header` (image pleine largeur conservée, `<nuxt-picture>` intact).
-  - `ZCardBody.vue` : `padding var(--space-4)`, `color var(--text-body)`, **titre `color var(--text-strong)`** — corrige la régression dark-first (le titre était en gris foncé, illisible sur le fond sombre `--bg-card`). Animation `fadeIn` conservée (fade conforme motion DS).
+  - `ZCardHeader.vue` : retrait `grid-area: header` et du plafond hardcodé `256px` (image pleine largeur conservée, ratio via `<nuxt-picture>` intact).
+  - `ZCardBody.vue` : `padding var(--space-4)`, `color var(--text-body)`, **titre slotté `:slotted(h1)` en `color var(--text-strong)`** — corrige la régression dark-first (le titre était en gris foncé, illisible sur le fond sombre `--bg-card`). Animation `fadeIn` conservée via tokens `--dur-slower`/`--ease-out`, désactivée si `prefers-reduced-motion: reduce`.
   - `ZCardFooter.vue` : `padding var(--space-4)` (token), retrait `grid-area`/vars parent. `LinkListComponent` (hexagones socials) intact — refonte = story 2.8.
 - **`ZCardComponent.vue` supprimé** : conteneur grille legacy (fond gris clair `$gray-0` + `bounce-in-fwd`, incompatibles dark-first/motion DS) devenu orphelin après migration → supprimé (zéro dette). Remplacé par `ZCard` + sous-blocs.
 - **Legacy non concerné préservé** : tokens SCSS `$` et `_button.scss` intacts.
@@ -133,3 +143,4 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 | Date | Version | Description | Auteur |
 |------|---------|-------------|--------|
 | 2026-06-21 | 0.1 | Primitive `ZCard.vue` (interactive/accent/featured/padded/as) 100 % tokens. Migration des 3 cartes (about + blog) vers `ZCard` + sous-blocs restylés ; suppression du conteneur grille legacy `ZCardComponent` ; fix dark-first du titre. Lint/typecheck/generate verts, rendu prouvé. Status → review. | Amelia (dev-story) |
+| 2026-06-22 | 0.2 | Correctifs review : `:slotted(h1)`, reduced motion, retrait hardcodes `2000ms`/`256px`, `type="button"` par défaut, sémantique `article` restaurée, validation Docker documentée. Status → done. | Codex (code-review) |

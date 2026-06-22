@@ -1,6 +1,6 @@
 <template>
   <MainComponent class="home-center">
-    <ZCard class="home-card-w" :padded="false">
+    <ZCard as="article" class="home-card-w" :padded="false">
       <ZCardHeader :img="img" />
 
       <ZCardBody>

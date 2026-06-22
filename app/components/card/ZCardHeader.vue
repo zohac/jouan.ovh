@@ -36,15 +36,11 @@ export default {
 
 <style lang="scss" scoped>
 header {
-  --card-header-height: 256px;
-
   background-color: transparent;
-  max-height: var(--card-header-height);
   width: 100%;
   overflow: hidden;
 
   picture {
-    max-height: var(--card-header-height);
     width: 100%;
 
     img {

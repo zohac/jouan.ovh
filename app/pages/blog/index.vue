@@ -10,7 +10,7 @@
       </li>
     </ul>
 
-    <ZCard v-else-if="error" class="container-w50" :padded="false">
+    <ZCard v-else-if="error" as="article" class="container-w50" :padded="false">
       <ZCardHeader :img="img" />
       <ZCardBody>
         <template #title>
@@ -26,7 +26,7 @@
       </ZCardBody>
     </ZCard>
 
-    <ZCard v-else class="container-w50" :padded="false">
+    <ZCard v-else as="article" class="container-w50" :padded="false">
       <ZCardHeader :img="img" />
       <ZCardBody>
         <template #title>

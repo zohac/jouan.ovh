@@ -1,6 +1,7 @@
 <template>
   <component
     :is="as"
+    v-bind="rootAttrs"
     class="zcard"
     :class="{
       'zcard--pad': padded,
@@ -18,6 +19,11 @@
 // Portée de docs/design_system/components/core/Card.jsx (pas de copie JS :
 // le CSS d'injection `ensureStyles()` devient un <style scoped> token-only).
 import type { Component } from "vue";
+import { computed, useAttrs } from "vue";
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 interface Props {
   /** Hover lift + bordure plus claire. @default false */
@@ -32,12 +38,25 @@ interface Props {
   as?: string | Component;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   interactive: false,
   accent: false,
   featured: false,
   padded: true,
   as: "div",
+});
+
+const attrs = useAttrs();
+const isNativeButton = computed(() => props.as === "button");
+const rootAttrs = computed(() => {
+  if (!isNativeButton.value) {
+    return attrs;
+  }
+
+  return {
+    ...attrs,
+    type: typeof attrs.type === "string" ? attrs.type : "button",
+  };
 });
 </script>
 
@@ -84,5 +103,15 @@ withDefaults(defineProps<Props>(), {
   // de la réf. hsl(24 94% 53% / 0.35), même teinte accent en translucide).
   border-color: var(--accent-ring);
   box-shadow: var(--glow-accent), var(--shadow-hairline);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zcard {
+    transition: none;
+  }
+
+  .zcard--interactive:hover {
+    transform: none;
+  }
 }
 </style>

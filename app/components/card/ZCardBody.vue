@@ -20,13 +20,19 @@ section {
   padding: var(--space-4);
   color: var(--text-body);
 
-  h1 {
+  :slotted(h1) {
     color: var(--text-strong);
     margin: 0;
   }
 
   &.content {
-    animation: fadeIn 2000ms ease-out forwards;
+    animation: fadeIn var(--dur-slower) var(--ease-out) forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  section.content {
+    animation: none;
   }
 }
 </style>
