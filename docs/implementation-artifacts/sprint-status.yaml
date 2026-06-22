@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: 2026-06-22 (Story 3.1 hero-terminal-a → done, revue vérifiée)
+last_updated: 2026-06-22 (Story 3.2 apercu-services-et-stats → review)
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -65,7 +65,7 @@ development_status:
   # Epic 3 — Page d'accueil
   epic-3: in-progress
   3-1-hero-terminal-a: done
-  3-2-apercu-services-et-stats: ready-for-dev
+  3-2-apercu-services-et-stats: review
   3-3-projets-selectionnes: ready-for-dev
   epic-3-retrospective: optional
 

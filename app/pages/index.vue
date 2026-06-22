@@ -62,19 +62,84 @@
         </div>
       </div>
     </section>
+
+    <!-- Aperçu services (porté de ServicesPreview, Home.jsx) -->
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow">// ce que je fais</p>
+        <h2 class="section__title">Trois façons de travailler ensemble</h2>
+        <div class="grid-3">
+          <ZCard
+            v-for="service in services"
+            :key="service.title"
+            class="offer"
+            interactive
+            :accent="service.featured"
+            :featured="service.featured"
+          >
+            <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+            <h3 class="offer__title">{{ service.title }}</h3>
+            <p class="offer__desc">{{ service.desc }}</p>
+            <NuxtLink to="/services" class="offer__more">En savoir plus →</NuxtLink>
+          </ZCard>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats — section en creux partagée avec les projets (story 3.3) -->
+    <section class="section section--sunken">
+      <div class="container">
+        <div class="statrow">
+          <div v-for="stat in stats" :key="stat.label" class="stat">
+            <b>{{ stat.value }}</b>
+            <span>{{ stat.label }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 </template>
 
 <script setup lang="ts">
-// Page d'accueil — hero Terminal (A). Porté de Home.jsx (fonction HeroTerminal)
-// du UI kit : recréation Vue 3 + tokens (aucune copie JSX). Dark-first, accent
-// orange sur le titre et le CTA primaire. (Story 3.1)
+// Page d'accueil — hero Terminal (A) + aperçu services + stats. Porté de Home.jsx
+// (HeroTerminal / ServicesPreview / StatsProjects) du UI kit : recréation Vue 3 +
+// tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2)
 import { NuxtLink } from "#components";
 import { useTerminal } from "~/composables/useTerminal";
 
 // Contenu repris de data.js (window.SITE) — 1re personne, vouvoiement, pas d'emoji.
 const tagline = "Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils.";
 const tags = ["php", "symfony", "wordpress", "nest.js", "nuxt.js"];
+
+// Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
+// (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
+const services = [
+  {
+    icon: "wp",
+    title: "WordPress sur-mesure",
+    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
+    featured: false,
+  },
+  {
+    icon: "code",
+    title: "Applications web",
+    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
+    featured: true,
+  },
+  {
+    icon: "spark",
+    title: "IA & automatisation",
+    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
+    featured: false,
+  },
+];
+
+// Chiffres clés (data.js `stats`) — texte exact (séparateur ·), pas d'emoji.
+const stats = [
+  { value: "8+", label: "ans dans la tech" },
+  { value: "3", label: "stacks maîtrisés" },
+  { value: "1", label: "SaaS fondé · keova.app" },
+];
 
 // Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
 // côté template (pas de chiffres/projets inventés : stats & projets = stories 3.2 / 3.3).
@@ -354,6 +419,105 @@ const { open: openTerminal } = useTerminal();
   animation: caret-blink 1s steps(1) infinite;
 }
 
+// ---- Sections (porté de kit.css : .section, .section--sunken) ----
+.section {
+  // padding-block uniquement : le gutter horizontal vient de .container (enfant).
+  padding-block: var(--space-16);
+}
+
+.section--sunken {
+  background: var(--bg-sunken);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.section__title {
+  margin-bottom: var(--space-8);
+  font-family: var(--font-mono);
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+// ---- Aperçu services (porté de .grid-3 / .offer*) ----
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+.offer__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-10); // 40px
+  height: var(--space-10);
+  margin-bottom: var(--space-4);
+
+  // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+  // pas de token d'espacement à 22px (entre --space-5/20 et --space-6/24).
+  font-size: 22px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-md);
+}
+
+.offer__title {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+.offer__desc {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+.offer__more {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--accent);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-accent);
+    border-radius: var(--radius-xs);
+  }
+}
+
+// ---- Stats (porté de .statrow / .stat) ----
+.statrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+}
+
+.stat {
+  font-family: var(--font-mono);
+
+  b {
+    display: block;
+    font-size: var(--fs-4xl);
+    font-weight: var(--fw-light);
+    color: var(--text-strong);
+  }
+
+  span {
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+}
+
 // ---- Responsive (cf. kit.css @media max-width: 900px) ----
 @media (width <= 900px) {
   .hero__grid {
@@ -362,6 +526,10 @@ const { open: openTerminal } = useTerminal();
 
   .hero__title {
     font-size: var(--fs-4xl);
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr;
   }
 }
 

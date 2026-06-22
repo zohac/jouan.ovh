@@ -14,17 +14,12 @@ import HeaderComponent from "../components/HeaderComponent.vue";
 </script>
 
 <style lang="scss" scoped>
-@use "assets/scss/abstract/color" as _color;
-
 .init {
-  --init-color-red: #{_color.$red};
-  --init-color-aubergine-dark: #{_color.$aubergine-dark};
-  --init-color-orange: #{_color.$orange};
-
-  background-image:
-    linear-gradient(127deg, var(--init-color-aubergine-dark), transparent),
-    linear-gradient(217deg, var(--init-color-orange), transparent),
-    linear-gradient(0deg, var(--init-color-red), transparent);
+  // Fond de page dark-first (token). Remplace l'ancien dégradé legacy
+  // orange/aubergine (anciens tokens SCSS `_color.$`) qui débordait derrière
+  // les sections transparentes (révélé par la story 3.2). Le hero porte son
+  // propre `hero__grad`, le footer son `--bg-sunken` — inchangés.
+  background: var(--bg-page);
 
   // Flex column : header sticky en haut, footer riche poussé en bas via
   // `margin-top: auto` (le footer dépasse 56px — l'ancienne grille à hauteur
