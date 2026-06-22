@@ -4,7 +4,7 @@ baseline_commit: 743f6b56dd4a315f08706cb01b354654ebd733e4
 
 # Story 2.7: Iconographie
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -37,6 +37,11 @@ so that l'UI utilise des icônes au trait et les glyphes de marque (UX-DR10).
   - [x] Rendu prouvé par build (page smoke temporaire, supprimée) : 12 `<svg class="zicon">`, icônes trait `viewBox 0 0 24 24`+`stroke="currentColor"`, glyphes marque `viewBox 0 0 16 16`+`fill="currentColor"`, gem (diamant), icône inconnue → svg vide (pas de crash). a11y : décoratif `aria-hidden="true"` / labellisé `role="img" aria-label`.
   - [x] **Aucune `@font-face` d'icônes** introduite (grep fontawesome/icomoon/material-icons → néant). (AC #2)
   - [x] `pnpm lint` **exit 0** ; `pnpm typecheck` **exit 0** ; `pnpm generate` **exit 0** (24 routes ; icônes prerendues inline, pas de dépendance CDN).
+
+### Review Findings
+
+- [x] [Review][Patch] Exposer un alias `x` pour le glyphe X/Twitter [app/components/ui/ZIcon.vue:63]
+- [x] [Review][Patch] Corriger le commentaire ESLint HTML invalide contenant `--` [app/components/ui/ZIcon.vue:2]
 
 ## Dev Notes
 
@@ -110,6 +115,7 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 - **a11y** : décoratif par défaut (`aria-hidden="true"`) ; prop `label` → `role="img"` + `aria-label` pour les icônes porteuses de sens.
 - **Centralisation (Tâche 2)** : les glyphes sociaux sont désormais dans `ZIcon` (source unique). `LinkListComponent`/`HexagonLinkComponent` legacy **non modifiés** — leur refonte (et le swap du logo header PNG→`<ZIcon name="gem">`) relèvent de la story 2.8 (châssis). Périmètre 2.7 = fournir le système, pas câbler les consommateurs.
 - **Consommation prête** : `ZButton`/`ZInput` (slots `icon`) peuvent recevoir `<ZIcon name="…" />` ; aucun changement requis sur ces primitives.
+- **Corrections de review** : alias `<ZIcon name="x">` ajouté pour le glyphe X/Twitter ; commentaire ESLint `vue/no-v-html` rendu valide en HTML, avec justification conservée côté script.
 
 ### File List
 
@@ -120,3 +126,4 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 | Date | Version | Description | Auteur |
 |------|---------|-------------|--------|
 | 2026-06-22 | 0.1 | Système d'iconographie `ZIcon.vue` : SVG inline `currentColor` (icônes trait Lucide + glyphes github/twitter/linkedin/wp + logo diamant gem), prerender-safe, a11y label. Aucune icon-font. Lint/typecheck/generate verts, rendu prouvé. Status → review. | Amelia (dev-story) |
+| 2026-06-22 | 0.2 | Corrections de review : alias `x` pour le glyphe X/Twitter, commentaire ESLint HTML valide. Lint/typecheck/generate Docker verts. Status → done. | Codex (code review) |

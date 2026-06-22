@@ -1,5 +1,5 @@
 <template>
-  <!-- eslint-disable vue/no-v-html -- les SVG proviennent d'un set interne 100 % statique (aucune entrée utilisateur) -->
+  <!-- eslint-disable vue/no-v-html -->
   <svg
     class="zicon"
     :viewBox="def.box"
@@ -22,6 +22,7 @@
 // le DOM client et laisserait un trou au `nuxi generate`). Aucune police d'icône (AC #2).
 // Icônes au trait = style Lucide ; glyphes de marque (github/twitter/linkedin/wp) + logo
 // diamant (gem) = fill. Porté de docs/design_system/ui_kits/jouan-site/icons.jsx.
+// Le `v-html` du template injecte uniquement ces chaînes internes statiques.
 import { computed } from "vue";
 
 type IconDef = { box: string; fill: boolean; body: string };
@@ -60,6 +61,7 @@ const GEM =
 const ICONS: Record<string, IconDef> = {
   ...Object.fromEntries(Object.entries(STROKE).map(([k, body]) => [k, { box: "0 0 24 24", fill: false, body }])),
   github: { box: "0 0 16 16", fill: true, body: GITHUB },
+  x: { box: "0 0 16 16", fill: true, body: TWITTER },
   twitter: { box: "0 0 16 16", fill: true, body: TWITTER },
   linkedin: { box: "0 0 16 16", fill: true, body: LINKEDIN },
   wp: { box: "0 0 24 24", fill: true, body: WP },
