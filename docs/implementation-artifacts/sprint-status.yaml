@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: 2026-06-22 (Story 2.5 primitives ZBadge + ZTag → review)
+last_updated: 2026-06-22 (Story 2.6 primitives ZInput + ZAvatar → review)
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -56,8 +56,8 @@ development_status:
   2-2-polices-et-base-dark-first: done
   2-3-primitive-zbutton: done
   2-4-primitive-zcard: done
-  2-5-primitives-zbadge-et-ztag: review
-  2-6-primitives-zinput-et-zavatar: ready-for-dev
+  2-5-primitives-zbadge-et-ztag: done
+  2-6-primitives-zinput-et-zavatar: review
   2-7-iconographie: ready-for-dev
   2-8-chassis-global-header-footer-nav-socials: ready-for-dev
   epic-2-retrospective: optional

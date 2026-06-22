@@ -1,6 +1,10 @@
+---
+baseline_commit: 34f112905e05db48357018c5f6ba19c56f6b1a8a
+---
+
 # Story 2.6: Primitives ZInput et ZAvatar
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -18,26 +22,26 @@ so that les formulaires et identités visuelles sont cohérents (UX-DR6, UX-DR7,
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Créer `components/ui/ZInput.vue` (AC: #1)
-  - [ ] `<script setup lang="ts">`, `defineProps` d'après `Input.d.ts` : `label`, `hint`, `error` (`false`), `required` (`false`), `multiline` (`false`), `icon`, `id`.
-  - [ ] `v-model` : exposer `modelValue` + émettre `update:modelValue` (équivalent Vue des attributs natifs forwarded du `.jsx`).
-  - [ ] Rendu conditionnel : `<textarea>` si `multiline`, sinon `<input>` (avec wrapper + slot/prop `icon` si présent).
-  - [ ] Label mono uppercase ; `*` orange si `required` ; hint en dessous (rouge si `error`).
-- [ ] Tâche 2 — Style `ZInput` via tokens (AC: #1)
-  - [ ] Champ : `font-family var(--font-sans); font-size var(--fs-base); color var(--text-strong); background var(--bg-input); border 1px solid var(--border-default); border-radius var(--radius-md); height 42px; padding 0 var(--space-3);` (textarea : `min-height 110px`, `resize: vertical`, `padding var(--space-3)`).
-  - [ ] Hover : `border-color var(--border-strong)`. **Focus** : `border-color var(--accent)` + `box-shadow var(--ring-accent)`, `outline:none`.
-  - [ ] Erreur : `border-color var(--danger)` + hint `--danger`. Placeholder `--text-faint`.
-  - [ ] Label : `font-family var(--font-mono); font-size var(--fs-xs); letter-spacing var(--ls-wider); text-transform uppercase; color var(--text-muted);` ; `.req { color var(--accent); }`.
-- [ ] Tâche 3 — Créer `components/ui/ZAvatar.vue` (AC: #1)
-  - [ ] `<script setup lang="ts">`, `defineProps` d'après `Avatar.d.ts` : `src`, `alt` (`""`), `initials`, `size` (`md`), `ring` (`false`).
-  - [ ] Si `src` → image (préférer `<nuxt-img>` plutôt que `<img>` — règle images projet) ; sinon initiales (fallback `"?"`).
-  - [ ] Tailles `sm` 32 / `md` 44 / `lg` 64 / `xl` 96 ; `ring` → anneau accent.
-- [ ] Tâche 4 — Style `ZAvatar` via tokens (AC: #1)
-  - [ ] `inline-flex center; border-radius var(--radius-circle); overflow hidden; background var(--surface-3); color var(--text-strong); font-family var(--font-mono); font-weight var(--fw-bold); border 1px solid var(--border-default);`
-  - [ ] Taille via `--_sz` ; police initiales `calc(var(--_sz) * 0.4)` ; `ring` → `box-shadow: 0 0 0 2px var(--bg-page), 0 0 0 4px var(--accent);`
-- [ ] Tâche 5 — Vérification (AC: #1)
-  - [ ] `yarn dev` : poser `ZInput` (input + textarea + error + icon) et `ZAvatar` (image + initiales + ring, 4 tailles) de test.
-  - [ ] `yarn lint` (eslint + stylelint) vert ; `yarn generate` reste vert.
+- [x] Tâche 1 — Créer `components/ui/ZInput.vue` (AC: #1)
+  - [x] `<script setup lang="ts">`, `defineProps` (`withDefaults`) d'après `Input.d.ts` : `label`, `hint`, `error`, `required`, `multiline`, `icon`, `id` (+ `modelValue`).
+  - [x] `v-model` : `modelValue` + `update:modelValue` (émis sur `@input`). `inheritAttrs: false` → `$attrs` (placeholder/type…) forwardés sur le contrôle, pas le wrapper.
+  - [x] Rendu conditionnel : `<textarea>` si `multiline`, sinon `<input>` (wrapper + slot/prop `icon` si présent).
+  - [x] Label mono uppercase ; `*` orange si `required` (+ `required` natif sur le contrôle) ; hint en dessous (rouge si `error`). **a11y** : `label[for]`↔`id` (via `useId`, hydration-safe), `aria-invalid` si error, `aria-describedby`→hint.
+- [x] Tâche 2 — Style `ZInput` via tokens (AC: #1)
+  - [x] Champ : `var(--font-sans)`, `var(--fs-base)`, `var(--text-strong)`, `var(--bg-input)`, `1px solid var(--border-default)`, `var(--radius-md)`, `height 42px`, `padding 0 var(--space-3)` (textarea : `min-height 110px`, `resize: vertical`, `padding var(--space-3)`).
+  - [x] Hover `var(--border-strong)` ; **focus** `var(--accent)` + `box-shadow var(--ring-accent)`, `outline:none`. `prefers-reduced-motion` neutralise la transition.
+  - [x] Erreur `var(--danger)` (champ + hint). Placeholder `var(--text-faint)`.
+  - [x] Label : `var(--font-mono)`, `var(--fs-xs)`, `var(--ls-wider)`, uppercase, `var(--text-muted)` ; `.zfield__req { color: var(--accent); }`.
+- [x] Tâche 3 — Créer `components/ui/ZAvatar.vue` (AC: #1)
+  - [x] `<script setup lang="ts">`, `defineProps` d'après `Avatar.d.ts` : `src`, `alt` (`""`), `initials`, `size` (`md`), `ring` (`false`).
+  - [x] Si `src` → `<NuxtImg>` (pas `<img>` brut) ; sinon initiales (fallback `"?"`).
+  - [x] Tailles `sm` 32 / `md` 44 / `lg` 64 / `xl` 96 ; `ring` → anneau accent.
+- [x] Tâche 4 — Style `ZAvatar` via tokens (AC: #1)
+  - [x] `inline-flex center; border-radius var(--radius-circle); overflow hidden; background var(--surface-3); color var(--text-strong); var(--font-mono); var(--fw-bold); border 1px solid var(--border-default)`.
+  - [x] Taille via `--_sz` ; police initiales `calc(var(--_sz) * 0.4)` ; `ring` → `box-shadow: 0 0 0 2px var(--bg-page), 0 0 0 4px var(--accent)`.
+- [x] Tâche 5 — Vérification (AC: #1)
+  - [x] Rendu prouvé par build (page de smoke-test temporaire, supprimée après) : `<label for="v-0-0">`↔`<input id="v-0-0" class="zinput">`, `<textarea class="ztextarea">` (multiline), `zfield--error`+`aria-invalid="true"`+`aria-describedby`, `zfield__req`, `zinput--has-icon`/`zinput__icon` ; `<img data-nuxt-img srcset="/_ipx/…">` (NuxtImg), `zavatar--sm/md/lg/xl`, `zavatar--ring` (box-shadow double `--bg-page`+`--accent`).
+  - [x] `pnpm lint` **exit 0** ; `pnpm typecheck` **exit 0** ; `pnpm generate` **exit 0** (24 routes).
 
 ## Dev Notes
 
@@ -103,8 +107,30 @@ so that les formulaires et identités visuelles sont cohérents (UX-DR6, UX-DR7,
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Amelia / BMad dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` → exit 0 ; `pnpm typecheck` → exit 0 ; `pnpm generate` → exit 0 (24 routes). 1 erreur Prettier transitoire (`<input>` auto-fermé) corrigée via `eslint --fix` ; 7 erreurs Stylelint `custom-property-pattern` sur `--_sz` (ZAvatar) corrigées en ajoutant `custom-property-pattern` au `stylelint-disable` inline (comme `--_h` de ZButton).
+- Preuves sortie (page smoke temporaire) : `<label for="v-0-0">` ↔ `<input id="v-0-0" class="zinput">` (lien `useId`), `<textarea class="ztextarea">`, `zfield--error` + `aria-invalid="true"` + `aria-describedby="v-0-1-hint"`, `zfield__req`, `zinput--has-icon`/`zinput__icon` ; `<img data-nuxt-img srcset="/_ipx/_/images/…">` (NuxtImg, pas de `<img>` brut), `zavatar--{sm,md,lg,xl}`, `.zavatar--ring{box-shadow:0 0 0 2px var(--bg-page),0 0 0 4px var(--accent)}`.
 
 ### Completion Notes List
 
+- **`components/ui/ZInput.vue` créé** : `<div>` field + label mono uppercase + `<input>`/`<textarea>` (selon `multiline`) + hint. CSS porté de `Input.jsx` 100 % tokens.
+  - **v-model** : `modelValue` + `update:modelValue` (`@input`). `inheritAttrs: false` → `$attrs` (placeholder, type, name…) forwardés sur le contrôle, pas le wrapper.
+  - **a11y** : `id` via `useId()` (Vue 3.5, déterministe & hydration-safe — résout le piège « pas d'id aléatoire ») surchargeable par prop `id` ; `label[for]`↔contrôle, `required` natif + `*` visuel, `aria-invalid` si error, hint lié par `aria-describedby`. `prefers-reduced-motion` neutralise la transition.
+  - **icon** : prop (composant) + slot nommé `icon` (cohérent avec `ZButton`), placeholder avant le set Lucide (2.7).
+- **`components/ui/ZAvatar.vue` créé** : `<span>` rond (`--radius-circle`, suit `Avatar.jsx` — pas pill), image via **`<NuxtImg>`** (optimisée `_ipx`, jamais `<img>` brut) ou initiales (fallback `"?"`). Tailles `sm/md/lg/xl` via `--_sz`, `ring` → double box-shadow (`--bg-page` + `--accent`).
+- **Conventions revues 2.3/2.4/2.5** : `/* stylelint-disable selector-class-pattern[, custom-property-pattern] */` inline (BEM + `--_sz`), `prefers-reduced-motion`, focus accessible, tokens partout, prerender-safe (pas de `ensureStyles()`). Aucun changement Stylelint global.
+- Vérif par page de smoke-test temporaire (`app/pages/__zinputavatar_smoke.vue`) générée puis **supprimée** (zéro résidu). Le portrait `docs/design_system/assets/brand/portrait.jpeg` sera copié vers `public/images/` à l'usage réel (Epics 3/5) — hors périmètre de cette primitive.
+
 ### File List
+
+- `app/components/ui/ZInput.vue` (CRÉÉ) — primitive champ DS (v-model, label/hint/error/required/multiline/icon, a11y).
+- `app/components/ui/ZAvatar.vue` (CRÉÉ) — primitive avatar DS (image NuxtImg / initiales, 4 tailles, ring).
+
+## Change Log
+
+| Date | Version | Description | Auteur |
+|------|---------|-------------|--------|
+| 2026-06-22 | 0.1 | Primitives `ZInput.vue` (v-model, a11y label/id via useId, focus ring, error, icon) et `ZAvatar.vue` (NuxtImg/initiales, 4 tailles, ring) 100 % tokens. Lint/typecheck/generate verts, rendu prouvé. Status → review. | Amelia (dev-story) |
