@@ -44,6 +44,16 @@ so that je comprends rapidement l'offre et la crédibilité de Simon, avec un ac
   - [x] Les liens `En savoir plus →` pointent vers `/services` (route créée en Epic 4 ; le lien doit exister même si la page est livrée plus tard)
   - [x] `yarn dev` charge `/` sans erreur ; `yarn lint` ne régresse pas
 
+### Review Findings
+
+_Revue de code 2026-06-22 (baseline `b45cefb` → `6a9b39a`) — Blind Hunter, Edge Case Hunter (`[]`), Acceptance Auditor. AC #1 & #2 vérifiés conformes. 1 decision-needed, 2 patch, 2 defer, 14 dismissed._
+
+- [x] [Review][Decision → résolu : accepté, à noter en rétro Epic 3] Changement hors-périmètre du châssis global (`default.vue`) — Le diff modifie `app/layouts/default.vue` (couche `.init` : retrait de `@use color`, suppression du dégradé legacy → `background: var(--bg-page)`), hors Tâches 1–5. Vérifié **sûr** (vars `--init-color-*` scoped `.init`, inutilisées ailleurs ; partial `_color` conservé pour ses autres consommateurs ; hero/footer indépendants). Correctif légitime (le dégradé legacy débordait derrière les sections transparentes introduites par 3.2) mais touche le châssis global (Epic 2). **Décision Simon : accepter le correctif (nécessaire et sûr) ; élargissement de périmètre à remonter en rétrospective Epic 3** (cf. règle de discipline de périmètre). [auditor]
+- [x] [Review][Patch] Liens « En savoir plus → » identiques ×3 sans libellé distinct (a11y, WCAG 2.4.4) [app/pages/index.vue `.offer__more`] — Les 3 cartes pointent vers `/services` avec le même texte ; navigation par liens d'un lecteur d'écran = 3 liens indistincts ; le `→` littéral est aussi vocalisé. Fix : `aria-label` distinct par carte (ex. « En savoir plus sur WordPress sur-mesure ») — l'aria-label remplace le texte et neutralise le `→`. Fidèle à `Home.jsx` mais l'a11y prime (règle projet). [blind]
+- [x] [Review][Patch] Clés `v-for` sur chaîne de contenu (`service.title` / `stat.label`) [app/pages/index.vue] — Incohérent avec la boucle terminal du même fichier qui utilise un `id` stable (fix story 3.1). Aucun bug actuel (valeurs uniques, tableaux statiques) mais fragile et incohérent. Fix : champ `id` stable (comme `terminalRows`) ou index. [blind]
+- [x] [Review][Defer] `role="img" title=""` résiduel sur le wrapper racine `.init` [app/layouts/default.vue:2] — Pré-existant (le diff ne touche que le `<style>`), rendu d'autant plus inutile que le dégradé décoratif a été retiré. Risque a11y notable (un `role="img"` sur le conteneur racine peut faire annoncer toute la page comme une image). Hors périmètre 3.2 → à traiter (idéalement Epic 9 a11y). [auditor]
+- [x] [Review][Defer] `outline:none` + ring `box-shadow` KO en forced-colors [app/pages/index.vue `.offer__more:focus-visible`] — En mode contraste forcé (Windows High Contrast), les `box-shadow` sont supprimées → focus invisible. Pattern **systémique du DS** (ZButton, etc.), à corriger centralement (`@media (forced-colors: active)` restaurant l'outline) — relève d'Epic 9 (contraste/clavier), pas de cette story. [blind]
+
 ## Dev Notes
 
 ### Contexte & contraintes (depuis project-context.md et SPEC)
@@ -150,13 +160,23 @@ Claude Opus 4.8 (1M context) — `claude-opus-4-8[1m]`
 
 - Breakpoint mobile : la fiche cite `max-width: 720px` ; `kit.css` (source de vérité) utilise `@media (max-width: 900px)` pour `.grid-3` → 1 colonne. J'ai suivi `kit.css` (900px), cohérent avec la story 3.1.
 
+**Résolution de revue (2026-06-22, baseline `b45cefb` → `6a9b39a`) — « corrige tous les findings, aucune dette » :**
+
+- ✅ Resolved review finding [Patch] a11y liens : `aria-label` distinct par carte (« En savoir plus sur {titre} ») — remplace le texte identique ×3 et neutralise le `→` vocalisé. Vérifié au Chrome DevTools (3 labels distincts).
+- ✅ Resolved review finding [Patch] clés `v-for` : champ `id` stable sur `services` (`wordpress`/`apps`/`ia`) et `stats` (`stat-1..3`) ; `:key="…id"` — cohérent avec `terminalRows` (3.1).
+- ✅ Resolved review finding [Defer→corrigé] `role="img" title=""` sur `.init` : retiré (bug a11y réel, trivial — un `role="img"` racine peut faire annoncer toute la page comme image). Le décor justifiant ce rôle avait déjà disparu.
+- ✅ Resolved review finding [Defer→corrigé ciblé] focus en `forced-colors` : ajout d'un repli `@media (forced-colors: active)` restaurant un `outline` sur les éléments focusables **propres à cette page** (`.offer__more`, `.hero-term__open`) → cette page ne porte plus la dette. **Le repli DS-wide** (ZButton/ZTag/ZCard/ZInput, focus via `box-shadow`) reste un correctif central **assigné à Epic 9** : le traiter ici impliquerait de toucher toutes les primitives Epic 2 (élargissement de périmètre, justement pointé par le finding Decision).
+
+Validation post-fix (Docker) : `pnpm lint` 0/0, `typecheck` vert, `generate` vert (24 routes).
+
 ### File List
 
-- `app/pages/index.vue` (ajout sections aperçu services + stats sous le hero ; données services/stats ; styles `.section*`, `.grid-3`, `.offer*`, `.statrow`, `.stat`)
-- `app/layouts/default.vue` (fond de page legacy → `var(--bg-page)` dark-first ; retrait import `_color`)
-- `docs/implementation-artifacts/3-2-apercu-services-et-stats.md` (frontmatter `baseline_commit`, statut, Dev Agent Record)
+- `app/pages/index.vue` (sections services + stats ; données services/stats ; aria-label liens ; clés `v-for` stables ; styles `.section*`/`.grid-3`/`.offer*`/`.statrow`/`.stat` ; repli `forced-colors`)
+- `app/layouts/default.vue` (fond de page legacy → `var(--bg-page)` dark-first ; retrait import `_color` ; retrait `role="img" title=""` du wrapper `.init`)
+- `docs/implementation-artifacts/3-2-apercu-services-et-stats.md` (frontmatter `baseline_commit`, statut, Dev Agent Record, findings de revue)
 - `docs/implementation-artifacts/sprint-status.yaml` (statut 3-2 → in-progress → review)
 
 ## Change Log
 
 - 2026-06-22 — Implémentation story 3.2 (aperçu services + stats) : sections portées de `ServicesPreview`/`StatsProjects` (Home.jsx) dans `pages/index.vue`, 3 `ZCard` (carte featured) + statrow, tokens-only. Correctif fidélité : fond de page legacy → `--bg-page` (dark-first). Lint/typecheck/generate verts, vérifié au Chrome DevTools. Statut → review.
+- 2026-06-22 — Corrections de revue de code : 2 findings [Patch] (aria-label liens, clés v-for stables) + 2 [Defer] traités (retrait `role="img"` sur `.init` ; repli `forced-colors` pour les focusables de la page ; repli DS-wide laissé à Epic 9). Lint/typecheck/generate verts. Statut → review.

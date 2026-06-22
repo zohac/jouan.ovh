@@ -71,7 +71,7 @@
         <div class="grid-3">
           <ZCard
             v-for="service in services"
-            :key="service.title"
+            :key="service.id"
             class="offer"
             interactive
             :accent="service.featured"
@@ -80,7 +80,9 @@
             <div class="offer__icon"><ZIcon :name="service.icon" /></div>
             <h3 class="offer__title">{{ service.title }}</h3>
             <p class="offer__desc">{{ service.desc }}</p>
-            <NuxtLink to="/services" class="offer__more">En savoir plus →</NuxtLink>
+            <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+              En savoir plus →
+            </NuxtLink>
           </ZCard>
         </div>
       </div>
@@ -90,7 +92,7 @@
     <section class="section section--sunken">
       <div class="container">
         <div class="statrow">
-          <div v-for="stat in stats" :key="stat.label" class="stat">
+          <div v-for="stat in stats" :key="stat.id" class="stat">
             <b>{{ stat.value }}</b>
             <span>{{ stat.label }}</span>
           </div>
@@ -113,20 +115,24 @@ const tags = ["php", "symfony", "wordpress", "nest.js", "nuxt.js"];
 
 // Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
 // (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
+// `id` = clé v-for stable (indépendante du contenu affiché), cohérent avec terminalRows.
 const services = [
   {
+    id: "wordpress",
     icon: "wp",
     title: "WordPress sur-mesure",
     desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
     featured: false,
   },
   {
+    id: "apps",
     icon: "code",
     title: "Applications web",
     desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
     featured: true,
   },
   {
+    id: "ia",
     icon: "spark",
     title: "IA & automatisation",
     desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
@@ -136,9 +142,9 @@ const services = [
 
 // Chiffres clés (data.js `stats`) — texte exact (séparateur ·), pas d'emoji.
 const stats = [
-  { value: "8+", label: "ans dans la tech" },
-  { value: "3", label: "stacks maîtrisés" },
-  { value: "1", label: "SaaS fondé · keova.app" },
+  { id: "stat-1", value: "8+", label: "ans dans la tech" },
+  { id: "stat-2", value: "3", label: "stacks maîtrisés" },
+  { id: "stat-3", value: "1", label: "SaaS fondé · keova.app" },
 ];
 
 // Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
@@ -537,6 +543,18 @@ const { open: openTerminal } = useTerminal();
   .anim,
   .prm__caret {
     animation: none;
+  }
+}
+
+// Mode contraste forcé (forced-colors) : les `box-shadow` (ring de focus) sont
+// neutralisées → on restaure un outline système visible sur les éléments focusables
+// propres à cette page. Le repli équivalent pour les primitives DS (ZButton/ZTag/
+// ZCard, focus via box-shadow) est un correctif central qui relève d'Epic 9.
+@media (forced-colors: active) {
+  .hero-term__open:focus-visible,
+  .offer__more:focus-visible {
+    outline: 2px solid;
+    outline-offset: 2px;
   }
 }
 </style>

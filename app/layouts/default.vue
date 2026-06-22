@@ -1,5 +1,5 @@
 <template>
-  <div class="init" role="img" title="">
+  <div class="init">
     <HeaderComponent />
 
     <slot />
