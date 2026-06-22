@@ -4,7 +4,7 @@ baseline_commit: 132093dd654b7a97ce39ad867db95a95fd2e2b92
 
 # Story 3.3: Projets sélectionnés
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -168,3 +168,4 @@ Validation post-fix (Docker) : `pnpm lint` 0/0, `typecheck` vert, `generate` ver
 
 - 2026-06-22 — Implémentation story 3.3 (projets sélectionnés) : bloc projets ajouté dans la section `section--sunken` (sous les stats), 2 `ZCard` rendues en liens externes + `ZTag`, tokens-only. Espacement stats↔projets finalisé. Lint/typecheck/generate verts, vérifié au Chrome DevTools. Statut → review.
 - 2026-06-22 — Corrections de revue de code : finding [Patch] focus (ajout `:focus-visible` sur `ZCard` interactive, corrige toutes les cartes-liens) + [Defer] traité (libellé sr-only « nouvel onglet » sur les cartes projet). Audit `_blank` site-wide laissé à Epic 9. Lint/typecheck/generate verts. Statut → review.
+- 2026-06-22 — Re-revue (vérification post-fix, commit `5056196`) : patch focus confirmé dans `ZCard.vue` (`.zcard--interactive:focus-visible` = `--ring-accent`, sans effet de bord) ; span sr-only « nouvel onglet » confirmé (`.screen-reader-text` = utilitaire global réel, masqué visuellement). `pnpm lint` (0/0) + `pnpm typecheck` revérifiés verts via Docker ; aucune régression. Touche `ZCard` (Epic 2) → tracé pour la rétro Epic 3. Statut → done.

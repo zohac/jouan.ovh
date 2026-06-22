@@ -4,7 +4,7 @@ baseline_commit: b45cefbf578a4c3273526d14692974283955e787
 
 # Story 3.2: Aperçu services et stats
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -180,3 +180,4 @@ Validation post-fix (Docker) : `pnpm lint` 0/0, `typecheck` vert, `generate` ver
 
 - 2026-06-22 — Implémentation story 3.2 (aperçu services + stats) : sections portées de `ServicesPreview`/`StatsProjects` (Home.jsx) dans `pages/index.vue`, 3 `ZCard` (carte featured) + statrow, tokens-only. Correctif fidélité : fond de page legacy → `--bg-page` (dark-first). Lint/typecheck/generate verts, vérifié au Chrome DevTools. Statut → review.
 - 2026-06-22 — Corrections de revue de code : 2 findings [Patch] (aria-label liens, clés v-for stables) + 2 [Defer] traités (retrait `role="img"` sur `.init` ; repli `forced-colors` pour les focusables de la page ; repli DS-wide laissé à Epic 9). Lint/typecheck/generate verts. Statut → review.
+- 2026-06-22 — Re-revue (vérification post-fix, commit `132093d`) : 2 patchs confirmés dans le code (aria-label distincts ×3, clés `id` stables) + 2 defers réellement traités (`role="img"` retiré ; `@media (forced-colors: active)` sur `.offer__more`/`.hero-term__open`). `pnpm lint` (0/0) + `pnpm typecheck` verts (couverts par la vérif HEAD `5056196`). Aucune régression. Statut → done.

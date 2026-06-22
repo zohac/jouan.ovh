@@ -22,7 +22,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 > vit désormais sous `app/` (structure Nuxt 4 par défaut, `srcDir = "app"`).
 
 - **Framework :** Nuxt 4 (`^4.4.8`), SSR activé. `experimental.payloadExtraction: false`. Code applicatif sous `app/` (`srcDir = "app"`).
-- **UI :** Vue 3 — `<script setup lang="ts">` pour tout nouveau composant. Du legacy en Options API + `vue-property-decorator` (`^9.1.2`, `experimentalDecorators: true`) subsiste mais est **inutilisé** — à retirer (ne pas l'étendre).
+- **UI :** Vue 3 — `<script setup lang="ts">` pour tout nouveau composant. `vue-property-decorator` et l'option `experimentalDecorators` ont été **retirés** (Epic 3, aucun usage réel). Quelques composants legacy en **Options API** (`defineComponent`, sans décorateur) subsistent (`WindowWrapperComponent`, `CurrentTime`, `terminal/TerminalComponent`) — ne pas les étendre, les migrer vers `<script setup>` lors d'une refonte.
 - **Langage :** TypeScript `^6.0.3`.
 - **Styles :** SCSS (`sass ^1.101.0`) via `@use ... as`. **Deux couches de tokens coexistent :** (1) tokens DS portés en **CSS custom properties globales** dans `app/assets/scss/abstract/_root.scss` (chargé via `main.scss`) = source de vérité du nouveau code ; (2) anciens tokens SCSS `$` sous `abstract/` encore consommés par le legacy restant. Cf. règle SCSS.
 - **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
@@ -36,11 +36,11 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 ### Règles Langage & Framework (TypeScript · Nuxt · Vue · SCSS)
 
 **TypeScript / Vue**
-- Préférer `<script setup lang="ts">` pour tout NOUVEAU composant. Le code legacy
-  en Options API + `vue-property-decorator` existe mais ne doit PAS être étendu —
-  à migrer/supprimer pendant la mise à jour de la stack.
-- `experimentalDecorators: true` n'est là que pour le legacy — ne pas introduire
-  de nouveaux décorateurs de classe.
+- Préférer `<script setup lang="ts">` pour tout NOUVEAU composant. Quelques
+  composants legacy en Options API (`defineComponent`, sans décorateur) existent
+  encore — ne pas les étendre ; les migrer vers `<script setup>` lors d'une refonte.
+- `vue-property-decorator` et l'option `experimentalDecorators` ont été retirés
+  (Epic 3) : plus aucun décorateur de classe, ne pas en réintroduire.
 - Imports composants via l'alias `~/` ou `@/` (les deux pointent sur project-root).
 
 **Nuxt**
@@ -179,6 +179,18 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Ne pas casser `CNAME` / le déploiement gh-pages.
 - `<component :is="...">` : passer une référence importée, jamais un nom en string
   (cf. règles Nuxt).
+- **Piège `padding` shorthand sur élément multi-classes** : quand deux classes de
+  layout cohabitent sur le même élément (typiquement `.container` + wrapper de
+  section, ex. `.hero__in.container`), **ne pas** styler le `padding` en shorthand
+  dans les deux — la dernière déclarée écrase l'autre axe (ici `.container { padding: 0 24px }`
+  effaçait le vertical de `.hero__in`). Utiliser les **longhands** `padding-inline` /
+  `padding-block`, qui composent sans conflit quel que soit l'ordre. (Régression de
+  padding du hero, story 3.1 — invisible à la revue de code, attrapée à l'œil.)
+- **Vérif visuelle avant revue (stories de page)** : lancer le dev, ouvrir la page
+  dans **Chrome DevTools MCP** ET la référence visuelle correspondante, puis comparer
+  le rendu (padding/marges/espacement/fidélité). La revue de code est aveugle aux
+  régressions de rendu. Réfs : Home → `docs/animations_jouan.ovh/Home animée.dc.html` ;
+  autres pages → `docs/design_system/ui_kits/jouan-site/index.html` (+ screenshots).
 
 ---
 
@@ -194,4 +206,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-06-22 (post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)
+Dernière mise à jour : 2026-06-22 (post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)
