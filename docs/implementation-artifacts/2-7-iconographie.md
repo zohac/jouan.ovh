@@ -1,6 +1,10 @@
+---
+baseline_commit: 743f6b56dd4a315f08706cb01b354654ebd733e4
+---
+
 # Story 2.7: Iconographie
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,20 +23,20 @@ so that l'UI utilise des icônes au trait et les glyphes de marque (UX-DR10).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Intégrer Lucide via CDN (AC: #1, #2)
-  - [ ] Charger Lucide en stand-in (CDN), icônes au trait `stroke="currentColor"`, `fill="none"`, `stroke-width` ~2, `viewBox 0 0 24 24`.
-  - [ ] Stratégie compatible prerender/SSR : préférer un composant `ZIcon`/wrapper rendant des SVG inline tirés du set (cf. `icons.jsx`) plutôt qu'un script CDN qui mute le DOM côté client (le DS appelle Lucide « via CDN » comme stand-in ; un set inline est plus sûr pour `nuxi generate`). Documenter le choix retenu.
-  - [ ] Vérifier que les icônes héritent de `color` (donc `currentColor`) et se dimensionnent en `em` (ex. `1.05em`).
-- [ ] Tâche 2 — Glyphes sociaux en SVG inline (AC: #1, #2)
-  - [ ] Porter les glyphes de marque **GitHub / X(Twitter) / LinkedIn** en SVG inline `fill="currentColor"` (déjà présents dans `LinkListComponent.vue` et `icons.jsx`).
-  - [ ] Centraliser ces glyphes (composant ou map) pour réutilisation par le footer/contact (story 2.8) et les hexagones.
-- [ ] Tâche 3 — Logo diamant SVG (AC: #1)
-  - [ ] Fournir le logo / marque diamant (gem) — actuellement en PNG (`public/images/logo*.png`, `docs/design_system/assets/brand/logo-*.png`, `logo-gem.png`). Si un SVG diamant n'existe pas, le créer en SVG inline minimaliste (carré pivoté + dégradé top-light) pour qu'il hérite/contrôle la couleur ; sinon réutiliser le PNG blanc pour le header (documenter).
-  - [ ] Le logo header doit être net en 24px (cf. UI kit `.hdr__brand img { width:24px; height:24px }`).
-- [ ] Tâche 4 — Vérification (AC: #1, #2)
-  - [ ] `yarn dev` : une icône au trait posée dans un texte hérite de la couleur du parent (changer `color` → l'icône suit) ; glyphes sociaux idem dans un hexagone.
-  - [ ] Aucune `@font-face` d'icônes (pas de Font Awesome / icon font) introduite. (AC #2)
-  - [ ] `yarn lint` vert ; `yarn generate` vert (icônes prerendues, pas de FOUC dépendant du CDN).
+- [x] Tâche 1 — Intégrer Lucide via CDN (AC: #1, #2)
+  - [x] Icônes au trait style Lucide (`stroke="currentColor"`, `fill="none"`, `stroke-width 2`, `viewBox 0 0 24 24`) portées dans `ZIcon.vue`.
+  - [x] **Stratégie retenue (documentée)** : composant `ZIcon.vue` rendant des **SVG inline** depuis un set interne, **et non** un script Lucide CDN (qui muterait le DOM côté client → trou/FOUC au `nuxi generate` + dépendance réseau). Set porté de `icons.jsx`. Prerender-safe.
+  - [x] Icônes en `currentColor` (héritent de `color`) et dimensionnées en `em` (`.zicon { width:1em; height:1em }`) — prouvé : `stroke/fill="currentColor"` dans la sortie.
+- [x] Tâche 2 — Glyphes sociaux en SVG inline (AC: #1, #2)
+  - [x] Glyphes **GitHub / Twitter(X) / LinkedIn** (+ WordPress) portés en SVG inline `fill="currentColor"` dans `ZIcon` (mêmes paths que `LinkListComponent.vue`/`icons.jsx`).
+  - [x] Centralisés dans `ZIcon` (set unique) → réutilisables par le footer/hexagones (story 2.8). `LinkListComponent` legacy laissé intact (sa refonte = 2.8).
+- [x] Tâche 3 — Logo diamant SVG (AC: #1)
+  - [x] Logo diamant `gem` fourni en SVG inline dans `ZIcon` (carré pivoté en `currentColor` + facette haute éclairée `#fff`/0.12, esprit « lit from above » du logo de marque). Hérite/contrôle la couleur.
+  - [x] Disponible via `<ZIcon name="gem">` (dimensionnable en 24px). Le **swap du header** PNG→SVG est hors périmètre (châssis = story 2.8) ; le PNG blanc reste acceptable d'ici là (dark-first, un seul thème).
+- [x] Tâche 4 — Vérification (AC: #1, #2)
+  - [x] Rendu prouvé par build (page smoke temporaire, supprimée) : 12 `<svg class="zicon">`, icônes trait `viewBox 0 0 24 24`+`stroke="currentColor"`, glyphes marque `viewBox 0 0 16 16`+`fill="currentColor"`, gem (diamant), icône inconnue → svg vide (pas de crash). a11y : décoratif `aria-hidden="true"` / labellisé `role="img" aria-label`.
+  - [x] **Aucune `@font-face` d'icônes** introduite (grep fontawesome/icomoon/material-icons → néant). (AC #2)
+  - [x] `pnpm lint` **exit 0** ; `pnpm typecheck` **exit 0** ; `pnpm generate` **exit 0** (24 routes ; icônes prerendues inline, pas de dépendance CDN).
 
 ## Dev Notes
 
@@ -87,8 +91,32 @@ so that l'UI utilise des icônes au trait et les glyphes de marque (UX-DR10).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Amelia / BMad dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` → exit 0 ; `pnpm typecheck` → exit 0 ; `pnpm generate` → exit 0 (24 routes). Verts du premier coup.
+- Preuves sortie (page smoke temporaire) : 12 `<svg class="zicon">` ; icônes trait `viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"` ; glyphes marque `viewbox="0 0 16 16" fill="currentColor"` ; gem `<path d="M12 1.5 22.5 12 12 22.5 1.5 12z" fill="currentColor"/>` + facette ; `currentColor` ×13 ; `role="img" aria-label="GitHub"` vs `aria-hidden="true"` ; icône inconnue → `<svg…></svg>` vide ; aucune icon-font dans le CSS.
+- Note SSR : la sérialisation statique met `viewBox`→`viewbox` (minuscules) ; le parser HTML du navigateur ré-ajuste automatiquement la casse des attributs SVG (`viewBox`, `preserveAspectRatio`…) — rendu/scaling corrects.
 
 ### Completion Notes List
 
+- **`components/ui/ZIcon.vue` créé** : composant unique rendant des SVG inline `currentColor`, taille `1em`. Set porté de `icons.jsx` :
+  - **Icônes au trait** (style Lucide, `viewBox 24`, `stroke=currentColor`, `stroke-width 2`) : arrow, terminal, code, layers, bot, spark, mail, pin, check, zap.
+  - **Glyphes de marque** (`fill=currentColor`) : github/twitter/linkedin (`viewBox 16`), wp (`viewBox 24`).
+  - **Logo `gem`** (`viewBox 24`) : carré pivoté en `currentColor` + facette haute `#fff`/0.12 (lit-from-above).
+- **Décision Lucide CDN → SVG inline** : le DS mentionne « Lucide via CDN » comme stand-in ; un script CDN qui remplace des `<i data-lucide>` au runtime laisse un trou au prerender (`nuxi generate`) et dépend du réseau (NFR4). Choix d'un set inline dans `ZIcon` → icônes présentes dans le HTML statique, zéro JS client requis. **AC #2 respecté : aucune police d'icône** (pas de Font Awesome/icon font, pas d'`@font-face`).
+- **Rendu via `v-html`** d'un set **100 % statique interne** (aucune entrée utilisateur interpolée) → `eslint-disable vue/no-v-html` justifié (même pattern contrôlé que `TerminalComponent`). Icône inconnue → fallback svg vide (pas de crash, prerender-safe).
+- **a11y** : décoratif par défaut (`aria-hidden="true"`) ; prop `label` → `role="img"` + `aria-label` pour les icônes porteuses de sens.
+- **Centralisation (Tâche 2)** : les glyphes sociaux sont désormais dans `ZIcon` (source unique). `LinkListComponent`/`HexagonLinkComponent` legacy **non modifiés** — leur refonte (et le swap du logo header PNG→`<ZIcon name="gem">`) relèvent de la story 2.8 (châssis). Périmètre 2.7 = fournir le système, pas câbler les consommateurs.
+- **Consommation prête** : `ZButton`/`ZInput` (slots `icon`) peuvent recevoir `<ZIcon name="…" />` ; aucun changement requis sur ces primitives.
+
 ### File List
+
+- `app/components/ui/ZIcon.vue` (CRÉÉ) — système d'icônes DS (trait Lucide + glyphes marque + logo gem), SVG inline `currentColor`.
+
+## Change Log
+
+| Date | Version | Description | Auteur |
+|------|---------|-------------|--------|
+| 2026-06-22 | 0.1 | Système d'iconographie `ZIcon.vue` : SVG inline `currentColor` (icônes trait Lucide + glyphes github/twitter/linkedin/wp + logo diamant gem), prerender-safe, a11y label. Aucune icon-font. Lint/typecheck/generate verts, rendu prouvé. Status → review. | Amelia (dev-story) |
