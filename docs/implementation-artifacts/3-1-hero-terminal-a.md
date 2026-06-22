@@ -49,6 +49,15 @@ so that je perçois immédiatement l'identité de marque (« OS de nuit », Ubun
   - [x] Tout accès DOM lié au terminal est gardé (`onMounted` / `import.meta.client`) — compatibilité `nuxi generate`
   - [x] `yarn dev` charge `/` sans erreur ; `yarn lint` ne régresse pas
 
+### Review Findings
+
+_Revue de code 2026-06-22 (baseline `d010077` → `79f1019`) — couches Blind Hunter, Edge Case Hunter, Acceptance Auditor. 2 decision-needed, 2 patch, 0 defer, 13 dismissed._
+
+- [x] [Review][Patch] (ex-Decision D1 — résolu : garder le payload, nettoyer les décorations) Traiter l'a11y du terminal décoratif — conserver les sorties lisibles (nom/stack/projets) mais passer en `aria-hidden` les lignes de prompt décoratives (`anon.@jouan.ovh:~$ <cmd>`) et le caret, pour une lecture cohérente par les lecteurs d'écran. `app/pages/index.vue` (`.hero-term__body`). [blind+auditor]
+- [x] [Review][Patch] (ex-Decision D2 — résolu : ajouter un token) Ajouter un token aubergine ~60 % de saturation dans `_root.scss` et l'utiliser dans `.hero__grad` pour retrouver la fidélité `kit.css` tout en restant tokens-only. `app/assets/scss/abstract/_root.scss` + `app/pages/index.vue` (`.hero__grad`). [auditor]
+- [x] [Review][Patch] Pas de désenregistrement du lanceur terminal au démontage (asymétrie cycle de vie) [app/composables/useTerminal.ts:18 / app/components/HeaderComponent.vue:180] — `register()` appelé en `onMounted` sans `unregister` en `onBeforeUnmount` ; `launcher` est un singleton module. Impact réel faible (header persistant, optional chaining = no-op sûr) mais dette d'hygiène. Fix : `unregister(fn)` (ne nullifier que si `launcher.value === fn`) appelé au démontage. [blind+edge]
+- [x] [Review][Patch] Clé `v-for` basée sur le contenu (`row.cmd`) — fragile si une commande se répète [app/pages/index.vue:`terminalRows` v-for] — `cmd` uniques aujourd'hui (tableau statique, aucun bug actuel) mais keyer sur une chaîne de contenu casse le diffing Vue en cas de doublon. Fix : `:key` sur l'index ou un id stable. [blind+edge]
+
 ## Dev Notes
 
 ### Contexte & contraintes (depuis project-context.md et SPEC)
@@ -164,14 +173,25 @@ Claude Opus 4.8 (1M context) — `claude-opus-4-8[1m]`
 - Breakpoint mobile : la fiche citait `max-width: 720px`, mais `kit.css` (source de vérité) utilise `@media (max-width: 900px)` pour `.hero__grid` (1 colonne) et `.hero h1` (`--fs-4xl`). J'ai suivi `kit.css` (900px).
 - `WindowWrapperComponent.vue` et l'image `undraw_programming_re_kg9v.svg` ne sont plus référencés par `/` mais ne sont pas supprimés (hors périmètre ; possiblement utilisés ailleurs / legacy à traiter séparément).
 
+**Résolution de revue (2026-06-22, baseline `d010077` → `79f1019`) — 4/4 findings [Patch] corrigés, 0 dette :**
+
+- ✅ Resolved review finding [Patch] a11y terminal décoratif : `aria-hidden="true"` sur les 3 lignes de prompt décoratives (`.hero-term__line`) ; le caret l'était déjà ; les sorties (`whoami`/stack/projets) restent lisibles par les lecteurs d'écran. La ligne `help` reste un `<button>` avec `aria-label`.
+- ✅ Resolved review finding [Patch] fidélité dégradé : nouveau token `--aubergine-vivid: hsl(319deg 60% 30%)` dans `_root.scss`, consommé par `.hero__grad` via `color-mix` (≈ `hsl(319 60% 30% / .28)` du kit) — tokens-only préservé.
+- ✅ Resolved review finding [Patch] cycle de vie du lanceur : ajout de `unregister(fn)` dans `useTerminal` (nullifie seulement si `launcher.value === fn`), appelé en `onBeforeUnmount` du header — symétrie register/unregister, plus de singleton orphelin.
+- ✅ Resolved review finding [Patch] clé `v-for` : `terminalRows` reçoit un champ `id` stable (`line-1/2/3`), `:key="row.id"` au lieu de `row.cmd` (contenu).
+
+Validation post-fix (Docker) : `pnpm lint` 0/0, `typecheck` vert, `generate` vert (24 routes).
+
 ### File List
 
-- `app/pages/index.vue` (refonte complète — hero Terminal A)
-- `app/components/HeaderComponent.vue` (enregistre le lanceur terminal partagé en `onMounted` — +4 lignes)
-- `app/composables/useTerminal.ts` (nouveau — registre/launcher du terminal partagé)
-- `docs/implementation-artifacts/3-1-hero-terminal-a.md` (frontmatter `baseline_commit`, statut, Dev Agent Record)
+- `app/pages/index.vue` (refonte complète — hero Terminal A ; a11y prompts décoratifs, clé v-for stable, token dégradé)
+- `app/components/HeaderComponent.vue` (enregistre/désenregistre le lanceur terminal partagé — onMounted / onBeforeUnmount)
+- `app/composables/useTerminal.ts` (nouveau — registre/launcher du terminal partagé : register/unregister/open)
+- `app/assets/scss/abstract/_root.scss` (nouveau token `--aubergine-vivid` — dégradé héros fidèle au kit, tokens-only)
+- `docs/implementation-artifacts/3-1-hero-terminal-a.md` (frontmatter `baseline_commit`, statut, Dev Agent Record, findings de revue)
 - `docs/implementation-artifacts/sprint-status.yaml` (statut 3-1 → in-progress → review)
 
 ## Change Log
 
 - 2026-06-22 — Implémentation story 3.1 (hero Terminal A) : refonte `pages/index.vue`, composable `useTerminal`, câblage ouverture terminal depuis le header. Lint/typecheck/generate verts. Statut → review.
+- 2026-06-22 — Corrections de revue de code : 4 findings [Patch] résolus (a11y prompts décoratifs, token `--aubergine-vivid`, unregister du lanceur, clé v-for stable). Lint/typecheck/generate verts. Statut → review.

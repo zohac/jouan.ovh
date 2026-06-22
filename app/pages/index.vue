@@ -33,8 +33,8 @@
               </div>
 
               <div class="hero-term__body">
-                <template v-for="row in terminalRows" :key="row.cmd">
-                  <p class="hero-term__line">
+                <template v-for="row in terminalRows" :key="row.id">
+                  <p class="hero-term__line" aria-hidden="true">
                     <span class="prm"
                       ><span class="prm__user">anon.@jouan.ovh</span><span class="prm__sep">:</span
                       ><span class="prm__dir">~</span><span class="prm__sep">$ </span
@@ -78,10 +78,11 @@ const tags = ["php", "symfony", "wordpress", "nest.js", "nuxt.js"];
 
 // Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
 // côté template (pas de chiffres/projets inventés : stats & projets = stories 3.2 / 3.3).
+// `id` = clé v-for stable (indépendante du contenu affiché), garantie unique.
 const terminalRows = [
-  { cmd: "whoami", out: "Simon Jouan — Développeur web freelance", tone: "ink" },
-  { cmd: "cat stack.txt", out: "PHP/Symfony · WordPress · Node/Nest · Nuxt", tone: "blue" },
-  { cmd: "ls ~/projets", out: "keova.app/   patio-conseil.fr/", tone: "green" },
+  { id: "line-1", cmd: "whoami", out: "Simon Jouan — Développeur web freelance", tone: "ink" },
+  { id: "line-2", cmd: "cat stack.txt", out: "PHP/Symfony · WordPress · Node/Nest · Nuxt", tone: "blue" },
+  { id: "line-3", cmd: "ls ~/projets", out: "keova.app/   patio-conseil.fr/", tone: "green" },
 ];
 
 // Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le
@@ -114,11 +115,16 @@ const { open: openTerminal } = useTerminal();
 }
 
 .hero__grad {
-  // Dégradés décoratifs dérivés des tokens (orange accent + aubergine) via
-  // color-mix — pas de valeur HSL en dur. Base = fond de page.
+  // Dégradés décoratifs dérivés des tokens (orange accent + aubergine saturé) via
+  // color-mix — pas de valeur HSL en dur. Base = fond de page. Fidèle à kit.css
+  // (.hero__grad : aubergine ~60 % de saturation → token --aubergine-vivid).
   background:
     radial-gradient(900px 500px at 78% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
-    radial-gradient(700px 500px at 0% 110%, color-mix(in srgb, var(--aubergine) 28%, transparent), transparent 60%),
+    radial-gradient(
+      700px 500px at 0% 110%,
+      color-mix(in srgb, var(--aubergine-vivid) 28%, transparent),
+      transparent 60%
+    ),
     var(--bg-page);
 }
 

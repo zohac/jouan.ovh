@@ -109,7 +109,7 @@ function addNewTerminal() {
 // Expose l'ouverture du terminal au reste du site via le lanceur partagé
 // (ex. ligne « help » du hero d'accueil, story 3.1). Le gestionnaire reste
 // monté ici ; on enregistre seulement une référence vers sa méthode.
-const { register: registerTerminalLauncher } = useTerminal();
+const { register: registerTerminalLauncher, unregister: unregisterTerminalLauncher } = useTerminal();
 
 // --- Menu mobile accessible ---
 const menuOpen = ref(false);
@@ -180,6 +180,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("keydown", onKeydown);
   desktopMq?.removeEventListener("change", onDesktopChange);
+  unregisterTerminalLauncher(addNewTerminal);
 });
 </script>
 

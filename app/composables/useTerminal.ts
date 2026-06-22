@@ -22,6 +22,15 @@ export function useTerminal() {
     register(fn: TerminalLauncher) {
       launcher.value = fn;
     },
+    /**
+     * Désenregistre le lanceur au démontage. Ne nullifie que si le lanceur
+     * courant est bien `fn` (évite d'effacer un enregistrement plus récent).
+     */
+    unregister(fn: TerminalLauncher) {
+      if (launcher.value === fn) {
+        launcher.value = null;
+      }
+    },
     /** Ouvre un terminal si un lanceur est disponible ; no-op sinon. */
     open() {
       launcher.value?.();
