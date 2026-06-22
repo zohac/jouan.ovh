@@ -1,5 +1,14 @@
 <template>
-  <span v-bind="rootAttrs" class="ztag" :class="{ 'ztag--plain': !hash, 'ztag--clickable': isClickable }">
+  <span
+    v-bind="rootAttrs"
+    class="ztag"
+    :class="{ 'ztag--plain': !hash, 'ztag--clickable': isClickable }"
+    :role="clickableRole"
+    :tabindex="clickableTabindex"
+    @click="handleClick"
+    @keydown.enter="handleKeyboardClick"
+    @keydown.space="handleKeyboardClick"
+  >
     <slot />
     <button v-if="isRemovable" type="button" class="ztag__remove" aria-label="Retirer" @click.stop="handleRemove">
       ×
@@ -12,7 +21,7 @@
 // Porté de docs/design_system/components/core/Tag.jsx (CSS en <style scoped>, prerender-safe).
 // API React → Vue : `onRemove`/`onClick` (callbacks React) deviennent des listeners
 // détectés via les attrs (le `×` et l'état cliquable n'apparaissent que si fournis).
-import { computed, useAttrs } from "vue";
+import { computed, getCurrentInstance, useAttrs } from "vue";
 
 defineOptions({
   inheritAttrs: false,
@@ -27,25 +36,70 @@ withDefaults(defineProps<Props>(), {
   hash: true,
 });
 
+const emit = defineEmits<{
+  click: [event: MouseEvent | KeyboardEvent];
+  remove: [event: MouseEvent];
+}>();
+
 const attrs = useAttrs();
+const instance = getCurrentInstance();
 
-const isClickable = computed(() => attrs.onClick != null);
-const isRemovable = computed(() => attrs.onRemove != null);
+function hasListener(name: "onClick" | "onRemove") {
+  const listener = instance?.vnode.props?.[name];
+  return typeof listener === "function" || Array.isArray(listener);
+}
 
-// `onRemove` n'est pas un événement DOM natif : on le retire de la racine et on
-// l'invoque manuellement depuis le bouton ×. Le reste des attrs (dont onClick) est hérité.
+const isClickable = computed(() => hasListener("onClick"));
+const isRemovable = computed(() => hasListener("onRemove"));
+
 const rootAttrs = computed(() => {
-  const { onRemove: _onRemove, ...rest } = attrs;
-  return rest;
+  if (!isClickable.value) {
+    return attrs;
+  }
+
+  return Object.fromEntries(
+    Object.entries(attrs).filter(([key]) => {
+      return key !== "role" && key !== "tabindex" && key !== "tabIndex";
+    }),
+  );
 });
 
-function handleRemove(event: MouseEvent) {
-  const handler = attrs.onRemove;
-  if (Array.isArray(handler)) {
-    handler.forEach((fn) => typeof fn === "function" && fn(event));
-  } else if (typeof handler === "function") {
-    handler(event);
+const clickableRole = computed(() => {
+  if (!isClickable.value) {
+    return undefined;
   }
+
+  return typeof attrs.role === "string" ? attrs.role : "button";
+});
+
+const clickableTabindex = computed(() => {
+  if (!isClickable.value) {
+    return undefined;
+  }
+
+  const tabindex = attrs.tabindex ?? attrs.tabIndex;
+  return typeof tabindex === "string" || typeof tabindex === "number" ? tabindex : 0;
+});
+
+function handleClick(event: MouseEvent) {
+  if (!isClickable.value) {
+    return;
+  }
+
+  emit("click", event);
+}
+
+function handleKeyboardClick(event: KeyboardEvent) {
+  if (!isClickable.value) {
+    return;
+  }
+
+  event.preventDefault();
+  emit("click", event);
+}
+
+function handleRemove(event: MouseEvent) {
+  emit("remove", event);
 }
 </script>
 
@@ -78,7 +132,8 @@ function handleRemove(event: MouseEvent) {
 }
 
 .ztag--plain::before {
-  content: "";
+  display: none;
+  content: none;
 }
 
 .ztag--clickable {
@@ -87,6 +142,11 @@ function handleRemove(event: MouseEvent) {
   &:hover {
     border-color: var(--border-strong);
     color: var(--text-strong);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-accent);
   }
 }
 

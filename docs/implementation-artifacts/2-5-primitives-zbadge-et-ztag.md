@@ -4,7 +4,7 @@ baseline_commit: efc11e972298f62d06b8f1756beee7fde2691348
 
 # Story 2.5: Primitives ZBadge et ZTag
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -38,7 +38,13 @@ so that les libellés et chips sont cohérents (UX-DR4, UX-DR5, FR3).
   - [x] `::before { content:"#"; color: var(--accent); }` ; clic → hover `border-color var(--border-strong)` + `color var(--text-strong)`. `prefers-reduced-motion` neutralise la transition.
 - [x] Tâche 5 — Vérification (AC: #1)
   - [x] Rendu prouvé par build (page de smoke-test temporaire, supprimée après) : `<span class="zbadge zbadge--{tone}">` pour les 6 tones, `zbadge__dot` pour `dot` ; `<span class="ztag">`, `ztag--plain` (`hash=false`), `ztag--clickable` (`@click`), bouton `ztag__remove` (`@remove`). CSS scoped émis : 6 tones, `border-radius:var(--radius-pill)`, `--plain`/`--clickable`.
-  - [x] `pnpm lint` **exit 0** ; `pnpm typecheck` **exit 0** ; `pnpm generate` **exit 0** (24 routes).
+  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` **exit 0** (`lint` : 43 warnings existants, 0 error ; `typecheck` vert ; `generate` : 24 routes).
+
+### Review Findings
+
+- [x] [Review][Patch] Rendre `ZTag` cliquable accessible au clavier et au focus [app/components/ui/ZTag.vue:2]
+- [x] [Review][Patch] Déclarer et émettre explicitement les événements Vue `click`/`remove` [app/components/ui/ZTag.vue:30]
+- [x] [Review][Patch] Supprimer le pseudo-élément `#` du layout quand `hash=false` [app/components/ui/ZTag.vue:80]
 
 ## Dev Notes
 
@@ -112,15 +118,16 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 
 ### Debug Log References
 
-- `pnpm lint` → exit 0 ; `pnpm typecheck` → exit 0 ; `pnpm generate` → exit 0 (24 routes). 2 erreurs Prettier transitoires (compactage attributs ZTag) corrigées via `eslint --fix`.
+- `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` → exit 0 ; `lint` : 43 warnings existants, 0 error ; `typecheck` → exit 0 ; `generate` → exit 0 (24 routes). 2 erreurs Prettier transitoires (compactage attributs ZTag) corrigées via `eslint --fix`.
 - Preuves sortie (page smoke temporaire) : `<span class="zbadge zbadge--neutral|accent|success|warning|danger|info">`, `zbadge__dot` (tones avec `dot`) ; `<span class="ztag">`, `ztag--plain`, `ztag--clickable`, bouton `ztag__remove`. CSS : 6 `.zbadge--*`, `.ztag{…border-radius:var(--radius-pill)…}`, `.ztag--plain`/`.ztag--clickable`.
 
 ### Completion Notes List
 
 - **`components/ui/ZBadge.vue` créé** : `<span>`, props `tone` (6 valeurs)/`dot`, point de statut `currentcolor` (`aria-hidden`). CSS porté de `Badge.jsx` 100 % tokens, `--radius-sm`. Auto-import `<ZBadge>`.
 - **`components/ui/ZTag.vue` créé** : `<span>` pill (`--radius-pill`), préfixe `#` via `::before` (classe `--plain` si `hash=false`), bouton `×` optionnel.
-  - **API React → Vue** : `onRemove`/`onClick` (callbacks React) → détection de listener via `useAttrs()` (`inheritAttrs: false`). Le `×` et l'état `--clickable` n'apparaissent que si un handler est fourni — fidèle à la sémantique de référence. `@click.stop` sur le `×` préserve le `stopPropagation` de la réf. (pas de déclenchement du clic du tag).
-  - **a11y** : `×` = `<button type="button" aria-label="Retirer">` + `:focus-visible` ring (`--ring-accent`).
+  - **API React → Vue** : `onRemove`/`onClick` (callbacks React) → événements typés `defineEmits` (`click`, `remove`) + détection de listener via `vnode.props` (`inheritAttrs: false`). Le `×` et l'état `--clickable` n'apparaissent que si un handler est fourni — fidèle à la sémantique de référence. `@click.stop` sur le `×` préserve le `stopPropagation` de la réf. (pas de déclenchement du clic du tag).
+  - **a11y** : `×` = `<button type="button" aria-label="Retirer">` + `:focus-visible` ring (`--ring-accent`). Le tag cliquable reçoit `role="button"`, `tabindex="0"` par défaut, activation `Enter`/`Space`, et focus ring.
+  - **Plain tag** : `hash=false` applique `display:none`/`content:none` au pseudo-élément `::before` pour retirer le préfixe du layout.
 - **Bordures de tones (`ZBadge`)** : teintes DS dédiées (`hsl(143 50% 32% / 0.5)`, etc.) sans token équivalent → portées telles quelles de `Badge.jsx` (explicitement toléré par la story), notation normalisée (`deg`/`%`) pour Stylelint, commentées.
 - **Conventions revues 2.3/2.4 appliquées** : `/* stylelint-disable selector-class-pattern */` inline (BEM `zbadge__dot`/`ztag--plain`…), `prefers-reduced-motion` neutralise la transition de `ZTag`. Aucun changement Stylelint global.
 - **Prerender-safe** : pas de portage de `ensureStyles()`/`document` ; CSS en `<style scoped>`.
@@ -136,3 +143,4 @@ claude-opus-4-8[1m] (Amelia / BMad dev-story)
 | Date | Version | Description | Auteur |
 |------|---------|-------------|--------|
 | 2026-06-22 | 0.1 | Primitives `ZBadge.vue` (6 tones + dot) et `ZTag.vue` (pill, `#`, clickable/removable, détection de listener) 100 % tokens. Lint/typecheck/generate verts, rendu prouvé. Status → review. | Amelia (dev-story) |
+| 2026-06-22 | 0.2 | Correctifs review : événements Vue `click`/`remove` typés, tag cliquable accessible clavier/focus, `hash=false` retire le pseudo-élément du layout, validation Docker documentée. Status → done. | Codex (code-review) |
