@@ -1,6 +1,10 @@
+---
+baseline_commit: 1c7bbd5e58541cc5083936dc59307cb086bdc972
+---
+
 # Story 4.2: Section process
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -18,18 +22,24 @@ so that je sais comment se déroule une collaboration (UX-DR13, FR6).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Ajouter la section process à `pages/services.vue` (AC: #1)
-  - [ ] Sous la 1re `<section>` (offres, story 4.1), ajouter une 2e `<section class="section section--sunken">` avec un `.container`
-  - [ ] Eyebrow `// comment ça se passe` + titre h2 « Un déroulé simple en quatre temps » (repris de `Services.jsx`)
-- [ ] Tâche 2 — Modéliser et rendre les 4 étapes ordonnées (AC: #1)
-  - [ ] Déclarer dans le `<script setup>` les 4 étapes ordonnées : numéro `01`–`04`, titre, description (texte repris à l'identique de `Services.jsx`)
-  - [ ] Rendre une grille de 4 colonnes (`grid-template-columns: repeat(4, 1fr)`) ; chaque étape = numéro (mono, `var(--accent)`, `fs-3xl`, `fw-light`) → titre `h3` → `p.prose` description
-  - [ ] Garantir l'ordre d'affichage 01 → 02 → 03 → 04 (le tableau préserve l'ordre)
-- [ ] Tâche 3 — CTA final (AC: #1)
-  - [ ] Bouton `ZButton` (primary, size lg, icône `arrow` à droite) « Demander un devis » centré, menant vers `/contact`
-- [ ] Tâche 4 — Responsive & vérification (AC: #1)
-  - [ ] Vérifier le passage en 1 colonne sur mobile (la grille process suit le comportement responsive du DS)
-  - [ ] `yarn lint` (eslint + stylelint) sans nouvelle erreur ; `yarn dev` affiche les 4 étapes ordonnées + le CTA ; `yarn generate` prerender `/services` sans erreur
+- [x] Tâche 1 — Ajouter la section process à `pages/services.vue` (AC: #1)
+  - [x] Sous la 1re `<section>` (offres, story 4.1), ajouter une 2e `<section class="section section--sunken">` avec un `.container`
+  - [x] Eyebrow `// comment ça se passe` + titre h2 « Un déroulé simple en quatre temps » (repris de `Services.jsx`)
+- [x] Tâche 2 — Modéliser et rendre les 4 étapes ordonnées (AC: #1)
+  - [x] Déclarer dans le `<script setup>` les 4 étapes ordonnées : numéro `01`–`04`, titre, description (texte repris à l'identique de `Services.jsx`)
+  - [x] Rendre une grille de 4 colonnes (`grid-template-columns: repeat(4, 1fr)`) ; chaque étape = numéro (mono, `var(--accent)`, `fs-3xl`, `fw-light`) → titre `h3` → `p.prose` description
+  - [x] Garantir l'ordre d'affichage 01 → 02 → 03 → 04 (le tableau préserve l'ordre)
+- [x] Tâche 3 — CTA final (AC: #1)
+  - [x] Bouton `ZButton` (primary, size lg, icône `arrow` à droite) « Demander un devis » centré, menant vers `/contact`
+- [x] Tâche 4 — Responsive & vérification (AC: #1)
+  - [x] Vérifier le passage en 1 colonne sur mobile (la grille process suit le comportement responsive du DS)
+  - [x] `pnpm lint` (eslint + stylelint) sans nouvelle erreur ; `pnpm dev` affiche les 4 étapes ordonnées + le CTA ; `pnpm generate` prerender `/services` sans erreur — via Docker
+
+### Review Findings
+
+_Revue de code 2026-06-22 (baseline `1c7bbd5` = HEAD ; travail 4.2 non committé, revu depuis le working tree). Blind Hunter, Edge Case Hunter, Acceptance Auditor. AC #1 vérifié conforme (4 étapes dans l'ordre 01→04, fidèles à `Services.jsx`), scope respecté (section offres 4.1 et nav 2.8 intactes), hiérarchie h1→h2→h2→h3 sans saut, tokens-only, responsive 4→1 col, `ZButton`/`ZIcon` réutilisés. 1 decision-needed (a11y, non bloquant), 0 patch, 0 defer, 16 dismissed._
+
+- [x] [Review][Decision → résolu : accepté, `<ol>` différé à Epic 9] Séquence ordonnée du process en `<div>` plutôt qu'`<ol>` (sémantique a11y) — Les 4 étapes (01→04) sont rendues en grille de `<div class="process__step">` avec le numéro en `<div class="process__num">`, pas en `<ol>`/`<li>`. **Fidèle à `Services.jsx`** (qui utilise aussi des `<div>`) et **l'ordre est déjà communiqué** aux lecteurs d'écran (les numéros « 01 »…« 04 » sont annoncés dans le flux) → ce n'est **pas un défaut bloquant**, l'AC #1 (ordre) est satisfait. Amélioration sémantique possible : passer en `<ol>` + numéros `aria-hidden` (l'ordre serait porté par la liste). Décider : (a) accepter / différer à Epic 9 (passage a11y) — fidèle à la réf. et ordre déjà accessible ; (b) appliquer `<ol>` maintenant. [blind+auditor]
 
 ## Dev Notes
 
@@ -98,8 +108,32 @@ Les étapes sont définies en dur dans `Services.jsx` (tableau `steps`), pas dan
 
 ### Agent Model Used
 
+claude-opus-4-8 (1M context) — workflow bmad-dev-story.
+
 ### Debug Log References
+
+- `pnpm lint` (eslint + stylelint) via Docker — vert.
+- `pnpm typecheck` (nuxi typecheck / vue-tsc) via Docker — vert.
+- `pnpm generate` via Docker — `/services` prerendé sans erreur (24 routes).
+- HTML généré vérifié : hiérarchie `h1 → h2 → h3` sans saut, étapes dans l'ordre `01 → 02 → 03 → 04`, CTA « Demander un devis » présent une fois.
+- Vérif visuelle Chrome DevTools MCP (desktop 1280px + mobile 390px) : section process fidèle à `Services.jsx` (fond sunken, numéros accent, CTA centré), grille 4 colonnes → 1 colonne sous 900px.
 
 ### Completion Notes List
 
+- Ajout de la 2e `<section class="section section--sunken">` au `pages/services.vue` existant (story 4.1), sous la section offres — aucune modification de l'en-tête ni de la grille d'offres.
+- En-tête de section : eyebrow `// comment ça se passe` + `<h2 class="process__title">` « Un déroulé simple en quatre temps ». L'`h2` s'insère proprement dans la hiérarchie post-4.1 (offres déjà en `<h2>`), les étapes en `<h3>` → ordre `h1 → h2 → h3` sans saut (cohérent avec le correctif a11y de 4.1).
+- 4 étapes modélisées en tableau statique local `steps` dans le `<script setup>` (texte repris à l'identique de `Services.jsx`, pas dans `data.js`). L'ordre du tableau garantit l'affichage `01 → 04` (AC #1) ; `n` sert de clé v-for stable.
+- Grille `repeat(4, 1fr)` (gap `--space-5`) : par étape, numéro mono `fs-3xl`/`fw-light`/`var(--accent)` → `h3` `fs-lg` → `p.prose` `fs-sm`/`text-muted`. Tout en tokens, aucune valeur en dur.
+- CTA final « Demander un devis » via la primitive `ZButton` (primary, `size="lg"`, icône `arrow` à droite via slot `#iconRight` + `ZIcon`), centré (`text-align: center`, `margin-top: var(--space-12)`), `:as="NuxtLink"` vers `/contact` (route Epic 7, lien non bloquant). Aucune primitive réimplémentée.
+- Responsive : la grille process passe en 1 colonne sous 900px (même breakpoint que `.grid-3`), vérifié à l'écran.
+
 ### File List
+
+- `app/pages/services.vue` (MODIFIED — ajout de la section process : en-tête, grille des 4 étapes ordonnées, CTA ; styles `.section--sunken` + `.process*`)
+- `docs/implementation-artifacts/4-2-section-process.md` (MODIFIED — frontmatter baseline, tâches, Dev Agent Record, statut)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED — statut story 4.2 : ready-for-dev → in-progress → review)
+
+## Change Log
+
+- 2026-06-22 — Implémentation story 4.2 : section process sur `/services` (4 étapes ordonnées 01→04 + CTA « Demander un devis »), portée de `Services.jsx` en Vue 3 `<script setup>` + SCSS token-only, réutilisant `ZButton`/`ZIcon`. Validé lint + typecheck + generate (Docker) et vérif visuelle Chrome DevTools. Statut → review.
+- 2026-06-22 — Revue de code : revue propre (AC conforme, scope respecté, hiérarchie sans saut, tokens-only). Seul point = sémantique `<ol>` des étapes (non bloquant, ordre déjà accessible) → **accepté, différé à Epic 9** (décision Simon). `pnpm lint` (0/0) + `pnpm typecheck` revérifiés verts via Docker. Statut → done.

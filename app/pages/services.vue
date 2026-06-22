@@ -45,14 +45,36 @@
         </div>
       </div>
     </section>
+
+    <!-- Section process : 4 étapes ordonnées + CTA (story 4.2). Porté de Services.jsx L45-61. -->
+    <section class="section section--sunken">
+      <div class="container">
+        <p class="eyebrow">// comment ça se passe</p>
+        <h2 class="process__title">Un déroulé simple en quatre temps</h2>
+
+        <div class="process">
+          <div v-for="step in steps" :key="step.n" class="process__step">
+            <div class="process__num">{{ step.n }}</div>
+            <h3 class="process__step-title">{{ step.title }}</h3>
+            <p class="prose process__desc">{{ step.desc }}</p>
+          </div>
+        </div>
+
+        <div class="process__cta">
+          <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+            Demander un devis
+            <template #iconRight><ZIcon name="arrow" /></template>
+          </ZButton>
+        </div>
+      </div>
+    </section>
   </main>
 </template>
 
 <script setup lang="ts">
-// Page Services — en-tête + grille des 3 offres. Porté de Services.jsx (en-tête +
-// grille) du UI kit : recréation Vue 3 + tokens (aucune copie JSX). Dark-first,
-// accent orange. La section process (étapes + CTA « Demander un devis ») est la
-// story 4.2 ; ce <main> est prêt à l'accueillir comme 2e <section>. (Story 4.1)
+// Page Services — en-tête + grille des 3 offres (story 4.1) puis section process
+// (4 étapes ordonnées + CTA « Demander un devis », story 4.2). Porté de Services.jsx
+// du UI kit : recréation Vue 3 + tokens (aucune copie JSX). Dark-first, accent orange.
 import { NuxtLink } from "#components";
 
 interface Offer {
@@ -100,6 +122,16 @@ const offers: Offer[] = [
   },
 ];
 
+// Étapes du process — texte repris à l'identique de Services.jsx (tableau `steps`,
+// pas dans data.js). L'ordre du tableau garantit l'affichage 01 → 04 (AC #1).
+// `n` (numéro affiché) sert aussi de clé v-for stable et unique.
+const steps = [
+  { n: "01", title: "Échange", desc: "On cadre le besoin, le périmètre et le budget — sans jargon inutile." },
+  { n: "02", title: "Conception", desc: "Architecture, maquette, et plan de livraison clair." },
+  { n: "03", title: "Développement", desc: "Code propre, testé, livré par itérations visibles." },
+  { n: "04", title: "Livraison & suivi", desc: "Mise en ligne, documentation, et accompagnement." },
+];
+
 useHead({
   title: "Services — jouan.ovh",
   meta: [
@@ -122,6 +154,13 @@ useHead({
 .section {
   // padding-block uniquement : le gutter horizontal vient de .container (enfant).
   padding-block: var(--space-16);
+}
+
+// Section en creux (porté de kit.css : .section--sunken) — fond + filets haut/bas.
+.section--sunken {
+  background: var(--bg-sunken);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .container {
@@ -260,9 +299,50 @@ useHead({
   width: 100%;
 }
 
+// ---- Section process (porté de Services.jsx L45-61) ----
+.process__title {
+  margin-bottom: var(--space-8);
+  font-family: var(--font-mono);
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+.process {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+
+.process__num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-light);
+  color: var(--accent);
+}
+
+.process__step-title {
+  margin: var(--space-2) 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+.process__desc {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.process__cta {
+  margin-top: var(--space-12);
+  text-align: center;
+}
+
 // ---- Responsive (cf. kit.css @media max-width: 900px) ----
 @media (width <= 900px) {
-  .grid-3 {
+  .grid-3,
+  .process {
     grid-template-columns: 1fr;
   }
 }
