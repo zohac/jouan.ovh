@@ -91,7 +91,7 @@ hr {
  * 2. Correct the odd `em` font sizing in all browsers.
  */
 pre {
-  font-family: monospace, monospace;
+  font-family: monospace;
   font-size: 1rem;
 }
 
@@ -130,7 +130,7 @@ strong {
 code,
 kbd,
 samp {
-  font-family: monospace, monospace;
+  font-family: monospace;
   font-size: 1rem;
 }
 
@@ -214,7 +214,7 @@ button,
 [type="button"],
 [type="reset"],
 [type="submit"] {
-  appearance: button;
+  appearance: auto;
 }
 
 /**
@@ -313,7 +313,7 @@ textarea {
  * 2. Change font properties to `inherit` in Safari.
  */
 ::-webkit-file-upload-button {
-  appearance: button;
+  appearance: auto;
   font: inherit;
 }
 
@@ -561,7 +561,6 @@ table {
 /* Text meant only for screen readers. */
 .screen-reader-text {
   border: 0;
-  clip: rect(1px, 1px, 1px, 1px);
   clip-path: inset(50%);
   height: 1px;
   margin: -1px;
@@ -576,7 +575,6 @@ table {
   background-color: #f1f1f1;
   border-radius: 3px;
   box-shadow: 0 0 2px 2px rgb(0 0 0 / 60%);
-  clip: auto !important;
   clip-path: none;
   color: #21759b;
   display: block;
