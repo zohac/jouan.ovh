@@ -47,6 +47,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const attrs = useAttrs();
+// `as` accepte une balise native ("div", "article") ou une référence de composant
+// (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.
 const isNativeButton = computed(() => props.as === "button");
 const rootAttrs = computed(() => {
   if (!isNativeButton.value) {

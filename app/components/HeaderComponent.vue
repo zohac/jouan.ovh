@@ -1,197 +1,391 @@
 <template>
-  <header>
-    <button class="btn btn-large btn-dark" role="button" aria-label="Ouvrir le menu" @click="toggle">
-      <nuxt-img src="/images/logo_white_32x32.png" preload loading="eager" alt="logo" height="32" width="32" />
-    </button>
-    <nav id="menu" :class="{ hidden: isHidden }">
-      <div id="close-menu" @click="closeMenu"></div>
-      <ul>
-        <li>
-          <NuxtLink ref="firstMenuItem" to="/" @click="closeMenu">Accueil</NuxtLink>
-        </li>
-        <li>
-          <NuxtLink to="/blog" @click="closeMenu">Blog</NuxtLink>
-        </li>
-        <li>
-          <NuxtLink to="/about" @click="closeMenu">À propos</NuxtLink>
-        </li>
-        <li>
-          <TerminalButton @click="closeMenu" @open-terminal="addNewTerminal" />
-        </li>
-      </ul>
+  <header class="hdr">
+    <div class="hdr__in">
+      <NuxtLink to="/" class="hdr__brand" @click="closeMenu">
+        <ZIcon name="gem" class="hdr__logo" />
+        <b>jouan.ovh</b>
+      </NuxtLink>
+
+      <nav class="hdr__nav" aria-label="Navigation principale">
+        <NuxtLink
+          v-for="item in navItems"
+          :key="item.to"
+          :to="item.to"
+          class="hdr__link"
+          :class="{ 'hdr__link--active': isActive(item.to) }"
+          :aria-current="isActive(item.to) ? 'page' : undefined"
+        >
+          {{ item.label }}
+        </NuxtLink>
+      </nav>
+
+      <div class="hdr__right">
+        <CurrentTime class="hdr__clock" />
+        <ZBadge tone="success" dot class="hdr__badge">Disponible</ZBadge>
+        <ZButton variant="terminal" size="sm" class="hdr__action" @click="addNewTerminal">
+          <template #icon><ZIcon name="terminal" /></template>
+          Terminal
+        </ZButton>
+        <ZButton :as="NuxtLink" to="/contact" variant="primary" size="sm" class="hdr__action">
+          Démarrer un projet
+        </ZButton>
+
+        <button
+          ref="burgerButton"
+          class="hdr__burger"
+          type="button"
+          :aria-expanded="menuOpen"
+          aria-controls="hdr-mobile-menu"
+          :aria-label="menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'"
+          @click="toggleMenu"
+        >
+          <ZIcon :name="menuOpen ? 'arrow' : 'layers'" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Menu mobile -->
+    <div v-if="menuOpen" class="hdr__overlay" @click="closeMenuAndRefocus" />
+    <nav id="hdr-mobile-menu" class="hdr__menu" :class="{ 'hdr__menu--open': menuOpen }" aria-label="Navigation mobile">
+      <NuxtLink
+        v-for="(item, index) in navItems"
+        :key="item.to"
+        :ref="(el) => registerFirstLink(el, index)"
+        :to="item.to"
+        class="hdr__menu-link"
+        :class="{ 'hdr__menu-link--active': isActive(item.to) }"
+        :aria-current="isActive(item.to) ? 'page' : undefined"
+        @click="closeMenu"
+      >
+        {{ item.label }}
+      </NuxtLink>
+
+      <div class="hdr__menu-actions">
+        <ZButton variant="terminal" size="sm" @click="openTerminalFromMenu">
+          <template #icon><ZIcon name="terminal" /></template>
+          Terminal
+        </ZButton>
+        <ZButton :as="NuxtLink" to="/contact" variant="primary" size="sm" @click="closeMenu">
+          Démarrer un projet
+        </ZButton>
+      </div>
     </nav>
+
     <TerminalManagerComponent ref="terminalManager" />
-    <CurrentTime />
   </header>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, ref } from "vue";
 import type { ComponentPublicInstance } from "vue";
+import { onBeforeUnmount, onMounted, nextTick, ref } from "vue";
+import { NuxtLink } from "#components";
 import TerminalManagerComponent from "~/components/terminal/TerminalManagerComponent.vue";
 
-defineComponent({
-  name: "HeaderComponent",
+const route = useRoute();
+
+const navItems = [
+  { to: "/", label: "Accueil" },
+  { to: "/services", label: "Services" },
+  { to: "/about", label: "À propos" },
+  { to: "/blog", label: "Blog" },
+  { to: "/contact", label: "Contact" },
+];
+
+// Lien actif : exact pour l'accueil, préfixe pour les autres (couvre /blog/[...slug]).
+function isActive(to: string): boolean {
+  if (to === "/") {
+    return route.path === "/";
+  }
+  return route.path === to || route.path.startsWith(`${to}/`);
+}
+
+// --- Terminal easter-egg (préservé) ---
+const terminalManager = ref<InstanceType<typeof TerminalManagerComponent> | null>(null);
+
+function addNewTerminal() {
+  terminalManager.value?.createNewTerminal();
+}
+
+// --- Menu mobile accessible ---
+const menuOpen = ref(false);
+const firstMenuLink = ref<HTMLElement | null>(null);
+const burgerButton = ref<HTMLElement | null>(null);
+
+function registerFirstLink(el: Element | ComponentPublicInstance | null, index: number) {
+  if (index !== 0) {
+    return;
+  }
+  const instance = el as ComponentPublicInstance | null;
+  firstMenuLink.value = (instance?.$el ?? el) as HTMLElement | null;
+}
+
+function openMenu() {
+  menuOpen.value = true;
+  nextTick(() => firstMenuLink.value?.focus());
+}
+
+function closeMenu() {
+  menuOpen.value = false;
+}
+
+// Fermeture clavier/overlay : renvoie le focus au burger (déclencheur) — a11y.
+function closeMenuAndRefocus() {
+  if (!menuOpen.value) {
+    return;
+  }
+  closeMenu();
+  nextTick(() => burgerButton.value?.focus());
+}
+
+function toggleMenu() {
+  if (menuOpen.value) {
+    closeMenu();
+  } else {
+    openMenu();
+  }
+}
+
+function openTerminalFromMenu() {
+  addNewTerminal();
+  closeMenu();
+}
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === "Escape" && menuOpen.value) {
+    closeMenuAndRefocus();
+  }
+}
+
+// Passage en desktop alors que le menu mobile est ouvert : on le ferme (sinon
+// l'overlay fixed resterait actif et le menu deviendrait incohérent au resize).
+let desktopMq: MediaQueryList | null = null;
+function onDesktopChange(event: MediaQueryListEvent) {
+  if (event.matches) {
+    closeMenu();
+  }
+}
+
+onMounted(() => {
+  document.addEventListener("keydown", onKeydown);
+  desktopMq = window.matchMedia("(min-width: 901px)");
+  desktopMq.addEventListener("change", onDesktopChange);
 });
 
-const terminalManager = ref<InstanceType<typeof TerminalManagerComponent> | null>(null);
-// NuxtLink expose une instance de composant : on récupère son élément racine (<a>) pour le focus.
-const firstMenuItem = ref<ComponentPublicInstance | null>(null);
-
-const addNewTerminal = () => {
-  if (terminalManager.value) {
-    terminalManager.value.createNewTerminal();
-  }
-};
-
-const isHidden = ref(true);
-
-const toggle = () => {
-  isHidden.value = !isHidden.value;
-  if (!isHidden.value) {
-    nextTick(() => {
-      const linkElement = firstMenuItem.value?.$el as HTMLElement | undefined;
-      linkElement?.focus();
-    });
-  }
-};
-
-const closeMenu = () => {
-  isHidden.value = true;
-};
+onBeforeUnmount(() => {
+  document.removeEventListener("keydown", onKeydown);
+  desktopMq?.removeEventListener("change", onDesktopChange);
+});
 </script>
 
 <style lang="scss" scoped>
-@use "assets/scss/abstract/color" as _color;
-@use "assets/scss/abstract/variables";
-@use "assets/scss/components/button";
-@use "assets/scss/abstract/space";
-@use "assets/scss/abstract/radius";
-@use "assets/scss/abstract/function";
-@use "assets/scss/components/list";
+/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis kit.css */
+.hdr {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-height);
 
-// Value     Token
-// =============================================================================
-// 4px       space-stack-4x
-// 16px      space-stack-16x
+  // Verre sombre translucide : surface de page (token) à 82 % d'opacité + flou.
+  background: color-mix(in srgb, var(--surface-0) 82%, transparent);
+  border-bottom: 1px solid var(--border-subtle);
 
-// Value     Token
-// =============================================================================
-// 8px       space-inline-8x
+  /* stylelint-disable-next-line property-no-vendor-prefix -- Safari : autoprefixer non câblé, préfixe manuel requis */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
 
-// Value     Token
-// =============================================================================
-// 16px      space-inset-16x
+.hdr__in {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: var(--container-xl);
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
 
-.hidden {
+.hdr__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+
+  .hdr__logo {
+    font-size: 24px;
+    color: var(--accent);
+  }
+
+  b {
+    font-family: var(--font-mono);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+  }
+}
+
+.hdr__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0; // autorise la nav à rétrécir plutôt que de pousser l'overflow
+  margin-left: var(--space-4);
+}
+
+.hdr__link {
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--dur-fast) var(--ease-standard),
+    background var(--dur-fast) var(--ease-standard);
+
+  &:hover {
+    color: var(--text-strong);
+    background: var(--surface-2);
+  }
+}
+
+.hdr__link--active {
+  color: var(--accent);
+}
+
+.hdr__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+.hdr__clock {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.hdr__burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  color: var(--text-strong);
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-accent);
+  }
+}
+
+.hdr__overlay {
+  position: fixed;
+  inset: var(--header-height) 0 0;
+  z-index: 40;
+  background: var(--overlay);
+}
+
+.hdr__menu {
   display: none;
 }
 
-header {
-  --header-height: #{variables.$header-height};
-  --header-space-inline: #{space.$space-inline-8x};
-  --header-space-inset: #{space.$space-inset-16x};
-  --header-radius: #{radius.$radius-rounded-4px};
-  --header-list-item-inset-x: #{list.$list-space-inset-8x-x};
-  --header-list-item-inset-y: #{list.$list-space-inset-8x-y};
-  --header-list-item-font-size: #{variables.$font-size-base};
-  --header-list-item-font-weight: #{variables.$font-weight-regular};
-  --header-list-item-line-height: #{function.line-height(var(--header-list-item-font-size))};
+// ---- Dégradé progressif (tablette) pour éviter l'overflow du header
+// avant que le burger ne prenne le relais (< 900px). ----
+@media (width <= 1100px) {
+  .hdr__clock {
+    display: none;
+  }
+}
 
-  // color system
-  // =============================================================================
-  --header-color-background: #{_color.$dark-background};
-  --header-color-background-hover: #{_color.$dark-background-hover};
+@media (width <= 1000px) {
+  .hdr__badge {
+    display: none;
+  }
+}
 
-  // --header-color-border: ;
-  // --header-color-border-hover: ;
-  --header-color-text: #{_color.$dark-text};
+// Sécurité : pas d'overlay en desktop (le menu mobile y est fermé par JS).
+@media (width >= 901px) {
+  .hdr__overlay {
+    display: none;
+  }
+}
 
-  // --header-color-text-hover: var(--color-dark-text-hover);
-  // --header-color-text-active: ;
-  // --header-color-shapes: var(--header-color-border-hover);
-  // --header-color-shapes-hover: var(--color-text);
-  // --header-color-shapes-active: var(--color-text-hover);
-
-  display: grid;
-  grid-template: ". . ." 1fr / auto 1fr auto;
-  gap: 0;
-  align-items: center;
-  width: 100%;
-  height: var(--header-height);
-  color: var(--header-color-text);
-  background-color: var(--header-color-background);
-  max-width: 100vw;
-  padding-right: var(--header-space-inline);
-
-  button {
-    &.btn {
-      --header-btn-space-inline: var(--header-space-inline);
-
-      margin-left: var(--header-btn-space-inline);
-    }
-
-    img {
-      width: 32px;
-      height: auto;
-    }
+// ---- Responsive : < 900px (cf. kit.css) ----
+@media (width <= 900px) {
+  .hdr__nav,
+  .hdr__clock,
+  .hdr__badge,
+  .hdr__right .hdr__action {
+    display: none;
   }
 
-  nav {
-    --header-nav-space-inline: var(--header-space-inline);
+  .hdr__burger {
+    display: inline-flex;
+  }
 
-    position: absolute;
-    z-index: 9999999999;
-    top: var(--header-height);
-    left: var(--header-nav-space-inline);
+  .hdr__menu {
+    position: fixed;
+    inset: var(--header-height) 0 auto 0;
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-6) var(--space-6);
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-3);
+    transform: translateY(-8px);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      transform var(--dur-base) var(--ease-out),
+      opacity var(--dur-base) var(--ease-standard),
+      visibility var(--dur-base);
+  }
 
-    #close-menu {
-      position: absolute;
-      z-index: 0;
-      inset: calc(-1 * var(--header-height)) 0 0 calc(-1 * var(--header-space-inset));
-      background-color: transparent;
-      min-height: 100vh;
-      width: 100vw;
-    }
+  .hdr__menu--open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+}
 
-    ul {
-      z-index: 9999999999;
-      position: relative;
-      overflow: hidden;
-      margin: 0;
-      padding: 0;
-      border-radius: 0 0 var(--header-radius) var(--header-radius);
+.hdr__menu-link {
+  padding: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  color: var(--text-body);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
 
-      li {
-        font-size: var(--header-list-item-font-size);
-        font-weight: var(--header-list-item-font-weight);
-        line-height: var(--header-list-item-line-height);
-        list-style-type: none;
-        cursor: pointer;
-        animation: menu-item-opacity 300ms ease-in-out forwards;
-        background-color: var(--header-color-background);
+  &:hover {
+    color: var(--text-strong);
+    background: var(--surface-2);
+  }
+}
 
-        &:hover {
-          background-color: var(--header-color-background-hover);
-        }
+.hdr__menu-link--active {
+  color: var(--accent);
+}
 
-        a,
-        div {
-          color: var(--header-color-text);
-          text-decoration: none;
-          padding: var(--header-list-item-inset-x) var(--header-list-item-inset-y);
-          display: inline-block;
-        }
-      }
-    }
+.hdr__menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
 
-    &:not(.hidden) {
-      animation: menu-animation 800ms ease-in-out forwards;
-
-      #close-menu {
-        animation: close-menu 500ms ease-in-out forwards;
-      }
-    }
+@media (prefers-reduced-motion: reduce) {
+  .hdr__link,
+  .hdr__menu {
+    transition: none;
   }
 }
 </style>
