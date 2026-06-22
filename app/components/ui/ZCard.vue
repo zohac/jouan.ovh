@@ -90,6 +90,14 @@ const rootAttrs = computed(() => {
     transform: translateY(-2px);
     box-shadow: var(--shadow-3), var(--shadow-hairline);
   }
+
+  // Focus clavier : anneau d'accent visible. Quand la carte est rendue en lien
+  // (`as="a"`, ex. cartes projet story 3.3), elle est focusable — sans cette règle,
+  // aucun indicateur. Sans effet sur les cartes non focusables (div).
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-accent);
+  }
 }
 
 .zcard--accent::before {

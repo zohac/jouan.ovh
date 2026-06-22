@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: 2026-06-22 (Story 3.3 projets-selectionnes → review)
+last_updated: 2026-06-22 (Story 3.3 projets-selectionnes → review, findings de revue corrigés)
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system

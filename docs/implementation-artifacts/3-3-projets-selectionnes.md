@@ -39,6 +39,13 @@ so that j'évalue concrètement le travail de Simon avant de le contacter.
   - [x] Rendu statique de la liste de projets (pas d'accès DOM) — prerender-safe
   - [x] `yarn dev` charge `/` sans erreur ; `yarn lint` ne régresse pas
 
+### Review Findings
+
+_Revue de code 2026-06-22 (baseline `132093d` → `78811f2`) — Blind Hunter, Edge Case Hunter, Acceptance Auditor (les trois convergent sur le focus). AC #1 vérifié conforme (contenu exact, section partagée non dupliquée, tokens-only, `ZCard`/`ZTag` réutilisés, lien externe sécurisé). 1 decision-needed, 0 patch, 1 defer, 16 dismissed._
+
+- [x] [Review][Patch] (ex-Decision — résolu : corriger la primitive `ZCard`, élargissement Epic 2 à noter en rétro) Carte-lien projet sans indicateur de focus visible (a11y) — La carte est rendue en `<a>` focusable (`ZCard as="a"`), mais `ZCard` ne définit que `.zcard--interactive:hover` — **aucun `:focus-visible`** (vérifié `app/components/ui/ZCard.vue`). Au clavier, les liens projet n'ont aucun anneau de focus. Viole `project-context.md#Accessibilité` et la sous-tâche 4 (cochée sur une prémisse fausse : le DS ne définit que le hover, pas le focus). **Fix retenu (décision Simon)** : ajouter dans `app/components/ui/ZCard.vue` `.zcard--interactive:focus-visible { outline: none; box-shadow: var(--ring-accent) }` — corrige toutes les cartes-liens (sans effet de bord : les cartes services 3.2 ne sont pas focusables). Touche Epic 2 → **à remonter en rétrospective Epic 3**. [blind+edge+auditor]
+- [x] [Review][Defer] Liens-cartes externes sans indication « nouvel onglet » [app/pages/index.vue `.project`] — Les cartes ouvrent l'URL externe via `target="_blank"` sans indice visible/AT (texte `(nouvel onglet)` visually-hidden ou icône). Recommandation WCAG (G201). Fidèle à `Home.jsx` (la source l'omet aussi) → polissage a11y à grouper en Epic 9. [blind+auditor]
+
 ## Dev Notes
 
 ### Contexte & contraintes (depuis project-context.md et SPEC)
@@ -143,12 +150,21 @@ Claude Opus 4.8 (1M context) — `claude-opus-4-8[1m]`
 
 - Breakpoint mobile : la fiche cite `max-width: 720px` ; `kit.css` (source de vérité) utilise `@media (max-width: 900px)` pour `.grid-2` → 1 colonne. J'ai suivi `kit.css` (900px), cohérent avec 3.1/3.2.
 
+**Résolution de revue (2026-06-22, baseline `132093d` → `78811f2`) — « corrige tous les findings, aucune dette » :**
+
+- ✅ Resolved review finding [Patch] focus carte-lien : ajout de `.zcard--interactive:focus-visible { outline: none; box-shadow: var(--ring-accent) }` dans `app/components/ui/ZCard.vue`. Corrige **toutes** les cartes interactives focusables (aucun effet sur les cartes non focusables comme les offres services 3.2, en `div`). Vérifié au Chrome DevTools : anneau orange `--ring-accent` (3px) au focus clavier de la carte projet. **Touche `ZCard` (Epic 2)** — décision Simon en revue ; **à remonter en rétrospective Epic 3** (élargissement de périmètre assumé).
+- ✅ Resolved review finding [Defer→corrigé local] indication « nouvel onglet » : ajout d'un libellé masqué `<span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span>` dans chaque carte projet (réutilise l'utilitaire global sr-only). Vérifié masqué visuellement / lu par AT. L'audit **site-wide** des liens `target="_blank"` (hexagones sociaux, etc.) reste un polissage **Epic 9** — pas de la dette 3.3.
+
+Validation post-fix (Docker) : `pnpm lint` 0/0, `typecheck` vert, `generate` vert (24 routes).
+
 ### File List
 
-- `app/pages/index.vue` (bloc projets dans `section--sunken` ; données `projects` ; styles `.grid-2`/`.projects`/`.project*`/`.prose` ; `statrow margin-bottom` ; `.grid-2` responsive)
-- `docs/implementation-artifacts/3-3-projets-selectionnes.md` (frontmatter `baseline_commit`, statut, Dev Agent Record)
+- `app/pages/index.vue` (bloc projets dans `section--sunken` ; données `projects` ; styles `.grid-2`/`.projects`/`.project*`/`.prose` ; `statrow margin-bottom` ; `.grid-2` responsive ; libellé sr-only « nouvel onglet »)
+- `app/components/ui/ZCard.vue` (ajout `:focus-visible` sur `.zcard--interactive` — anneau de focus pour les cartes-liens ; correctif Epic 2 issu de la revue)
+- `docs/implementation-artifacts/3-3-projets-selectionnes.md` (frontmatter `baseline_commit`, statut, Dev Agent Record, findings de revue)
 - `docs/implementation-artifacts/sprint-status.yaml` (statut 3-3 → in-progress → review)
 
 ## Change Log
 
 - 2026-06-22 — Implémentation story 3.3 (projets sélectionnés) : bloc projets ajouté dans la section `section--sunken` (sous les stats), 2 `ZCard` rendues en liens externes + `ZTag`, tokens-only. Espacement stats↔projets finalisé. Lint/typecheck/generate verts, vérifié au Chrome DevTools. Statut → review.
+- 2026-06-22 — Corrections de revue de code : finding [Patch] focus (ajout `:focus-visible` sur `ZCard` interactive, corrige toutes les cartes-liens) + [Defer] traité (libellé sr-only « nouvel onglet » sur les cartes projet). Audit `_blank` site-wide laissé à Epic 9. Lint/typecheck/generate verts. Statut → review.

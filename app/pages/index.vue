@@ -118,6 +118,7 @@
             <div class="hero__tags">
               <ZTag v-for="tag in project.tags" :key="tag">{{ tag }}</ZTag>
             </div>
+            <span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span>
           </ZCard>
         </div>
       </div>
