@@ -88,7 +88,7 @@
       </div>
     </section>
 
-    <!-- Stats — section en creux partagée avec les projets (story 3.3) -->
+    <!-- Stats + projets sélectionnés — section en creux partagée (stories 3.2 / 3.3) -->
     <section class="section section--sunken">
       <div class="container">
         <div class="statrow">
@@ -96,6 +96,29 @@
             <b>{{ stat.value }}</b>
             <span>{{ stat.label }}</span>
           </div>
+        </div>
+
+        <p class="eyebrow">// projets sélectionnés</p>
+        <div class="grid-2 projects">
+          <ZCard
+            v-for="project in projects"
+            :key="project.id"
+            class="project"
+            interactive
+            as="a"
+            :href="project.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div class="project__head">
+              <h3 class="project__name">{{ project.name }}</h3>
+              <span class="project__role">{{ project.role }}</span>
+            </div>
+            <p class="prose project__desc">{{ project.desc }}</p>
+            <div class="hero__tags">
+              <ZTag v-for="tag in project.tags" :key="tag">{{ tag }}</ZTag>
+            </div>
+          </ZCard>
         </div>
       </div>
     </section>
@@ -105,7 +128,7 @@
 <script setup lang="ts">
 // Page d'accueil — hero Terminal (A) + aperçu services + stats. Porté de Home.jsx
 // (HeroTerminal / ServicesPreview / StatsProjects) du UI kit : recréation Vue 3 +
-// tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2)
+// tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2, 3.3)
 import { NuxtLink } from "#components";
 import { useTerminal } from "~/composables/useTerminal";
 
@@ -145,6 +168,27 @@ const stats = [
   { id: "stat-1", value: "8+", label: "ans dans la tech" },
   { id: "stat-2", value: "3", label: "stacks maîtrisés" },
   { id: "stat-3", value: "1", label: "SaaS fondé · keova.app" },
+];
+
+// Projets sélectionnés (data.js `projects`) — cartes rendues en liens externes.
+// Texte exact (séparateur ·), URL externes (pas de routes internes), pas d'emoji.
+const projects = [
+  {
+    id: "keova",
+    name: "keova.app",
+    role: "Fondateur · SaaS",
+    desc: "Plateforme SaaS que je conçois et opère de bout en bout.",
+    tags: ["nest.js", "nuxt", "saas"],
+    url: "https://keova.app",
+  },
+  {
+    id: "patio",
+    name: "patio-conseil.fr",
+    role: "Client",
+    desc: "Site et outils pour un cabinet de conseil.",
+    tags: ["wordpress", "conseil"],
+    url: "https://patio-conseil.fr",
+  },
 ];
 
 // Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
@@ -506,6 +550,9 @@ const { open: openTerminal } = useTerminal();
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-12);
+
+  // Espace avant le bloc projets (story 3.3), réf. Home.jsx (statrow marginBottom).
+  margin-bottom: var(--space-12);
 }
 
 .stat {
@@ -524,6 +571,56 @@ const { open: openTerminal } = useTerminal();
   }
 }
 
+// ---- Projets sélectionnés (porté de StatsProjects / .grid-2 / .prose) ----
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.projects {
+  margin-top: var(--space-5);
+}
+
+// Carte rendue en lien (`as="a"`) : neutralise le soulignement par défaut du
+// <a> (le contenu porte ses propres couleurs/typo). ZCard reste générique.
+.project {
+  text-decoration: none;
+}
+
+.project__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.project__name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+.project__role {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.prose {
+  font-family: var(--font-sans);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+.project__desc {
+  margin: var(--space-3) 0 var(--space-4);
+  font-size: var(--fs-sm);
+}
+
 // ---- Responsive (cf. kit.css @media max-width: 900px) ----
 @media (width <= 900px) {
   .hero__grid {
@@ -534,7 +631,8 @@ const { open: openTerminal } = useTerminal();
     font-size: var(--fs-4xl);
   }
 
-  .grid-3 {
+  .grid-3,
+  .grid-2 {
     grid-template-columns: 1fr;
   }
 }

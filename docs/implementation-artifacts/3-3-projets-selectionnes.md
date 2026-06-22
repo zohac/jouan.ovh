@@ -1,6 +1,10 @@
+---
+baseline_commit: 132093dd654b7a97ce39ad867db95a95fd2e2b92
+---
+
 # Story 3.3: Projets sélectionnés
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -16,24 +20,24 @@ so that j'évalue concrètement le travail de Simon avant de le contacter.
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Bloc « projets sélectionnés » sur `/` (AC: #1)
-  - [ ] Ajouter, dans la section `section--sunken` (partagée avec les stats de la story 3.2), sous la rangée de stats : eyebrow `// projets sélectionnés` puis une grille `.grid-2`
-  - [ ] Pour chaque projet de `data.js`, une `ZCard` interactive rendue comme lien externe (`as="a"` / `href` + `target="_blank"` + `rel="noreferrer"`) — réf. `StatsProjects` dans `Home.jsx`
-- [ ] Tâche 2 — Contenu carte projet depuis `data.js` (AC: #1)
-  - [ ] En-tête de carte : `<h3>` nom du projet (`--fs-xl`) à gauche + `<span>` rôle (Ubuntu Mono, `--fs-xs`, `--text-muted`) à droite, alignés baseline (réf. `Home.jsx`)
-  - [ ] Description `.prose` (`--fs-sm`, Ubuntu sans)
-  - [ ] Rangée de tags `ZTag` (`.hero__tags`) à partir de `p.tags`
-  - [ ] Projet 1 — `keova.app`, rôle « Fondateur · SaaS », desc « Plateforme SaaS que je conçois et opère de bout en bout. », tags `nest.js`/`nuxt`/`saas`, url `https://keova.app`
-  - [ ] Projet 2 — `patio-conseil.fr`, rôle « Client », desc « Site et outils pour un cabinet de conseil. », tags `wordpress`/`conseil`, url `https://patio-conseil.fr`
-- [ ] Tâche 3 — Styles & responsive (AC: #1)
-  - [ ] Porter les classes `.grid-2`, l'en-tête flex (space-between, baseline), `.prose`, `.hero__tags` depuis `kit.css` en consommant les tokens (aucune valeur hardcodée)
-  - [ ] Mobile (`max-width: 720px`) : `.grid-2` passe en une colonne (réf. `kit.css`)
-- [ ] Tâche 4 — Liens externes & sécurité (AC: #1)
-  - [ ] Les cartes-liens ouvrent l'URL externe dans un nouvel onglet avec `rel="noreferrer"` (réf. `Home.jsx`)
-  - [ ] Vérifier le contraste et l'état focus/hover de la carte interactive (le DS définit l'état interactif de `ZCard`)
-- [ ] Tâche 5 — Vérification prerender & qualité (AC: #1)
-  - [ ] Rendu statique de la liste de projets (pas d'accès DOM) — prerender-safe
-  - [ ] `yarn dev` charge `/` sans erreur ; `yarn lint` ne régresse pas
+- [x] Tâche 1 — Bloc « projets sélectionnés » sur `/` (AC: #1)
+  - [x] Ajouter, dans la section `section--sunken` (partagée avec les stats de la story 3.2), sous la rangée de stats : eyebrow `// projets sélectionnés` puis une grille `.grid-2`
+  - [x] Pour chaque projet de `data.js`, une `ZCard` interactive rendue comme lien externe (`as="a"` / `href` + `target="_blank"` + `rel="noreferrer"`) — réf. `StatsProjects` dans `Home.jsx`
+- [x] Tâche 2 — Contenu carte projet depuis `data.js` (AC: #1)
+  - [x] En-tête de carte : `<h3>` nom du projet (`--fs-xl`) à gauche + `<span>` rôle (Ubuntu Mono, `--fs-xs`, `--text-muted`) à droite, alignés baseline (réf. `Home.jsx`)
+  - [x] Description `.prose` (`--fs-sm`, Ubuntu sans)
+  - [x] Rangée de tags `ZTag` (`.hero__tags`) à partir de `p.tags`
+  - [x] Projet 1 — `keova.app`, rôle « Fondateur · SaaS », desc « Plateforme SaaS que je conçois et opère de bout en bout. », tags `nest.js`/`nuxt`/`saas`, url `https://keova.app`
+  - [x] Projet 2 — `patio-conseil.fr`, rôle « Client », desc « Site et outils pour un cabinet de conseil. », tags `wordpress`/`conseil`, url `https://patio-conseil.fr`
+- [x] Tâche 3 — Styles & responsive (AC: #1)
+  - [x] Porter les classes `.grid-2`, l'en-tête flex (space-between, baseline), `.prose`, `.hero__tags` depuis `kit.css` en consommant les tokens (aucune valeur hardcodée)
+  - [x] Mobile (`max-width: 720px`) : `.grid-2` passe en une colonne (réf. `kit.css`)
+- [x] Tâche 4 — Liens externes & sécurité (AC: #1)
+  - [x] Les cartes-liens ouvrent l'URL externe dans un nouvel onglet avec `rel="noreferrer"` (réf. `Home.jsx`)
+  - [x] Vérifier le contraste et l'état focus/hover de la carte interactive (le DS définit l'état interactif de `ZCard`)
+- [x] Tâche 5 — Vérification prerender & qualité (AC: #1)
+  - [x] Rendu statique de la liste de projets (pas d'accès DOM) — prerender-safe
+  - [x] `yarn dev` charge `/` sans erreur ; `yarn lint` ne régresse pas
 
 ## Dev Notes
 
@@ -108,8 +112,43 @@ so that j'évalue concrètement le travail de Simon avant de le contacter.
 
 ### Agent Model Used
 
+Claude Opus 4.8 (1M context) — `claude-opus-4-8[1m]`
+
 ### Debug Log References
+
+- `pnpm lint` / `typecheck` / `generate` : verts (Docker, 24 routes prérendues).
+- Finding stylelint corrigé : ligne vide avant commentaire `//` dans `.statrow`.
+- Vérification visuelle **Chrome DevTools MCP** : grille `.grid-2` (2 colonnes), cartes rendues en `<a>` externes (`href`, `target="_blank"`, `rel="noopener noreferrer"`), `statrow margin-bottom: 48px`, noms/rôles/tags exacts, `text-decoration: none` confirmé.
 
 ### Completion Notes List
 
+**Implémenté (port de la partie projets de `StatsProjects`, Home.jsx → `pages/index.vue`) :**
+
+- Bloc « projets sélectionnés » ajouté **dans la section `section--sunken` existante** (story 3.2), sous la rangée de stats — pas de section dupliquée. Eyebrow `// projets sélectionnés` + grille `.grid-2`.
+- Chaque projet = `ZCard` (Epic 2) **interactive rendue en lien externe** (`as="a"` → `<a>` natif, `:href`, `target="_blank"`, `rel="noopener noreferrer"`). En-tête flex baseline (`<h3>` nom `--fs-xl` à gauche / `<span>` rôle `--fs-xs` `--text-muted` à droite), description `.prose` (`--fs-sm`, Ubuntu sans), rangée de `ZTag` (`.hero__tags`).
+- Données portées dans le `<script setup>` (`projects`), texte exact de `data.js` (séparateur `·`), URL externes (keova.app, patio-conseil.fr). Rendu statique `v-for` → prerender-safe.
+- Espacement stats↔projets traité côté 3.3 : `.statrow { margin-bottom: var(--space-12) }` + `.projects { margin-top: var(--space-5) }` (réf. `StatsProjects`), comme convenu en 3.2.
+
+**Correctifs de fidélité (appliqués à l'écriture, pré-revue) :**
+
+- `text-decoration: none` sur `.project` : la carte rendue en `<a>` soulignait tout son contenu par défaut — neutralisé (scopé à la page, `ZCard` reste générique). Une réinitialisation `ZCard`-as-link au niveau de la primitive serait une amélioration DS (hors périmètre 3.3).
+- `rel="noopener noreferrer"` (la fiche cite `noreferrer` seul, suffisant ; j'ajoute `noopener` par cohérence avec `HexagonLinkComponent` et sécurité).
+
+**a11y / clés :**
+
+- Clés `v-for` sur `id` stable (`keova`/`patio`) — cohérent avec le reste du fichier (terminalRows, services, stats).
+- Lien de carte : nom d'accessibilité riche et **distinct** par carte (nom + rôle + desc + tags), donc objet de lien clair (WCAG 2.4.4). `target="_blank"` + `rel` posés.
+
+**Écart signalé :**
+
+- Breakpoint mobile : la fiche cite `max-width: 720px` ; `kit.css` (source de vérité) utilise `@media (max-width: 900px)` pour `.grid-2` → 1 colonne. J'ai suivi `kit.css` (900px), cohérent avec 3.1/3.2.
+
 ### File List
+
+- `app/pages/index.vue` (bloc projets dans `section--sunken` ; données `projects` ; styles `.grid-2`/`.projects`/`.project*`/`.prose` ; `statrow margin-bottom` ; `.grid-2` responsive)
+- `docs/implementation-artifacts/3-3-projets-selectionnes.md` (frontmatter `baseline_commit`, statut, Dev Agent Record)
+- `docs/implementation-artifacts/sprint-status.yaml` (statut 3-3 → in-progress → review)
+
+## Change Log
+
+- 2026-06-22 — Implémentation story 3.3 (projets sélectionnés) : bloc projets ajouté dans la section `section--sunken` (sous les stats), 2 `ZCard` rendues en liens externes + `ZTag`, tokens-only. Espacement stats↔projets finalisé. Lint/typecheck/generate verts, vérifié au Chrome DevTools. Statut → review.
