@@ -1,6 +1,10 @@
+---
+baseline_commit: efc11e972298f62d06b8f1756beee7fde2691348
+---
+
 # Story 2.5: Primitives ZBadge et ZTag
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -18,23 +22,23 @@ so that les libellés et chips sont cohérents (UX-DR4, UX-DR5, FR3).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Créer `components/ui/ZBadge.vue` (AC: #1)
-  - [ ] `<script setup lang="ts">`, `defineProps` d'après `Badge.d.ts` : `tone` (`neutral` défaut), `dot` (`false`).
-  - [ ] Rendu `<span>` ; si `dot`, point de statut en tête (`currentColor`, 6px, rond) ; slot par défaut pour le label.
-  - [ ] Tones : `neutral`, `accent`, `success`, `warning`, `danger`, `info` (fills doux de la palette terminale/sémantique).
-- [ ] Tâche 2 — Style `ZBadge` via tokens (AC: #1)
-  - [ ] Base : `inline-flex; gap var(--space-2); height 22px; padding 0 var(--space-2); font-family var(--font-mono); font-size var(--fs-xs); font-weight var(--fw-medium); letter-spacing var(--ls-wide); border 1px solid transparent; border-radius var(--radius-sm);`
-  - [ ] Mapping tones (bg/texte/bordure) repris de `Badge.jsx` (voir tableau ci-dessous).
-- [ ] Tâche 3 — Créer `components/ui/ZTag.vue` (AC: #1)
-  - [ ] `<script setup lang="ts">`, `defineProps` d'après `Tag.d.ts` : `hash` (`true`), plus support `onRemove`/clic (en Vue : émettre `remove` et rendre cliquable si un listener `click` est présent).
-  - [ ] Préfixe `#` orange via `::before` (désactivé si `hash=false` → classe `--plain`).
-  - [ ] Bouton `×` de suppression optionnel (émet `remove`, `aria-label="Retirer"`, hover `--term-red`).
-- [ ] Tâche 4 — Style `ZTag` via tokens (AC: #1)
-  - [ ] Base : `inline-flex; gap var(--space-2); height 26px; padding 0 var(--space-3); font-family var(--font-mono); font-size var(--fs-xs); font-weight var(--fw-regular); color var(--text-body); background var(--surface-2); border 1px solid var(--border-subtle); border-radius var(--radius-pill);`
-  - [ ] `::before { content:"#"; color: var(--accent); }` ; clic → hover `border-color var(--border-strong)` + `color var(--text-strong)`.
-- [ ] Tâche 5 — Vérification (AC: #1)
-  - [ ] `yarn dev` : poser des `ZBadge` (tous tones, avec/sans dot) et `ZTag` (avec/sans `#`, removable) de test ; comparer aux cartes de référence.
-  - [ ] `yarn lint` (eslint + stylelint) vert ; `yarn generate` reste vert.
+- [x] Tâche 1 — Créer `components/ui/ZBadge.vue` (AC: #1)
+  - [x] `<script setup lang="ts">`, `defineProps` (`withDefaults`) d'après `Badge.d.ts` : `tone` (`neutral` défaut), `dot` (`false`).
+  - [x] Rendu `<span>` ; si `dot`, point de statut en tête (`currentcolor`, 6px, rond, `aria-hidden`) ; slot par défaut.
+  - [x] Tones : `neutral`, `accent`, `success`, `warning`, `danger`, `info`.
+- [x] Tâche 2 — Style `ZBadge` via tokens (AC: #1)
+  - [x] Base : `inline-flex; gap var(--space-2); height 22px; padding 0 var(--space-2); var(--font-mono); var(--fs-xs); var(--fw-medium); letter-spacing var(--ls-wide); border 1px solid transparent; border-radius var(--radius-sm)`.
+  - [x] Mapping tones (bg/texte/bordure) repris de `Badge.jsx` (bordures = teintes DS sans token équivalent, portées telles quelles + commentées, notation normalisée).
+- [x] Tâche 3 — Créer `components/ui/ZTag.vue` (AC: #1)
+  - [x] `<script setup lang="ts">`, `defineProps` d'après `Tag.d.ts` : `hash` (`true`). `inheritAttrs: false` ; `onRemove`/`onClick` détectés via les attrs (fidèle à l'API React : `×` et état cliquable n'apparaissent que si un listener est fourni).
+  - [x] Préfixe `#` orange via `::before` (désactivé si `hash=false` → classe `--plain`).
+  - [x] Bouton `×` optionnel (`type="button"`, `aria-label="Retirer"`, `@click.stop`, hover `--term-red`, focus ring a11y) ; invoque le handler `onRemove` fourni.
+- [x] Tâche 4 — Style `ZTag` via tokens (AC: #1)
+  - [x] Base : `inline-flex; gap var(--space-2); height 26px; padding 0 var(--space-3); var(--font-mono); var(--fs-xs); var(--fw-regular); color var(--text-body); background var(--surface-2); border 1px solid var(--border-subtle); border-radius var(--radius-pill)`.
+  - [x] `::before { content:"#"; color: var(--accent); }` ; clic → hover `border-color var(--border-strong)` + `color var(--text-strong)`. `prefers-reduced-motion` neutralise la transition.
+- [x] Tâche 5 — Vérification (AC: #1)
+  - [x] Rendu prouvé par build (page de smoke-test temporaire, supprimée après) : `<span class="zbadge zbadge--{tone}">` pour les 6 tones, `zbadge__dot` pour `dot` ; `<span class="ztag">`, `ztag--plain` (`hash=false`), `ztag--clickable` (`@click`), bouton `ztag__remove` (`@remove`). CSS scoped émis : 6 tones, `border-radius:var(--radius-pill)`, `--plain`/`--clickable`.
+  - [x] `pnpm lint` **exit 0** ; `pnpm typecheck` **exit 0** ; `pnpm generate` **exit 0** (24 routes).
 
 ## Dev Notes
 
@@ -104,8 +108,31 @@ Le point de statut : `width/height 6px; border-radius var(--radius-circle); back
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Amelia / BMad dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` → exit 0 ; `pnpm typecheck` → exit 0 ; `pnpm generate` → exit 0 (24 routes). 2 erreurs Prettier transitoires (compactage attributs ZTag) corrigées via `eslint --fix`.
+- Preuves sortie (page smoke temporaire) : `<span class="zbadge zbadge--neutral|accent|success|warning|danger|info">`, `zbadge__dot` (tones avec `dot`) ; `<span class="ztag">`, `ztag--plain`, `ztag--clickable`, bouton `ztag__remove`. CSS : 6 `.zbadge--*`, `.ztag{…border-radius:var(--radius-pill)…}`, `.ztag--plain`/`.ztag--clickable`.
 
 ### Completion Notes List
 
+- **`components/ui/ZBadge.vue` créé** : `<span>`, props `tone` (6 valeurs)/`dot`, point de statut `currentcolor` (`aria-hidden`). CSS porté de `Badge.jsx` 100 % tokens, `--radius-sm`. Auto-import `<ZBadge>`.
+- **`components/ui/ZTag.vue` créé** : `<span>` pill (`--radius-pill`), préfixe `#` via `::before` (classe `--plain` si `hash=false`), bouton `×` optionnel.
+  - **API React → Vue** : `onRemove`/`onClick` (callbacks React) → détection de listener via `useAttrs()` (`inheritAttrs: false`). Le `×` et l'état `--clickable` n'apparaissent que si un handler est fourni — fidèle à la sémantique de référence. `@click.stop` sur le `×` préserve le `stopPropagation` de la réf. (pas de déclenchement du clic du tag).
+  - **a11y** : `×` = `<button type="button" aria-label="Retirer">` + `:focus-visible` ring (`--ring-accent`).
+- **Bordures de tones (`ZBadge`)** : teintes DS dédiées (`hsl(143 50% 32% / 0.5)`, etc.) sans token équivalent → portées telles quelles de `Badge.jsx` (explicitement toléré par la story), notation normalisée (`deg`/`%`) pour Stylelint, commentées.
+- **Conventions revues 2.3/2.4 appliquées** : `/* stylelint-disable selector-class-pattern */` inline (BEM `zbadge__dot`/`ztag--plain`…), `prefers-reduced-motion` neutralise la transition de `ZTag`. Aucun changement Stylelint global.
+- **Prerender-safe** : pas de portage de `ensureStyles()`/`document` ; CSS en `<style scoped>`.
+- Vérif par page de smoke-test temporaire (`app/pages/__zbadgetag_smoke.vue`) générée puis **supprimée** (zéro résidu).
+
 ### File List
+
+- `app/components/ui/ZBadge.vue` (CRÉÉ) — primitive badge DS (6 tones, dot).
+- `app/components/ui/ZTag.vue` (CRÉÉ) — primitive tag pill DS (hash, clickable, removable).
+
+## Change Log
+
+| Date | Version | Description | Auteur |
+|------|---------|-------------|--------|
+| 2026-06-22 | 0.1 | Primitives `ZBadge.vue` (6 tones + dot) et `ZTag.vue` (pill, `#`, clickable/removable, détection de listener) 100 % tokens. Lint/typecheck/generate verts, rendu prouvé. Status → review. | Amelia (dev-story) |
