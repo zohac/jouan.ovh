@@ -33,7 +33,6 @@
     "stylelint-config-standard-scss": "^17.0.0",
     "stylelint-scss": "^7.2.0",
     "typescript": "^6.0.3",
-    "vue-property-decorator": "^9.1.2",
     "vue-tsc": "^3.3.5"
   },
   "dependencies": {

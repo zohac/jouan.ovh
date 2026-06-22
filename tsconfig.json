@@ -1,8 +1,4 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
-  "extends": "./.nuxt/tsconfig.json",
-  "compilerOptions": {
-    // Conservé tant que du code legacy en décorateurs pourrait réapparaître.
-    "experimentalDecorators": true
-  }
+  "extends": "./.nuxt/tsconfig.json"
 }
