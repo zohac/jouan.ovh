@@ -1,10 +1,9 @@
 ---
-project_name: 'jouan.ovh'
-user_name: 'Simon'
-date: '2026-06-22'
-sections_completed:
-  ['technology_stack', 'language_framework', 'code_quality', 'workflow_testing', 'critical_rules']
-status: 'complete'
+project_name: "jouan.ovh"
+user_name: "Simon"
+date: "2026-06-22"
+sections_completed: ["technology_stack", "language_framework", "code_quality", "workflow_testing", "critical_rules"]
+status: "complete"
 optimized_for_llm: true
 existing_patterns_found: 12
 ---
@@ -36,6 +35,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 ### Règles Langage & Framework (TypeScript · Nuxt · Vue · SCSS)
 
 **TypeScript / Vue**
+
 - Préférer `<script setup lang="ts">` pour tout NOUVEAU composant. Quelques
   composants legacy en Options API (`defineComponent`, sans décorateur) existent
   encore — ne pas les étendre ; les migrer vers `<script setup>` lors d'une refonte.
@@ -44,6 +44,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Imports composants via l'alias `~/` ou `@/` (les deux pointent sur project-root).
 
 **Nuxt**
+
 - Cible de build = site **STATIQUE** (`nuxi generate`) → tout code doit être
   compatible prerender : pas d'accès `window`/`document` hors `onMounted` ou
   garde `import.meta.client`.
@@ -52,7 +53,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - **Primitives DS sous `app/components/ui/` auto-importées SANS préfixe de dossier**
   (`<ZButton>`, pas `<UiZButton>`) via `components: [{ path: "~/components/ui", pathPrefix: false }, "~/components"]`.
   Le reste de `components/` garde le scan par défaut.
-- ⚠️ **Piège `<component :is>` :** un nom de composant passé en *string*
+- ⚠️ **Piège `<component :is>` :** un nom de composant passé en _string_
   (`<component :is="'NuxtLink'">`) **ne résout pas** l'auto-import. Importer la
   référence depuis `#components` (`import { NuxtLink } from "#components"`) et la
   passer comme valeur. (Régression rencontrée en story 2.8.)
@@ -61,6 +62,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Blog alimenté par `@nuxt/content` v3 (markdown) — route `blog/[...slug].vue`.
 
 **SCSS (règle critique)**
+
 - Système `@use ... as _alias` UNIQUEMENT — jamais `@import` (déprécié).
 - **Nouveau code (DS) : consommer directement les tokens CSS globaux via `var(--token)`**
   (ex. `background: var(--bg-card); border-radius: var(--radius-md);`). Les tokens
@@ -79,11 +81,13 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 ### Qualité de code & conventions
 
 **Lint / format**
+
 - ESLint + Prettier : double quotes, points-virgules, `max-len: 120`.
   `prefer-const` en erreur. Stylelint + `stylelint-scss` pour le SCSS.
 - `no-console` / `no-debugger` : warning en production uniquement.
 
 **Conventions de nommage**
+
 - **Primitives du design system : préfixe `Z`, sous `app/components/ui/`**
   (`ZButton`, `ZCard`, `ZBadge`, `ZTag`, `ZInput`, `ZAvatar`, `ZIcon`) — `<script setup>`,
   auto-importées sans préfixe de dossier.
@@ -98,23 +102,27 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   (ex. `@use "...color" as _color`).
 
 **Organisation**
+
 - SCSS structuré en `abstract/` (tokens, mixins, fonctions), `base/` (reset),
   `components/`, `pages/`. Point d'entrée global `assets/scss/main.scss`.
 - Copier les SVG/PNG du design system depuis `docs/design_system/assets/` vers
   `public/images/` ou `assets/` lors de l'implémentation.
 
 **Langue**
+
 - UI et contenu en FRANÇAIS (`lang="fr"`). Voix : 1re personne « je »,
   vouvoiement. Pas d'emoji (cf. guidelines du design system).
 
 ### Workflow de développement
 
 **Git**
+
 - Branche principale : `main`. Intégration : `develop`. Travail par branches de
   feature (ex. refonte en cours : `feat/design-system-revamp`).
 - Commits conventionnels : `feat:`, `fix:`, `style:`, etc. (cf. historique).
 
 **Environnement de dev : Docker (obligatoire)**
+
 - ⚠️ **Tout le dev passe par Docker** (`docker-compose.yml`, Node 22 LTS + pnpm
   via corepack). Ne PAS lancer `pnpm`/`nuxi` directement sur l'hôte (macOS arm64) :
   les `node_modules` natifs (better-sqlite3, sharp, esbuild…) sont compilés pour
@@ -125,6 +133,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Stopper : `docker compose down`.
 
 **Build & déploiement**
+
 - Gestionnaire de paquets : **pnpm** (`packageManager: pnpm@11.8.0`, lockfile
   `pnpm-lock.yaml`). **Ne JAMAIS utiliser `npm`/`yarn`.**
 - ⚠️ **Toutes les commandes `pnpm` ci-dessous passent par Docker** (cf. section
@@ -138,6 +147,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   déploiement gh-pages (régression déjà survenue, cf. commit `cf1829e`).
 
 ### Tests
+
 - ❌ Aucun framework de test configuré à ce jour (pas de Vitest/Jest/Playwright).
 - Validation actuelle = lint (`eslint`, `stylelint`) + `pnpm typecheck` (vue-tsc) +
   build `pnpm generate`, le tout via Docker et sans erreur. Barre de qualité minimale.
@@ -146,6 +156,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 ### Règles critiques à ne pas manquer
 
 **Port du design system (React/CSS → Vue/SCSS)**
+
 - Le design system source (`docs/design_system/`) est en **React + CSS custom
   properties**. NE PAS copier les `.jsx` tels quels : recréer chaque primitive en
   composant Vue 3 (`<script setup>`), en réutilisant les tokens.
@@ -156,6 +167,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   Services, About, Blog, Contact, Terminal) — s'y reporter pour le rendu.
 
 **Accessibilité (à intégrer dès l'écriture, pas seulement en revue)**
+
 - Tout élément interactif : **focus visible** (ring `--ring-accent`, jamais
   `outline: none` sans alternative), **navigation clavier** (Enter/Space sur les
   éléments non natifs cliquables, retour de focus après fermeture d'overlay/menu),
@@ -166,6 +178,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   les traiter en amont (checklist pré-revue dans la consigne de story).
 
 **À préserver pendant la refonte**
+
 - La **fonctionnalité terminal** draggable (`components/terminal/`) est un
   easter-egg à conserver — le design system la garde comme feature secondaire.
 - Le **dark-first** : pas de thème clair. Surfaces sombres teintées aubergine,
@@ -174,6 +187,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   terminal.
 
 **Pièges**
+
 - Compatibilité prerender (site statique) : tout accès DOM doit être gardé ;
   IDs déterministes via `useId()` (pas d'aléatoire qui casse l'hydration).
 - Ne pas casser `CNAME` / le déploiement gh-pages.
@@ -189,19 +203,20 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - **Vérif visuelle avant revue (stories de page)** : lancer le dev, ouvrir la page
   dans **Chrome DevTools MCP** ET la référence visuelle correspondante, puis comparer
   le rendu (padding/marges/espacement/fidélité). La revue de code est aveugle aux
-  régressions de rendu. Réfs : Home → `docs/animations_jouan.ovh/Home animée.dc.html` ;
-  autres pages → `docs/design_system/ui_kits/jouan-site/index.html` (+ screenshots).
+  régressions de rendu. Réfs : Home → `docs/design_system/ui_kits/jouan-site/index.html` (+ screenshots).
 
 ---
 
 ## Usage Guidelines
 
 **Pour les agents IA :**
+
 - Lire ce fichier AVANT toute implémentation.
 - Suivre toutes les règles ; en cas de doute, choisir l'option la plus restrictive.
 - Mettre à jour ce fichier si de nouveaux patterns émergent.
 
 **Pour les humains :**
+
 - Garder le fichier court et focalisé sur les besoins des agents.
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
