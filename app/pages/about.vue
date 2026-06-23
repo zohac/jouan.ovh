@@ -9,7 +9,7 @@
         <div class="about__grid">
           <!-- Colonne gauche : portrait, identité, localisation, CTA -->
           <div class="about__identity">
-            <ZAvatar src="/images/portrait.jpeg" :alt="profile.name" size="xl" ring />
+            <ZAvatar src="/images/portrait.jpeg" :alt="profile.name" initials="SJ" size="xl" ring />
             <h1 class="about__name">{{ profile.name }}</h1>
             <p class="about__role">{{ profile.role }}</p>
             <p class="prose about__location">
@@ -18,7 +18,7 @@
             </p>
             <div class="about__cta">
               <ZButton :as="NuxtLink" to="/contact" variant="primary">Me contacter</ZButton>
-              <ZButton as="a" :href="`mailto:${profile.email}`" variant="secondary">CV</ZButton>
+              <ZButton as="a" :href="`mailto:${profile.email}`" variant="secondary">M'écrire</ZButton>
             </div>
           </div>
 
@@ -59,35 +59,40 @@ const profile = {
   email: "simon@jouan.ovh",
 } as const;
 
+// Métadonnées de la page. Voix 1re personne cohérente (cf. contrainte Langue & voix).
+const pageTitle = "À propos — jouan.ovh";
+const pageDescription =
+  "Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours.";
+// Domaine de production (cf. public/CNAME : dev.jouan.ovh).
+const pageUrl = "https://dev.jouan.ovh/about";
+const pageImage = "https://dev.jouan.ovh/images/portrait.jpeg";
+
 useHead({
-  title: "À propos — jouan.ovh",
+  title: pageTitle,
+  link: [{ rel: "canonical", href: pageUrl }],
   meta: [
-    {
-      name: "description",
-      content:
-        "Simon Jouan, développeur web freelance à Valognes : mon parcours, et les technologies que j'utilise — PHP/Symfony, WordPress, Node.js / Nest.js / Nuxt.js.",
-    },
+    { name: "description", content: pageDescription },
+    // Open Graph (partage Facebook/LinkedIn…).
+    { property: "og:type", content: "profile" },
+    { property: "og:title", content: pageTitle },
+    { property: "og:description", content: pageDescription },
+    { property: "og:url", content: pageUrl },
+    { property: "og:image", content: pageImage },
+    // Twitter Card.
+    { name: "twitter:card", content: "summary" },
+    { name: "twitter:title", content: pageTitle },
+    { name: "twitter:description", content: pageDescription },
+    { name: "twitter:image", content: pageImage },
   ],
 });
 </script>
 
 <style lang="scss" scoped>
 /* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis kit.css / About.jsx */
+// .section / .container / .eyebrow / .prose sont des primitives de layout
+// globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
 .about {
   display: block;
-}
-
-// ---- Section + container (porté de kit.css : .section, .container) ----
-.section {
-  // padding-block uniquement : le gutter horizontal vient de .container (enfant).
-  padding-block: var(--space-16);
-}
-
-.container {
-  width: 100%;
-  max-width: var(--container-xl);
-  margin: 0 auto;
-  padding-inline: var(--space-6);
 }
 
 // ---- Grille du hero (porté de About.jsx : grid-2 + gridTemplateColumns "0.8fr 1.2fr") ----
@@ -129,22 +134,7 @@ useHead({
   margin-top: var(--space-5);
 }
 
-// ---- Colonne droite : eyebrow + bio ----
-.eyebrow {
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--ls-wider);
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.prose {
-  font-family: var(--font-sans);
-  line-height: var(--lh-relaxed);
-  color: var(--text-body);
-}
-
+// ---- Colonne droite : bio ----
 .about__para {
   margin: 0 0 var(--space-4);
   font-size: var(--fs-md);
@@ -168,8 +158,12 @@ useHead({
       text-decoration: underline;
     }
 
+    // Anneau de focus accent + outline transparent : ce dernier reste invisible
+    // en rendu normal mais devient une couleur système en `forced-colors`
+    // (High Contrast), où le box-shadow est neutralisé. A11y : focus toujours visible.
     &:focus-visible {
-      outline: none;
+      outline: 2px solid transparent;
+      outline-offset: 2px;
       border-radius: var(--radius-xs);
       box-shadow: var(--ring-accent);
     }

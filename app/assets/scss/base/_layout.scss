@@ -1,0 +1,50 @@
+// ============================================================
+//  Primitives de layout du design system — GLOBALES
+//
+//  .section / .section--sunken / .container / .eyebrow / .prose
+//  Portées de docs/design_system/ui_kits/jouan-site/kit.css.
+//  Mutualisées ici (chargées par main.scss) plutôt que redéclarées
+//  à l'identique en <style scoped> dans chaque page (index, services,
+//  about, …). Tokens uniquement — aucune valeur en dur (CAP-2).
+// ============================================================
+
+/* stylelint-disable selector-class-pattern -- convention DS BEM (.section--sunken) portée depuis kit.css */
+
+// Bloc de section vertical. padding-block uniquement : le gutter
+// horizontal vient de .container (enfant) — évite le conflit de
+// shorthand padding multi-axes (cf. project-context, piège story 3.1).
+.section {
+  padding-block: var(--space-16);
+}
+
+// Section en creux : fond teinté + filets haut/bas.
+.section--sunken {
+  background: var(--bg-sunken);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+// Conteneur centré à largeur max ; gutter horizontal en longhand.
+.container {
+  width: 100%;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding-inline: var(--space-6);
+}
+
+// Sur-titre mono en capitales espacées, accent orange.
+.eyebrow {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+// Texte long-forme : Ubuntu sans, interligne détendu.
+.prose {
+  font-family: var(--font-sans);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}

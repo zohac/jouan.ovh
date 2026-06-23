@@ -2,6 +2,7 @@
 @use "abstract/root"; // tokens DS globaux (:root CSS custom properties) — source de vérité
 @use "abstract/fonts";
 @use "abstract/typography";
+@use "base/layout"; // primitives de layout DS (.section / .container / .eyebrow / .prose) mutualisées
 
 .fixed-height {
   width: auto;

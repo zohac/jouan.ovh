@@ -150,36 +150,10 @@ useHead({
   display: block;
 }
 
-// ---- Section + container (porté de kit.css : .section, .container) ----
-.section {
-  // padding-block uniquement : le gutter horizontal vient de .container (enfant).
-  padding-block: var(--space-16);
-}
-
-// Section en creux (porté de kit.css : .section--sunken) — fond + filets haut/bas.
-.section--sunken {
-  background: var(--bg-sunken);
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.container {
-  width: 100%;
-  max-width: var(--container-xl);
-  margin: 0 auto;
-  padding-inline: var(--space-6);
-}
+// .section / .section--sunken / .container / .eyebrow / .prose : primitives de
+// layout globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
 
 // ---- En-tête (porté de Services.jsx L13-21) ----
-.eyebrow {
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--ls-wider);
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
 .services__title {
   max-width: 16ch;
   margin-bottom: var(--space-3);
@@ -188,12 +162,6 @@ useHead({
   font-weight: var(--fw-light);
   line-height: var(--lh-tight);
   color: var(--text-strong);
-}
-
-.prose {
-  font-family: var(--font-sans);
-  line-height: var(--lh-relaxed);
-  color: var(--text-body);
 }
 
 .services__intro {

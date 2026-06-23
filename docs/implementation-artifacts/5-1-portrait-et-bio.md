@@ -4,7 +4,7 @@ baseline_commit: f42ef6d300a45d0155618814c6a976eebb0f20bd
 
 # Story 5.1: Portrait et bio
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -144,9 +144,13 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 
 ### File List
 
-- `app/pages/about.vue` (MODIFIÉ — refonte complète Options API legacy → `<script setup lang="ts">`)
+- `app/pages/about.vue` (MODIFIÉ — refonte complète Options API legacy → `<script setup lang="ts">` ; correctifs de revue : « M'écrire », `initials`, meta 1ʳᵉ pers., OG/Twitter/canonical, focus-ring `forced-colors`, primitives de layout retirées)
 - `public/images/portrait.jpeg` (CRÉÉ — copie de `docs/design_system/assets/brand/portrait.jpeg`)
-- `docs/implementation-artifacts/5-1-portrait-et-bio.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches cochées, Dev Agent Record, statut)
+- `app/assets/scss/base/_layout.scss` (CRÉÉ — primitives de layout DS globales `.section`/`.section--sunken`/`.container`/`.eyebrow`/`.prose`)
+- `app/assets/scss/main.scss` (MODIFIÉ — `@use "base/layout"`)
+- `app/pages/index.vue` (MODIFIÉ — primitives de layout dupliquées retirées au profit du partiel global)
+- `app/pages/services.vue` (MODIFIÉ — idem)
+- `docs/implementation-artifacts/5-1-portrait-et-bio.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches cochées, Dev Agent Record, findings de revue, statut)
 - `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
 
 ## Change Log
@@ -154,3 +158,15 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | Date       | Version | Description                                                                 |
 | ---------- | ------- | --------------------------------------------------------------------------- |
 | 2026-06-23 | 0.1     | Implémentation story 5.1 — refonte `/about` (hero portrait + bio) sur le DS |
+| 2026-06-23 | 0.2     | Correctifs de revue — 6 findings résolus (3 patchs + 3 deferred traités, zéro dette) : « M'écrire », `initials`, meta 1ʳᵉ pers., OG/Twitter/canonical, focus-ring `forced-colors`, extraction des primitives de layout dans un partiel global |
+
+## Review Findings
+
+_Code review (bmad-code-review) — 2026-06-23. Couches : Blind Hunter (diff seul) · Edge Case Hunter (diff + projet) · Acceptance Auditor (diff + SPEC/ticket). Verdict Auditor : aucune violation d'AC ni de contrainte dure — port très fidèle à `About.jsx`._
+
+- [x] [Review][Patch] Relibeller le bouton « CV » → « M'écrire » (conserver le `mailto:`) — décision Simon : relibeller pour lever l'ambiguïté UX, pas de CV PDF (était `decision-needed`). [app/pages/about.vue:21] — ✅ résolu : libellé « M'écrire », `mailto:` conservé.
+- [x] [Review][Patch] Réécrire la meta description en 1ʳᵉ personne cohérente (corriger la voix mixte 3ᵉ/1ʳᵉ), description conservée — décision Simon : harmoniser la voix (était `decision-needed`). [app/pages/about.vue:62-71] — ✅ résolu : description 100 % 1ʳᵉ personne (« je conçois… voici mon parcours »).
+- [x] [Review][Patch] `ZAvatar` sans prop `initials` → le repli affiche « ? » si le portrait échoue au chargement ; ajouter `initials="SJ"` pour un fallback gracieux (l'image existe et est prérendue, donc défensif/faible) [app/pages/about.vue:12] — ✅ résolu : `initials="SJ"`.
+- [x] [Review][Defer→Fixed] Primitives de layout `.section`/`.container`/`.prose`/`.eyebrow` redéclarées en `<style scoped>` dans chaque page (`index.vue`, `services.vue`, `about.vue`) au lieu d'un partiel partagé. — ✅ résolu (décision Simon : zéro dette) : extraites dans `app/assets/scss/base/_layout.scss` (global, chargé par `main.scss`) ; duplications supprimées des 3 pages. Vérif visuelle desktop des 3 pages : aucune régression.
+- [x] [Review][Defer→Fixed] Anneau de focus du lien bio en `box-shadow: var(--ring-accent)` + `outline: none`, sans repli → disparaît en `forced-colors` (High Contrast). — ✅ résolu localement : `outline: 2px solid transparent` + `outline-offset` (rendu en couleur système en `forced-colors`). NB : le pattern DS-wide identique (ZButton/ZInput) reste tracé pour l'Epic 9 — hors diff 5.1.
+- [x] [Review][Defer→Fixed] Aucune balise Open Graph / Twitter / canonical pour le partage social. — ✅ résolu (décision Simon : zéro dette) : `og:*`, `twitter:*` et `canonical` ajoutés au `useHead` d'`about.vue` (domaine `dev.jouan.ovh` cf. CNAME) ; vérifiés dans le HTML prérendu, `description` dédoublonnée par unhead.

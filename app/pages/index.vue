@@ -260,23 +260,10 @@ const { open: openTerminal } = useTerminal();
   align-items: center;
 }
 
-.container {
-  width: 100%;
-  max-width: var(--container-xl);
-  margin: 0 auto;
-  padding-inline: var(--space-6);
-}
+// .section / .container / .eyebrow / .prose : primitives de layout globales
+// (app/assets/scss/base/_layout.scss) — non redéclarées ici.
 
 // ---- Colonne texte ----
-.eyebrow {
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--ls-wider);
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
 .hero__title {
   font-family: var(--font-mono);
   font-size: var(--fs-6xl);
@@ -470,18 +457,6 @@ const { open: openTerminal } = useTerminal();
   animation: caret-blink 1s steps(1) infinite;
 }
 
-// ---- Sections (porté de kit.css : .section, .section--sunken) ----
-.section {
-  // padding-block uniquement : le gutter horizontal vient de .container (enfant).
-  padding-block: var(--space-16);
-}
-
-.section--sunken {
-  background: var(--bg-sunken);
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
 .section__title {
   margin-bottom: var(--space-8);
   font-family: var(--font-mono);
@@ -609,12 +584,6 @@ const { open: openTerminal } = useTerminal();
   font-size: var(--fs-xs);
   color: var(--text-muted);
   white-space: nowrap;
-}
-
-.prose {
-  font-family: var(--font-sans);
-  line-height: var(--lh-relaxed);
-  color: var(--text-body);
 }
 
 .project__desc {
