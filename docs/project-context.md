@@ -71,6 +71,12 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - **Aucune valeur en dur** (couleur/espace/rayon/durée) dans le nouveau code — tout
   passe par un token. Si aucun token n'existe pour un besoin légitime (ex. teintes de
   palette syntaxe), commenter explicitement la dérogation.
+- **Primitives de layout GLOBALES** : `.section` / `.section--sunken` / `.container` /
+  `.eyebrow` (+ `.eyebrow--muted`) / `.prose` / `.hero__tags` vivent dans
+  `app/assets/scss/base/_layout.scss` (chargé par `main.scss`). **Les consommer, ne PAS
+  les redéclarer en `<style scoped>` par page** (sinon duplication divergente). Si un
+  modifieur DS manque, l'ajouter au partiel global, pas en local. (Convention extraite
+  en story 5.1 après duplication scoped dans index/services/about.)
 - Legacy : certains composants déclarent encore des CSS props locales à partir des
   anciens tokens SCSS `$` (ex. `--header-color-background: #{_color.$dark-background};`).
   Ne pas étendre ce pattern ; migrer vers `var(--token)` lors d'une refonte.
@@ -174,6 +180,13 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   attributs `aria-*` pertinents (`aria-current`, `aria-label`, `aria-describedby`…).
 - Respecter `prefers-reduced-motion: reduce` (neutraliser transitions/lifts).
 - Images via `<NuxtImg>` avec `alt` ; fallback visuel si l'image échoue.
+- **Hiérarchie de titres & sémantique de listes (convention story 5.2)** : un libellé
+  de section (eyebrow `// ...`) qui ouvre une section porte un **`<h2 class="eyebrow">`**
+  (style neutralisé : `font-weight`/`line-height` hérités → rendu identique), pas un
+  `<p>` — pour un outline `h1 → h2…` sans saut. Une **séquence** (étapes, expériences,
+  diplômes, tags, cartes répétées) se balise en **`<ol>`/`<ul>` + `<li>`** (`list-style:
+  none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux points
+  **dès la story**, ils étaient sinon systématiquement rattrapés en revue.
 - Leçon rétro Epic 2 : ces points étaient systématiquement rattrapés en revue —
   les traiter en amont (checklist pré-revue dans la consigne de story).
 
@@ -208,8 +221,9 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
     `docs/animations_jouan.ovh/screenshots/` (`hero*.png`, `services.png`, `booted.png`).
   - **Services / About / Blog / Contact** → `docs/design_system/ui_kits/jouan-site/index.html`
     (UI kit cible ; ouvrir la section correspondante).
-  - Routine appliquée sans faille sur Epic 4 (4.1 + 4.2, desktop + mobile) → zéro
-    régression de rendu. À reconduire sur chaque story-page (Epics 5→8).
+  - Routine appliquée sans faille sur Epics 4-5 (desktop + mobile) → zéro régression de
+    rendu ; en 5.2 elle a même corrigé un défaut de la maquette (centrage timeline `kit.css`).
+    À reconduire sur chaque story-page (Epics 6→8).
 
 ---
 
@@ -227,4 +241,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-06-23 (post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue — aucune règle nouvelle, épic propre ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)
+Dernière mise à jour : 2026-06-23 (post-Epic 5 : primitives de layout globales `base/_layout.scss` + convention a11y titres/listes — eyebrow-as-`h2`, séquences en `<ol>`/`<ul>` ; post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)

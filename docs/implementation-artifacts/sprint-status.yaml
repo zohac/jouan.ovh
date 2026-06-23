@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-23 (story 5-2-timeline-formation-et-stack → done : re-revue OK, build + visuel verts)"
+last_updated: "2026-06-23 (rétrospective Epic 5 → done ; Epic 5 clôturé, préparation Epic 6 / pipeline @nuxt/content)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -79,7 +79,7 @@ development_status:
   epic-5: in-progress
   5-1-portrait-et-bio: done
   5-2-timeline-formation-et-stack: done
-  epic-5-retrospective: optional
+  epic-5-retrospective: done
 
   # Epic 6 — Blog
   epic-6: in-progress
