@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-23 (rétrospective Epic 4 → done ; Epic 4 clôturé, préparation Epic 5)"
+last_updated: "2026-06-23 (story 5-1-portrait-et-bio → review)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -77,7 +77,7 @@ development_status:
 
   # Epic 5 — Page À-propos
   epic-5: in-progress
-  5-1-portrait-et-bio: ready-for-dev
+  5-1-portrait-et-bio: review
   5-2-timeline-formation-et-stack: ready-for-dev
   epic-5-retrospective: optional
 

@@ -1,6 +1,10 @@
+---
+baseline_commit: f42ef6d300a45d0155618814c6a976eebb0f20bd
+---
+
 # Story 5.1: Portrait et bio
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -18,24 +22,24 @@ so that je connais la personne derrière le travail (UX-DR14, FR7).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Préparer l'asset portrait (AC)
-  - [ ] Copier `docs/design_system/assets/brand/portrait.jpeg` vers `public/images/portrait.jpeg` (assets statiques servis par `@nuxt/image` → cible `public/images/`, cf. project-context).
-  - [ ] Vérifier que l'image est bien servie en dev (`/images/portrait.jpeg`).
-- [ ] Tâche 2 — Refondre la page `pages/about.vue` (AC)
-  - [ ] Remplacer l'implémentation legacy actuelle (`MainComponent` + `ZCard*` Options API) par un nouveau composant en `<script setup lang="ts">`.
-  - [ ] Construire la section « hero À-propos » en grille 2 colonnes (gauche ≈ `0.8fr` portrait + identité, droite ≈ `1.2fr` bio), conforme à `About.jsx` (`<section class="section">` + `<div class="container">` + `grid-2`).
-  - [ ] Colonne gauche : portrait via `<nuxt-img>` (radius pill / `ZAvatar` une fois disponible — voir Dev Notes), nom (`Simon Jouan`), rôle en mono accent (`Développeur web freelance`), localisation (`Valognes, France`) avec icône pin, et deux CTA (« Me contacter » → `/contact`, « CV » → `mailto:`).
-  - [ ] Colonne droite : eyebrow `// à propos`, bio en `.prose` (deux paragraphes, voir contenu en Dev Notes), avec les emphases `<strong>` sur les technologies.
-- [ ] Tâche 3 — Contenu & voix FR (AC)
-  - [ ] Reprendre la bio depuis `About.jsx` (texte 1re personne « je » déjà rédigé) ; libellés depuis `data.js` (`name`, `role`, `city`, `email`).
-  - [ ] Aucun emoji ; vouvoiement ; lien `keova.app` en `target="_blank" rel="noreferrer"`.
-- [ ] Tâche 4 — Style via tokens (AC)
-  - [ ] Styles en `<style lang="scss" scoped>` consommant les tokens du DS (Epic 2), `@use` jamais `@import`.
-  - [ ] Aucune valeur de couleur/espace/rayon hardcodée (mapper sur `--fs-*`, `--space-*`, `--accent`, `--text-muted`, `--text-strong`, etc.).
-- [ ] Tâche 5 — Vérification
-  - [ ] `yarn dev` : `/about` se charge sans erreur, le portrait s'affiche, la bio est lisible.
-  - [ ] Compatibilité prerender : aucun accès `window`/`document` hors garde ; `yarn lint` ne régresse pas.
-  - [ ] Réserver l'espace pour les sections timeline/formation/stack ajoutées par la story 5.2 (ne pas les implémenter ici).
+- [x] Tâche 1 — Préparer l'asset portrait (AC)
+  - [x] Copier `docs/design_system/assets/brand/portrait.jpeg` vers `public/images/portrait.jpeg` (assets statiques servis par `@nuxt/image` → cible `public/images/`, cf. project-context).
+  - [x] Vérifier que l'image est bien servie en dev (`/images/portrait.jpeg`).
+- [x] Tâche 2 — Refondre la page `pages/about.vue` (AC)
+  - [x] Remplacer l'implémentation legacy actuelle (`MainComponent` + `ZCard*` Options API) par un nouveau composant en `<script setup lang="ts">`.
+  - [x] Construire la section « hero À-propos » en grille 2 colonnes (gauche ≈ `0.8fr` portrait + identité, droite ≈ `1.2fr` bio), conforme à `About.jsx` (`<section class="section">` + `<div class="container">` + `grid-2`).
+  - [x] Colonne gauche : portrait via `<nuxt-img>` (radius pill / `ZAvatar` une fois disponible — voir Dev Notes), nom (`Simon Jouan`), rôle en mono accent (`Développeur web freelance`), localisation (`Valognes, France`) avec icône pin, et deux CTA (« Me contacter » → `/contact`, « CV » → `mailto:`).
+  - [x] Colonne droite : eyebrow `// à propos`, bio en `.prose` (deux paragraphes, voir contenu en Dev Notes), avec les emphases `<strong>` sur les technologies.
+- [x] Tâche 3 — Contenu & voix FR (AC)
+  - [x] Reprendre la bio depuis `About.jsx` (texte 1re personne « je » déjà rédigé) ; libellés depuis `data.js` (`name`, `role`, `city`, `email`).
+  - [x] Aucun emoji ; vouvoiement ; lien `keova.app` en `target="_blank" rel="noreferrer"`.
+- [x] Tâche 4 — Style via tokens (AC)
+  - [x] Styles en `<style lang="scss" scoped>` consommant les tokens du DS (Epic 2), `@use` jamais `@import`.
+  - [x] Aucune valeur de couleur/espace/rayon hardcodée (mapper sur `--fs-*`, `--space-*`, `--accent`, `--text-muted`, `--text-strong`, etc.).
+- [x] Tâche 5 — Vérification
+  - [x] `yarn dev` : `/about` se charge sans erreur, le portrait s'affiche, la bio est lisible.
+  - [x] Compatibilité prerender : aucun accès `window`/`document` hors garde ; `yarn lint` ne régresse pas.
+  - [x] Réserver l'espace pour les sections timeline/formation/stack ajoutées par la story 5.2 (ne pas les implémenter ici).
 
 ## Dev Notes
 
@@ -121,8 +125,32 @@ so that je connais la personne derrière le travail (UX-DR14, FR7).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` (Docker) : 2 erreurs Prettier (retours à la ligne de la bio) → corrigées via `eslint --fix` → re-lint vert (exit 0).
+- `pnpm typecheck` (Docker, `nuxi typecheck`) : exit 0.
+- `pnpm generate` (Docker) : prerender OK — `/about` (24 ms) + `/_ipx/_/images/portrait.jpeg` générés, aucune erreur.
+- Vérif visuelle Chrome DevTools MCP (desktop 1280 + mobile 375) : rendu fidèle à `About.jsx`, console propre (les `504 Outdated Optimize Dep` initiaux étaient des artefacts Vite dev, disparus au reload).
 
 ### Completion Notes List
 
+- Refonte de `app/pages/about.vue` (chemin réel sous `srcDir = app`, pas `pages/` ; la note `srcDir: '.'` des Dev Notes était obsolète post-Epic 1) : suppression de l'implémentation legacy Options API (`MainComponent` + `ZCard*`), remplacée par un composant `<script setup lang="ts">`.
+- Hero À-propos en grille 2 colonnes `0.8fr / 1.2fr` (`align-items: start`), fidèle à `About.jsx`. Colonne gauche : `<ZAvatar size="xl" ring>` (portrait), nom (`--fs-3xl` mono), rôle mono accent, localisation `<ZIcon name="pin">` + ville, deux CTA `<ZButton>` (« Me contacter » → `/contact` via `NuxtLink` ; « CV » → `as="a"` `mailto:`). Colonne droite : eyebrow `// à propos` + bio `.prose` deux paragraphes avec `<strong>` (`--text-strong`) et lien `keova.app` (`target="_blank" rel="noreferrer"`, couleur `--link`, focus-ring accessible).
+- Tokens uniquement, aucune valeur en dur ; `<style scoped>`. Responsive : grille → 1 colonne sous 900px (cf. kit `.grid-2`).
+- Place réservée pour la story 5.2 (commentaire explicite : `<section class="section section--sunken">` timeline/formation/stack sous le hero) — non implémentée ici, conforme au périmètre.
+- Portrait copié vers `public/images/portrait.jpeg` et servi via `<NuxtImg>` (`ZAvatar`), optimisé par `@nuxt/image` (route `/_ipx/...` prerendue).
+
 ### File List
+
+- `app/pages/about.vue` (MODIFIÉ — refonte complète Options API legacy → `<script setup lang="ts">`)
+- `public/images/portrait.jpeg` (CRÉÉ — copie de `docs/design_system/assets/brand/portrait.jpeg`)
+- `docs/implementation-artifacts/5-1-portrait-et-bio.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches cochées, Dev Agent Record, statut)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
+
+## Change Log
+
+| Date       | Version | Description                                                                 |
+| ---------- | ------- | --------------------------------------------------------------------------- |
+| 2026-06-23 | 0.1     | Implémentation story 5.1 — refonte `/about` (hero portrait + bio) sur le DS |
