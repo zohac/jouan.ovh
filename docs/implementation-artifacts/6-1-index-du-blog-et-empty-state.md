@@ -1,6 +1,10 @@
+---
+baseline_commit: 35bcb5c149a546b2d277f40ec05d74d472412dcb
+---
+
 # Story 6.1: Index du blog et empty-state
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,26 +23,26 @@ so that je trouve du contenu à lire (UX-DR15, FR8).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Créer le dossier `content/` et un (ou plusieurs) article(s) markdown (AC: #1, #2)
-  - [ ] Créer le dossier `content/` à la racine du projet (n'existe pas encore)
-  - [ ] Y placer au moins un article markdown de démonstration (`content/blog/<slug>.md`) avec front-matter (`title`, `description`, `date`, `tags`, `image`/`img`, `read`) pour valider le rendu de la liste en cartes
-  - [ ] Vérifier que la collection/source `blog` est bien résolue par `@nuxt/content` (voir Dev Notes pour l'API v2 vs v3 selon ce qui est installé après story 1.2)
-- [ ] Tâche 2 — Refondre l'index `pages/blog/index.vue` selon `Blog.jsx` (AC: #1)
-  - [ ] Reproduire la structure d'en-tête : eyebrow `// ~/blog`, titre « Notes de dev » (`var(--fs-4xl)`, `var(--fw-light)`), sous-titre prose (`var(--text-muted)`, `max-width: 56ch`)
-  - [ ] Lister les articles en `ZCard` interactives cliquables (lien vers `article._path` / `article.path`), layout `.post` (grille `200px 1fr`, thumbnail `.post__thumb` arrondie `--radius-md`)
-  - [ ] Afficher pour chaque article : vignette (via `<nuxt-img>`), tags en `ZTag`, titre `h3`, description, méta mono (date · temps de lecture) — réf. `.post`, `.post__meta` de `kit.css`
-  - [ ] Récupérer les articles via l'API `@nuxt/content` (voir Dev Notes), triés par date décroissante
-- [ ] Tâche 3 — Conserver + restyler l'empty-state existant (AC: #2)
-  - [ ] Conserver le `ZCard` empty-state existant et son texte français (illustration + message « pas encore d'articles » + invitation à revenir)
-  - [ ] Le restyler selon le DS (tokens, dark-first) ; remplacer le contenu hardcodé blanc/`width: 50vw` par les tokens et la primitive `ZCard` refondue (Epic 2)
-  - [ ] L'empty-state s'affiche uniquement quand la requête de contenu ne renvoie aucun article
-- [ ] Tâche 4 — Style SCSS dark-first via tokens (AC: #1, #2)
-  - [ ] Styler en `<style lang="scss" scoped>`, via `@use` (jamais `@import`), en consommant les tokens (couleurs aubergine, espacement, rayons) — aucune valeur en dur
-  - [ ] Retirer les styles legacy de l'ancien index (fonds blancs, `width: 50vw`, etc.)
-- [ ] Tâche 5 — Vérification prerender (AC: #1, #2)
-  - [ ] `yarn dev` : `/blog` se charge, liste les articles présents dans `content/`
-  - [ ] Cas vide : retirer/vider temporairement le dossier `content/blog` → l'empty-state s'affiche
-  - [ ] `yarn generate` : la route `/blog` est bien prerendue (tokens chargés, pas d'accès DOM non gardé)
+- [x] Tâche 1 — Créer le dossier `content/` et un (ou plusieurs) article(s) markdown (AC: #1, #2)
+  - [x] Créer le dossier `content/` à la racine du projet (n'existe pas encore)
+  - [x] Y placer au moins un article markdown de démonstration (`content/blog/<slug>.md`) avec front-matter (`title`, `description`, `date`, `tags`, `image`/`img`, `read`) pour valider le rendu de la liste en cartes
+  - [x] Vérifier que la collection/source `blog` est bien résolue par `@nuxt/content` (voir Dev Notes pour l'API v2 vs v3 selon ce qui est installé après story 1.2)
+- [x] Tâche 2 — Refondre l'index `pages/blog/index.vue` selon `Blog.jsx` (AC: #1)
+  - [x] Reproduire la structure d'en-tête : eyebrow `// ~/blog`, titre « Notes de dev » (`var(--fs-4xl)`, `var(--fw-light)`), sous-titre prose (`var(--text-muted)`, `max-width: 56ch`)
+  - [x] Lister les articles en `ZCard` interactives cliquables (lien vers `article._path` / `article.path`), layout `.post` (grille `200px 1fr`, thumbnail `.post__thumb` arrondie `--radius-md`)
+  - [x] Afficher pour chaque article : vignette (via `<nuxt-img>`), tags en `ZTag`, titre `h3`, description, méta mono (date · temps de lecture) — réf. `.post`, `.post__meta` de `kit.css`
+  - [x] Récupérer les articles via l'API `@nuxt/content` (voir Dev Notes), triés par date décroissante
+- [x] Tâche 3 — Conserver + restyler l'empty-state existant (AC: #2)
+  - [x] Conserver le `ZCard` empty-state existant et son texte français (illustration + message « pas encore d'articles » + invitation à revenir)
+  - [x] Le restyler selon le DS (tokens, dark-first) ; remplacer le contenu hardcodé blanc/`width: 50vw` par les tokens et la primitive `ZCard` refondue (Epic 2)
+  - [x] L'empty-state s'affiche uniquement quand la requête de contenu ne renvoie aucun article
+- [x] Tâche 4 — Style SCSS dark-first via tokens (AC: #1, #2)
+  - [x] Styler en `<style lang="scss" scoped>`, via `@use` (jamais `@import`), en consommant les tokens (couleurs aubergine, espacement, rayons) — aucune valeur en dur
+  - [x] Retirer les styles legacy de l'ancien index (fonds blancs, `width: 50vw`, etc.)
+- [x] Tâche 5 — Vérification prerender (AC: #1, #2)
+  - [x] `yarn dev` : `/blog` se charge, liste les articles présents dans `content/`
+  - [x] Cas vide : retirer/vider temporairement le dossier `content/blog` → l'empty-state s'affiche
+  - [x] `yarn generate` : la route `/blog` est bien prerendue (tokens chargés, pas d'accès DOM non gardé)
 
 ## Dev Notes
 
@@ -110,8 +114,37 @@ so that je trouve du contenu à lire (UX-DR15, FR8).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
+
 ### Debug Log References
+
+- **Sanity-check `@nuxt/content` (préalable Epic 6)** : après création de `content/blog/` + 3 articles et restart du conteneur dev → `[@nuxt/content] ✔ Processed 2 collections and 3 files`. `/blog` liste les 3 titres, `/blog/ia-dans-wordpress` rend le markdown (`<pre>`/`<code>`). Pipeline (better-sqlite3 + rendu) **opérationnel depuis la migration Nuxt 4**.
+- `pnpm lint` (Docker) : PASS. `pnpm typecheck` : PASS.
+- `pnpm generate` (Docker) : PASS — 18 routes prerendues dont `/blog` + les 3 articles (crawler suivant les liens des cartes) + vignettes optimisées `@nuxt/image` (`/_ipx/s_200x130/...`).
+- Vérif visuelle Chrome DevTools MCP : `/blog` peuplé (desktop 1280 + mobile 375, cartes → 1 colonne) ET empty-state (contenu vidé temporairement) ; console propre.
+- ⚠️ **Gotcha Docker observé** : lancer `pnpm generate` dans un conteneur `run --rm` séparé pendant que le conteneur dev tourne **périme la base SQLite de contenu** du dev (volume partagé) → `/blog` tombait sur l'état d'erreur. Correctif : `docker compose restart web` réindexe le contenu. Sans impact sur le build.
 
 ### Completion Notes List
 
+- **Pipeline content (Tâche 1)** : créé `content/blog/` + 3 articles markdown (repris des posts de `data.js` : `ia-dans-wordpress`, `nuxt-symfony-archi`, `n8n-automatisation`) avec front-matter `title`/`description`/`date` (ISO)/`tags`/`read`/`image`. Corps markdown réels (le 1er porté de la démo `Article` de `Blog.jsx`) → pré-amorce aussi la vue article 6.2. Schéma de la collection `blog` (`content.config.ts`) étendu : `date`/`tags`/`read` typés (en plus de `image`).
+- **Index (Tâches 2-4)** : `app/pages/blog/index.vue` refondu (Options API legacy + `MainComponent` + fonds blancs / `width:50vw` → `<script setup lang="ts">`). En-tête eyebrow/titre/sous-titre, liste de `ZCard` interactives (`:as="NuxtLink"`) en `.post` (grille `200px 1fr`), vignette `<NuxtImg>`, tags `ZTag` en `<ul>/<li>` (convention a11y 5.2), titre `h2`, méta mono (date FR · temps de lecture). Tri `queryCollection("blog").order("date","DESC").all()` via `useAsyncData` (prerender-safe).
+- **Empty-state (Tâche 3)** : conservé (texte FR + illustration `undraw_code_thinking`), restylé en `ZCard` dark-first centrée via tokens ; branché sur `!articles.length`. État d'erreur distinct conservé (`v-else-if="error"`).
+- **Tokens uniquement** ; primitives globales (`.section`/`.container`/`.eyebrow`/`.prose`/`.hero__tags`) consommées, non redéclarées. `.post*` (spécifiques blog) en scoped.
+- Date : front-matter ISO (`YYYY-MM-DD`) → `Intl.DateTimeFormat("fr-FR", { timeZone: "UTC" })` (rendu déterministe, pas de décalage de jour à l'hydration).
+
 ### File List
+
+- `content.config.ts` (MODIFIÉ — schéma collection `blog` étendu : `date`/`tags`/`read`)
+- `content/blog/ia-dans-wordpress.md` (CRÉÉ)
+- `content/blog/nuxt-symfony-archi.md` (CRÉÉ)
+- `content/blog/n8n-automatisation.md` (CRÉÉ)
+- `public/images/hacker-den-1.png`, `hacker-den-2.png`, `hacker-den-3.png` (CRÉÉS — vignettes, copiées de `docs/design_system/assets/backgrounds/`)
+- `app/pages/blog/index.vue` (REFONTE — Options API legacy → `<script setup>`, cartes `ZCard.post`, empty-state restylé)
+- `docs/implementation-artifacts/6-1-index-du-blog-et-empty-state.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Dev Agent Record, statut)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
+
+## Change Log
+
+| Date       | Version | Description                                                                                          |
+| ---------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| 2026-06-23 | 0.1     | Implémentation story 6.1 — pipeline `content/` + 3 articles, refonte de l'index `/blog` (cartes `ZCard`, méta, tri par date) + empty-state restylé. Sanity-check `@nuxt/content` v3 OK. |
