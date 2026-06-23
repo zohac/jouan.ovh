@@ -293,11 +293,7 @@ const { open: openTerminal } = useTerminal();
   margin-bottom: var(--space-6);
 }
 
-.hero__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
+// .hero__tags : primitive de layout globale (app/assets/scss/base/_layout.scss).
 
 // ---- Fenêtre terminal décorative (porté de TerminalWindow.jsx / Prompt.jsx) ----
 // Dérogation tokens-only assumée : les dimensions fixes du chrome (hauteur min

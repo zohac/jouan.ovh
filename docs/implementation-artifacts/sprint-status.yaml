@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-23 (story 5-2-timeline-formation-et-stack → review)"
+last_updated: "2026-06-23 (story 5-2-timeline-formation-et-stack → review : 3 findings de revue résolus)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system

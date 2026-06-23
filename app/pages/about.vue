@@ -23,7 +23,7 @@
 
           <!-- Colonne droite : eyebrow + bio (1re personne, emphases sur les technologies) + stack -->
           <div class="about__bio">
-            <p class="eyebrow">// à propos</p>
+            <h2 class="eyebrow">// à propos</h2>
             <p class="prose about__para">
               Développeur web freelance, je viens d'un parcours technique (métrologie, instrumentation) avant de
               basculer dans le code. Aujourd'hui je conçois des applications en <strong>PHP/Symfony</strong>, des sites
@@ -35,12 +35,15 @@
               service du code — agents, automatisations, intégrations LLM.
             </p>
 
-            <!-- Stack technique (story 5.2) — sous la bio, conforme à About.jsx. ZTag = pill. -->
+            <!-- Stack technique (story 5.2) — sous la bio, conforme à About.jsx. ZTag = pill.
+                 Liste sémantique (<ul>/<li>) pour annonce « liste de N éléments » aux lecteurs d'écran. -->
             <div class="about__stack">
-              <p class="eyebrow eyebrow--muted">// stack</p>
-              <div class="hero__tags">
-                <ZTag v-for="skill in skills" :key="skill">{{ skill }}</ZTag>
-              </div>
+              <h2 class="eyebrow eyebrow--muted">// stack</h2>
+              <ul class="hero__tags">
+                <li v-for="skill in skills" :key="skill">
+                  <ZTag>{{ skill }}</ZTag>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -52,29 +55,32 @@
     <section class="section section--sunken">
       <div class="container">
         <div class="about__cv">
-          <!-- Colonne gauche : timeline d'expériences (la plus récente en haut) -->
+          <!-- Colonne gauche : timeline d'expériences (la plus récente en haut).
+               <ol> : séquence chronologique annoncée comme liste ordonnée aux lecteurs d'écran. -->
           <div>
-            <p class="eyebrow">// expériences</p>
-            <div class="tl">
-              <div v-for="xp in experiences" :key="xp.org" class="tl__item">
+            <h2 class="eyebrow">// expériences</h2>
+            <ol class="tl">
+              <li v-for="xp in experiences" :key="xp.org" class="tl__item">
                 <div class="tl__date">{{ xp.date }}</div>
                 <div class="tl__role">{{ xp.role }}</div>
                 <div class="tl__org">{{ xp.org }}</div>
                 <div class="tl__desc">{{ xp.desc }}</div>
-              </div>
-            </div>
+              </li>
+            </ol>
           </div>
 
-          <!-- Colonne droite : formation (une ZCard par diplôme) -->
+          <!-- Colonne droite : formation (une ZCard par diplôme), liste sémantique <ul>/<li>. -->
           <div>
-            <p class="eyebrow">// formation</p>
-            <div class="about__degrees">
-              <ZCard v-for="degree in degrees" :key="degree.name" padded>
-                <div class="tl__date">{{ degree.date }}</div>
-                <div class="about__degree-name">{{ degree.name }}</div>
-                <div class="tl__org">{{ degree.school }}</div>
-              </ZCard>
-            </div>
+            <h2 class="eyebrow">// formation</h2>
+            <ul class="about__degrees">
+              <li v-for="degree in degrees" :key="degree.name">
+                <ZCard padded>
+                  <div class="tl__date">{{ degree.date }}</div>
+                  <div class="about__degree-name">{{ degree.name }}</div>
+                  <div class="tl__org">{{ degree.school }}</div>
+                </ZCard>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -172,10 +178,19 @@ useHead({
 
 <style lang="scss" scoped>
 /* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis kit.css / About.jsx */
-// .section / .container / .eyebrow / .prose sont des primitives de layout
-// globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+// .section / .container / .eyebrow / .prose / .hero__tags sont des primitives de
+// layout globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
 .about {
   display: block;
+}
+
+// Les libellés de section sont des <h2> (outline a11y navigable au lecteur d'écran),
+// stylés en eyebrow. Neutralise le poids et l'interligne propres au <h2> pour un
+// rendu strictement identique au <p class="eyebrow"> initial (line-height: inherit
+// reproduit l'héritage du corps, comme le ferait un <p>).
+.eyebrow {
+  font-weight: var(--fw-regular);
+  line-height: inherit;
 }
 
 // ---- Grille du hero (porté de About.jsx : grid-2 + gridTemplateColumns "0.8fr 1.2fr") ----
@@ -253,15 +268,10 @@ useHead({
   }
 }
 
-// ---- Stack (porté de About.jsx : bloc sous la bio + .hero__tags du kit) ----
+// ---- Stack (porté de About.jsx : bloc sous la bio) ----
+// .hero__tags (rangée de chips) = primitive de layout globale (base/_layout.scss).
 .about__stack {
   margin: var(--space-6) 0;
-}
-
-.hero__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
 }
 
 // ---- Section CV : grille expériences / formation (porté de About.jsx : 1.4fr / 0.6fr) ----
@@ -283,9 +293,11 @@ useHead({
   // Axe du rail, mesuré depuis le bord gauche de .tl.
   --tl-axis: 5px;
 
+  // <ol> : neutraliser puces/numéros et marges UA (reset : margin 0 0 16px 32px).
   position: relative;
-  margin-top: var(--space-5);
+  margin: var(--space-5) 0 0;
   padding-left: var(--space-6);
+  list-style: none;
 }
 
 .tl::before {
@@ -327,6 +339,8 @@ useHead({
 }
 
 .tl__role {
+  // kit.css:138 utilise `margin: 2px 0` ; --space-1 (4px) est le token le plus proche
+  // (pureté tokens, delta 2px imperceptible) — pas de token d'espacement à 2px.
   margin: var(--space-1) 0;
   font-family: var(--font-mono);
   font-size: var(--fs-md);
@@ -347,11 +361,14 @@ useHead({
 }
 
 // ---- Formation (porté de About.jsx : flex column + <Card padded>) ----
+// <ul> : neutraliser puces et marges UA (reset : margin 0 0 16px 32px).
 .about__degrees {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  margin-top: var(--space-5);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .about__degree-name {

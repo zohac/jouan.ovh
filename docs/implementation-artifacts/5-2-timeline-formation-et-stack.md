@@ -153,7 +153,8 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 ### File List
 
 - `app/pages/about.vue` (MODIFIÉ — ajout stack sous la bio + section CV `--sunken` : timeline expériences + formation ; données `skills`/`experiences`/`degrees`)
-- `app/assets/scss/base/_layout.scss` (MODIFIÉ — ajout du modifieur global `.eyebrow--muted`)
+- `app/assets/scss/base/_layout.scss` (MODIFIÉ — ajout du modifieur global `.eyebrow--muted` ; globalisation de `.hero__tags` avec reset de liste)
+- `app/pages/index.vue` (MODIFIÉ — `.hero__tags` scoped retirée au profit du global)
 - `docs/implementation-artifacts/5-2-timeline-formation-et-stack.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches cochées, Dev Agent Record, statut)
 - `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
 
@@ -163,3 +164,14 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | ---------- | ------- | ---------------------------------------------------------------------------------------- |
 | 2026-06-23 | 0.1     | Implémentation story 5.2 — stack (`ZTag`) + section CV (timeline expériences + formation) sur `/about` |
 | 2026-06-23 | 0.2     | Fix retour Simon — points de la timeline recentrés sur le rail (axe `--tl-axis` + `translateX(-50%)`), corrige un défaut de la maquette |
+| 2026-06-23 | 0.3     | Correctifs de revue — 3 findings résolus (zéro dette) : commentaire mapping `.tl__role` ; `.hero__tags` globalisée ; sémantique a11y /about (titres `h2` + listes `ol`/`ul`/`li`), rendu identique |
+
+## Review Findings
+
+_Code review (bmad-code-review) — 2026-06-23. Couches : Blind Hunter (diff seul) · Edge Case Hunter (diff + projet, retour `[]` : tokens/composants/clés/calc tous vérifiés) · Acceptance Auditor (diff + SPEC/ticket/`kit.css`/`About.jsx`). Verdict : contenu `data.js` exact, stack `ZTag` conforme, périmètre 5.1 intact — un écart de fidélité mineur + une duplication._
+
+- [x] [Review][Patch] Documenter le mapping `.tl__role` : garder `var(--space-1)` (4px) et commenter que c'est le token le plus proche du `2px` du kit (`kit.css:138`) — décision Simon : pureté tokens, delta imperceptible (était `decision-needed`). [app/pages/about.vue (.tl__role)] — ✅ résolu : commentaire ajouté.
+- [x] [Review][Patch] Globaliser `.hero__tags` dans `base/_layout.scss` + retirer les déclarations scoped dupliquées de `index.vue` et `about.vue` — décision Simon : cohérence convention 5.1, zéro dette (était `decision-needed`). [app/assets/scss/base/_layout.scss ; app/pages/index.vue ; app/pages/about.vue] — ✅ résolu : `.hero__tags` (avec reset de liste) déplacée dans le global, copies scoped retirées d'`index.vue` et `about.vue` ; home vérifiée (rangée de tags OK).
+- [x] [Review][Defer→Fixed] Sémantique a11y des sections CV `/about` — libellés en `<p class="eyebrow">` (pas de hiérarchie `h2`/`h3`), expériences/diplômes/skills en `<div>`/`<ZTag>` (pas de `<ul>`/`<li>`). — ✅ résolu (décision Simon : fix local /about) : libellés `// à propos` / `// stack` / `// expériences` / `// formation` en `<h2 class="eyebrow">` (outline `h1 → h2×4` vérifié), expériences en `<ol>/<li>`, formation et stack en `<ul>/<li>`. Rendu strictement identique (h2 neutralisé : `font-weight: regular` + `line-height: inherit` ; listes : `list-style: none` + marges UA reset). `<time datetime>` écarté : les dates sont des **plages** (« 02/2021 — aujourd'hui »), sans valeur machine mono-datetime. La **généralisation de la convention** (home/services + items 3.3/4.2) reste tracée pour l'Epic 9.
+
+_Rejetés (bruit / faux positifs vérifiés)_ : recentrage des points (sanctionné par Simon, changelog 0.2) ; clés `v-for` (uniques/stables, Edge) ; nom `.hero__tags` (classe du kit) ; `noopener` (SPEC impose `rel="noreferrer"` exact, lien inchangé depuis 5.1) ; px décoratifs de la timeline (dérogations commentées, autorisées) ; « couplage fragile » du point sur `--space-6` (compensation auto-cohérente, géométrie correcte) ; ratio 1.4/0.6fr (fidèle `About.jsx`) ; responsive (mobile 375 vérifié) ; empty-state (consts statiques) ; données CV inline (conforme SPEC, pas de couche data) ; typo `.tl__desc` (volontairement < `.prose`) ; contraste `.eyebrow--muted` (token kit fidèle) ; « aujourd'hui »/MM-YYYY (contenu `data.js` exact).
