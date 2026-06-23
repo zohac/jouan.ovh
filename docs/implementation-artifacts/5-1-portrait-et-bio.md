@@ -4,7 +4,7 @@ baseline_commit: f42ef6d300a45d0155618814c6a976eebb0f20bd
 
 # Story 5.1: Portrait et bio
 
-Status: in-progress
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -159,6 +159,7 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | ---------- | ------- | --------------------------------------------------------------------------- |
 | 2026-06-23 | 0.1     | Implémentation story 5.1 — refonte `/about` (hero portrait + bio) sur le DS |
 | 2026-06-23 | 0.2     | Correctifs de revue — 6 findings résolus (3 patchs + 3 deferred traités, zéro dette) : « M'écrire », `initials`, meta 1ʳᵉ pers., OG/Twitter/canonical, focus-ring `forced-colors`, extraction des primitives de layout dans un partiel global |
+| 2026-06-23 | 0.3     | Re-revue des correctifs (commit `5913e82`) : 6 findings vérifiés résolus, aucune fuite globale ni régression de cascade, build vert (lint + typecheck + generate). Statut → `done`. |
 
 ## Review Findings
 
