@@ -8,7 +8,7 @@ tags:
   - symfony
   - clean-archi
 image:
-  src: "/images/hacker-den-2.png"
+  src: "/images/hacker-den-2.webp"
   alt: ""
 ---
 

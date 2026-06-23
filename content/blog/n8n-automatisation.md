@@ -8,7 +8,7 @@ tags:
   - automatisation
   - ia
 image:
-  src: "/images/hacker-den-3.png"
+  src: "/images/hacker-den-3.webp"
   alt: ""
 ---
 

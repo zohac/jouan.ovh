@@ -8,7 +8,7 @@ tags:
   - ia
   - architecture
 image:
-  src: "/images/hacker-den-1.png"
+  src: "/images/hacker-den-1.webp"
   alt: ""
 ---
 

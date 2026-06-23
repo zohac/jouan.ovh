@@ -10,40 +10,39 @@
         </p>
 
         <!-- Liste des articles (triés par date décroissante), cartes interactives -->
-        <div v-if="articles && articles.length" class="blog__list">
-          <ZCard
-            v-for="article in articles"
-            :key="article.path"
-            :as="NuxtLink"
-            :to="article.path"
-            interactive
-            class="post"
-          >
-            <NuxtImg
-              v-if="article.image"
-              class="post__thumb"
-              :src="article.image.src"
-              :alt="article.image.alt"
-              width="200"
-              height="130"
-              sizes="200px"
-            />
-            <div class="post__body">
-              <ul v-if="article.tags?.length" class="hero__tags post__tags">
-                <li v-for="tag in article.tags" :key="tag">
-                  <ZTag>{{ tag }}</ZTag>
-                </li>
-              </ul>
-              <h2 class="post__title">{{ article.title }}</h2>
-              <p class="post__desc">{{ article.description }}</p>
-              <div class="post__meta">
-                <span>{{ formatDate(article.date) }}</span>
-                <span aria-hidden="true">·</span>
-                <span>{{ article.read }} de lecture</span>
+        <ul v-if="articles && articles.length" class="blog__list">
+          <li v-for="article in articles" :key="article.path" class="blog__item">
+            <ZCard :as="NuxtLink" :to="article.path" interactive class="post">
+              <NuxtImg
+                v-if="article.image"
+                class="post__thumb"
+                :src="article.image.src"
+                :alt="article.image.alt"
+                width="200"
+                height="130"
+                sizes="200px"
+                format="webp"
+              />
+              <div class="post__body">
+                <ul v-if="article.tags?.length" class="hero__tags post__tags">
+                  <li v-for="tag in article.tags" :key="tag">
+                    <ZTag>{{ tag }}</ZTag>
+                  </li>
+                </ul>
+                <h2 class="post__title">{{ article.title }}</h2>
+                <p class="post__desc">{{ article.description }}</p>
+                <div class="post__meta">
+                  <span>{{ formatDate(article.date) }}</span>
+                  <!-- `read` est optionnel : pas de séparateur ni de « de lecture » orphelins. -->
+                  <template v-if="article.read">
+                    <span aria-hidden="true">·</span>
+                    <span>{{ article.read }} de lecture</span>
+                  </template>
+                </div>
               </div>
-            </div>
-          </ZCard>
-        </div>
+            </ZCard>
+          </li>
+        </ul>
 
         <!-- Erreur de chargement (distincte d'un véritable empty-state) -->
         <ZCard v-else-if="error" class="blog__notice" padded>
@@ -105,15 +104,48 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 });
 const formatDate = (iso: string) => dateFormatter.format(new Date(iso));
 
+// Métadonnées de la page. Domaine de production cf. public/CNAME (dev.jouan.ovh).
+const siteUrl = "https://dev.jouan.ovh";
+const pageTitle = "Blog — jouan.ovh";
+const pageDescription =
+  "Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web.";
+const pageUrl = `${siteUrl}/blog`;
+
+// JSON-LD : flux d'articles (Blog → BlogPosting) pour les moteurs / agrégateurs.
+// Construit à partir de la liste résolue (snapshot au build, page prerendue).
+const blogJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  name: "Notes de dev",
+  description: pageDescription,
+  url: pageUrl,
+  blogPost: (articles.value ?? []).map((article) => ({
+    "@type": "BlogPosting",
+    headline: article.title,
+    description: article.description,
+    datePublished: article.date,
+    url: `${siteUrl}${article.path}`,
+    ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
+    ...(article.image ? { image: `${siteUrl}${article.image.src}` } : {}),
+  })),
+};
+
 useHead({
-  title: "Blog — jouan.ovh",
+  title: pageTitle,
+  link: [{ rel: "canonical", href: pageUrl }],
   meta: [
-    {
-      name: "description",
-      content:
-        "Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web.",
-    },
+    { name: "description", content: pageDescription },
+    // Open Graph (partage Facebook/LinkedIn…).
+    { property: "og:type", content: "website" },
+    { property: "og:title", content: pageTitle },
+    { property: "og:description", content: pageDescription },
+    { property: "og:url", content: pageUrl },
+    // Twitter Card.
+    { name: "twitter:card", content: "summary" },
+    { name: "twitter:title", content: pageTitle },
+    { name: "twitter:description", content: pageDescription },
   ],
+  script: [{ type: "application/ld+json", innerHTML: JSON.stringify(blogJsonLd) }],
 });
 </script>
 
@@ -142,10 +174,14 @@ useHead({
 }
 
 // ---- Liste d'articles (porté de Blog.jsx : flex column + .post de kit.css) ----
+// <ul> sémantique (annonce « liste de N articles ») : reset des puces et marges UA.
 .blog__list {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 // Carte article = ZCard interactive rendue en lien : grille vignette / contenu.

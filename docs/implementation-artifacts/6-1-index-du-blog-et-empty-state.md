@@ -134,12 +134,12 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 
 ### File List
 
-- `content.config.ts` (MODIFIÉ — schéma collection `blog` étendu : `date`/`tags`/`read`)
-- `content/blog/ia-dans-wordpress.md` (CRÉÉ)
-- `content/blog/nuxt-symfony-archi.md` (CRÉÉ)
-- `content/blog/n8n-automatisation.md` (CRÉÉ)
-- `public/images/hacker-den-1.png`, `hacker-den-2.png`, `hacker-den-3.png` (CRÉÉS — vignettes, copiées de `docs/design_system/assets/backgrounds/`)
-- `app/pages/blog/index.vue` (REFONTE — Options API legacy → `<script setup>`, cartes `ZCard.post`, empty-state restylé)
+- `content.config.ts` (MODIFIÉ — schéma collection `blog` étendu : `date` (validée ISO `regex`)/`tags`/`read`)
+- `content/blog/ia-dans-wordpress.md` (CRÉÉ ; `image.src` → `.webp`)
+- `content/blog/nuxt-symfony-archi.md` (CRÉÉ ; `image.src` → `.webp`)
+- `content/blog/n8n-automatisation.md` (CRÉÉ ; `image.src` → `.webp`)
+- `public/images/hacker-den-1.webp`, `hacker-den-2.webp`, `hacker-den-3.webp` (CRÉÉS — vignettes webp 800×448 ; PNG sources supprimés, recompressés via `sharp`)
+- `app/pages/blog/index.vue` (REFONTE — Options API legacy → `<script setup>`, cartes `ZCard.post`, empty-state restylé ; correctifs de revue : webp+garde `read`, feed `<ul>/<li>`, SEO OG/canonical/JSON-LD)
 - `docs/implementation-artifacts/6-1-index-du-blog-et-empty-state.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Dev Agent Record, statut)
 - `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
 
@@ -148,3 +148,17 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | Date       | Version | Description                                                                                          |
 | ---------- | ------- | ---------------------------------------------------------------------------------------------------- |
 | 2026-06-23 | 0.1     | Implémentation story 6.1 — pipeline `content/` + 3 articles, refonte de l'index `/blog` (cartes `ZCard`, méta, tri par date) + empty-state restylé. Sanity-check `@nuxt/content` v3 OK. |
+| 2026-06-23 | 0.2     | Correctifs de revue — 5 points résolus (zéro dette) : vignettes webp 800px (~24-34 Ko) + `format="webp"`, garde `v-if` sur `read`, validation ISO de `date` au schéma, feed en `<ul>/<li>`, SEO `/blog` (OG/Twitter/canonical + JSON-LD `BlogPosting`). |
+
+## Review Findings
+
+_Code review (bmad-code-review) — 2026-06-23. Couches : Blind Hunter (diff seul) · Edge Case Hunter (diff + projet) · Acceptance Auditor (diff + SPEC/ticket/`Blog.jsx`/`kit.css`). Verdict : AC #1 (cartes conformes DS) et AC #2 (empty-state) satisfaites, aucune violation dure ; API content v3, tokens, `ZCard`/`ZTag`, prerender tous vérifiés sains._
+
+- [x] [Review][Patch] Redimensionner/recompresser les 3 vignettes sources `public/images/hacker-den-*.png` (~4,5 Mo → cible ~2× l'affichage) + `format="webp"` sur la `<NuxtImg>` des cartes — décision Simon : zéro dette (était `decision-needed`). [public/images/hacker-den-*.png ; app/pages/blog/index.vue:27] — ✅ résolu : sources converties en **webp 800×448 (~24-34 Ko**, vs ~1,4 Mo, via `sharp`), PNG supprimés, front-matter `image.src` → `.webp`, `format="webp"` ajouté. HTML prerendu : `f_webp&s_200x130` + 2×.
+- [x] [Review][Decision→Accepté] Empty-state réécrit (vs « conserver » du ticket) — décision Simon : **réécriture acceptée** (voix DS cohérente, 1ʳᵉ personne, sans inclusif ni fluff). Aucune action.
+- [x] [Review][Patch] Méta : `read` est optionnel au schéma mais rendu sans garde → « · de lecture » orphelin (séparateur + texte vides) si un futur article omet `read`. Ajouter `v-if="article.read"` sur le span ET le séparateur `·`. [app/pages/blog/index.vue:69] — ✅ résolu : `<template v-if="article.read">` enveloppe le séparateur + le texte.
+- [x] [Review][Patch] `date` non validée (`z.string()`) → `formatDate` rend « Invalid Date » et le tri `.order("date","DESC")` se trompe si le format dévie. Valider au schéma (`z.string().regex(/^\d{4}-\d{2}-\d{2}$/)`) — échec au build plutôt qu'à l'affichage. [content.config.ts] — ✅ résolu : `z.string().regex(/^\d{4}-\d{2}-\d{2}$/, …)`.
+- [x] [Review][Defer→Fixed] SEO `/blog` : pas d'OG/Twitter/canonical ni JSON-LD (`Blog`/`ItemList`) ; seuls `title`+`description` sont posés. — ✅ résolu pour `/blog` (décision Simon : zéro dette) : `og:*`/`twitter:*`/`canonical` + JSON-LD `Blog`→`BlogPosting` (3) ajoutés au `useHead` ; vérifiés dans le HTML prerendu. La **centralisation SEO site-wide** (autres pages, `useSeoMeta` partagé) reste tracée pour Epic 9.
+- [x] [Review][Defer→Fixed] Sémantique liste du feed : les articles sont rendus en `<div class="blog__list">` (cartes) alors que les **tags** de chaque carte sont en `<ul>/<li>` — incohérence avec la convention listes a11y de 5.2. Passer le feed en `<ul class="blog__list"><li>`. — ✅ résolu : feed en `<ul class="blog__list">` + `<li>` par article (reset de liste, rendu identique). La **généralisation a11y** (eyebrow→titre + listes home/services) reste Epic 9.
+
+_Rejetés (bruit / faux positifs vérifiés)_ : branche erreur « inatteignable » (`useAsyncData` capture l'erreur dans `error`, ne throw pas — Edge) ; pas de loading state (site prérendu statique, contenu figé au build) ; clé `v-for` `article.path` (toujours présent/unique, type `page` — Edge) ; `alt=""` vignettes (décoratif correct, schéma rend `alt` requis — Auditor) ; `hero__tags` réutilisé (primitive globale voulue depuis 5.2) ; `ZTag` imbriqué dans le lien-carte (non interactif → pas de nested-interactive) ; ring de focus carte (fourni par `.zcard--interactive`) ; littéraux `200px`/`130px`/`56ch`/`900px` (structurels, mandatés par `kit.css` — Auditor) ; `h2` vs `h3` du titre (le `h3` du kit/ticket sauterait un niveau ici ; `h2` est le choix a11y correct, port visuel fidèle — Auditor) ; `object-fit:cover` (recadre sans déformer) ; corps markdown riches des articles (seed data pour 6.2, l'index ne rend que le front-matter — Auditor) ; i18n (site mono-français assumé).
