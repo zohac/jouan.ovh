@@ -4,7 +4,7 @@ baseline_commit: 35bcb5c149a546b2d277f40ec05d74d472412dcb
 
 # Story 6.1: Index du blog et empty-state
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -149,6 +149,7 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | ---------- | ------- | ---------------------------------------------------------------------------------------------------- |
 | 2026-06-23 | 0.1     | Implémentation story 6.1 — pipeline `content/` + 3 articles, refonte de l'index `/blog` (cartes `ZCard`, méta, tri par date) + empty-state restylé. Sanity-check `@nuxt/content` v3 OK. |
 | 2026-06-23 | 0.2     | Correctifs de revue — 5 points résolus (zéro dette) : vignettes webp 800px (~24-34 Ko) + `format="webp"`, garde `v-if` sur `read`, validation ISO de `date` au schéma, feed en `<ul>/<li>`, SEO `/blog` (OG/Twitter/canonical + JSON-LD `BlogPosting`). |
+| 2026-06-23 | 0.3     | Re-revue des correctifs (commit `3a7527b`) : 5 points vérifiés résolus ; build vert (18 routes, IPX webp 1×/2×) ; HTML prérendu (feed `ul`/`li`, srcset webp, OG/canonical, JSON-LD valide) + styles calculés + visuel desktop conformes. Statut → `done`. |
 
 ## Review Findings
 
