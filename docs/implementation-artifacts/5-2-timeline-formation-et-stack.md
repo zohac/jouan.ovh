@@ -4,7 +4,7 @@ baseline_commit: fb78c74f84b82e10b96e4464770e835f50f218b9
 
 # Story 5.2: Timeline, formation et stack
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -165,6 +165,7 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | 2026-06-23 | 0.1     | Implémentation story 5.2 — stack (`ZTag`) + section CV (timeline expériences + formation) sur `/about` |
 | 2026-06-23 | 0.2     | Fix retour Simon — points de la timeline recentrés sur le rail (axe `--tl-axis` + `translateX(-50%)`), corrige un défaut de la maquette |
 | 2026-06-23 | 0.3     | Correctifs de revue — 3 findings résolus (zéro dette) : commentaire mapping `.tl__role` ; `.hero__tags` globalisée ; sémantique a11y /about (titres `h2` + listes `ol`/`ul`/`li`), rendu identique |
+| 2026-06-23 | 0.4     | Re-revue des correctifs (commit `d866e14`) : 3 findings vérifiés résolus ; markup a11y + styles calculés + build verts ; rendu identique confirmé (visuel desktop+mobile, géométrie timeline alignée). Statut → `done`. |
 
 ## Review Findings
 
