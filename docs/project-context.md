@@ -202,8 +202,14 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   padding du hero, story 3.1 — invisible à la revue de code, attrapée à l'œil.)
 - **Vérif visuelle avant revue (stories de page)** : lancer le dev, ouvrir la page
   dans **Chrome DevTools MCP** ET la référence visuelle correspondante, puis comparer
-  le rendu (padding/marges/espacement/fidélité). La revue de code est aveugle aux
-  régressions de rendu. Réfs : Home → `docs/design_system/ui_kits/jouan-site/index.html` (+ screenshots).
+  le rendu (padding/marges/espacement/fidélité), en desktop ET mobile. La revue de code
+  est aveugle aux régressions de rendu. Réfs par page :
+  - **Home** → `docs/animations_jouan.ovh/Home animée.dc.html` + screenshots
+    `docs/animations_jouan.ovh/screenshots/` (`hero*.png`, `services.png`, `booted.png`).
+  - **Services / About / Blog / Contact** → `docs/design_system/ui_kits/jouan-site/index.html`
+    (UI kit cible ; ouvrir la section correspondante).
+  - Routine appliquée sans faille sur Epic 4 (4.1 + 4.2, desktop + mobile) → zéro
+    régression de rendu. À reconduire sur chaque story-page (Epics 5→8).
 
 ---
 
@@ -221,4 +227,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-06-22 (post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)
+Dernière mise à jour : 2026-06-23 (post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue — aucune règle nouvelle, épic propre ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)

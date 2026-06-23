@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-22 (story 4.2 section process → done, revue vérifiée ; stories Epic 4 toutes done)"
+last_updated: "2026-06-23 (rétrospective Epic 4 → done ; Epic 4 clôturé, préparation Epic 5)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -73,7 +73,7 @@ development_status:
   epic-4: in-progress
   4-1-route-services-et-cartes-doffre: done
   4-2-section-process: done
-  epic-4-retrospective: optional
+  epic-4-retrospective: done
 
   # Epic 5 — Page À-propos
   epic-5: in-progress
