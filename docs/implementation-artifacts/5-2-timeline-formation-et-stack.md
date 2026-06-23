@@ -1,6 +1,10 @@
+---
+baseline_commit: fb78c74f84b82e10b96e4464770e835f50f218b9
+---
+
 # Story 5.2: Timeline, formation et stack
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,27 +23,27 @@ so that j'évalue les compétences de Simon (UX-DR14, FR7).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Ajouter la section CV sous le hero portrait/bio (AC)
-  - [ ] Dans `pages/about.vue` (déjà refondu en story 5.1), ajouter une `<section class="section section--sunken">` + `<div class="container">` conforme à `About.jsx`.
-  - [ ] Grille 2 colonnes (gauche ≈ `1.4fr` expériences, droite ≈ `0.6fr` formation), `gap: var(--space-12)`.
-- [ ] Tâche 2 — Timeline d'expérience (AC)
-  - [ ] Eyebrow `// expériences`.
-  - [ ] Boucler sur `S.experiences` (3 entrées) et rendre, par item : date, rôle, organisation, description (classes `tl` / `tl__item` / `tl__date` / `tl__role` / `tl__org` / `tl__desc`).
-  - [ ] Contenu exact depuis `data.js` (voir Dev Notes), dans l'ordre de la référence.
-- [ ] Tâche 3 — Formation (AC)
-  - [ ] Eyebrow `// formation`.
-  - [ ] Boucler sur `S.degrees` (2 entrées) et rendre chaque diplôme dans une carte (`ZCard` padded) : date, intitulé (mono, `--text-strong`), école.
-- [ ] Tâche 4 — Stack (AC + AND `ZTag`/`ZBadge`)
-  - [ ] Eyebrow `// stack`.
-  - [ ] Boucler sur `S.skills` (12 technos) et rendre chaque techno en **`ZTag`** (radius pill) — ou `ZBadge` selon la primitive disponible de l'Epic 2.
-  - [ ] Selon le découpage retenu en story 5.1, le bloc `// stack` est soit dans la colonne droite du hero (comme `About.jsx`), soit dans la section CV ; le placer une seule fois, conforme à la référence (dans `About.jsx` il est sous la bio, colonne droite du hero).
-- [ ] Tâche 5 — Style via tokens (AC)
-  - [ ] Styles en `<style lang="scss" scoped>` consommant les tokens du DS, `@use` jamais `@import`.
-  - [ ] Aucune valeur de couleur/espace/rayon hardcodée (`--space-*`, `--fs-*`, `--text-*`, `--font-mono`, surface sunken via token).
-- [ ] Tâche 6 — Vérification
-  - [ ] `yarn dev` : `/about` affiche les trois sections (timeline, formation, stack) sous le portrait/bio.
-  - [ ] La stack rend bien en `ZTag`/`ZBadge` (pill).
-  - [ ] Compatibilité prerender (aucun accès DOM non gardé) ; `yarn lint` ne régresse pas.
+- [x] Tâche 1 — Ajouter la section CV sous le hero portrait/bio (AC)
+  - [x] Dans `pages/about.vue` (déjà refondu en story 5.1), ajouter une `<section class="section section--sunken">` + `<div class="container">` conforme à `About.jsx`.
+  - [x] Grille 2 colonnes (gauche ≈ `1.4fr` expériences, droite ≈ `0.6fr` formation), `gap: var(--space-12)`.
+- [x] Tâche 2 — Timeline d'expérience (AC)
+  - [x] Eyebrow `// expériences`.
+  - [x] Boucler sur `S.experiences` (3 entrées) et rendre, par item : date, rôle, organisation, description (classes `tl` / `tl__item` / `tl__date` / `tl__role` / `tl__org` / `tl__desc`).
+  - [x] Contenu exact depuis `data.js` (voir Dev Notes), dans l'ordre de la référence.
+- [x] Tâche 3 — Formation (AC)
+  - [x] Eyebrow `// formation`.
+  - [x] Boucler sur `S.degrees` (2 entrées) et rendre chaque diplôme dans une carte (`ZCard` padded) : date, intitulé (mono, `--text-strong`), école.
+- [x] Tâche 4 — Stack (AC + AND `ZTag`/`ZBadge`)
+  - [x] Eyebrow `// stack`.
+  - [x] Boucler sur `S.skills` (12 technos) et rendre chaque techno en **`ZTag`** (radius pill) — ou `ZBadge` selon la primitive disponible de l'Epic 2.
+  - [x] Selon le découpage retenu en story 5.1, le bloc `// stack` est soit dans la colonne droite du hero (comme `About.jsx`), soit dans la section CV ; le placer une seule fois, conforme à la référence (dans `About.jsx` il est sous la bio, colonne droite du hero).
+- [x] Tâche 5 — Style via tokens (AC)
+  - [x] Styles en `<style lang="scss" scoped>` consommant les tokens du DS, `@use` jamais `@import`.
+  - [x] Aucune valeur de couleur/espace/rayon hardcodée (`--space-*`, `--fs-*`, `--text-*`, `--font-mono`, surface sunken via token).
+- [x] Tâche 6 — Vérification
+  - [x] `yarn dev` : `/about` affiche les trois sections (timeline, formation, stack) sous le portrait/bio.
+  - [x] La stack rend bien en `ZTag`/`ZBadge` (pill).
+  - [x] Compatibilité prerender (aucun accès DOM non gardé) ; `yarn lint` ne régresse pas.
 
 ## Dev Notes
 
@@ -125,8 +129,37 @@ so that j'évalue les compétences de Simon (UX-DR14, FR7).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` (Docker) : PASS.
+- `pnpm typecheck` (Docker, `nuxi typecheck`) : PASS.
+- `pnpm generate` (Docker) : prerender OK — `/about` (25 ms) généré, aucune erreur.
+- Vérif visuelle Chrome DevTools MCP (desktop 1280 + mobile 375) : 3 sections fidèles à `About.jsx`, console propre.
 
 ### Completion Notes List
 
+- Complète `app/pages/about.vue` (livré en 5.1) sans toucher au hero : ajout du bloc **stack** sous la bio (colonne droite du hero, conforme à `About.jsx`) et d'une **section CV `--sunken`** sous le hero.
+- **Stack** : `S.skills` (12 technos, ordre conservé) en `<ZTag>` (pill mono, préfixe `#`) dans `.hero__tags` ; eyebrow `// stack` en `eyebrow--muted`.
+- **Section CV** : grille `1.4fr / 0.6fr`, `gap: var(--space-12)`, → 1 colonne sous 900px.
+  - Gauche : eyebrow `// expériences` + timeline `.tl` (rail + points), 3 entrées `S.experiences` (date accent / rôle mono strong / org muted / desc), ordre récent→ancien.
+  - Droite : eyebrow `// formation` + 2 `<ZCard padded>` (`S.degrees`) : date + intitulé mono `--text-strong` + école.
+- **Tokens uniquement** ; seules dérogations : géométrie décorative de la timeline (rail 1px, point 11px, décalages px) portée de `kit.css`, sans équivalent dans l'échelle de tokens — commentée explicitement.
+- **Primitive globale** : `.eyebrow--muted` ajoutée à `app/assets/scss/base/_layout.scss` (modifieur de `.eyebrow`, convention DS depuis 5.1) plutôt que redéclarée scoped.
+- Aucun accès DOM (contenu statique, `v-for` sur tableaux locaux) → prerender-safe.
+- **Correctif post-implémentation (retour Simon)** : dans `kit.css`, les points de la timeline n'étaient pas centrés sur le rail (point à `left:-22px` sur `.tl__item` → centre ~2px à droite du rail à `left:5px` sur `.tl`). Refondu avec un axe commun `--tl-axis` + `transform: translateX(-50%)` sur le rail ET les points → centres alignés (vérifié : rail et point centrés à x=5px). Amélioration par rapport à la maquette.
+
 ### File List
+
+- `app/pages/about.vue` (MODIFIÉ — ajout stack sous la bio + section CV `--sunken` : timeline expériences + formation ; données `skills`/`experiences`/`degrees`)
+- `app/assets/scss/base/_layout.scss` (MODIFIÉ — ajout du modifieur global `.eyebrow--muted`)
+- `docs/implementation-artifacts/5-2-timeline-formation-et-stack.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches cochées, Dev Agent Record, statut)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
+
+## Change Log
+
+| Date       | Version | Description                                                                              |
+| ---------- | ------- | ---------------------------------------------------------------------------------------- |
+| 2026-06-23 | 0.1     | Implémentation story 5.2 — stack (`ZTag`) + section CV (timeline expériences + formation) sur `/about` |
+| 2026-06-23 | 0.2     | Fix retour Simon — points de la timeline recentrés sur le rail (axe `--tl-axis` + `translateX(-50%)`), corrige un défaut de la maquette |

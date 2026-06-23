@@ -1,9 +1,8 @@
 <template>
   <main class="about">
-    <!-- Hero À-propos : portrait + identité (colonne gauche) + bio (colonne droite).
+    <!-- Hero À-propos : portrait + identité (colonne gauche) + bio + stack (colonne droite).
          Porté de About.jsx (section hero) : recréation Vue 3 + tokens, aucune copie JSX.
-         La timeline d'expériences, la formation et la stack (une <section--sunken> SOUS
-         ce hero) sont la story 5.2 — non implémentées ici, place réservée en bas. -->
+         La section CV (expériences + formation) suit dans une <section--sunken> (story 5.2). -->
     <section class="section">
       <div class="container">
         <div class="about__grid">
@@ -22,7 +21,7 @@
             </div>
           </div>
 
-          <!-- Colonne droite : eyebrow + bio (1re personne, emphases sur les technologies) -->
+          <!-- Colonne droite : eyebrow + bio (1re personne, emphases sur les technologies) + stack -->
           <div class="about__bio">
             <p class="eyebrow">// à propos</p>
             <p class="prose about__para">
@@ -35,20 +34,59 @@
               <a href="https://keova.app" target="_blank" rel="noreferrer">keova.app</a>, et j'aime mettre l'IA au
               service du code — agents, automatisations, intégrations LLM.
             </p>
+
+            <!-- Stack technique (story 5.2) — sous la bio, conforme à About.jsx. ZTag = pill. -->
+            <div class="about__stack">
+              <p class="eyebrow eyebrow--muted">// stack</p>
+              <div class="hero__tags">
+                <ZTag v-for="skill in skills" :key="skill">{{ skill }}</ZTag>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Story 5.2 : la <section class="section section--sunken"> (timeline expériences +
-         formation + stack ZTag) s'insère ici, sous le hero. Ne pas implémenter en 5.1. -->
+    <!-- Section CV (story 5.2) : timeline d'expériences (gauche) + formation (droite).
+         Porté de About.jsx (2e section--sunken), grille 1.4fr / 0.6fr. -->
+    <section class="section section--sunken">
+      <div class="container">
+        <div class="about__cv">
+          <!-- Colonne gauche : timeline d'expériences (la plus récente en haut) -->
+          <div>
+            <p class="eyebrow">// expériences</p>
+            <div class="tl">
+              <div v-for="xp in experiences" :key="xp.org" class="tl__item">
+                <div class="tl__date">{{ xp.date }}</div>
+                <div class="tl__role">{{ xp.role }}</div>
+                <div class="tl__org">{{ xp.org }}</div>
+                <div class="tl__desc">{{ xp.desc }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Colonne droite : formation (une ZCard par diplôme) -->
+          <div>
+            <p class="eyebrow">// formation</p>
+            <div class="about__degrees">
+              <ZCard v-for="degree in degrees" :key="degree.name" padded>
+                <div class="tl__date">{{ degree.date }}</div>
+                <div class="about__degree-name">{{ degree.name }}</div>
+                <div class="tl__org">{{ degree.school }}</div>
+              </ZCard>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 </template>
 
 <script setup lang="ts">
-// Page À-propos — hero portrait + bio (story 5.1). Porté de About.jsx du UI kit :
-// grille 2 colonnes (0.8fr identité / 1.2fr bio), portrait via <ZAvatar ring>, CTA
-// <ZButton>, bio en français 1re personne. Dark-first, tokens uniquement.
+// Page À-propos — hero portrait + bio + stack (story 5.1/5.2) puis section CV
+// (timeline d'expériences + formation, story 5.2). Porté de About.jsx du UI kit :
+// hero 2 colonnes (0.8fr identité / 1.2fr bio), section CV 2 colonnes (1.4fr / 0.6fr),
+// stack en <ZTag>, formation en <ZCard>. Dark-first, tokens uniquement, prerender-safe.
 import { NuxtLink } from "#components";
 
 // Libellés repris de data.js (window.SITE) — name, role, city, email.
@@ -58,6 +96,51 @@ const profile = {
   city: "Valognes, France",
   email: "simon@jouan.ovh",
 } as const;
+
+// Stack technique (data.js → S.skills) — ordre conservé. Rendue en <ZTag> (pill).
+const skills = [
+  "php",
+  "symfony",
+  "wordpress",
+  "node.js",
+  "nest.js",
+  "nuxt.js",
+  "vue",
+  "typescript",
+  "docker",
+  "tailwind",
+  "n8n",
+  "mysql",
+];
+
+// Expériences (data.js → S.experiences) — de la plus récente à la plus ancienne.
+// `org` sert de clé v-for stable (unique).
+const experiences = [
+  {
+    date: "02/2021 — aujourd'hui",
+    role: "Testeur QA",
+    org: "Linkizz",
+    desc: "Tests automatisés — Node.js, TypeScript, TestCafé.",
+  },
+  {
+    date: "05/2020 — 12/2021",
+    role: "Développeur Full Stack",
+    org: "CINS",
+    desc: "PHP/MySQL, Symfony 4/5, Drupal, Prestashop, WordPress, Docker.",
+  },
+  {
+    date: "07/2007 — 05/2019",
+    role: "Métrologue",
+    org: "A+ Métrologie / Trescal",
+    desc: "Technicien métrologue multi-grandeur, suppléant COFRAC électricité-magnétisme.",
+  },
+];
+
+// Formation (data.js → S.degrees). `name` sert de clé v-for stable (unique).
+const degrees = [
+  { date: "2017 — 2018", name: "Développeur d'application — PHP / Symfony", school: "OpenClassrooms" },
+  { date: "1999 — 2001", name: "BTS CIRA", school: "Lycée A. de Tocqueville, Cherbourg" },
+];
 
 // Métadonnées de la page. Voix 1re personne cohérente (cf. contrainte Langue & voix).
 const pageTitle = "À propos — jouan.ovh";
@@ -170,9 +253,118 @@ useHead({
   }
 }
 
+// ---- Stack (porté de About.jsx : bloc sous la bio + .hero__tags du kit) ----
+.about__stack {
+  margin: var(--space-6) 0;
+}
+
+.hero__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+// ---- Section CV : grille expériences / formation (porté de About.jsx : 1.4fr / 0.6fr) ----
+.about__cv {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr;
+  gap: var(--space-12);
+}
+
+// ---- Timeline d'expériences (porté de kit.css : .tl*) ----
+// `margin-top` repris de l'inline JSX (<div class="tl" style="margin-top: var(--space-5)">).
+// Rail vertical + points partagent un même axe (--tl-axis) et sont centrés dessus via
+// translateX(-50%). Correction d'un défaut de la maquette : dans kit.css le point
+// (left:-22px sur .tl__item, décalé du padding-left) tombait ~2px à droite du rail
+// (left:5px sur .tl), les deux centres n'étant pas sur le même axe.
+// Px restants = géométrie décorative fine (épaisseur 1px, point 11px, bord 2px,
+// retraits verticaux 6px) sans équivalent dans l'échelle de tokens d'espacement.
+.tl {
+  // Axe du rail, mesuré depuis le bord gauche de .tl.
+  --tl-axis: 5px;
+
+  position: relative;
+  margin-top: var(--space-5);
+  padding-left: var(--space-6);
+}
+
+.tl::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: var(--tl-axis);
+  width: 1px;
+  background: var(--border-default);
+  transform: translateX(-50%);
+}
+
+.tl__item {
+  position: relative;
+  padding-bottom: var(--space-6);
+}
+
+// `left` ramène le point sur --tl-axis en compensant le padding-left de .tl
+// (le ::before est positionné par rapport à .tl__item, pas à .tl).
+.tl__item::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: calc(var(--tl-axis) - var(--space-6));
+  width: 11px;
+  height: 11px;
+  background: var(--surface-0);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-circle);
+  transform: translateX(-50%);
+}
+
+.tl__date {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--accent);
+}
+
+.tl__role {
+  margin: var(--space-1) 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  color: var(--text-strong);
+}
+
+.tl__org {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.tl__desc {
+  margin-top: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-body);
+}
+
+// ---- Formation (porté de About.jsx : flex column + <Card padded>) ----
+.about__degrees {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+.about__degree-name {
+  margin: var(--space-1) 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-strong);
+}
+
 // ---- Responsive (cf. kit.css @media max-width: 900px : .grid-2 → 1 colonne) ----
 @media (width <= 900px) {
-  .about__grid {
+  .about__grid,
+  .about__cv {
     grid-template-columns: 1fr;
     gap: var(--space-10);
   }

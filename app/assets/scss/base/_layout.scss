@@ -42,6 +42,11 @@
   color: var(--accent);
 }
 
+// Variante discrète (sur-titre secondaire, ex. « // stack »).
+.eyebrow--muted {
+  color: var(--text-muted);
+}
+
 // Texte long-forme : Ubuntu sans, interligne détendu.
 .prose {
   font-family: var(--font-sans);
