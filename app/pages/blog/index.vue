@@ -32,7 +32,7 @@
                 <h2 class="post__title">{{ article.title }}</h2>
                 <p class="post__desc">{{ article.description }}</p>
                 <div class="post__meta">
-                  <span>{{ formatDate(article.date) }}</span>
+                  <time :datetime="article.date">{{ formatDate(article.date) }}</time>
                   <!-- `read` est optionnel : pas de séparateur ni de « de lecture » orphelins. -->
                   <template v-if="article.read">
                     <span aria-hidden="true">·</span>
@@ -96,12 +96,11 @@ const { data: articles, error } = await useAsyncData("blog-list", () =>
 
 // `formatDate` (date ISO → français) est un util auto-importé partagé (app/utils/).
 
-// Métadonnées de la page. Domaine de production cf. public/CNAME (dev.jouan.ovh).
-const siteUrl = "https://dev.jouan.ovh";
+// Métadonnées de la page. SITE_URL = util partagé (app/utils/seo).
 const pageTitle = "Blog — jouan.ovh";
 const pageDescription =
   "Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web.";
-const pageUrl = `${siteUrl}/blog`;
+const pageUrl = `${SITE_URL}/blog`;
 
 // JSON-LD : flux d'articles (Blog → BlogPosting) pour les moteurs / agrégateurs.
 // Construit à partir de la liste résolue (snapshot au build, page prerendue).
@@ -116,9 +115,9 @@ const blogJsonLd = {
     headline: article.title,
     description: article.description,
     datePublished: article.date,
-    url: `${siteUrl}${article.path}`,
+    url: `${SITE_URL}${article.path}`,
     ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
-    ...(article.image ? { image: `${siteUrl}${article.image.src}` } : {}),
+    ...(article.image ? { image: `${SITE_URL}${article.image.src}` } : {}),
   })),
 };
 
@@ -137,7 +136,7 @@ useHead({
     { name: "twitter:title", content: pageTitle },
     { name: "twitter:description", content: pageDescription },
   ],
-  script: [{ type: "application/ld+json", innerHTML: JSON.stringify(blogJsonLd) }],
+  script: [jsonLdScript(blogJsonLd)],
 });
 </script>
 

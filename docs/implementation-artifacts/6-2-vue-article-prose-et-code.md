@@ -4,7 +4,7 @@ baseline_commit: 24a194c6f90dd20cb9b15267405dfd02dbadd97b
 
 # Story 6.2: Vue article (prose + code)
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -137,11 +137,13 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 
 ### File List
 
-- `app/pages/blog/[...slug].vue` (REFONTE — vue article : structure `.article`, prose `:deep()`, code terminal, CTA, SEO)
+- `app/pages/blog/[...slug].vue` (REFONTE — vue article : structure `.article`, prose `:deep()` vocabulaire complet, code terminal, CTA, SEO ; correctifs revue : `SITE_URL`/`jsonLdScript`, `<time>`, `←` aria-hidden)
 - `nuxt.config.ts` (MODIFIÉ — `content.build.markdown.highlight: false`)
 - `app/utils/formatDate.ts` (CRÉÉ — util date FR auto-importé, partagé)
+- `app/utils/seo.ts` (CRÉÉ — `SITE_URL` partagé + `jsonLdScript()` échappé ; correctif revue)
 - `app/assets/scss/base/_layout.scss` (MODIFIÉ — `.post__meta` promu en primitive globale)
-- `app/pages/blog/index.vue` (MODIFIÉ — `formatDate` local retiré → util ; `.post__meta` scoped retiré → global)
+- `app/pages/blog/index.vue` (MODIFIÉ — `formatDate`/`.post__meta` partagés ; `SITE_URL`/`jsonLdScript` ; date en `<time>`)
+- `app/pages/about.vue` (MODIFIÉ — domaine via `SITE_URL` partagé, correctif revue de dédup)
 - `docs/implementation-artifacts/6-2-vue-article-prose-et-code.md` (MODIFIÉ — frontmatter, tâches, Dev Agent Record, statut)
 - `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
 
@@ -150,13 +152,14 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | Date       | Version | Description                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------- |
 | 2026-06-24 | 0.1     | Implémentation story 6.2 — vue article `/blog/[...slug]` : prose Ubuntu sans + blocs de code en palette terminale (Shiki désactivé), structure `.article`, en-tête + héro + CTA, SEO article. Extractions partagées `formatDate` / `.post__meta`. |
+| 2026-06-25 | 0.2     | Correctifs de revue (zéro dette) : prose `:deep()` vocabulaire complet (listes/citation/table/hr/h3-h4/img, tokens) ; `SITE_URL` + `jsonLdScript()` échappé extraits (`app/utils/seo.ts`, dédup `/about`+`/blog`+article) ; dates en `<time datetime>` (article + index) ; `←` du lien retour en `aria-hidden`. |
 
 ## Review Findings
 
 _Code review (bmad-code-review) — 2026-06-25. Couches : Blind Hunter (diff seul) · Edge Case Hunter (diff + projet, retour `[]`) · Acceptance Auditor (diff + SPEC/ticket/`Blog.jsx`/`kit.css`). Verdict : AC #1 satisfaite (prose Ubuntu sans + code Ubuntu Mono palette terminale, conformes DS), aucune violation dure ; API content v3, gestion 404/500, SEO, refactor index préservé tous vérifiés sains._
 
-- [ ] [Review][Patch] Étendre le style prose `:deep()` au vocabulaire markdown complet, DS-tuné (tokens, dark-first) : `ul`/`ol`/`li`, `blockquote`, `table`/`th`/`td`, `hr`, `h3`–`h4` — pour ne plus dépendre du reset legacy WordPress-normalize (`#ccc` sur `hr`, indentation `rem`, tables sans bordures). Décision Simon : zéro dette (était `decision-needed` ; les 3 articles actuels n'utilisent que `h2`/paragraphes/code, AC déjà satisfaite). [app/pages/blog/[...slug].vue (.article__prose)]
-- [x] [Review][Defer] Centralisation SEO site-wide : `siteUrl = "https://dev.jouan.ovh"` est codé en dur et **dupliqué** dans `/about`, `/blog` et `/blog/[...slug]` ; le JSON-LD est injecté via `innerHTML: JSON.stringify(...)` **sans échappement `</script>`** (contenu de confiance — articles de Simon) ; pas de `publisher`/`Organization`. — deferred, à traiter avec la centralisation SEO déjà tracée (`useSeoMeta`/`app.head` partagé + `siteUrl` depuis `runtimeConfig` + helper JSON-LD échappé) — Epic 9.
-- [x] [Review][Defer] a11y des dates blog + flèche retour : les dates visibles sont des `<span>` (pas de `<time datetime>` — or ici une **date ISO unique**, `<time>` serait pertinent, pour l'article ET l'index) ; le glyphe `←` du lien retour n'est pas `aria-hidden`. — deferred, lot a11y Epic 9 (avec eyebrow→titre + listes home/services).
+- [x] [Review][Patch] Étendre le style prose `:deep()` au vocabulaire markdown complet, DS-tuné (tokens, dark-first) : `ul`/`ol`/`li`, `blockquote`, `table`/`th`/`td`, `hr`, `h3`–`h4` — pour ne plus dépendre du reset legacy WordPress-normalize (`#ccc` sur `hr`, indentation `rem`, tables sans bordures). Décision Simon : zéro dette (était `decision-needed` ; les 3 articles actuels n'utilisent que `h2`/paragraphes/code, AC déjà satisfaite). [app/pages/blog/[...slug].vue (.article__prose)] — ✅ résolu : `:deep()` ajoutés pour `h3`/`h4`/`strong`, `ul`/`ol`/`li` (puces accent), `blockquote` (filet accent), `hr`, `table`/`th`/`td`, `img` — tous tokenisés. Vérifié visuellement via un article styleguide temporaire (rendu DS, supprimé après).
+- [x] [Review][Defer→Fixed] Centralisation SEO : `siteUrl` codé en dur et **dupliqué** dans 3 pages + JSON-LD `innerHTML` **sans échappement `</script>`**. — ✅ dette concrète résolue (décision Simon : zéro dette) : `SITE_URL` extrait dans `app/utils/seo.ts` (source unique, utilisé par `/about`, `/blog`, `/blog/[...slug]`) ; helper `jsonLdScript()` qui échappe `<` → `<`. _Reste_ la **migration `useSeoMeta`/`runtimeConfig` + `publisher`/`Organization`** (architecture, non-dette) → story SEO dédiée / Epic 9.
+- [x] [Review][Defer→Fixed] a11y des dates blog + flèche retour. — ✅ résolu : dates en `<time :datetime="…">` (article ET index — dates ISO uniques) ; glyphe `←` du lien retour enveloppé en `<span aria-hidden="true">`. Vérifié dans le HTML prerendu (`<time datetime="2026-06-12">`). _Reste_ la généralisation a11y site-wide (eyebrow→titre, listes home/services) → Epic 9.
 
 _Rejetés (bruit / faux positifs vérifiés)_ : « listes sans puces » et « images qui débordent » (FAUX — le reset global fournit `disc/decimal` + `img max-width:100%`) ; `h3` en défaut navigateur (FAUX — règle globale `_typography.scss` `h1-h6`) ; clé `useAsyncData` en fonction (typecheck + generate des 3 articles passent — Edge `[]`) ; ordre 404/500 (`.first()` renvoie `null`, pas de throw → 404 ; erreur réelle → 500) ; `clearError` client (transitions correctes) ; path traversal (requête content, pas FS ; `null`→404) ; canonical/trailing-slash (canonical = `article.path` propre, dédoublonne) ; contraste `code` inline vert (fidèle kit, token DS) ; héro `object-fit:cover` (recadre sans déformer) + `alt=""` (décoratif, schéma requis) ; `description`/`datePublished` non gardés (schéma garantit la chaîne) ; classes globales `hero__tags`/`post__meta` réutilisées (primitives voulues) ; `formatDate` sans garde (date regex-validée en 6.1) ; `NuxtLink` template vs `:as` ref (les deux corrects) ; `760px` répété (littéral structurel mandaté kit) ; refactor `index.vue`/`_layout.scss` (DRY in-scope, valeurs préservées — Auditor + Edge).

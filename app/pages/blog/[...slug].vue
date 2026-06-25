@@ -3,8 +3,9 @@
     <section class="section">
       <div class="container">
         <article v-if="page" class="article">
-          <!-- Lien retour (porté de Blog.jsx : hdr__link « ← Retour au blog ») -->
-          <NuxtLink to="/blog" class="article__back">← Retour au blog</NuxtLink>
+          <!-- Lien retour (porté de Blog.jsx : hdr__link « ← Retour au blog »).
+               Le glyphe ← est décoratif (aria-hidden) : le lecteur d'écran lit « Retour au blog ». -->
+          <NuxtLink to="/blog" class="article__back"><span aria-hidden="true">←</span> Retour au blog</NuxtLink>
 
           <!-- En-tête : tags, titre, méta (auteur · date · lecture), image héro -->
           <ul v-if="page.tags?.length" class="hero__tags article__tags">
@@ -18,7 +19,7 @@
           <div class="post__meta article__meta">
             <span>Simon Jouan</span>
             <span aria-hidden="true">·</span>
-            <span>{{ formatDate(page.date) }}</span>
+            <time :datetime="page.date">{{ formatDate(page.date) }}</time>
             <template v-if="page.read">
               <span aria-hidden="true">·</span>
               <span>{{ page.read }}</span>
@@ -107,15 +108,14 @@ if (import.meta.client) {
   });
 }
 
-// SEO par article (parité avec /about et /blog). Domaine de production cf. public/CNAME.
-const siteUrl = "https://dev.jouan.ovh";
+// SEO par article (parité avec /about et /blog). `SITE_URL` = util partagé (app/utils/seo).
 useHead(() => {
   const article = page.value;
   if (!article) {
     return {};
   }
-  const url = `${siteUrl}${article.path}`;
-  const image = article.image ? `${siteUrl}${article.image.src}` : undefined;
+  const url = `${SITE_URL}${article.path}`;
+  const image = article.image ? `${SITE_URL}${article.image.src}` : undefined;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -142,7 +142,7 @@ useHead(() => {
       { name: "twitter:description", content: article.description },
       ...(image ? [{ name: "twitter:image", content: image }] : []),
     ],
-    script: [{ type: "application/ld+json", innerHTML: JSON.stringify(jsonLd) }],
+    script: [jsonLdScript(jsonLd)],
   };
 });
 </script>
@@ -230,6 +230,29 @@ useHead(() => {
     color: var(--text-strong);
   }
 
+  :deep(h3) {
+    margin: var(--space-6) 0 var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-regular);
+    line-height: var(--lh-snug);
+    color: var(--text-strong);
+  }
+
+  :deep(h4) {
+    margin: var(--space-5) 0 var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-medium);
+    color: var(--text-strong);
+  }
+
+  // Emphase forte = couleur titre (cf. emphases bio /about).
+  :deep(strong) {
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+  }
+
   // Liens du corps prose : couleur lien DS + ring de focus accessible.
   :deep(a) {
     color: var(--link);
@@ -280,6 +303,71 @@ useHead(() => {
 
   :deep(pre code) {
     color: inherit;
+  }
+
+  // Listes : indentation tokenisée, puces/numéros en accent (esprit DS, cf. .offer li).
+  :deep(ul),
+  :deep(ol) {
+    margin: 0 0 var(--space-5);
+    padding-left: var(--space-6);
+  }
+
+  :deep(li) {
+    margin-bottom: var(--space-2);
+  }
+
+  :deep(li::marker) {
+    color: var(--accent);
+  }
+
+  // Citation : filet d'accent + texte discret italique.
+  :deep(blockquote) {
+    margin: 0 0 var(--space-5);
+    padding: var(--space-1) 0 var(--space-1) var(--space-4);
+    color: var(--text-muted);
+    font-style: italic;
+    border-left: 2px solid var(--accent);
+  }
+
+  :deep(blockquote p:last-child) {
+    margin-bottom: 0;
+  }
+
+  // Séparateur (filet discret).
+  :deep(hr) {
+    margin: var(--space-8) 0;
+    border: 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  // Tableaux : filets DS, en-tête mono sur surface élevée.
+  :deep(table) {
+    width: 100%;
+    margin: 0 0 var(--space-5);
+    font-size: var(--fs-sm);
+    border-collapse: collapse;
+  }
+
+  :deep(th),
+  :deep(td) {
+    padding: var(--space-2) var(--space-3);
+    text-align: left;
+    border: 1px solid var(--border-default);
+  }
+
+  :deep(th) {
+    font-family: var(--font-mono);
+    font-weight: var(--fw-medium);
+    color: var(--text-strong);
+    background: var(--bg-elevated);
+  }
+
+  // Images insérées dans la prose : jamais de débordement, coins arrondis DS.
+  :deep(img) {
+    max-width: 100%;
+    height: auto;
+    margin: var(--space-2) 0 var(--space-5);
+    border-radius: var(--radius-md);
   }
 }
 

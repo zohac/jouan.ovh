@@ -4,8 +4,8 @@ _Travaux réels mais reportés, remontés par les revues de code. À reprendre d
 
 ## Deferred from: code review of 6-2-vue-article-prose-et-code (2026-06-25)
 
-- **Centralisation SEO site-wide (consolidation)** — `siteUrl = "https://dev.jouan.ovh"` est désormais codé en dur et **dupliqué dans 3 pages** (`/about`, `/blog`, `/blog/[...slug]`) ; le JSON-LD est injecté via `useHead` `script[].innerHTML: JSON.stringify(...)` **sans échappement `</script>`** (risque théorique, contenu de confiance = articles de Simon). À traiter dans la centralisation SEO déjà notée (revues 5.1/6.1) : `siteUrl` depuis `runtimeConfig`, `useSeoMeta`/`app.head` partagé, helper JSON-LD échappé (ou `nuxt-schema-org`), + `publisher`/`Organization`. Epic 9 (ou story SEO dédiée).
-- **a11y dates blog + flèche retour** — dates visibles en `<span>` (pas de `<time datetime>`, alors que ce sont des dates ISO uniques — pertinent pour l'index ET l'article) ; glyphe `←` du lien retour non `aria-hidden`. Lot a11y Epic 9.
+- **Centralisation SEO site-wide (consolidation)** — _Dette concrète résolue en 6.2_ : `SITE_URL` extrait dans `app/utils/seo.ts` (source unique, dédup `/about`+`/blog`+`/blog/[...slug]`) ; JSON-LD via helper `jsonLdScript()` qui **échappe `<`** (plus de risque `</script>`). _Reste_ (architecture, non-dette) : migration `useSeoMeta`/`app.head` partagé, `SITE_URL` depuis `runtimeConfig`, `publisher`/`Organization` (ou `nuxt-schema-org`). → story SEO dédiée / Epic 9.
+- ~~**a11y dates blog + flèche retour**~~ — ✅ **Résolu** : dates en `<time :datetime>` (article + index) ; `←` du lien retour en `<span aria-hidden="true">`. _Reste_ la généralisation a11y (eyebrow→titre + listes home/services) → Epic 9.
 
 ## Deferred from: code review of 6-1-index-du-blog-et-empty-state (2026-06-23)
 

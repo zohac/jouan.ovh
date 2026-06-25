@@ -152,9 +152,9 @@ const degrees = [
 const pageTitle = "À propos — jouan.ovh";
 const pageDescription =
   "Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours.";
-// Domaine de production (cf. public/CNAME : dev.jouan.ovh).
-const pageUrl = "https://dev.jouan.ovh/about";
-const pageImage = "https://dev.jouan.ovh/images/portrait.jpeg";
+// SITE_URL = util partagé (app/utils/seo) — source unique du domaine de production.
+const pageUrl = `${SITE_URL}/about`;
+const pageImage = `${SITE_URL}/images/portrait.jpeg`;
 
 useHead({
   title: pageTitle,
