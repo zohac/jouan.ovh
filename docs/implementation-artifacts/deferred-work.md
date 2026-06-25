@@ -2,6 +2,28 @@
 
 _Travaux réels mais reportés, remontés par les revues de code. À reprendre dans la story/epic indiquée._
 
+---
+
+## 📋 Inventaire consolidé (synthèse — maj rétro Epic 6, 2026-06-25)
+
+_Vue d'ensemble par destination. Le détail par story est conservé dans les sections chronologiques ci-dessous. Aucune dette technique laissée dans les épics (chaque story a soldé ses findings) ; ce sont des **généralisations DS-wide / d'architecture** délibérément regroupées pour être traitées en un seul passage._
+
+### → Epic 9 — Accessibilité & finitions motion
+
+1. **Repli `forced-colors` DS-wide** — les rings de focus en `box-shadow: var(--ring-accent)` disparaissent en contraste forcé (Windows High Contrast). Corrigés **localement** sur les focusables des pages (`/`, lien bio `/about`) ; reste à corriger **une seule fois au niveau des primitives DS** (`ZButton`, `ZTag`, `ZCard`, `ZInput`, liens) via un repli `outline` sous `@media (forced-colors: active)`. _(revues 3.2, 5.1)_
+2. **Généralisation de la convention a11y titres + listes** — établie et appliquée sur `/about` (5.2), `/blog` (6.1) et la vue article (6.2) : libellé de section en `<h2 class="eyebrow">` neutralisé ; séquences/feeds en `<ol>`/`<ul>` + `<li>`. **Reste à généraliser** à **home** et **services** (+ séquence process `<ol>` de 4.2). _(revues 4.2, 5.2, 6.1)_
+3. **Audit site-wide des liens `target="_blank"`** — indication « nouvel onglet » (span sr-only) posée localement sur les cartes projet de `/` (3.3) ; reste à auditer/uniformiser les **autres** `_blank` (hexagones sociaux header/footer…) et à factoriser un helper de lien externe (icône + libellé sr-only, WCAG G201). _(revue 3.3)_
+
+### → Story SEO dédiée (fin de refonte — décision Simon, rétro Epic 6)
+
+4. **Centralisation SEO site-wide** — la **dette concrète est soldée** (6.2) : `SITE_URL` unique dans `app/utils/seo.ts` (dédup `/about`+`/blog`+article), JSON-LD via `jsonLdScript()` qui échappe `</script>`. **Reste** (architecture, non-dette) : migrer vers `useSeoMeta`/`app.head` partagé, sourcer `SITE_URL` depuis `runtimeConfig`, ajouter `publisher`/`Organization` (ou `nuxt-schema-org`), et étendre OG/JSON-LD aux pages encore nues (home, services, contact). _(revues 5.1, 6.1, 6.2)_
+
+### → Fin de refonte (déjà tracé hors ce fichier)
+
+5. **Déploiement gh-pages réel** — chaîne CI + domaine custom (`CNAME`) jamais prouvée ; ~21 stories empilées sur `feat/design-system-revamp`, jamais mergées sur `main`. Report assumé, risque croissant. _(rétros Epic 1→6)_
+
+---
+
 ## Deferred from: code review of 6-2-vue-article-prose-et-code (2026-06-25)
 
 - **Centralisation SEO site-wide (consolidation)** — _Dette concrète résolue en 6.2_ : `SITE_URL` extrait dans `app/utils/seo.ts` (source unique, dédup `/about`+`/blog`+`/blog/[...slug]`) ; JSON-LD via helper `jsonLdScript()` qui **échappe `<`** (plus de risque `</script>`). _Reste_ (architecture, non-dette) : migration `useSeoMeta`/`app.head` partagé, `SITE_URL` depuis `runtimeConfig`, `publisher`/`Organization` (ou `nuxt-schema-org`). → story SEO dédiée / Epic 9.

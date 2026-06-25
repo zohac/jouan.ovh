@@ -59,7 +59,13 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   passer comme valeur. (Régression rencontrée en story 2.8.)
 - Images TOUJOURS via `<NuxtImg>` / `<NuxtPicture>` (@nuxt/image), jamais
   `<img>` brut. Assets statiques dans `public/images/`.
-- Blog alimenté par `@nuxt/content` v3 (markdown) — route `blog/[...slug].vue`.
+- Blog alimenté par `@nuxt/content` **v3** (markdown sous `content/blog/`) — index
+  `app/pages/blog/index.vue`, article `app/pages/blog/[...slug].vue`. Collections **typées
+  dans `content.config.ts`** (schéma `blog` : `date` validée ISO via `z.string().regex`,
+  `tags`, `read`, `image`). Requêtes via `queryCollection("blog")…` dans `useAsyncData`
+  (prerender-safe) ; rendu article via `<ContentRenderer>`. **Coloration Shiki désactivée**
+  (`content.build.markdown.highlight: false`) pour imposer la palette terminale du DS —
+  ne pas réactiver sans surcharge (sinon styles inline par token écrasant le DS).
 
 **SCSS (règle critique)**
 
@@ -213,6 +219,14 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   effaçait le vertical de `.hero__in`). Utiliser les **longhands** `padding-inline` /
   `padding-block`, qui composent sans conflit quel que soit l'ordre. (Régression de
   padding du hero, story 3.1 — invisible à la revue de code, attrapée à l'œil.)
+- **`@nuxt/content` v3 + Docker — base SQLite du dev périmée** : lancer `pnpm generate`
+  dans un conteneur `run --rm` séparé pendant que le conteneur dev tourne **invalide la
+  base de contenu** du dev (volume partagé) → `/blog` tombe en erreur. Correctif :
+  `docker compose restart web` réindexe le contenu. Sans impact sur le build lui-même.
+- **Styler le HTML généré par `@nuxt/content`** : le rendu (`<ContentRenderer>`) n'est pas
+  atteint par `scoped` → cibler via `:deep()`. Piège : le renderer enrobe chaque titre
+  d'une ancre `<a href="#…">` → titres rendus **bleu souligné** si pas de reset → ajouter
+  `:deep(h2 a, h3 a, h4 a){ color: inherit; text-decoration: none }`. (Story 6.2.)
 - **Vérif visuelle avant revue (stories de page)** : lancer le dev, ouvrir la page
   dans **Chrome DevTools MCP** ET la référence visuelle correspondante, puis comparer
   le rendu (padding/marges/espacement/fidélité), en desktop ET mobile. La revue de code
@@ -221,9 +235,10 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
     `docs/animations_jouan.ovh/screenshots/` (`hero*.png`, `services.png`, `booted.png`).
   - **Services / About / Blog / Contact** → `docs/design_system/ui_kits/jouan-site/index.html`
     (UI kit cible ; ouvrir la section correspondante).
-  - Routine appliquée sans faille sur Epics 4-5 (desktop + mobile) → zéro régression de
-    rendu ; en 5.2 elle a même corrigé un défaut de la maquette (centrage timeline `kit.css`).
-    À reconduire sur chaque story-page (Epics 6→8).
+  - Routine appliquée sans faille sur Epics 4-6 (desktop + mobile) → zéro régression de
+    rendu ; elle a corrigé un défaut de la maquette (centrage timeline `kit.css`, 5.2) et
+    attrapé un bug d'ancres de titres `@nuxt/content` (6.2). À reconduire sur chaque
+    story-page (Epics 7-8).
 
 ---
 
@@ -241,4 +256,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-06-23 (post-Epic 5 : primitives de layout globales `base/_layout.scss` + convention a11y titres/listes — eyebrow-as-`h2`, séquences en `<ol>`/`<ul>` ; post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)
+Dernière mise à jour : 2026-06-25 (post-Epic 6 : pipeline `@nuxt/content` v3 — collections typées `content.config.ts`, Shiki désactivé, gotchas Docker/SQLite + `:deep()` ancres de titres ; post-Epic 5 : primitives de layout globales `base/_layout.scss` + convention a11y titres/listes — eyebrow-as-`h2`, séquences en `<ol>`/`<ul>` ; post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)

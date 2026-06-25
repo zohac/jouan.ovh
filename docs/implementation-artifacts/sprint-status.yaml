@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-25 (story 6-2-vue-article-prose-et-code → done : re-revue OK, build + visuel verts ; Epic 6 complet)"
+last_updated: "2026-06-25 (rétrospective Epic 6 → done ; Epic 6 clôturé, inventaire dette consolidé, préparation Epic 7)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -85,7 +85,7 @@ development_status:
   epic-6: in-progress
   6-1-index-du-blog-et-empty-state: done
   6-2-vue-article-prose-et-code: done
-  epic-6-retrospective: optional
+  epic-6-retrospective: done
 
   # Epic 7 — Page Contact
   epic-7: in-progress
