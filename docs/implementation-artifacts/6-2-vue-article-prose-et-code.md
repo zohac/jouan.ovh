@@ -4,7 +4,7 @@ baseline_commit: 24a194c6f90dd20cb9b15267405dfd02dbadd97b
 
 # Story 6.2: Vue article (prose + code)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -153,6 +153,7 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | ---------- | ------- | ----------------------------------------------------------------------------------------------- |
 | 2026-06-24 | 0.1     | Implémentation story 6.2 — vue article `/blog/[...slug]` : prose Ubuntu sans + blocs de code en palette terminale (Shiki désactivé), structure `.article`, en-tête + héro + CTA, SEO article. Extractions partagées `formatDate` / `.post__meta`. |
 | 2026-06-25 | 0.2     | Correctifs de revue (zéro dette) : prose `:deep()` vocabulaire complet (listes/citation/table/hr/h3-h4/img, tokens) ; `SITE_URL` + `jsonLdScript()` échappé extraits (`app/utils/seo.ts`, dédup `/about`+`/blog`+article) ; dates en `<time datetime>` (article + index) ; `←` du lien retour en `aria-hidden`. |
+| 2026-06-25 | 0.3     | Re-revue des correctifs (commit `4d3e43e`) : patch prose + dette concrète des 2 différés vérifiés résolus ; build vert (24 routes, héros article webp) ; HTML prérendu (time, JSON-LD échappé, SEO `/about`+`/blog` non régressés) + 13 règles prose injectées validées (styles calculés) + visuel desktop. Statut → `done`. |
 
 ## Review Findings
 
