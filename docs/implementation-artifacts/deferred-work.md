@@ -2,6 +2,11 @@
 
 _Travaux réels mais reportés, remontés par les revues de code. À reprendre dans la story/epic indiquée._
 
+## Deferred from: code review of 6-2-vue-article-prose-et-code (2026-06-25)
+
+- **Centralisation SEO site-wide (consolidation)** — `siteUrl = "https://dev.jouan.ovh"` est désormais codé en dur et **dupliqué dans 3 pages** (`/about`, `/blog`, `/blog/[...slug]`) ; le JSON-LD est injecté via `useHead` `script[].innerHTML: JSON.stringify(...)` **sans échappement `</script>`** (risque théorique, contenu de confiance = articles de Simon). À traiter dans la centralisation SEO déjà notée (revues 5.1/6.1) : `siteUrl` depuis `runtimeConfig`, `useSeoMeta`/`app.head` partagé, helper JSON-LD échappé (ou `nuxt-schema-org`), + `publisher`/`Organization`. Epic 9 (ou story SEO dédiée).
+- **a11y dates blog + flèche retour** — dates visibles en `<span>` (pas de `<time datetime>`, alors que ce sont des dates ISO uniques — pertinent pour l'index ET l'article) ; glyphe `←` du lien retour non `aria-hidden`. Lot a11y Epic 9.
+
 ## Deferred from: code review of 6-1-index-du-blog-et-empty-state (2026-06-23)
 
 - ~~**SEO `/blog`**~~ — ✅ **Résolu sur `/blog`** (décision Simon : zéro dette) : `og:*`/`twitter:*`/`canonical` + JSON-LD `Blog`→`BlogPosting` ajoutés au `useHead`, vérifiés dans le HTML prerendu. _Reste_ la **centralisation SEO site-wide** (autres pages que `/about` + `/blog`, via `useSeoMeta` partagé / `app.head`) — Epic 9.
