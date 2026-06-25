@@ -94,15 +94,7 @@ const { data: articles, error } = await useAsyncData("blog-list", () =>
   queryCollection("blog").order("date", "DESC").all(),
 );
 
-// Date ISO (front-matter) → affichage français. timeZone UTC : rendu déterministe
-// (indépendant du fuseau de build), pas de décalage d'un jour à l'hydration.
-const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-  timeZone: "UTC",
-});
-const formatDate = (iso: string) => dateFormatter.format(new Date(iso));
+// `formatDate` (date ISO → français) est un util auto-importé partagé (app/utils/).
 
 // Métadonnées de la page. Domaine de production cf. public/CNAME (dev.jouan.ovh).
 const siteUrl = "https://dev.jouan.ovh";
@@ -151,8 +143,8 @@ useHead({
 
 <style lang="scss" scoped>
 /* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis kit.css / Blog.jsx */
-// .section / .container / .eyebrow / .prose / .hero__tags sont des primitives de
-// layout globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+// .section / .container / .eyebrow / .prose / .hero__tags / .post__meta sont des
+// primitives de layout globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
 .blog {
   display: block;
 }
@@ -222,14 +214,7 @@ useHead({
   color: var(--text-body);
 }
 
-.post__meta {
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--text-faint);
-}
+// .post__meta : primitive globale (base/_layout.scss), partagée avec la vue article.
 
 // ---- Empty-state / erreur (ZCard centrée, illustration + message) ----
 .blog__notice {

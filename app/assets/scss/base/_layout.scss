@@ -64,3 +64,14 @@
   padding: 0;
   list-style: none;
 }
+
+// Ligne de méta mono discrète, items séparés par « · » (porté de kit.css .post__meta).
+// Réutilisée par le feed blog (/blog) et l'en-tête d'article (/blog/[...slug]).
+.post__meta {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+}

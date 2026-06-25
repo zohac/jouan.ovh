@@ -31,6 +31,17 @@ export default defineNuxtConfig({
   },
   css: ["@/assets/scss/main.scss"],
   modules: ["@nuxt/content", "@nuxt/image", "@nuxt/eslint"],
+  // @nuxt/content : coloration syntaxique Shiki désactivée. Le DS rend le code en
+  // palette terminale UNIFORME (mono off-white sur fond aubergine, vert pour l'inline,
+  // cf. kit.css .article .prose pre/code) — pas de multicolore par token, qui injecterait
+  // des styles inline écrasant les tokens. Les blocs rendent en <pre><code> nu, stylés en SCSS.
+  content: {
+    build: {
+      markdown: {
+        highlight: false,
+      },
+    },
+  },
   // Primitives DS dans components/ui/ auto-importées sans préfixe de dossier
   // (<ZButton> et non <UiZButton>). Le reste de components/ garde le scan par défaut.
   components: [{ path: "~/components/ui", pathPrefix: false }, "~/components"],
