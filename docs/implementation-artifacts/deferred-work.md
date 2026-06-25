@@ -17,10 +17,11 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 ### → Story SEO dédiée (fin de refonte — décision Simon, rétro Epic 6)
 
 4. **Centralisation SEO site-wide** — la **dette concrète est soldée** (6.2) : `SITE_URL` unique dans `app/utils/seo.ts` (dédup `/about`+`/blog`+article), JSON-LD via `jsonLdScript()` qui échappe `</script>`. **Reste** (architecture, non-dette) : migrer vers `useSeoMeta`/`app.head` partagé, sourcer `SITE_URL` depuis `runtimeConfig`, ajouter `publisher`/`Organization` (ou `nuxt-schema-org`), et étendre OG/JSON-LD aux pages encore nues (home, services, contact). _(revues 5.1, 6.1, 6.2)_
+5. **⚠️ Domaine de production dans `SITE_URL`** — `app/utils/seo.ts` et `public/CNAME` pointent sur **`dev.jouan.ovh`** = **staging** (branche `develop` → gh-pages, décision Simon, rétro Epic 6). La **prod cible est `jouan.ovh`** (hébergement encore à décider). Avant mise en prod / indexation : basculer `SITE_URL` (et le `CNAME` du déploiement prod) sur `https://jouan.ovh`, sinon les `canonical`/`og:url`/JSON-LD de `/about`, `/blog`, articles pointeront sur le staging. _(rétro Epic 6)_
 
 ### → Fin de refonte (déjà tracé hors ce fichier)
 
-5. **Déploiement gh-pages réel** — chaîne CI + domaine custom (`CNAME`) jamais prouvée ; ~21 stories empilées sur `feat/design-system-revamp`, jamais mergées sur `main`. Report assumé, risque croissant. _(rétros Epic 1→6)_
+6. **Déploiement gh-pages réel** — chaîne CI + domaine custom (`CNAME`) jamais prouvée ; ~21 stories empilées sur `feat/design-system-revamp`, jamais mergées sur `main`. Report assumé, risque croissant. _(rétros Epic 1→6)_
 
 ---
 
