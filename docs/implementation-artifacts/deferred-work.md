@@ -29,6 +29,11 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 ---
 
+## Deferred from: code review of 7-2-infos-cta-terminal-et-socials (2026-06-26)
+
+- **a11y sémantique de la colonne droite `/contact`** — la carte infos rend les paires label/valeur en `<div>` (pas de `<dl>/<dt>/<dd>`), le préfixe `//` est lu « slash slash », pas de titre de section, et le CTA terminal n'a pas `aria-haspopup="dialog"`. Fidèle au kit, non bloquant. À reprendre dans le **lot a11y Epic 9** (item 2 consolidé : sémantique titres/listes/régions). _(La ligne de prompt décorative a été traitée en patch 7.2 — `aria-hidden`.)_
+- **DRY — données de contact inline** — `contact.email`/`city` (7.2) et `profile.email`/`city` (`/about`) sont des littéraux dupliqués. Candidat à une **constante `SITE` partagée** (`app/utils/`), à regrouper avec la consolidation SEO (`SITE_URL` déjà extrait). → consolidation de fin de refonte, non bloquant.
+
 ## Deferred from: code review of 7-1-route-contact-et-formulaire (2026-06-26)
 
 - **SEO `/contact`** — `useHead` ne pose que `title`+`description` (pas d'OG/canonical/JSON-LD), comme `/services`. Déjà couvert par l'**item 4 consolidé** (« étendre OG/JSON-LD aux pages encore nues : home, services, **contact** »). → story SEO dédiée / Epic 9. _(Les 2 autres findings 7.1 — focus a11y à l'envoi, erreurs collantes — sont des **patchs** de la story, pas des différés ; cf. Review Findings du ticket.)_

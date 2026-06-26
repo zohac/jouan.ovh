@@ -1,6 +1,10 @@
+---
+baseline_commit: 2b1879d08e31ce7e86efe6a9bea7600e67d26551
+---
+
 # Story 7.2: Infos, CTA terminal et socials
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,23 +23,23 @@ so that je choisis comment joindre Simon (UX-DR16, FR9).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Carte infos (AC: #1)
-  - [ ] Dans la colonne droite de `pages/contact.vue`, ajouter une carte (`ZCard`) avec trois `infoitem` : `// email` (lien `mailto:` en `var(--term-blue)`), `// localisation` (ville), `// disponibilité` (badge `Ouvert aux missions freelance`)
-  - [ ] Alimenter le contenu depuis les données du site (email, ville, disponibilité) — cf. `data.js` (`window.SITE`)
-  - [ ] Le badge de disponibilité utilise `ZBadge` (Epic 2, story 2.5) tone `success` avec point (`dot`)
-- [ ] Tâche 2 — Carte CTA terminal (AC: #1, #2)
-  - [ ] Ajouter une carte « offer » au fond terminal (`var(--bg-terminal)`, bordure aubergine) avec la ligne prompt `anon.@jouan.ovh:~$ ./contact` et un court texte d'invite français
-  - [ ] Bouton `ZButton` variante `terminal`, taille `sm`, icône terminal, libellé `Ouvrir le terminal`
-  - [ ] Au clic, **ouvrir l'easter-egg terminal** via le mécanisme existant (cf. Dev Notes — `TerminalManagerComponent.createNewTerminal()`)
-- [ ] Tâche 3 — Hexagones sociaux (AC: #1)
-  - [ ] Ajouter la rangée d'hexagones sociaux (`hexrow`) en bas de la colonne droite, un hexagone par réseau (GitHub, Twitter/X, LinkedIn)
-  - [ ] Réutiliser le composant existant `HexagonLinkComponent` (et/ou le pattern de `LinkListComponent`) avec les glyphes SVG inline et les URLs de `data.js` (`window.SITE.social`) ; liens en `target="_blank" rel="noreferrer"`, `title`/`aria-label` par réseau
-- [ ] Tâche 4 — Style via tokens & dark-first (AC: #1)
-  - [ ] Styler en SCSS scoped via tokens (aucune valeur hardcodée — NFR2) ; `@use` (jamais `@import`)
-  - [ ] Labels `// email`/`// localisation`/… en Ubuntu Mono ; ligne prompt en mono `var(--term-green)` ; respecter dark-first
-- [ ] Tâche 5 — Vérification (AC: #1, #2)
-  - [ ] `yarn dev` : la colonne droite rend la carte infos + carte CTA + hexagones ; le clic sur « Ouvrir le terminal » ouvre une fenêtre de terminal fonctionnelle
-  - [ ] `yarn lint` ne régresse pas ; accès DOM gardés (compatibilité prerender)
+- [x] Tâche 1 — Carte infos (AC: #1)
+  - [x] Dans la colonne droite de `pages/contact.vue`, ajouter une carte (`ZCard`) avec trois `infoitem` : `// email` (lien `mailto:` en `var(--term-blue)`), `// localisation` (ville), `// disponibilité` (badge `Ouvert aux missions freelance`)
+  - [x] Alimenter le contenu depuis les données du site (email, ville, disponibilité) — cf. `data.js` (`window.SITE`)
+  - [x] Le badge de disponibilité utilise `ZBadge` (Epic 2, story 2.5) tone `success` avec point (`dot`)
+- [x] Tâche 2 — Carte CTA terminal (AC: #1, #2)
+  - [x] Ajouter une carte « offer » au fond terminal (`var(--bg-terminal)`, bordure aubergine) avec la ligne prompt `anon.@jouan.ovh:~$ ./contact` et un court texte d'invite français
+  - [x] Bouton `ZButton` variante `terminal`, taille `sm`, icône terminal, libellé `Ouvrir le terminal`
+  - [x] Au clic, **ouvrir l'easter-egg terminal** via le mécanisme existant (cf. Dev Notes — `TerminalManagerComponent.createNewTerminal()`)
+- [x] Tâche 3 — Hexagones sociaux (AC: #1)
+  - [x] Ajouter la rangée d'hexagones sociaux (`hexrow`) en bas de la colonne droite, un hexagone par réseau (GitHub, Twitter/X, LinkedIn)
+  - [x] Réutiliser le composant existant `HexagonLinkComponent` (et/ou le pattern de `LinkListComponent`) avec les glyphes SVG inline et les URLs de `data.js` (`window.SITE.social`) ; liens en `target="_blank" rel="noreferrer"`, `title`/`aria-label` par réseau
+- [x] Tâche 4 — Style via tokens & dark-first (AC: #1)
+  - [x] Styler en SCSS scoped via tokens (aucune valeur hardcodée — NFR2) ; `@use` (jamais `@import`)
+  - [x] Labels `// email`/`// localisation`/… en Ubuntu Mono ; ligne prompt en mono `var(--term-green)` ; respecter dark-first
+- [x] Tâche 5 — Vérification (AC: #1, #2)
+  - [x] `yarn dev` : la colonne droite rend la carte infos + carte CTA + hexagones ; le clic sur « Ouvrir le terminal » ouvre une fenêtre de terminal fonctionnelle
+  - [x] `yarn lint` ne régresse pas ; accès DOM gardés (compatibilité prerender)
 
 ## Dev Notes
 
@@ -103,10 +107,41 @@ so that je choisis comment joindre Simon (UX-DR16, FR9).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` / `pnpm typecheck` / `pnpm generate` (Docker) : tous PASS ; `/contact` prerendu.
+- Vérif Chrome DevTools MCP : colonne droite (infos email/localisation/dispo, carte CTA terminal aubergine, hexagones GitHub/Twitter/LinkedIn) fidèle à `Contact.jsx`, desktop + mobile (→ 1 colonne) ; **clic « Ouvrir le terminal » → la fenêtre terminal s'ouvre** (logo ASCII + prompt vert). Console propre.
+- ⚠️ Faux négatif initial : le 1er clic n'ouvrait rien à cause de `504 (Outdated Optimize Dep)` Vite (cache de pré-bundling périmé après `docker compose restart`) → l'import dynamique du terminal échouait. **Un reload purge le cache** ; ensuite l'ouverture fonctionne. (Même famille de piège transitoire dev que la base SQLite content après generate.)
 
 ### Completion Notes List
 
-- Ultimate context engine analysis completed - comprehensive developer guide created.
+- Complète la colonne droite de `app/pages/contact.vue` (placeholder 7.1 → contenu), porté de `Contact.jsx` :
+  - **Carte infos** (`ZCard`) : 3 `infoitem` (label mono `// email`/`// localisation`/`// disponibilité`) — email `mailto:` en `--term-blue` (ring de focus a11y), ville, et `ZBadge tone="success" dot` « Ouvert aux missions freelance ». Données `contact = { email, city }` (data.js).
+  - **Carte CTA terminal** (`ZCard` fond `--bg-terminal`, bordure `--accent-2-soft`) : ligne prompt mono `anon.@jouan.ovh:~$ ./contact` (vert + `./contact` off-white), invite, `ZButton variant="terminal" size="sm"` + `ZIcon name="terminal"`.
+  - **Hexagones sociaux** : réutilisation directe de `<LinkListComponent />` (rangée `hexrow` partagée avec le footer ; `HexagonLinkComponent` + `ZIcon`, liens `_blank rel=noopener noreferrer`, label sr-only).
+- **Ouverture du terminal (AC #2)** : via le composable partagé `useTerminal().open()` — le `TerminalManagerComponent` reste monté **une seule fois** dans le header (pas de 2ᵉ gestionnaire). `open()` est un **no-op au prerender** (aucun lanceur enregistré) → prerender-safe ; côté client il déclenche `createNewTerminal()`. Aucune dépendance au restyle terminal (Epic 8).
+- Tokens uniquement, `<style scoped>`, primitives globales consommées. La colonne droite hérite de la grille `contact__grid` (1fr / 0.8fr → 1 colonne sous 900px) posée en 7.1.
 
 ### File List
+
+- `app/pages/contact.vue` (MODIFIÉ — colonne droite : carte infos `ZCard`/`ZBadge`, carte CTA terminal, `LinkListComponent` ; script `contact` + `useTerminal` ; styles colonne droite)
+- `docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Dev Agent Record, statut)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
+
+## Change Log
+
+| Date       | Version | Description                                                                                          |
+| ---------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| 2026-06-26 | 0.1     | Implémentation story 7.2 — colonne droite de `/contact` : carte infos (`ZBadge` dispo), carte CTA terminal (ouvre l'easter-egg via `useTerminal`), hexagones sociaux (`LinkListComponent`). |
+| 2026-06-26 | 0.2     | Revue de code : aucune violation (Edge `[]`, Auditor OK). 1 patch appliqué (prompt décoratif `aria-hidden`) ; 2 différés Epic 9 (sémantique a11y infos, DRY `SITE`). Build vert + AC #2 vérifiée au navigateur (le CTA ouvre le terminal). Statut → `done`. |
+
+## Review Findings
+
+_Code review (bmad-code-review) — 2026-06-26. Couches : Blind Hunter (diff seul) · Edge Case Hunter (diff + projet, retour `[]`) · Acceptance Auditor (diff + SPEC/ticket/`Contact.jsx`). Verdict : AC #1 et AC #2/CAP-10 satisfaites, aucune violation dure ; `useTerminal()` (registre partagé, no-op prerender, pas de 2ᵉ TerminalManager), `ZCard`/`ZBadge`/`ZButton`/`ZIcon`, `LinkListComponent` (rel + sr-only) et tokens tous vérifiés sains. Implémentation propre._
+
+- [ ] [Review][Patch] a11y — la ligne de prompt décorative `anon.@jouan.ovh:~$ ./contact` est un `<p>` réel, lue **verbatim** par les lecteurs d'écran (« anon point at jouan point ovh… »). L'ajouter en `aria-hidden="true"` (le bouton « Ouvrir le terminal » + le texte d'invite portent déjà le sens). [app/pages/contact.vue (.contact__prompt)]
+- [x] [Review][Defer] a11y sémantique de la carte infos : les `infoitem` sont des `<div>` label/valeur (pas de `<dl>/<dt>/<dd>` ni `aria`), le préfixe `//` est lu « slash slash », la colonne droite n'a pas de titre, et le CTA terminal pourrait porter `aria-haspopup="dialog"`. Fidèle au kit mais améliorable. — deferred, lot a11y Epic 9 (avec eyebrow→titre + listes home/services). _(Note DRY : `contact.email`/`city` sont inline ici comme `profile.email` dans `/about` — candidat à une constante `SITE` partagée, future consolidation.)_
+
+_Rejetés (bruit / faux positifs vérifiés)_ : `@click` non forwardé par `ZButton` (FAUX — forwardé via `passthroughAttrs` ; pattern déjà utilisé au hero 3.1) ; `ZIcon` non `aria-hidden` (FAUX — décoratif par défaut sans `label`) ; ring de focus email forced-colors (FAUX — `outline: 2px transparent` **est** le repli) ; override de spécificité `ZCard` (vérifié : gagne ; + c'est le pattern du kit `.offer`) ; bordure terminal `--accent-2-soft` 28% vs kit 50% (c'est le **token DS de bordure terminal**, identique à `ZButton variant="terminal"` → usage DS correct, la valeur kit était le prototype) ; double espacement gap+margin (FAUX — contextes différents : gap entre cartes, margin entre infoitems dans la carte) ; liens sociaux non sûrs (vérifié : `target=_blank rel="noopener noreferrer"` + libellé sr-only) ; `badge dot` couleur seule (FAUX — le texte « Ouvert… » porte le sens, `dot` `aria-hidden`) ; indication « nouvel onglet » socials (item 3.3 déjà tracé Epic 9) ; `mailto` scraper-bait / no-JS (conformes spec, standard) ; `.prose` sur l'invite (fidèle kit, primitive corps de texte) ; contraste `--term-blue` (token DS) ; icône Twitter `x` vs `twitter` (même glyphe, choix pré-existant du composant partagé) ; `rel` `noopener noreferrer` vs `noreferrer` du kit (sécurité-positif) ; `as const` (inoffensif).
