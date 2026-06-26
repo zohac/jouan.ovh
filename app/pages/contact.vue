@@ -85,8 +85,40 @@
             </form>
           </div>
 
-          <!-- Colonne droite : carte infos + CTA terminal + hexagones sociaux — story 7.2. -->
-          <div class="contact__info"><!-- réservé story 7.2 --></div>
+          <!-- Colonne droite (story 7.2) : carte infos + carte CTA terminal + hexagones sociaux -->
+          <div class="contact__info">
+            <!-- Carte infos : email / localisation / disponibilité -->
+            <ZCard class="contact__infocard">
+              <div class="infoitem">
+                <div class="infoitem__k">// email</div>
+                <a class="infoitem__v contact__email" :href="`mailto:${contact.email}`">{{ contact.email }}</a>
+              </div>
+              <div class="infoitem">
+                <div class="infoitem__k">// localisation</div>
+                <div class="infoitem__v">{{ contact.city }}</div>
+              </div>
+              <div class="infoitem">
+                <div class="infoitem__k">// disponibilité</div>
+                <div class="contact__avail"><ZBadge tone="success" dot>Ouvert aux missions freelance</ZBadge></div>
+              </div>
+            </ZCard>
+
+            <!-- Carte CTA terminal : ouvre l'easter-egg via le lanceur partagé (useTerminal) -->
+            <ZCard class="contact__term">
+              <!-- Prompt décoratif (flavor terminal) : aria-hidden — le bouton + l'invite portent le sens. -->
+              <p class="contact__prompt" aria-hidden="true">
+                anon.@jouan.ovh:~$ <span class="contact__prompt-cmd">./contact</span>
+              </p>
+              <p class="prose contact__term-text">Vous préférez la ligne de commande ? Ouvrez le terminal.</p>
+              <ZButton variant="terminal" size="sm" @click="openTerminal">
+                <template #icon><ZIcon name="terminal" /></template>
+                Ouvrir le terminal
+              </ZButton>
+            </ZCard>
+
+            <!-- Hexagones sociaux (composant partagé avec le footer) -->
+            <LinkListComponent />
+          </div>
         </div>
       </div>
     </section>
@@ -94,11 +126,16 @@
 </template>
 
 <script setup lang="ts">
-// Page Contact (story 7.1) — colonne gauche : en-tête + formulaire. Porté de Contact.jsx.
-// Envoi via Web3Forms (service tiers SANS serveur : pas de backend à héberger ; décision
-// Simon, supersede l'ancien NFR4 « ni service tiers »). Validation front + feedback
-// conservés. La colonne droite (infos / CTA terminal / socials) est la story 7.2.
+// Page Contact — colonne gauche : en-tête + formulaire (story 7.1, envoi Web3Forms,
+// service tiers SANS serveur). Colonne droite : infos + CTA terminal + socials (story 7.2).
 import { nextTick } from "vue";
+
+// Infos de contact (data.js → window.SITE).
+const contact = { email: "simon@jouan.ovh", city: "Valognes, France" } as const;
+
+// Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le header).
+// no-op au prerender (aucun lanceur) → prerender-safe ; ouvre le terminal côté client.
+const { open: openTerminal } = useTerminal();
 
 interface ContactForm {
   name: string;
@@ -306,6 +343,83 @@ useHead({
 .contact__sent-text {
   margin: 0;
   font-size: var(--fs-sm);
+}
+
+// ============================================================
+//  Colonne droite (story 7.2) : infos / CTA terminal / socials
+// ============================================================
+// Colonne (porté de kit.css : .contact__info — flex column).
+.contact__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+// ---- Carte infos (porté de kit.css : .infoitem / .k / .v) ----
+.infoitem {
+  font-family: var(--font-mono);
+
+  &:not(:last-child) {
+    margin-bottom: var(--space-5);
+  }
+}
+
+.infoitem__k {
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.infoitem__v {
+  font-size: var(--fs-md);
+  color: var(--text-strong);
+}
+
+// Lien email en bleu terminal (porté de Contact.jsx), ring de focus accessible.
+.contact__email {
+  text-decoration: none;
+  color: var(--term-blue);
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+    box-shadow: var(--ring-accent);
+  }
+}
+
+.contact__avail {
+  margin-top: var(--space-2);
+}
+
+// ---- Carte CTA terminal (porté de Contact.jsx : Card .offer fond terminal) ----
+// Surcharge du fond/bordure de ZCard ; nesting sous .contact__info pour la spécificité.
+.contact__info .contact__term {
+  background: var(--bg-terminal);
+  border-color: var(--accent-2-soft);
+}
+
+.contact__prompt {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--term-green);
+}
+
+// Commande tapée : off-white (porté de l'inline ink-1 de Contact.jsx).
+.contact__prompt-cmd {
+  color: var(--text-strong);
+}
+
+.contact__term-text {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
 }
 
 // ---- Responsive (cf. kit.css @media max-width: 900px : grilles → 1 colonne) ----
