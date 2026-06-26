@@ -1,46 +1,55 @@
 <template>
-  <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput">
-    <div class="terminal-header" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
-      <div class="terminal-dots">
-        <div class="close-button" @click="closeTerminal"></div>
-        <span class="terminal-dot terminal-dot--min" aria-hidden="true"></span>
-        <span class="terminal-dot terminal-dot--max" aria-hidden="true"></span>
+  <!--
+    Téléporté sur <body> : le terminal est monté dans le <header>, qui porte un
+    `backdrop-filter: blur(10px)`. Un ancêtre filtré devient "backdrop root" et
+    neutralise le `backdrop-filter` du corps (le blur DS ne s'applique alors qu'au
+    contenu du header, pas à la page). Hors du header, le flou aubergine rend bien.
+    Déplacement de rendu uniquement — drag/resize/focus/historique inchangés.
+  -->
+  <Teleport to="body">
+    <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput">
+      <div class="terminal-header" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
+        <div class="terminal-dots">
+          <div class="close-button" @click="closeTerminal"></div>
+          <span class="terminal-dot terminal-dot--min" aria-hidden="true"></span>
+          <span class="terminal-dot terminal-dot--max" aria-hidden="true"></span>
+        </div>
+        <div class="header-text">{{ defaultConfig.domainName }}</div>
       </div>
-      <div class="header-text">{{ defaultConfig.domainName }}</div>
-    </div>
 
-    <div class="terminal-body">
-      <div v-for="(line, index) in commandLines" :key="index">
-        <template v-if="line.isResponse">
-          <!-- eslint-disable-next-line vue/no-v-html -- sortie générée en interne par les programmes du terminal (contenu maîtrisé) -->
-          <span v-html="line.text"></span>
-        </template>
-        <template v-else>
-          <span class="git-prompt"
-            >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}<span class="git-prompt-separator">:</span>
-            <span class="git-prompt-directory">~</span>
-            <span class="git-prompt-separator">$</span></span
-          >&nbsp;{{ line.text }}
-        </template>
+      <div class="terminal-body">
+        <div v-for="(line, index) in commandLines" :key="index">
+          <template v-if="line.isResponse">
+            <!-- eslint-disable-next-line vue/no-v-html -- sortie générée en interne par les programmes du terminal (contenu maîtrisé) -->
+            <span v-html="line.text"></span>
+          </template>
+          <template v-else>
+            <span class="git-prompt"
+              >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}<span class="git-prompt-separator">:</span>
+              <span class="git-prompt-directory">~</span>
+              <span class="git-prompt-separator">$</span></span
+            >&nbsp;{{ line.text }}
+          </template>
+        </div>
+        <span class="git-prompt"
+          >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}<span class="git-prompt-separator">:</span>
+          <span class="git-prompt-directory">~</span>
+          <span class="git-prompt-separator">$</span>
+        </span>
+        <input
+          ref="userInputRef"
+          v-model="userInput"
+          type="text"
+          class="user-input"
+          @keydown.enter="submitInput"
+          @keydown.arrow-up="handleHistoryNavigation"
+          @keydown.arrow-down="handleHistoryNavigation"
+        />
       </div>
-      <span class="git-prompt"
-        >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}<span class="git-prompt-separator">:</span>
-        <span class="git-prompt-directory">~</span>
-        <span class="git-prompt-separator">$</span>
-      </span>
-      <input
-        ref="userInputRef"
-        v-model="userInput"
-        type="text"
-        class="user-input"
-        @keydown.enter="submitInput"
-        @keydown.arrow-up="handleHistoryNavigation"
-        @keydown.arrow-down="handleHistoryNavigation"
-      />
-    </div>
 
-    <div class="resize-handle" @mousedown="handleResizeMouseDown"></div>
-  </div>
+      <div class="resize-handle" @mousedown="handleResizeMouseDown"></div>
+    </div>
+  </Teleport>
 </template>
 
 <script lang="ts">
