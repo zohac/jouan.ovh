@@ -17,16 +17,14 @@
         </template>
         <template v-else>
           <span class="git-prompt"
-            >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}
-            <span class="git-prompt-separator">:</span>
+            >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}<span class="git-prompt-separator">:</span>
             <span class="git-prompt-directory">~</span>
-            <span class="git-prompt-separator">$</span> </span
-          >{{ line.text }}
+            <span class="git-prompt-separator">$</span></span
+          >&nbsp;{{ line.text }}
         </template>
       </div>
       <span class="git-prompt"
-        >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}
-        <span class="git-prompt-separator">:</span>
+        >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}<span class="git-prompt-separator">:</span>
         <span class="git-prompt-directory">~</span>
         <span class="git-prompt-separator">$</span>
       </span>
@@ -437,6 +435,20 @@ export default defineComponent({
       padding-right: 0.5em;
       font-weight: var(--fw-bold);
       color: var(--prompt);
+    }
+
+    // Scrollbar fine aubergine — porté de .ds-term__body (chrome de fenêtre DS).
+    // Largeur 10px structurelle (comme la barre 30px / pastilles 13px) ; teinte sur
+    // --aubergine (≈ hsl(319 30% 30%) de la réf), pouce arrondi --radius-pill.
+    /* stylelint-disable-next-line selector-pseudo-element-no-unknown -- pseudo-élément vendeur WebKit (scrollbar), non câblé par autoprefixer */
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    /* stylelint-disable-next-line selector-pseudo-element-no-unknown -- pseudo-élément vendeur WebKit (scrollbar), non câblé par autoprefixer */
+    &::-webkit-scrollbar-thumb {
+      background: var(--aubergine);
+      border-radius: var(--radius-pill);
     }
   }
 

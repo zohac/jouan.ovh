@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-26 (story 8-1-style-terminalwindow-et-prompt → review)"
+last_updated: "2026-06-26 (8.1 fini : finition fidélité DS — scrollbar + format prompt ; en review)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -97,6 +97,7 @@ development_status:
   epic-8: in-progress
   8-1-style-terminalwindow-et-prompt: review
   8-2-preserver-les-commandes-et-louverture: ready-for-dev
+  8-3-migrer-composants-terminal-script-setup: ready-for-dev
   epic-8-retrospective: optional
 
   # Epic 9 — Accessibilité & finitions motion
