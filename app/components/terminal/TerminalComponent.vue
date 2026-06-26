@@ -10,7 +10,15 @@
     <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput">
       <div class="terminal-header" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
         <div class="terminal-dots">
-          <div class="close-button" @click="closeTerminal"></div>
+          <div
+            class="close-button"
+            role="button"
+            tabindex="0"
+            aria-label="Fermer le terminal"
+            @click="closeTerminal"
+            @keydown.enter="closeTerminal"
+            @keydown.space.prevent="closeTerminal"
+          ></div>
           <span class="terminal-dot terminal-dot--min" aria-hidden="true"></span>
           <span class="terminal-dot terminal-dot--max" aria-hidden="true"></span>
         </div>
@@ -21,7 +29,7 @@
         <div v-for="(line, index) in commandLines" :key="index">
           <template v-if="line.isResponse">
             <!-- eslint-disable-next-line vue/no-v-html -- sortie générée en interne par les programmes du terminal (contenu maîtrisé) -->
-            <span v-html="line.text"></span>
+            <span class="terminal-response" v-html="line.text"></span>
           </template>
           <template v-else>
             <span class="git-prompt"
@@ -34,13 +42,13 @@
         <span class="git-prompt"
           >{{ defaultConfig.userName }}@{{ defaultConfig.domainName }}<span class="git-prompt-separator">:</span>
           <span class="git-prompt-directory">~</span>
-          <span class="git-prompt-separator">$</span>
-        </span>
-        <input
+          <span class="git-prompt-separator">$</span></span
+        >&nbsp;<input
           ref="userInputRef"
           v-model="userInput"
           type="text"
           class="user-input"
+          aria-label="Saisie de commande du terminal"
           @keydown.enter="submitInput"
           @keydown.arrow-up="handleHistoryNavigation"
           @keydown.arrow-down="handleHistoryNavigation"
@@ -307,10 +315,13 @@ export default defineComponent({
   // Châssis fenêtre — porté de TerminalWindow.jsx (.ds-term). STYLE uniquement : la
   // logique (drag/resize/close/focus/historique/commandes) et les classes porteuses de
   // handlers (terminal-header, close-button, user-input, resize-handle) sont préservées.
-  // Dimensions/positions (px) = structurelles (fenêtre flottante / barre 30px / pastilles
-  // 13px), portées telles quelles du DS — pas de token dédié.
+  // `position: fixed` (et non absolute) : le terminal est <Teleport>é sur <body> (pour que
+  // son backdrop-filter rende hors du <header> filtré) ; fixed le garde relatif au VIEWPORT,
+  // cohérent avec le clamp du drag (window.innerWidth/innerHeight) et évite une fenêtre
+  // hors-écran ou un saut de scroll au focus quand la page est défilée.
+  // Dimensions/pastilles (px) = structurelles (DS), portées telles quelles.
   box-sizing: border-box;
-  position: absolute;
+  position: fixed;
   top: 60px;
   left: 15px;
   z-index: 1000;
@@ -320,7 +331,7 @@ export default defineComponent({
   resize: both;
   font-family: var(--font-mono);
   color: var(--ink-1);
-  border: 1px solid var(--accent-2-soft);
+  border: 1px solid var(--border-terminal);
   border-radius: var(--radius-sm);
   box-shadow: var(--glow-terminal);
 
@@ -355,6 +366,12 @@ export default defineComponent({
 
       &:hover {
         filter: brightness(1.2);
+      }
+
+      // Focus clavier visible (close désormais focusable — a11y CAP-11).
+      &:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
       }
     }
 
@@ -401,9 +418,14 @@ export default defineComponent({
 
     .git-prompt,
     .git-prompt-separator,
-    .git-prompt-directory,
-    .git-prompt-branch {
+    .git-prompt-directory {
       display: inline;
+    }
+
+    // `user@host` (vert) et le répertoire `~` (bleu) en gras comme Prompt.jsx ;
+    // les séparateurs `:` et `$` restent en graisse normale (.ds-prompt__sep).
+    .git-prompt,
+    .git-prompt-directory {
       font-weight: var(--fw-bold);
     }
 
@@ -411,16 +433,15 @@ export default defineComponent({
       color: var(--prompt);
     }
 
+    // `:` et `$` : graisse normale explicite (sinon ils héritent du gras du parent
+    // `.git-prompt`) — fidèle à `.ds-prompt__sep` du DS.
     .git-prompt-separator {
       color: var(--ink-1);
+      font-weight: var(--fw-regular);
     }
 
     .git-prompt-directory {
       color: var(--term-blue);
-    }
-
-    .git-prompt-branch {
-      color: var(--term-red);
     }
 
     .user-input {
@@ -433,17 +454,22 @@ export default defineComponent({
       border: none;
       outline: none;
 
-      // Caret natif vert : clignote nativement (aucune animation CSS en boucle ajoutée →
-      // « caret = seule boucle » respecté ; le navigateur le fige sous prefers-reduced-motion).
+      // Caret natif coloré : le navigateur dessine et fait clignoter le caret de l'<input>
+      // éditable (il suit la frappe). AUCUNE animation CSS en boucle n'est ajoutée →
+      // contrainte « caret = seule boucle » (CAP-11) respectée par construction. `caret-shape:
+      // block` est une amélioration progressive (Chromium récent) ; repli gracieux en caret
+      // barre ailleurs (Firefox/Safari). (Le caret texte natif n'est pas piloté par
+      // prefers-reduced-motion ; aucune boucle CSS n'étant introduite, il n'y a rien à neutraliser.)
       caret-color: var(--prompt);
       caret-shape: block;
     }
 
-    .command-prefix {
-      display: inline;
-      padding-right: 0.5em;
-      font-weight: var(--fw-bold);
-      color: var(--prompt);
+    // Sorties de commandes injectées via v-html : HTML pretty-printé (\n + indentation) qui,
+    // sous le `white-space: pre-wrap` du corps, afficherait lignes vides et décalages. On
+    // rétablit `normal` pour ces conteneurs (le DS garde `pre-wrap` pour l'ASCII ; la bannière
+    // initiale, en `<br>` + espaces insécables, rend correctement en `normal`).
+    .terminal-response {
+      white-space: normal;
     }
 
     // Scrollbar fine aubergine — porté de .ds-term__body (chrome de fenêtre DS).

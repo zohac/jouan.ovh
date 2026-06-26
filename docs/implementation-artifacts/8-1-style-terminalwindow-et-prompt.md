@@ -42,6 +42,50 @@ so that l'easter-egg s'intègre à l'identité (UX-DR8, UX-DR9, FR10).
   - [x] `yarn lint` (eslint + stylelint) sans nouvelle erreur ; `yarn generate` (build statique) vert.
   - [x] Ouvrir le terminal et comparer le rendu à `ui_kits/jouan-site/TerminalScreen.jsx` + `terminal.card.html` : fond aubergine, blur, radius, prompt vert, caret qui clignote.
 
+## Review Findings
+
+_Revue de code adversariale (bmad-code-review) — 2026-06-26. 3 passes : Blind Hunter / Edge Case Hunter / Acceptance Auditor. Baseline `7ea5b6d`._
+
+### Décisions requises (à trancher avant patch)
+
+- [x] [Review][Decision] **Teleport → terminal positionné relativement au document (régression hors-viewport + drag faussé quand la page est scrollée)** [app/components/terminal/TerminalComponent.vue:9-20, 232-238] — `<Teleport to="body">` sort `.terminal` (`position: absolute; top:60px; left:15px`) du `.hdr` (sticky + `backdrop-filter` = ancien bloc conteneur épinglé au viewport ; confirmé HeaderComponent.vue:190/201). Le bloc conteneur devient le document : ouvert page scrollée, le terminal s'affiche au-dessus du viewport (top:60px = 60px sous le HAUT du **document**) et `focusUserInput()` au montage tire le scroll vers le haut ; le clamp drag utilise `window.innerHeight/innerWidth` (viewport, l.232-233) tandis que `style.top/left` est désormais document-relatif (l.237-238) → drag « collé » en haut quand scrollé. **Sévérité : High.** Vérif empirique Chrome DevTools bloquée (navigateur déjà ouvert) — à confirmer en scrollant la page puis en ouvrant. Options : (a) `position: fixed` sur `.terminal` (re-cohérent avec le clamp viewport + le drag `clientX/Y` — vraisemblablement le fix propre) ; (b) compenser `scrollX/scrollY` à l'ouverture et dans le drag ; (c) replier ce correctif dans la story 8.3 (réécriture `<script setup>`). → **Décision Simon : (a) `position: fixed`** — corriger en 8.1, re-vérifier au navigateur (scroll + drag + resize).
+- [x] [Review][Decision] **Alpha de bordure 0.28 vs 0.4 (AC + DS)** [app/components/terminal/TerminalComponent.vue:323] — code = `border: 1px solid var(--accent-2-soft)`, or `--accent-2-soft = hsl(319 40% 30% / 28%)`, alors que Task 1 et `TerminalWindow.jsx` exigent `hsl(319 40% 30% / 0.4)`. Même teinte, alpha ~30 % plus transparent. **Medium.** Options : (a) ajouter/ajuster un token à alpha 0.4 ; (b) dérogation commentée `hsl(319 40% 30% / 0.4)` (comme le rouge de la pastille close) ; (c) accepter 0.28 (priorité tokens-only). → **Décision Simon : (a) nouveau token DS à alpha 0.4** (dans `_root.scss`) consommé par la bordure.
+- [x] [Review][Decision] **Caret natif — support `caret-shape: block` + justification reduced-motion inexacte + divergence DS** [app/components/terminal/TerminalComponent.vue:436-439] — le DS (`Prompt.jsx`) implémente un caret bloc `.ds-prompt__caret` avec `caret-blink … infinite` ET `@media (prefers-reduced-motion){ animation: none }`. Le choix « caret natif » (robuste pour `<input>` éditable) satisfait l'AC dure (CAP-11 exempte le caret comme unique boucle), MAIS (i) le commentaire « le navigateur le fige sous prefers-reduced-motion » est techniquement faux (le clignotement du caret texte natif n'est pas piloté par cette media query), (ii) `caret-shape: block` n'est honoré que par Chromium récent (repli barre Firefox/Safari), (iii) le DS arrête explicitement son caret en reduced-motion. **Medium.** Options : (a) ratifier le caret natif + corriger le commentaire trompeur ; (b) porter le caret bloc DS avec garde reduced-motion (fidèle, mais caret détaché de la frappe). → **Décision Simon : (a) caret natif ratifié** — corriger le commentaire trompeur (ne pas affirmer que le caret natif est figé par `prefers-reduced-motion`).
+
+### Patchs (correctifs sans ambiguïté)
+
+- [x] [Review][Patch] **`white-space: pre-wrap` hérité dans les sorties `v-html` → lignes vides / artefacts (`about` tables, `system-info` liste)** [app/components/terminal/TerminalComponent.vue:398] — le corps n'avait pas de `white-space` avant (défaut `normal`) ; `About.ts:132-160` et `SystemInfos.ts:21-29` concatènent du HTML pretty-printé (`\n` + indentation 2/4/6 espaces) qui ne s'effondre plus sous `pre-wrap`. Le `pre-wrap` est requis par le DS (ASCII) → fix ciblé : minifier le HTML des programmes OU appliquer `white-space: normal` aux conteneurs de réponse HTML. À confirmer visuellement. **Medium.**
+- [x] [Review][Patch] **Séparateurs `:` et `$` en gras alors que le DS ne met en gras que `user@host` et `~`** [app/components/terminal/TerminalComponent.vue:402-416] — `Prompt.jsx` : `.ds-prompt__sep` en graisse normale (les Completion Notes « tous gras comme la réf » sur-lisent la réf). Fix : `.git-prompt-separator { font-weight: var(--fw-regular) }`. **Low.**
+- [x] [Review][Patch] **a11y — pastille close non focusable / sans nom accessible / sans clavier ; input sans label** [app/components/terminal/TerminalComponent.vue:23, 38-46] — `TerminalWindow.jsx` donne `role="button" aria-label="Fermer"` au close ; CAP-11 + project-context exigent clavier (Enter/Space) + aria. Fix additif (ne casse pas `@click`) : `role="button"`, `aria-label`, `tabindex="0"`, `@keydown.enter/.space="closeTerminal"` ; `aria-label` sur l'input. Peut être replié dans 8.3 si 8.1 doit rester strictement CSS. **Medium.**
+- [x] [Review][Patch] **Espace après `$` incohérent : echo (`&nbsp;`) vs prompt live (aucun)** [app/components/terminal/TerminalComponent.vue:31 vs 38-46] — le prompt en saisie colle le texte au `$` alors que l'historique et le DS affichent `$ `. Fix : un espace insécable avant l'`<input>`. **Low.**
+
+### Différés (préexistants, hors périmètre)
+
+- [x] [Review][Defer→Résolu 8.1] **CSS mort `.command-prefix` / `.git-prompt-branch`** [app/components/terminal/TerminalComponent.vue] — **supprimé en 8.1** (consigne « aucune dette technique ») : mort confirmé par `grep` (aucun usage hors `TerminalComponent.vue`, rien dans `programs/`). Non reporté en 8.3.
+
+### Résolution (reprise dev — 2026-06-26)
+
+Tous les points (3 décisions + 4 patchs + le différé) sont corrigés et **re-vérifiés au navigateur (Chrome DevTools), page scrollée incluse** :
+
+- **[High] Teleport/positionnement** → `.terminal` en `position: fixed`. Ouvert page scrollée (y=700) : terminal dans le viewport (top:60/left:15), **aucun saut de scroll** au focus ; **drag 1:1** (Δcurseur +200/+150 → fenêtre +200/+150), **resize** OK (800×400 → 907×467).
+- **[Med] Bordure 0.4** → nouveau token `--border-terminal: hsl(319 40% 30% / 40%)` dans `_root.scss`, consommé par `.terminal` ; computed = `rgba(107,46,88,0.4)`.
+- **[Med] Caret** → caret natif ratifié ; commentaire trompeur corrigé (ne prétend plus que le caret natif est figé par `prefers-reduced-motion`) ; note `caret-shape: block` = amélioration progressive.
+- **[Med] `pre-wrap` artefacts** → `.terminal-response { white-space: normal }` sur les conteneurs `v-html` ; `about`/`system-info` rendus sans ligne vide (0 ligne blanche parasite), bannière ASCII préservée.
+- **[Low] Séparateurs gras** → `.git-prompt-separator { font-weight: var(--fw-regular) }` (les séparateurs héritaient du gras du parent `.git-prompt`) ; computed : `:`/`$` = 400, `user@host`/`~` = 700.
+- **[Med] a11y close + input** → close : `role="button"`, `aria-label`, `tabindex="0"`, `@keydown.enter/.space.prevent`, `:focus-visible` (ring `--accent`) ; input : `aria-label`. Fermeture clavier (Enter) vérifiée.
+- **[Low] Espace `$ ` live** → `&nbsp;` avant l'`<input>` (le prompt en saisie collait au `$`) ; nœud espace présent, cohérent avec l'historique et `Prompt.jsx`.
+- **[Defer→fait] CSS mort** → `.command-prefix` / `.git-prompt-branch` supprimés.
+
+`pnpm lint` + `pnpm typecheck` + `pnpm generate` (11 routes) verts après corrections.
+
+### Rejetés (faux positifs / non-problèmes)
+
+- `--color-dark` / `--color-grey-light` « indéfinies » (Blind Hunter, diff seul) — **faux positif** : le bloc `table, .table` redéfinit `--color-light/-dark/-grey-light` localement (l.487-489), auto-suffisant. Confirmé par les 2 relecteurs avec accès projet + relecture.
+- Sorties de programmes dépendant des `--color-*` retirées (Blind Hunter) — **faux positif** : aucun `var(--color-*)` dans `programs/` (grep vide) ; seuls le bloc table (auto-suffisant) et les `.git-prompt*` (retokenisés) les consommaient.
+- Teleport = risque SSR/hydration (Blind Hunter) — **réfuté** : `TerminalManager` démarre `terminals: []`, création client-only, cible `body` présente au montage, `generate` vert.
+- Scrollbar WebKit-only sans repli Firefox — **fidèle au DS** (`TerminalWindow.jsx` ne style aussi que `::-webkit-scrollbar`) ; repli Firefox gracieux. Non bloquant.
+- Valeurs hardcodées de la pastille close (`hsl(0 100% 27%)`, `hsl(320 60% 2%)`, `gap:7px`) — dérogations commentées identiques à la source DS, autorisées par NFR2.
+
 ## Dev Notes
 
 ### Périmètre
@@ -125,8 +169,9 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 
 ### File List
 
-- `app/components/terminal/TerminalComponent.vue` (MODIFIÉ — restyle CSS du `<style>` : fenêtre/barre/corps/prompt/caret tokenisés + scrollbar aubergine ; barre de titre DS avec pastilles ; markup barre ajusté sans toucher aux handlers ; format du prompt corrigé `anon.@jouan.ovh:~$` + espace `$ ` avant l'echo de commande ; `<Teleport to="body">` pour que le `backdrop-filter` rende hors du header filtré)
-- `docs/implementation-artifacts/8-1-style-terminalwindow-et-prompt.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Dev Agent Record, statut)
+- `app/components/terminal/TerminalComponent.vue` (MODIFIÉ — restyle CSS tokenisé + scrollbar aubergine ; barre de titre DS + pastilles ; `<Teleport to="body">` + `position: fixed` (blur effectif + positionnement viewport) ; bordure `--border-terminal` (alpha 0.4) ; `.terminal-response { white-space: normal }` (artefacts `v-html`) ; séparateurs `:`/`$` en graisse normale ; a11y close (role/aria/tabindex/keydown/focus-ring) + `aria-label` input ; espace `$ ` du prompt live ; commentaire caret corrigé ; CSS mort `.command-prefix`/`.git-prompt-branch` supprimé — handlers intacts)
+- `app/assets/scss/abstract/_root.scss` (MODIFIÉ — ajout du token `--border-terminal: hsl(319 40% 30% / 40%)` pour la bordure de la fenêtre terminal, alpha 0.4 conforme à `TerminalWindow.jsx`)
+- `docs/implementation-artifacts/8-1-style-terminalwindow-et-prompt.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Review Findings + résolution, Dev Agent Record, statut)
 - `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
 
 ## Change Log
@@ -136,3 +181,4 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | 2026-06-26 | 0.1     | Implémentation story 8.1 — restyle DS du terminal (fenêtre aubergine + blur + radius, barre de titre + pastilles, prompt vert, caret natif vert), tokens uniquement, logique préservée. |
 | 2026-06-26 | 0.2     | Finition fidélité DS (reprise) — scrollbar aubergine portée de `.ds-term__body` ; format du prompt corrigé en `anon.@jouan.ovh:~$` (espace parasite avant `:` retiré) + espace `$ ` avant l'echo de commande ; re-vérif Chrome DevTools (0 boucle CSS, commandes/close/handlers OK) ; lint + typecheck + generate re-verts. |
 | 2026-06-26 | 0.3     | Fix blur — le `backdrop-filter` du corps ne rendait pas (terminal monté dans le `<header>` filtré `blur(10px)`, devenu « backdrop root »). `<Teleport to="body">` sort le terminal du contexte filtré → flou aubergine DS effectif. Drag/commandes/fermeture re-vérifiés OK ; prerender-safe ; lint + typecheck + generate verts. |
+| 2026-06-26 | 0.4     | Revue de code — correction des 8 points (3 décisions + 4 patchs + différé), aucune dette : `position: fixed` (régression positionnement/scroll du Teleport, page scrollée), token `--border-terminal` alpha 0.4, `white-space: normal` sur sorties `v-html`, séparateurs en graisse normale, a11y close (clavier + focus-ring) + `aria-label` input, espace `$ ` du prompt live, commentaire caret corrigé, CSS mort supprimé. Re-vérif Chrome DevTools (scroll + drag 1:1 + resize + clavier) ; lint + typecheck + generate verts. |

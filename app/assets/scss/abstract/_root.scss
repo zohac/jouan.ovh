@@ -89,6 +89,7 @@
   --accent-ring: hsl(24deg 94% 53% / 45%);
   --accent-2: var(--aubergine-light); // accent secondaire
   --accent-2-soft: hsl(319deg 40% 30% / 28%);
+  --border-terminal: hsl(319deg 40% 30% / 40%); // bordure fenêtre terminal (TerminalWindow.jsx)
   --link: var(--term-blue);
   --prompt: var(--term-green);
   --overlay: hsl(320deg 60% 3% / 66%);
