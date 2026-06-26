@@ -4,7 +4,7 @@ baseline_commit: 15ada823eed910cf51613f57687efe0511723b46
 
 # Story 8.2: Préserver les commandes et l'ouverture
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -54,7 +54,7 @@ _Revue de code adversariale (bmad-code-review) — 2026-06-26. 3 passes : Blind 
 
 ### Différés (dette préexistante / hors périmètre)
 
-- [x] [Review][Defer] **DRY — données dupliquées en dur (skills/projets/contact/email/ville)** [Skills.ts, Projets.ts, Contact.ts] — la stack, les projets (keova.app/patio-conseil.fr) et l'email/ville sont recopiés en dur, dupliquant la home (`index.vue`), le Footer et `about.vue`/`contact.vue`. Cohérent à l'instant T (vérifié identique partout) mais sans garde-fou anti-dérive. **Compounds** l'item DRY déjà tracé (revue 7.2 « données de contact inline ») → constante `SITE` partagée, consolidation de fin de refonte. Non bloquant.
+- [x] [Review][Defer→Résolu 8.2] ✅ **DRY — données dupliquées en dur (skills/projets/contact/email/ville)** — **consolidé maintenant** (consigne « aucune dette », approche DRY/SOLID validée avec Simon) : **source unique `app/data/site.ts`** (`SITE.profile` / `SITE.skills` / `SITE.projects`, typée `IProfile`/`IProject`). Branchée sur **tous** les consommateurs : `Skills/Projets/Contact/About.ts` (terminal), `index.vue`, `about.vue`, `contact.vue`, `FooterComponent.vue`. **Solde aussi** l'item « données de contact inline » de la revue 7.2. Vérif navigateur : rendu **identique** sur les 5 surfaces (commit refactor dédié). _Reste hors-scope_ : les `experiences`/`degrees` divergent volontairement (CV terminal détaillé vs `/about` condensé, formes différentes) → réconciliation de contenu suivie dans `deferred-work.md`, pas un refactor mécanique.
 - [x] [Review][Defer→Résolu 8.2] ✅ **Duplication du bookkeeping d'historique dans la branche `clear`** [app/components/terminal/TerminalComponent.vue] — **factorisé maintenant** (consigne « aucune dette ») : helper `recordHistoryAndResetInput()` appelé par la branche `clear` ET le flux normal. Plus de report en 8.3.
 
 ### Rejetés (faux positifs / non-problèmes / justifiés)
@@ -179,12 +179,22 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story, effort high)
 - `app/components/terminal/programs/index.ts` (MODIFIÉ — barrel : export des 4 nouveaux programmes)
 - `app/components/terminal/programs/ProgramManager.ts` (MODIFIÉ — import + `add()` des 4 nouveaux programmes)
 - `app/components/terminal/TerminalComponent.vue` (MODIFIÉ — `submitInput` : interception de `clear` qui vide `commandLines` sans écho ; aucune autre logique touchée)
-- `docs/implementation-artifacts/8-2-preserver-les-commandes-et-louverture.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Dev Agent Record, statut)
+- `docs/implementation-artifacts/8-2-preserver-les-commandes-et-louverture.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Review Findings + résolutions, Dev Agent Record, statut)
 - `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
+
+**Revue + consolidation DRY (reprise) :**
+
+- `app/components/terminal/programs/Projets.ts` (MODIFIÉ — `ProjectInterface` → `IProject` ; conso `SITE.projects`)
+- `app/components/terminal/TerminalComponent.vue` (MODIFIÉ — helper `recordHistoryAndResetInput()` factorisé entre `clear` et le flux normal)
+- `app/data/site.ts` (**NOUVEAU** — source de vérité unique du contenu partagé : `SITE.profile`/`skills`/`projects`, types `IProfile`/`IProject`)
+- `app/components/terminal/programs/Skills.ts`, `Contact.ts`, `About.ts` (MODIFIÉS — consomment `SITE` au lieu de données en dur)
+- `app/pages/index.vue`, `app/pages/about.vue`, `app/pages/contact.vue`, `app/components/FooterComponent.vue` (MODIFIÉS — consomment `SITE` ; rendu identique vérifié au navigateur)
+- `docs/implementation-artifacts/deferred-work.md` (MODIFIÉ — item DRY 8.2 + « contact inline » 7.2 marqués résolus ; reste la réconciliation `experiences`/`degrees`)
 
 ## Change Log
 
 | Date       | Version | Description                                                                                  |
 | ---------- | ------- | -------------------------------------------------------------------------------------------- |
 | 2026-06-26 | 0.1     | Non-régression terminal post-8.1 (ouverture/focus/close, drag 1:1/resize/z-index, commandes legacy, historique, échappement, bannière) **+** ajout des commandes `skills`/`projets`/`contact` (programmes `IProgram`, contenu UI kit/`data.js`) et `clear` (interception `submitInput` + programme pour `help`). Tout vérifié au navigateur ; lint + typecheck + generate verts. |
-| 2026-06-26 | 0.2     | Revue de code (story propre) — 2 patchs Low + factorisation : doc Tâche 1 reformulée sur le déclencheur réel (`HeaderComponent`/`useTerminal`, `TerminalButton.vue` inexistant) ; `ProjectInterface` → `IProject` (préfixe `I`) ; bookkeeping historique factorisé (`recordHistoryAndResetInput()`) entre `clear` et flux normal. Le différé DRY est traité à part (consolidation `app/data/site.ts`). lint + typecheck + generate verts ; clear/commandes/historique re-vérifiés. |
+| 2026-06-26 | 0.2     | Revue de code (story propre) — 2 patchs Low + factorisation : doc Tâche 1 reformulée sur le déclencheur réel (`HeaderComponent`/`useTerminal`, `TerminalButton.vue` inexistant) ; `ProjectInterface` → `IProject` (préfixe `I`) ; bookkeeping historique factorisé (`recordHistoryAndResetInput()`) entre `clear` et flux normal. lint + typecheck + generate verts ; clear/commandes/historique re-vérifiés. |
+| 2026-06-26 | 0.3     | Consolidation DRY (différé revue, décision Simon : approche DRY/SOLID) — **source de vérité unique `app/data/site.ts`** (`SITE.profile`/`skills`/`projects` typés) ; **tous** les consommateurs branchés (4 programmes terminal + `index.vue` + `about.vue` + `contact.vue` + `Footer`). Solde aussi le différé « contact inline » 7.2. Rendu **identique** vérifié au navigateur sur les 5 surfaces. `experiences`/`degrees` laissés hors-scope (divergence de contenu volontaire, suivie en deferred-work). lint + typecheck + generate verts. |

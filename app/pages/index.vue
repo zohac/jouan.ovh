@@ -102,7 +102,7 @@
         <div class="grid-2 projects">
           <ZCard
             v-for="project in projects"
-            :key="project.id"
+            :key="project.url"
             class="project"
             interactive
             as="a"
@@ -132,6 +132,7 @@
 // tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2, 3.3)
 import { NuxtLink } from "#components";
 import { useTerminal } from "~/composables/useTerminal";
+import { SITE } from "~/data/site";
 
 // Contenu repris de data.js (window.SITE) — 1re personne, vouvoiement, pas d'emoji.
 const tagline = "Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils.";
@@ -171,26 +172,8 @@ const stats = [
   { id: "stat-3", value: "1", label: "SaaS fondé · keova.app" },
 ];
 
-// Projets sélectionnés (data.js `projects`) — cartes rendues en liens externes.
-// Texte exact (séparateur ·), URL externes (pas de routes internes), pas d'emoji.
-const projects = [
-  {
-    id: "keova",
-    name: "keova.app",
-    role: "Fondateur · SaaS",
-    desc: "Plateforme SaaS que je conçois et opère de bout en bout.",
-    tags: ["nest.js", "nuxt", "saas"],
-    url: "https://keova.app",
-  },
-  {
-    id: "patio",
-    name: "patio-conseil.fr",
-    role: "Client",
-    desc: "Site et outils pour un cabinet de conseil.",
-    tags: ["wordpress", "conseil"],
-    url: "https://patio-conseil.fr",
-  },
-];
+// Projets sélectionnés — source unique `app/data/site.ts`. Cartes rendues en liens externes.
+const projects = SITE.projects;
 
 // Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
 // côté template (pas de chiffres/projets inventés : stats & projets = stories 3.2 / 3.3).

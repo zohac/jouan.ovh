@@ -94,30 +94,11 @@
 // hero 2 colonnes (0.8fr identité / 1.2fr bio), section CV 2 colonnes (1.4fr / 0.6fr),
 // stack en <ZTag>, formation en <ZCard>. Dark-first, tokens uniquement, prerender-safe.
 import { NuxtLink } from "#components";
+import { SITE } from "~/data/site";
 
-// Libellés repris de data.js (window.SITE) — name, role, city, email.
-const profile = {
-  name: "Simon Jouan",
-  role: "Développeur web freelance",
-  city: "Valognes, France",
-  email: "simon@jouan.ovh",
-} as const;
-
-// Stack technique (data.js → S.skills) — ordre conservé. Rendue en <ZTag> (pill).
-const skills = [
-  "php",
-  "symfony",
-  "wordpress",
-  "node.js",
-  "nest.js",
-  "nuxt.js",
-  "vue",
-  "typescript",
-  "docker",
-  "tailwind",
-  "n8n",
-  "mysql",
-];
+// Identité + stack — source unique `app/data/site.ts`.
+const profile = SITE.profile;
+const skills = SITE.skills;
 
 // Expériences (data.js → S.experiences) — de la plus récente à la plus ancienne.
 // `org` sert de clé v-for stable (unique).

@@ -1,28 +1,14 @@
+import { SITE } from "~/data/site";
 import type { IProgram } from "~/components/terminal/interfaces";
 
-// Stack technique — reprise du UI kit (`TerminalScreen.jsx` / `data.js`), alignée sur les tags
-// de la home. Séparateur « · » (et non double espace) : les sorties de commandes rendent dans
-// `.terminal-response { white-space: normal }`, où les espaces consécutifs s'effondrent.
-const skillsList = [
-  "php",
-  "symfony",
-  "wordpress",
-  "node.js",
-  "nest.js",
-  "nuxt.js",
-  "vue",
-  "typescript",
-  "docker",
-  "tailwind",
-  "n8n",
-  "mysql",
-];
-
+// Stack technique — source unique `app/data/site.ts`. Séparateur « · » (et non double espace) :
+// les sorties rendent dans `.terminal-response { white-space: normal }`, où les espaces
+// consécutifs s'effondrent.
 const skills: IProgram = {
   command: "skills",
   description: "Ma stack technique.",
   run: function (): string {
-    return `Ma stack : ${skillsList.join(" · ")}`;
+    return `Ma stack : ${SITE.skills.join(" · ")}`;
   },
 };
 

@@ -44,6 +44,7 @@
 
 <script setup lang="ts">
 import LinkListComponent from "~/components/LinkListComponent.vue";
+import { SITE } from "~/data/site";
 
 const navItems = [
   { to: "/", label: "Accueil" },
@@ -53,11 +54,8 @@ const navItems = [
   { to: "/contact", label: "Contact" },
 ];
 
-// Projets repris de data.js (UI kit).
-const projects = [
-  { name: "keova.app", url: "https://keova.app" },
-  { name: "patio-conseil.fr", url: "https://patio-conseil.fr" },
-];
+// Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).
+const projects = SITE.projects;
 
 const year = new Date().getFullYear();
 </script>

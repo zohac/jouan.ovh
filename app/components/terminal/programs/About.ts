@@ -1,3 +1,4 @@
+import { SITE } from "~/data/site";
 import type { IProgram } from "~/components/terminal/interfaces";
 
 interface ExperienceInterface {
@@ -64,9 +65,9 @@ const aboutData = {
     lastname: "JOUAN",
     poste: "Développeur Fullstack & Testeur QA",
     experience: "3 ans",
-    ville: "Valognes, France",
+    ville: SITE.profile.city,
     telephone: "+33 6 58 96 90 20",
-    email: "simon@jouan.ovh",
+    email: SITE.profile.email,
   },
   experiences: [
     {

@@ -129,9 +129,10 @@
 // Page Contact — colonne gauche : en-tête + formulaire (story 7.1, envoi Web3Forms,
 // service tiers SANS serveur). Colonne droite : infos + CTA terminal + socials (story 7.2).
 import { nextTick } from "vue";
+import { SITE } from "~/data/site";
 
-// Infos de contact (data.js → window.SITE).
-const contact = { email: "simon@jouan.ovh", city: "Valognes, France" } as const;
+// Infos de contact — source unique `app/data/site.ts`.
+const contact = SITE.profile;
 
 // Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le header).
 // no-op au prerender (aucun lanceur) → prerender-safe ; ouvre le terminal côté client.
@@ -149,7 +150,7 @@ interface Web3FormsResponse {
   message: string;
 }
 
-const ERROR_MESSAGE = "L'envoi a échoué. Réessayez, ou écrivez-moi directement à simon@jouan.ovh.";
+const ERROR_MESSAGE = `L'envoi a échoué. Réessayez, ou écrivez-moi directement à ${SITE.profile.email}.`;
 
 // Clé Web3Forms injectée par l'env (NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY) — jamais en dur.
 const accessKey = useRuntimeConfig().public.web3formsAccessKey;

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-26 (8.2 finie : commandes skills/projets/contact/clear + non-régression vérifiée → review)"
+last_updated: "2026-06-26 (8.2 revue traitée : 2 patchs + 2 différés (dont DRY → app/data/site.ts), zéro dette → review)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
