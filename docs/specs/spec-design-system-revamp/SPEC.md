@@ -80,7 +80,7 @@ Une **vision à réaliser** : le site personnel de Simon Jouan (développeur web
 
 - Pas de thème clair / bascule de thème.
 - Pas de copie 1:1 du site live actuel (c'est un rebrand, une interprétation).
-- Pas de backend ni CMS au-delà du markdown `@nuxt/content` existant.
+- Pas de backend **à héberger** ni CMS au-delà du markdown `@nuxt/content` existant. _(Le formulaire `/contact` envoie via **Web3Forms**, un service tiers sans serveur — cf. Decisions ; le site reste statique.)_
 - Le sélecteur de hero et le switcher d'accent du UI kit sont des outils de **prototype**, non livrés : une seule direction est retenue en production.
 - Pas de rédaction de contenu marketing net-nouveau au-delà de ce que fournissent le DS / `data.js` et le contenu existant (le copywriting fin est hors-périmètre de cette refonte technique).
 - Pas d'introduction d'un framework de test dans cette refonte (la barre reste lint + build vert), sauf décision séparée.
@@ -93,6 +93,7 @@ Le site jouan.ovh, reconstruit sur Nuxt 4, rend toutes ses pages (Accueil, Servi
 
 - **Hero d'accueil** : direction **Terminal (A)** retenue (CAP-5).
 - **Routes** : `/services` et `/contact` ajoutées comme pages dédiées (CAP-6, CAP-9).
+- **Envoi du formulaire `/contact` (CAP-9, décision Simon — Epic 7)** : via **Web3Forms** (service tiers _sans serveur_, clé d'accès en variable d'env). Le formulaire envoie réellement (ni démo factice, ni `mailto:`), tout en gardant le site statique. **Supersede** l'ancienne contrainte « ni service tiers » (NFR4 du ticket 7.1). Implications suivies : clé Web3Forms à provisionner + conformité RGPD (notice posée sous le formulaire ; politique de confidentialité dédiée à finaliser).
 - **Cible de migration (CAP-1, livrée en Epic 1)** : **Nuxt 4 + Vue 3 + TypeScript 6 + ESLint 10 (flat config via `@nuxt/eslint`)**, abandon de `@nuxt/bridge-edge`, code sous `app/`, toutes deps à jour. **Gestionnaire de paquets : pnpm** (migration depuis Yarn) ; **dev et outillage via Docker** (`docker compose`). `@nuxt/content` v3, `@nuxt/image` v2.
 
 ## Assumptions

@@ -25,6 +25,12 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 ---
 
+## Deferred from: code review of 7-1-route-contact-et-formulaire (2026-06-26)
+
+- **SEO `/contact`** — `useHead` ne pose que `title`+`description` (pas d'OG/canonical/JSON-LD), comme `/services`. Déjà couvert par l'**item 4 consolidé** (« étendre OG/JSON-LD aux pages encore nues : home, services, **contact** »). → story SEO dédiée / Epic 9. _(Les 2 autres findings 7.1 — focus a11y à l'envoi, erreurs collantes — sont des **patchs** de la story, pas des différés ; cf. Review Findings du ticket.)_
+- **⚠️ Clé d'accès Web3Forms à provisionner (déploiement)** — le formulaire `/contact` envoie réellement via Web3Forms ; le code lit la clé depuis l'env `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY` (cf. `.env.example`), **vide pour l'instant** → le form affiche son état d'erreur tant qu'aucune clé n'est posée. **Avant mise en prod** : créer la clé (gratuite, instantanée sur web3forms.com) et la renseigner dans l'env de déploiement. _(Pas de la dette : dépendance de config assumée, décision Simon Epic 7.)_
+- **Politique de confidentialité (RGPD)** — le formulaire collecte nom/email/message transmis à un tiers (Web3Forms) ; une **notice courte est posée sous le formulaire**. Reste à publier une **page « politique de confidentialité »** dédiée (base légale, finalité, durée, sous-traitant Web3Forms, droits) et à la lier — cf. skill `rgpd-france`. → tâche légale de fin de refonte (hors périmètre 7.1/7.2).
+
 ## Deferred from: code review of 6-2-vue-article-prose-et-code (2026-06-25)
 
 - **Centralisation SEO site-wide (consolidation)** — _Dette concrète résolue en 6.2_ : `SITE_URL` extrait dans `app/utils/seo.ts` (source unique, dédup `/about`+`/blog`+`/blog/[...slug]`) ; JSON-LD via helper `jsonLdScript()` qui **échappe `<`** (plus de risque `</script>`). _Reste_ (architecture, non-dette) : migration `useSeoMeta`/`app.head` partagé, `SITE_URL` depuis `runtimeConfig`, `publisher`/`Organization` (ou `nuxt-schema-org`). → story SEO dédiée / Epic 9.

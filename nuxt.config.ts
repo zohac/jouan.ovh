@@ -46,6 +46,14 @@ export default defineNuxtConfig({
   // (<ZButton> et non <UiZButton>). Le reste de components/ garde le scan par défaut.
   components: [{ path: "~/components/ui", pathPrefix: false }, "~/components"],
   ssr: true,
+  // Config exposée au client. La clé d'accès Web3Forms (envoi du formulaire /contact)
+  // n'est JAMAIS en dur : fournie par l'env NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY (cf.
+  // .env.example). Vide par défaut → le formulaire bascule sur son état d'erreur.
+  runtimeConfig: {
+    public: {
+      web3formsAccessKey: "",
+    },
+  },
   // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
   experimental: {
     payloadExtraction: false,

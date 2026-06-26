@@ -1,6 +1,10 @@
+---
+baseline_commit: 3223ed6d5c312c621862a5d3477143a1cbce8ac9
+---
+
 # Story 7.1: Route /contact et formulaire
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,26 +23,26 @@ so that je peux écrire à Simon (UX-DR16, FR9).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Créer la route `/contact` (AC: #1)
-  - [ ] Créer `pages/contact.vue` (`<script setup lang="ts">`) — la route n'existe pas encore (à créer, cf. pages.md)
-  - [ ] Poser le squelette : `<MainComponent>` (ou section/container conforme au châssis) avec l'en-tête de page (eyebrow `// contact`, titre `Parlons de votre projet`, paragraphe d'intro en français 1re personne)
-  - [ ] Prévoir la grille à deux colonnes `contact__grid` (colonne gauche = formulaire ici ; colonne droite réservée à la story 7.2 — placeholder neutre acceptable)
-  - [ ] Vérifier l'auto-import des composants et que la route `/contact` se charge en `yarn dev`
-- [ ] Tâche 2 — Construire le formulaire avec les primitives DS (AC: #1)
-  - [ ] Utiliser `ZInput` (Epic 2, story 2.6) pour les champs : `Nom` (required), `Email` (`type=email`, required), `Sujet` (optionnel), `Message` (multiline, required)
-  - [ ] Reproduire la disposition de `Contact.jsx` : `Nom` + `Email` sur une rangée (`grid-2`), puis `Sujet`, puis `Message` pleine largeur
-  - [ ] CTA d'envoi via `ZButton` variante `primary`, taille `lg`, icône flèche à droite, libellé `Envoyer le message`
-- [ ] Tâche 3 — Validation et feedback **front uniquement** (AC: #1, #2)
-  - [ ] À la soumission : `@submit.prevent` — aucun appel réseau, aucune dépendance backend
-  - [ ] Valider côté front les champs requis (Nom, Email, Message) et le format email ; afficher des messages d'erreur français sous les champs invalides
-  - [ ] En cas de succès, afficher l'état « envoyé » : carte accent avec ligne mono verte `✓ Message envoyé` (`var(--term-green)`) + message de confirmation français (cf. `sent` dans `Contact.jsx`), à la place du formulaire
-  - [ ] Gérer l'état réactif (`sent`, erreurs de champ) via `ref`/`reactive` (`<script setup>`)
-- [ ] Tâche 4 — Style via tokens & dark-first (AC: #1)
-  - [ ] Styler la page/le formulaire en SCSS scoped, en consommant les tokens (espacement, couleurs, typo) — aucune valeur hardcodée (NFR2)
-  - [ ] Titres/labels en Ubuntu Mono, prose en Ubuntu sans (NFR7) ; intro en `var(--text-muted)`, largeur de lecture limitée (~48ch)
-- [ ] Tâche 5 — Vérification (AC: #1, #2)
-  - [ ] `yarn dev` : la page `/contact` se charge, le formulaire valide et bascule sur l'état « envoyé », sans erreur console
-  - [ ] `yarn lint` ne régresse pas ; pas d'accès DOM non gardé (compatibilité prerender)
+- [x] Tâche 1 — Créer la route `/contact` (AC: #1)
+  - [x] Créer `pages/contact.vue` (`<script setup lang="ts">`) — la route n'existe pas encore (à créer, cf. pages.md)
+  - [x] Poser le squelette : `<MainComponent>` (ou section/container conforme au châssis) avec l'en-tête de page (eyebrow `// contact`, titre `Parlons de votre projet`, paragraphe d'intro en français 1re personne)
+  - [x] Prévoir la grille à deux colonnes `contact__grid` (colonne gauche = formulaire ici ; colonne droite réservée à la story 7.2 — placeholder neutre acceptable)
+  - [x] Vérifier l'auto-import des composants et que la route `/contact` se charge en `yarn dev`
+- [x] Tâche 2 — Construire le formulaire avec les primitives DS (AC: #1)
+  - [x] Utiliser `ZInput` (Epic 2, story 2.6) pour les champs : `Nom` (required), `Email` (`type=email`, required), `Sujet` (optionnel), `Message` (multiline, required)
+  - [x] Reproduire la disposition de `Contact.jsx` : `Nom` + `Email` sur une rangée (`grid-2`), puis `Sujet`, puis `Message` pleine largeur
+  - [x] CTA d'envoi via `ZButton` variante `primary`, taille `lg`, icône flèche à droite, libellé `Envoyer le message`
+- [x] Tâche 3 — Validation et feedback **front uniquement** (AC: #1, #2)
+  - [x] À la soumission : `@submit.prevent` — aucun appel réseau, aucune dépendance backend
+  - [x] Valider côté front les champs requis (Nom, Email, Message) et le format email ; afficher des messages d'erreur français sous les champs invalides
+  - [x] En cas de succès, afficher l'état « envoyé » : carte accent avec ligne mono verte `✓ Message envoyé` (`var(--term-green)`) + message de confirmation français (cf. `sent` dans `Contact.jsx`), à la place du formulaire
+  - [x] Gérer l'état réactif (`sent`, erreurs de champ) via `ref`/`reactive` (`<script setup>`)
+- [x] Tâche 4 — Style via tokens & dark-first (AC: #1)
+  - [x] Styler la page/le formulaire en SCSS scoped, en consommant les tokens (espacement, couleurs, typo) — aucune valeur hardcodée (NFR2)
+  - [x] Titres/labels en Ubuntu Mono, prose en Ubuntu sans (NFR7) ; intro en `var(--text-muted)`, largeur de lecture limitée (~48ch)
+- [x] Tâche 5 — Vérification (AC: #1, #2)
+  - [x] `yarn dev` : la page `/contact` se charge, le formulaire valide et bascule sur l'état « envoyé », sans erreur console
+  - [x] `yarn lint` ne régresse pas ; pas d'accès DOM non gardé (compatibilité prerender)
 
 ## Dev Notes
 
@@ -102,10 +106,46 @@ so that je peux écrire à Simon (UX-DR16, FR9).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` / `pnpm typecheck` / `pnpm generate` (Docker) : tous PASS ; `/contact` prerendu.
+- Vérif comportementale Chrome DevTools MCP : (1) soumission à vide → 3 erreurs FR (Nom/Email/Message), Sujet épargné ; (2) email `pasunemail` → « Cet email ne semble pas valide. » (Nom/Message valides) ; (3) champs valides → bascule sur l'état envoyé (`ZCard accent` + « ✓ Message envoyé » vert). Console propre, desktop + mobile (form → 1 colonne).
 
 ### Completion Notes List
 
-- Ultimate context engine analysis completed - comprehensive developer guide created.
+- Refonte de `app/pages/contact.vue` (stub mailto → page complète, colonne gauche de `Contact.jsx`). Squelette `<section><div class="container"><div class="contact__grid">` (1fr / 0.8fr) ; **colonne droite `.contact__info` = placeholder réservé à la story 7.2** (infos / CTA terminal / socials).
+- En-tête : eyebrow `// contact`, `h1` « Parlons de votre projet » (mono, `--fs-4xl`/`--fw-light`), intro `.prose` `--text-muted` max-width 48ch.
+- Formulaire en primitives DS : `ZInput` × 4 (Nom required, Email `type=email` required, Sujet optionnel, Message `multiline` required) — Nom+Email en rangée `grid-2` ; CTA `ZButton` primary `lg` + `ZIcon name="arrow"` à droite.
+- **Validation + feedback 100 % front (NFR4)** : `@submit.prevent` (aucun appel réseau / backend) ; `novalidate` sur le `<form>` pour afficher nos messages FR (et non les bulles natives) via `ZInput` (`:error` + `:hint`) ; regex email permissive. État réactif `reactive(form)` / `reactive(errors)` / `ref(sent)`.
+- État envoyé : `ZCard accent` avec **`role="status"`** (annoncé aux lecteurs d'écran à l'apparition) ; ligne mono `--term-green` « ✓ Message envoyé » (`✓` en `aria-hidden`, le texte porte le sens) + confirmation `.prose`.
+- Tokens uniquement, `<style scoped>`, primitives globales (`.section`/`.container`/`.eyebrow`/`.prose`) consommées. Aucun accès DOM → prerender-safe. `useHead` title + description (l'OG/JSON-LD site-wide est l'item SEO consolidé — hors 7.1, comme `/services`).
 
 ### File List
+
+- `app/pages/contact.vue` (REFONTE — page Contact : grille + formulaire DS + validation front + **envoi réel Web3Forms** (honeypot, états sending/error), focus a11y, re-validation live, notice RGPD ; placeholder colonne droite pour 7.2)
+- `nuxt.config.ts` (MODIFIÉ — `runtimeConfig.public.web3formsAccessKey` via env)
+- `.env.example` (CRÉÉ — documente `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY`)
+- `docs/specs/spec-design-system-revamp/SPEC.md` (MODIFIÉ — Non-goals + Decisions : Web3Forms acté, supersede « ni service tiers »)
+- `docs/implementation-artifacts/7-1-route-contact-et-formulaire.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Dev Agent Record, findings, statut)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
+- `docs/implementation-artifacts/deferred-work.md` (MODIFIÉ — suivis Web3Forms : clé à provisionner + politique de confidentialité)
+
+## Change Log
+
+| Date       | Version | Description                                                                                            |
+| ---------- | ------- | ------------------------------------------------------------------------------------------------------ |
+| 2026-06-26 | 0.1     | Implémentation story 7.1 — route `/contact` + formulaire DS (`ZInput`/`ZButton`), validation & feedback front uniquement (état envoyé `ZCard accent`), squelette grille pour 7.2. |
+| 2026-06-26 | 0.2     | Correctifs de revue (zéro dette) : **envoi réel Web3Forms** (clé env, honeypot, états sending/error ; supersede NFR4 → SPEC maj) ; focus a11y (1er champ invalide / carte envoyée) ; re-validation live des erreurs ; notice RGPD. |
+
+## Review Findings
+
+_Code review (bmad-code-review) — 2026-06-26. Couches : Blind Hunter (fichier seul) · Edge Case Hunter (fichier + projet) · Acceptance Auditor (diff + SPEC/ticket/`Contact.jsx`). Verdict : AC #1 (validation + feedback front) et AC #2/NFR4 (aucun backend) **vérifiées satisfaites** ; périmètre 7.2 respecté (colonne droite = placeholder) ; copy verbatim de `Contact.jsx` ; tokens-only ; prerender-safe. Contrats `ZInput`/`ZButton`/`ZCard`/`ZIcon` + tokens tous vérifiés sains._
+
+- [x] [Review][Patch] Brancher l'**envoi réel via Web3Forms** (décision Simon : ni démo factice, ni `mailto:`). — ✅ résolu : `$fetch` POST vers `https://api.web3forms.com/submit` au submit ; clé via **`runtimeConfig.public.web3formsAccessKey`** (env `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY`, jamais en dur ; `.env.example` ajouté) ; **honeypot** anti-spam hors écran + `botcheck` ; états `sending` (bouton « Envoi en cours… » désactivé) et `submitError` (`role="alert"`) ajoutés à côté de `sent`. Validation front + état « ✓ envoyé » conservés ; succès = `res.success` → carte envoyée + focus, échec → message FR. Prerender-safe (fetch client-only ; `generate` OK). **SPEC mise à jour** (Non-goals + Decisions). Vérifié : `sending` → état erreur sans clé (400 attendu, capturé). _Suivis (hors dette) : Simon crée la clé Web3Forms + renseigne l'env ; politique de confidentialité dédiée (notice RGPD déjà posée sous le form)._ [app/pages/contact.vue ; nuxt.config.ts ; .env.example]
+- [x] [Review][Patch] a11y — gestion du focus. — ✅ résolu : à l'échec de validation, focus sur le 1er champ invalide (`[aria-invalid="true"]`) ; au succès, focus sur la carte `.contact__sent` (`tabindex="-1"` + `role="status"`, après `nextTick`). Vérifié : focus → « Nom » après submit vide. [app/pages/contact.vue]
+- [x] [Review][Patch] UX — erreurs collantes. — ✅ résolu : après le 1er envoi (`submitted`), `watch` sur Nom/Email/Message re-valide à la saisie → l'erreur d'un champ se lève dès qu'il devient valide. Vérifié : saisir « Marie » lève l'erreur Nom, Email/Message restent. [app/pages/contact.vue]
+- [x] [Review][Defer] SEO `/contact` : `useHead` ne pose que `title`+`description` (pas d'OG/canonical/JSON-LD) — identique à `/services`, scopé hors 7.1 par le dev. — deferred, à traiter avec la centralisation SEO site-wide déjà tracée (`useSeoMeta`/`app.head` + `SITE_URL`/`jsonLdScript` partagés) — Epic 9 / story SEO.
+
+_Rejetés (bruit / faux positifs vérifiés)_ : « le formulaire ne fait rien » comme défaut (FAUX — c'est NFR4, conception assumée ; remonté en décision) ; regex email permissive (intentionnelle, commentée — Edge) ; pas d'anti-spam / maxlength / ReDoS (sans soumission ni backend → sans objet ; regex linéaire) ; indicateur « requis » absent (FAUX — `ZInput` rend un `*` + `required` natif annoncé à l'AT) ; progressive enhancement JS-off (sans backend où POST → sans objet) ; `✓` glyphe vs `ZIcon` (intentionnel, repris du kit, `aria-hidden`) ; `48ch`/`1fr 0.8fr`/`900px` (mesures structurelles mandatées kit/DS) ; newlines dans `name` (input mono-ligne les empêche) ; valeur non-trim conservée (donnée jamais consommée) ; messages inline non-i18n (site mono-français) ; état non réversible (acceptable pour un formulaire de contact) ; `.contact__main`/`.contact__sent` non stylés (hooks structurels inertes — Auditor).
