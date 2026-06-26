@@ -4,7 +4,7 @@ baseline_commit: 3223ed6d5c312c621862a5d3477143a1cbce8ac9
 
 # Story 7.1: Route /contact et formulaire
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -17,7 +17,7 @@ so that je peux écrire à Simon (UX-DR16, FR9).
 ## Acceptance Criteria
 
 1. **Given** la référence `Contact.jsx` et la contrainte site statique (pas de backend), **When** on crée la route `/contact` avec le formulaire (`ZInput`, `ZButton`), **Then** le formulaire valide les champs côté front et affiche un feedback.
-2. **Given** la contrainte d'absence de serveur, **When** on soumet le formulaire, **Then** aucune dépendance backend n'est requise (NFR4).
+2. **Given** la contrainte site statique (aucun serveur à héberger), **When** on soumet le formulaire, **Then** l'envoi passe par un **service tiers sans serveur** (Web3Forms, clé en env) — aucun backend propre n'est déployé. _(MAJ revue 7.1 : supersede l'ancien NFR4 « ni service tiers » — décision Simon ; cf. SPEC#Decisions.)_
 
 > Périmètre : **création de la route `/contact` + le formulaire de contact** (colonne gauche de `Contact.jsx`) avec validation et feedback **front uniquement**. La carte infos, le CTA terminal et les hexagones sociaux (colonne droite) sont la **story 7.2**. Cette story doit néanmoins poser le squelette de page (`pages/contact.vue`, grille `contact__grid`) que 7.2 complétera, sans casser le prerender ni le lint.
 
@@ -33,7 +33,7 @@ so that je peux écrire à Simon (UX-DR16, FR9).
   - [x] Reproduire la disposition de `Contact.jsx` : `Nom` + `Email` sur une rangée (`grid-2`), puis `Sujet`, puis `Message` pleine largeur
   - [x] CTA d'envoi via `ZButton` variante `primary`, taille `lg`, icône flèche à droite, libellé `Envoyer le message`
 - [x] Tâche 3 — Validation et feedback **front uniquement** (AC: #1, #2)
-  - [x] À la soumission : `@submit.prevent` — aucun appel réseau, aucune dépendance backend
+  - [x] À la soumission : `@submit.prevent` + validation front, puis envoi via **Web3Forms** (service tiers _sans serveur propre_) — _MAJ revue 7.1 : l'envoi réseau remplace la bascule d'état factice, décision Simon_
   - [x] Valider côté front les champs requis (Nom, Email, Message) et le format email ; afficher des messages d'erreur français sous les champs invalides
   - [x] En cas de succès, afficher l'état « envoyé » : carte accent avec ligne mono verte `✓ Message envoyé` (`var(--term-green)`) + message de confirmation français (cf. `sent` dans `Contact.jsx`), à la place du formulaire
   - [x] Gérer l'état réactif (`sent`, erreurs de champ) via `ref`/`reactive` (`<script setup>`)
@@ -49,7 +49,7 @@ so that je peux écrire à Simon (UX-DR16, FR9).
 ### Contexte & contraintes (depuis project-context.md et SPEC)
 
 - **Route `/contact` à CRÉER** — elle n'existe pas dans `pages/` (seules `index.vue`, `about.vue`, `blog/` existent). [Source: docs/specs/spec-design-system-revamp/pages.md]
-- **Site statique, AUCUN backend** : le formulaire est non fonctionnel côté serveur ; **validation/feedback front uniquement** (NFR4 / Non-goal « pas de backend »). Ne pas ajouter d'endpoint, de `$fetch`, ni de service tiers. [Source: docs/specs/spec-design-system-revamp/SPEC.md#Non-goals ; pages.md#Contact]
+- **Site statique, aucun serveur à héberger** : l'envoi du formulaire passe par **Web3Forms** (service tiers _sans backend propre_, clé en env `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY`). Validation/feedback front conservés avant le `$fetch`. _MAJ revue 7.1 : l'ancien NFR4 « ni endpoint/`$fetch`/service tiers » est superseded par décision Simon (cf. SPEC#Decisions + Review Findings)._ [Source: docs/specs/spec-design-system-revamp/SPEC.md#Non-goals, #Decisions ; pages.md#Contact]
 - **Compatibilité prerender** : tout accès DOM gardé (`onMounted` / `import.meta.client`) ; la validation front pure n'en nécessite normalement aucun. [Source: docs/project-context.md#Nuxt]
 - **Tokens, pas de valeurs en dur** ; SCSS `@use` (jamais `@import`) ; styles `<style lang="scss" scoped>`. [Source: docs/project-context.md#SCSS]
 - **Port, pas copie** : ne pas copier `Contact.jsx` tel quel — recréer en Vue 3 `<script setup>`. [Source: docs/specs/spec-design-system-revamp/SPEC.md#Constraints]
@@ -79,7 +79,7 @@ so that je peux écrire à Simon (UX-DR16, FR9).
 
 ### Pièges / régressions à éviter
 
-- **Ne pas** soumettre le formulaire à un backend / endpoint : le `submit` doit rester local (`preventDefault` + bascule d'état). Ajouter un backend casserait NFR4 et la cible statique.
+- **Pas de backend propre** : l'envoi passe par Web3Forms (tiers _sans serveur_). Garder `@submit.prevent` + la validation front avant le `$fetch` ; clé Web3Forms en env (jamais en dur). _(MAJ revue 7.1 : l'interdiction de `$fetch`/service tiers est levée — décision Simon.)_
 - **Ne pas** hardcoder couleurs/espaces (ex. `--term-green`, `--text-muted`, `--fs-*`, `--space-*` viennent des tokens portés en Epic 2).
 - **Ne pas** dupliquer la logique des primitives : la validation/affichage d'erreur est portée par la page, mais le rendu champ/bouton passe par `ZInput`/`ZButton`.
 - Le `multiline` de `ZInput` doit rendre un `<textarea>` accessible (label associé) — vérifier le contrat de la primitive (story 2.6).
@@ -138,6 +138,7 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------ |
 | 2026-06-26 | 0.1     | Implémentation story 7.1 — route `/contact` + formulaire DS (`ZInput`/`ZButton`), validation & feedback front uniquement (état envoyé `ZCard accent`), squelette grille pour 7.2. |
 | 2026-06-26 | 0.2     | Correctifs de revue (zéro dette) : **envoi réel Web3Forms** (clé env, honeypot, états sending/error ; supersede NFR4 → SPEC maj) ; focus a11y (1er champ invalide / carte envoyée) ; re-validation live des erreurs ; notice RGPD. |
+| 2026-06-26 | 0.3     | Re-revue des correctifs (commit `3805bee`) : 3 patchs vérifiés résolus (build vert + comportemental au navigateur — validation/focus/re-validation/état envoyé ; envoi réseau non déclenché pour ne pas spammer). Ticket réconcilié sur la décision Web3Forms (AC #2 / tâche / Dev Notes / Pièges ; SPEC déjà à jour). Statut → `done`. |
 
 ## Review Findings
 

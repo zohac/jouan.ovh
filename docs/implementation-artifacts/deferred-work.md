@@ -19,6 +19,10 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 4. **Centralisation SEO site-wide** — la **dette concrète est soldée** (6.2) : `SITE_URL` unique dans `app/utils/seo.ts` (dédup `/about`+`/blog`+article), JSON-LD via `jsonLdScript()` qui échappe `</script>`. **Reste** (architecture, non-dette) : migrer vers `useSeoMeta`/`app.head` partagé, sourcer `SITE_URL` depuis `runtimeConfig`, ajouter `publisher`/`Organization` (ou `nuxt-schema-org`), et étendre OG/JSON-LD aux pages encore nues (home, services, contact). _(revues 5.1, 6.1, 6.2)_
 5. **⚠️ Domaine de production dans `SITE_URL`** — `app/utils/seo.ts` et `public/CNAME` pointent sur **`dev.jouan.ovh`** = **staging** (branche `develop` → gh-pages, décision Simon, rétro Epic 6). La **prod cible est `jouan.ovh`** (hébergement encore à décider). Avant mise en prod / indexation : basculer `SITE_URL` (et le `CNAME` du déploiement prod) sur `https://jouan.ovh`, sinon les `canonical`/`og:url`/JSON-LD de `/about`, `/blog`, articles pointeront sur le staging. _(rétro Epic 6)_
 
+### → Légal / RGPD (fin de refonte)
+
+7. **Politique de confidentialité (RGPD)** — le formulaire `/contact` envoie via **Web3Forms** (sous-traitant tiers) et collecte **nom, email, message**. Une **notice courte est posée sous le formulaire** (finalité). **Reste à publier** une page « politique de confidentialité » dédiée — base légale (consentement / intérêt légitime), finalité, durée de conservation, mention du sous-traitant Web3Forms (hébergement/transfert des données), droits des personnes (accès, rectification, effacement) — et à la lier depuis le footer et/ou le formulaire. Vérifier aussi les **mentions légales**. Cf. skill `rgpd-france`. _(revue 7.1, décision Simon Epic 7)_
+
 ### → Fin de refonte (déjà tracé hors ce fichier)
 
 6. **Déploiement gh-pages réel** — chaîne CI + domaine custom (`CNAME`) jamais prouvée ; ~21 stories empilées sur `feat/design-system-revamp`, jamais mergées sur `main`. Report assumé, risque croissant. _(rétros Epic 1→6)_
@@ -28,7 +32,7 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 ## Deferred from: code review of 7-1-route-contact-et-formulaire (2026-06-26)
 
 - **SEO `/contact`** — `useHead` ne pose que `title`+`description` (pas d'OG/canonical/JSON-LD), comme `/services`. Déjà couvert par l'**item 4 consolidé** (« étendre OG/JSON-LD aux pages encore nues : home, services, **contact** »). → story SEO dédiée / Epic 9. _(Les 2 autres findings 7.1 — focus a11y à l'envoi, erreurs collantes — sont des **patchs** de la story, pas des différés ; cf. Review Findings du ticket.)_
-- **⚠️ Clé d'accès Web3Forms à provisionner (déploiement)** — le formulaire `/contact` envoie réellement via Web3Forms ; le code lit la clé depuis l'env `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY` (cf. `.env.example`), **vide pour l'instant** → le form affiche son état d'erreur tant qu'aucune clé n'est posée. **Avant mise en prod** : créer la clé (gratuite, instantanée sur web3forms.com) et la renseigner dans l'env de déploiement. _(Pas de la dette : dépendance de config assumée, décision Simon Epic 7.)_
+- ~~**Clé d'accès Web3Forms à provisionner**~~ — ✅ **OK** (Simon, 2026-06-26) : clé créée et renseignée dans l'env `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY`. L'envoi réel du formulaire `/contact` est opérationnel.
 - **Politique de confidentialité (RGPD)** — le formulaire collecte nom/email/message transmis à un tiers (Web3Forms) ; une **notice courte est posée sous le formulaire**. Reste à publier une **page « politique de confidentialité »** dédiée (base légale, finalité, durée, sous-traitant Web3Forms, droits) et à la lier — cf. skill `rgpd-france`. → tâche légale de fin de refonte (hors périmètre 7.1/7.2).
 
 ## Deferred from: code review of 6-2-vue-article-prose-et-code (2026-06-25)
