@@ -1,6 +1,6 @@
 import type { IProgram } from "~/components/terminal/interfaces";
 
-interface ProjectInterface {
+interface IProject {
   name: string;
   role: string;
   desc: string;
@@ -10,7 +10,7 @@ interface ProjectInterface {
 // Projets — reprise du UI kit (`TerminalScreen.jsx` / `data.js`), alignés sur la section
 // « Projets sélectionnés » de la home. Rendu en `<ul>` (cohérent avec `help`/`system-info`) :
 // les `<li>` portent les retours à la ligne sous `white-space: normal`.
-const projects: ProjectInterface[] = [
+const projects: IProject[] = [
   {
     name: "keova.app",
     role: "Fondateur · SaaS",

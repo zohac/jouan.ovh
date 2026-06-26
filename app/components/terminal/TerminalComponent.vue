@@ -125,6 +125,14 @@ export default defineComponent({
       }
     };
 
+    // Pousse la commande saisie dans l'historique, réinitialise la navigation et vide la saisie.
+    // Commun à la branche `clear` et au flux normal (factorisation — pas de bookkeeping dupliqué).
+    const recordHistoryAndResetInput = (): void => {
+      commandHistory.value.push(userInput.value);
+      commandHistoryPosition.value = -1;
+      userInput.value = "";
+    };
+
     const submitInput = (): void => {
       const command = userInput.value.trim();
       if (command) {
@@ -133,9 +141,7 @@ export default defineComponent({
         // `help` grâce au programme `programs/Clear.ts` enregistré dans le ProgramManager.
         if (command === "clear") {
           commandLines.value = [];
-          commandHistory.value.push(userInput.value);
-          commandHistoryPosition.value = -1;
-          userInput.value = "";
+          recordHistoryAndResetInput();
           return;
         }
 
@@ -151,9 +157,7 @@ export default defineComponent({
           commandLines.value.push({ text: output, isResponse: true });
         }
 
-        commandHistory.value.push(userInput.value);
-        commandHistoryPosition.value = -1;
-        userInput.value = "";
+        recordHistoryAndResetInput();
       }
     };
 

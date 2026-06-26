@@ -4,7 +4,7 @@ baseline_commit: 15ada823eed910cf51613f57687efe0511723b46
 
 # Story 8.2: Préserver les commandes et l'ouverture
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,7 +24,7 @@ so that l'easter-egg reste fonctionnel après refonte (FR10, NFR9).
 ## Tasks / Subtasks
 
 - [x] Tâche 1 — Vérifier l'ouverture / la fermeture (AC: ouverture modale)
-  - [x] Vérifier que `TerminalButton.vue` émet `open-terminal` et que le consommateur (manager/layout) crée bien une instance via `TerminalManagerComponent.createNewTerminal()`.
+  - [x] Vérifier le déclencheur d'ouverture **réel** : le(s) `ZButton variant="terminal"` du `HeaderComponent` (desktop + menu mobile) et le lanceur partagé `useTerminal` (hero d'accueil) créent bien une instance via `TerminalManagerComponent.createNewTerminal()`. _(NB : `TerminalButton.vue` n'existe pas dans le code — la story le supposait à tort.)_
   - [x] Vérifier que la fenêtre s'affiche, prend le focus de l'input (`focusUserInput`) et se ferme via la pastille (`closeTerminal`) sans régression après le restyle (Story 8.1).
 - [x] Tâche 2 — Vérifier le drag (AC: reste draggable)
   - [x] Drag depuis le header (`handleHeaderMouseDown` + écouteurs globaux `mousemove`/`mouseup`) déplace la fenêtre et la borne dans le viewport.
@@ -40,6 +40,33 @@ so that l'easter-egg reste fonctionnel après refonte (FR10, NFR9).
 - [x] Tâche 5 — Non-régression globale (AC: tout, NFR9)
   - [x] Historique de commandes (flèches haut/bas), « Commande inconnue : … », bannière `initialData` (ASCII S/J) toujours présents.
   - [x] `yarn lint` + `yarn generate` verts.
+
+## Review Findings
+
+_Revue de code adversariale (bmad-code-review) — 2026-06-26. 3 passes : Blind Hunter / Edge Case Hunter / Acceptance Auditor. Baseline `15ada82`._
+
+**Verdict : story propre.** Edge Case Hunter (accès code) et Acceptance Auditor concluent **0 finding Critical/High/Medium** ; diff purement additif, NFR9/CAP-10 respectés (aucune commande existante touchée), contenu cohérent avec le site (email/ville/projets identiques à `about.vue`/`contact.vue`/Footer/`index.vue`) et conforme NFR6 (FR/vouvoiement/sans emoji). Restent 2 patchs Low et 2 différés.
+
+### Patchs (correctifs sans ambiguïté)
+
+- [x] [Review][Patch] ✅ **Doc : la Tâche 1 (cochée) référence `TerminalButton.vue` qui n'existe pas** [docs/implementation-artifacts/8-2-…md:27] — la Completion Notes corrige déjà (« ce fichier n'existe pas ; ouverture réelle via `ZButton variant="terminal"` du `HeaderComponent` + `useTerminal`), mais le texte de la Tâche 1 n'a pas été mis à jour → contradiction interne au document. Fix : reformuler la Tâche 1 sur le chemin d'ouverture réel. **Low (doc).**
+- [x] [Review][Patch] ✅ **Convention de nommage : `ProjectInterface` au lieu du préfixe `I`** [app/components/terminal/programs/Projets.ts:~8] — le sous-système utilise le préfixe `I` (`IProgram`, `IProgramManager`). Le type local `ProjectInterface` dévie. Fix trivial : renommer `IProject` (ou `Project`). **Low.**
+
+### Différés (dette préexistante / hors périmètre)
+
+- [x] [Review][Defer] **DRY — données dupliquées en dur (skills/projets/contact/email/ville)** [Skills.ts, Projets.ts, Contact.ts] — la stack, les projets (keova.app/patio-conseil.fr) et l'email/ville sont recopiés en dur, dupliquant la home (`index.vue`), le Footer et `about.vue`/`contact.vue`. Cohérent à l'instant T (vérifié identique partout) mais sans garde-fou anti-dérive. **Compounds** l'item DRY déjà tracé (revue 7.2 « données de contact inline ») → constante `SITE` partagée, consolidation de fin de refonte. Non bloquant.
+- [x] [Review][Defer→Résolu 8.2] ✅ **Duplication du bookkeeping d'historique dans la branche `clear`** [app/components/terminal/TerminalComponent.vue] — **factorisé maintenant** (consigne « aucune dette ») : helper `recordHistoryAndResetInput()` appelé par la branche `clear` ET le flux normal. Plus de report en 8.3.
+
+### Rejetés (faux positifs / non-problèmes / justifiés)
+
+- **XSS latent dans `Projets.ts`** (Blind Hunter) — non exploitable : `name/role/desc/url` sont des **constantes module-local** (aucune entrée utilisateur). Cohérent avec le pattern sûr existant (`About.ts`/`Help.ts` construisent aussi du HTML statique) ; `escapeHtml` reste sur le seul chemin « commande inconnue » (entrée user). À revisiter seulement si ces données deviennent externes (CMS/API).
+- **`run(): string` ne distingue pas HTML/texte** (Blind) — contrat `IProgram` existant (`string | HTMLElement` rendu via `v-html`) ; `skills` en texte brut rend correctement. Pattern établi.
+- **Sentinelle `commandHistoryPosition = -1` « non vérifiable »** (Blind) — **réfuté** (Edge Case, accès code) : `-1` est bien la convention « pas de navigation » ; ArrowUp post-`clear` rappelle correctement.
+- **Import `~/` vs `../`** (Blind) — **réfuté** : les 4 nouveaux fichiers sont **cohérents avec leurs pairs** (`About.ts`/`Help.ts`/… utilisent tous `~/components/terminal/interfaces`) ; `ProgramManager.ts` (`../`) est l'exception préexistante.
+- **`clear foo` / casse `CLEAR` non interceptés ; `clear` vide la bannière** (Blind/Edge) — comportement **cohérent système-wide** (aucune commande ne parse d'argument ; casse sensible partout, ex. `helloWorld`) et **conforme à la réf UI kit** (`TerminalScreen.jsx` : `if (cmd === "clear") setLines([])`). `clear` qui vide la bannière = sémantique standard, voulue.
+- **`Clear.run` mort / double source de vérité** (Blind) — **choix délibéré et documenté** : `Clear.ts` existe pour la découvrabilité via `help` (liste dynamique) ; le vidage réel est intercepté dans le composant (seul détenteur de `commandLines`). Fallback `""` inoffensif.
+- **`whoami` du UI kit non porté** (Auditor) — hors AC/CAP-10, doublonne `about`. Non requis.
+- **`projets` desc+url / `contact` ligne « formulaire »** (Auditor) — justifiés : `desc/url` viennent de `data.js` (autorisé par la story) ; « formulaire » = pointeur factuel vers `/contact`. Pas de contenu marketing inventé.
 
 ## Dev Notes
 
@@ -160,3 +187,4 @@ claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story, effort high)
 | Date       | Version | Description                                                                                  |
 | ---------- | ------- | -------------------------------------------------------------------------------------------- |
 | 2026-06-26 | 0.1     | Non-régression terminal post-8.1 (ouverture/focus/close, drag 1:1/resize/z-index, commandes legacy, historique, échappement, bannière) **+** ajout des commandes `skills`/`projets`/`contact` (programmes `IProgram`, contenu UI kit/`data.js`) et `clear` (interception `submitInput` + programme pour `help`). Tout vérifié au navigateur ; lint + typecheck + generate verts. |
+| 2026-06-26 | 0.2     | Revue de code (story propre) — 2 patchs Low + factorisation : doc Tâche 1 reformulée sur le déclencheur réel (`HeaderComponent`/`useTerminal`, `TerminalButton.vue` inexistant) ; `ProjectInterface` → `IProject` (préfixe `I`) ; bookkeeping historique factorisé (`recordHistoryAndResetInput()`) entre `clear` et flux normal. Le différé DRY est traité à part (consolidation `app/data/site.ts`). lint + typecheck + generate verts ; clear/commandes/historique re-vérifiés. |
