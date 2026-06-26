@@ -1,9 +1,12 @@
 <template>
   <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput">
     <div class="terminal-header" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
-      <div class="close-button" @click="closeTerminal"></div>
+      <div class="terminal-dots">
+        <div class="close-button" @click="closeTerminal"></div>
+        <span class="terminal-dot terminal-dot--min" aria-hidden="true"></span>
+        <span class="terminal-dot terminal-dot--max" aria-hidden="true"></span>
+      </div>
       <div class="header-text">{{ defaultConfig.domainName }}</div>
-      <div></div>
     </div>
 
     <div class="terminal-body">
@@ -292,153 +295,165 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée de TerminalWindow.jsx */
 .terminal {
-  --color-light: hsl(0deg 0% 92% / 100%); /* with dark text */
-  --color-dark: hsl(0deg 0% 8% / 100%); /* with light text */
-  --color-text-dark: var(--color-dark);
-  --color-text-light: var(--color-light);
-  --color-grey: hsl(0deg 0% 27%); /* with light text */
-  --color-grey-light: hsl(0deg 0% 68%); /* with dark text */
-  --color-grey-dark: hsl(0deg 0% 20%);
-  --color-aubergine: hsl(319deg 33% 30% / 100%); /* with light text */
-  --color-aubergine-light: hsl(319deg 26% 70% / 100%); /* with dark text */
-  --color-aubergine-dark: hsl(319deg 100% 9% / 100%); /* with light text */
-  --color-red: hsl(0deg 100% 43% / 100%); /* without text */
-  --color-red-light: hsl(0deg 72% 72% / 100%); /* with dark text */
-  --color-red-dark: hsl(0deg 100% 27% / 100%); /* with light text */
-  --color-yellow: hsl(48deg 89% 50% / 100%); /* with dark text */
-  --color-yellow-light: hsl(48deg 89% 79% / 100%); /* with dark text */
-  --color-yellow-dark: hsl(48deg 100% 15% / 100%); /* with light text */
-  --color-green: hsl(143deg 60% 50% / 100%); /* with dark text */
-  --color-green-light: hsl(143deg 60% 75% / 100%); /* with dark text */
-  --color-green-dark: hsl(143deg 80% 19% / 100%); /* with light text */
-  --color-blue: hsl(204deg 70% 53% / 100%); /* without text */
-  --color-blue-light: hsl(204deg 69% 80% / 100%); /* with dark text */
-  --color-blue-dark: hsl(204deg 75% 24% / 100%); /* with light text */
-
-  @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
-    /* stylelint-disable-next-line property-no-vendor-prefix -- Safari: autoprefixer non activé, préfixe manuel requis */
-    -webkit-backdrop-filter: blur(5px);
-    backdrop-filter: blur(5px);
-  }
-
-  color: var(--color-light);
-  font-family: "Ubuntu Mono", monospace;
-  font-size: 1rem;
-  border-radius: 5px;
-  width: 600px;
-  height: 400px;
+  // Châssis fenêtre — porté de TerminalWindow.jsx (.ds-term). STYLE uniquement : la
+  // logique (drag/resize/close/focus/historique/commandes) et les classes porteuses de
+  // handlers (terminal-header, close-button, user-input, resize-handle) sont préservées.
+  // Dimensions/positions (px) = structurelles (fenêtre flottante / barre 30px / pastilles
+  // 13px), portées telles quelles du DS — pas de token dédié.
   box-sizing: border-box;
   position: absolute;
-  resize: both;
-  overflow: hidden;
   top: 60px;
   left: 15px;
   z-index: 1000;
-  box-shadow: var(--box-shadow-2);
+  width: 600px;
+  height: 400px;
+  overflow: hidden;
+  resize: both;
+  font-family: var(--font-mono);
+  color: var(--ink-1);
+  border: 1px solid var(--accent-2-soft);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--glow-terminal);
 
   &-header {
-    // display: flex;
-    // align-items: center;
-    // background-color: var(--color-grey);
-    // color: var(--color-light);
-    // height: 24px;
-    // border-top-left-radius: 5px;
-    // border-top-right-radius: 5px;
-    // padding: 0 10px;
-    // font-size: 12px;
-
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    justify-content: space-between;
-    z-index: 1;
-    height: 24px;
-    padding: 0.25rem;
-    border-top-left-radius: 0.25rem;
-    border-top-right-radius: 0.25rem;
-    text-align: center;
-    background-color: var(--color-grey-dark);
+    gap: var(--space-2);
+    height: 30px;
+    padding: 0 var(--space-3);
+    background: var(--aubergine-black);
     cursor: move;
 
-    .header-text {
-      text-align: center;
+    // Groupe de pastilles à gauche (façon fenêtre Ubuntu) — porté de .ds-term__btns.
+    .terminal-dots {
+      display: flex;
+      align-items: center;
+      gap: 7px; // espacement décoratif des pastilles (DS, pas de token)
     }
 
+    // Pastille de fermeture (.ds-term__dot--close). Conserve @click="closeTerminal".
+    // Rouge sombre (hsl(0 100% 27%)) + ombre : sans token dédié, valeurs portées du DS.
     .close-button {
+      width: 13px;
+      height: 13px;
       cursor: pointer;
-      border-radius: 9999px;
-      width: 1rem;
-      height: 1rem;
-      margin: 0.25rem;
-      background-image: linear-gradient(to bottom right, var(--color-red), var(--color-red-dark));
-      box-shadow:
-        2px 2px 3px var(--color-dark),
-        -2px -2px 3px var(--color-grey);
+      background-image: linear-gradient(to bottom right, var(--term-red), hsl(0deg 100% 27%));
+      border-radius: var(--radius-circle);
+      box-shadow: 1px 1px 2px hsl(320deg 60% 2%);
 
       &:hover {
         filter: brightness(1.2);
       }
     }
+
+    // Pastilles min/max purement décoratives (aucun handler).
+    .terminal-dot {
+      width: 13px;
+      height: 13px;
+      border-radius: var(--radius-circle);
+      opacity: 0.85;
+    }
+
+    .terminal-dot--min {
+      background: var(--term-yellow);
+    }
+
+    .terminal-dot--max {
+      background: var(--term-green);
+    }
+
+    // Titre centré, transparent aux clics → toute la barre reste draggable.
+    .header-text {
+      position: absolute;
+      inset: 0;
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: var(--ls-wide);
+      line-height: 30px; // centre verticalement dans la barre de 30px
+      color: var(--text-muted);
+      text-align: center;
+      pointer-events: none;
+    }
   }
 
   &-body {
+    height: calc(100% - 30px);
     margin: 0;
-    padding: 10px;
-    height: calc(100% - 24px);
+    padding: var(--space-4);
     overflow: auto;
-    background-color: var(--color-aubergine-dark);
-    opacity: 0.85;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    background: var(--bg-terminal);
 
     .git-prompt,
     .git-prompt-separator,
     .git-prompt-directory,
     .git-prompt-branch {
       display: inline;
-      font-weight: 700;
+      font-weight: var(--fw-bold);
     }
 
     .git-prompt {
-      color: var(--color-green);
+      color: var(--prompt);
     }
 
     .git-prompt-separator {
-      color: var(--color-light);
+      color: var(--ink-1);
     }
 
     .git-prompt-directory {
-      color: var(--color-blue);
+      color: var(--term-blue);
     }
 
     .git-prompt-branch {
-      color: var(--color-red);
+      color: var(--term-red);
     }
 
     .user-input {
+      margin: 0;
+      padding: 0;
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
       background-color: transparent;
       border: none;
       outline: none;
-      color: inherit;
-      font-family: inherit;
-      font-size: inherit;
-      padding: 0;
-      margin: 0;
-      caret-color: var(--color-green);
-      caret-shape: bar;
+
+      // Caret natif vert : clignote nativement (aucune animation CSS en boucle ajoutée →
+      // « caret = seule boucle » respecté ; le navigateur le fige sous prefers-reduced-motion).
+      caret-color: var(--prompt);
+      caret-shape: block;
     }
 
     .command-prefix {
       display: inline;
-      color: var(--color-green);
-      font-weight: 700;
       padding-right: 0.5em;
+      font-weight: var(--fw-bold);
+      color: var(--prompt);
+    }
+  }
+
+  // Corps translucide + flou aubergine derrière (porté de .ds-term__body, derrière @supports).
+  @supports (backdrop-filter: blur(5px)) or (-webkit-backdrop-filter: blur(5px)) {
+    .terminal-body {
+      background: color-mix(in srgb, var(--bg-terminal) 86%, transparent);
+      /* stylelint-disable-next-line property-no-vendor-prefix -- Safari : autoprefixer non câblé, préfixe manuel requis */
+      -webkit-backdrop-filter: blur(5px);
+      backdrop-filter: blur(5px);
     }
   }
 
   .resize-handle {
     position: absolute;
-    bottom: 0;
     right: 0;
+    bottom: 0;
     width: 16px;
     height: 16px;
     background-color: transparent;
@@ -477,7 +492,10 @@ table,
   tbody {
     tr:nth-child(even) {
       background-color: var(--color-grey-light);
-      color: var(--color-text-dark);
+
+      // --color-dark est redéfini localement ci-dessus (le bloc `.terminal` qui exposait
+      // --color-text-dark a été retiré au profit des tokens DS) : table auto-suffisante.
+      color: var(--color-dark);
     }
   }
 

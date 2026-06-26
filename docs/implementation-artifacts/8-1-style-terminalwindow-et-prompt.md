@@ -1,6 +1,10 @@
+---
+baseline_commit: 7ea5b6d9cbe5ca8f018dcea57c19bb63c475510a
+---
+
 # Story 8.1: Style TerminalWindow et Prompt
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,24 +23,24 @@ so that l'easter-egg s'intègre à l'identité (UX-DR8, UX-DR9, FR10).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Restyler le châssis de la fenêtre `TerminalComponent.vue` (AC: tout)
-  - [ ] Aligner la fenêtre sur `TerminalWindow.jsx` : `border-radius: var(--radius-sm)` (5px), bordure aubergine `1px solid hsl(319 40% 30% / 0.4)`, ombre `--glow-terminal`, et corps en `--bg-terminal` (aubergine profond) avec `backdrop-filter: blur(5px)` gardé derrière `@supports`.
-  - [ ] Conserver le layout flex header / body / resize-handle déjà présent ; ne PAS toucher au markup porteur des handlers (drag, resize, close, focus input) — on ne change QUE le style.
-  - [ ] Remplacer les couleurs/rayons codés en dur du bloc `<style>` (variables `--color-*` locales, `border-radius: 5px`, `var(--box-shadow-2)`, `opacity: 0.85`, etc.) par les tokens du DS exposés en CSS vars globales (Epic 2 — Story 2.1) consommés via `var()`, en suivant le pattern « CSS custom properties locales depuis tokens » (NFR2).
-- [ ] Tâche 2 — Restyler la barre de titre (header) (AC: rend conformément au DS)
-  - [ ] Reproduire la barre `.ds-term__bar` : hauteur ~30px, fond `--aubergine-black`, titre centré en `--font-mono`, `--fs-xs`, `--text-muted`, `letter-spacing: --ls-wide`, `pointer-events: none` sur le titre.
-  - [ ] Restyler la pastille de fermeture (`close-button`) comme `.ds-term__dot--close` (dégradé `--term-red` → rouge sombre, `--radius-circle`). Conserver le `@click="closeTerminal"` existant.
-  - [ ] (Optionnel, conforme au DS) ajouter les pastilles min/max purement décoratives (`--term-yellow` / `--term-green`) sans handler — ne pas casser l'alignement du titre.
-- [ ] Tâche 3 — Restyler le prompt en vert + caret (AC: prompt vert, caret = seule boucle)
-  - [ ] Aligner la ligne de prompt sur `Prompt.jsx` : `user@host` en vert `--prompt` gras, séparateur `:` en `--ink-1`, répertoire `~` en `--term-blue` gras, `$ ` en `--ink-1`. Le format reste `anon.@jouan.ovh:~$` (valeurs depuis `terminal.config.ts`).
-  - [ ] Mettre à jour les classes existantes (`.git-prompt`, `.git-prompt-separator`, `.git-prompt-directory`) pour pointer sur les tokens (`--prompt`, `--ink-1`, `--term-blue`) au lieu des `--color-green` / `--color-blue` locaux.
-  - [ ] Implémenter le caret clignotant du DS sur l'`input` (ou un caret rendu) : animation `caret-blink 1s steps(1) infinite` (token `motion.css`), couleur `--prompt`. Aujourd'hui le champ utilise `caret-color: var(--color-green)` natif — décider de garder le caret natif coloré OU de porter le caret bloc `.ds-prompt__caret`, mais une seule approche.
-- [ ] Tâche 4 — Garantir « caret = seule animation en boucle » + reduced-motion (AC: caret = seule boucle, NFR9/UX-DR17)
-  - [ ] Vérifier qu'aucune autre animation/transition en boucle n'est introduite par le restyle (pas de pulsation, scanline, etc.).
-  - [ ] Ajouter `@media (prefers-reduced-motion: reduce) { ... animation: none; }` sur le caret (comme `Prompt.jsx`).
-- [ ] Tâche 5 — Vérification visuelle (AC: rend conformément au DS)
-  - [ ] `yarn lint` (eslint + stylelint) sans nouvelle erreur ; `yarn generate` (build statique) vert.
-  - [ ] Ouvrir le terminal et comparer le rendu à `ui_kits/jouan-site/TerminalScreen.jsx` + `terminal.card.html` : fond aubergine, blur, radius, prompt vert, caret qui clignote.
+- [x] Tâche 1 — Restyler le châssis de la fenêtre `TerminalComponent.vue` (AC: tout)
+  - [x] Aligner la fenêtre sur `TerminalWindow.jsx` : `border-radius: var(--radius-sm)` (5px), bordure aubergine `1px solid hsl(319 40% 30% / 0.4)`, ombre `--glow-terminal`, et corps en `--bg-terminal` (aubergine profond) avec `backdrop-filter: blur(5px)` gardé derrière `@supports`.
+  - [x] Conserver le layout flex header / body / resize-handle déjà présent ; ne PAS toucher au markup porteur des handlers (drag, resize, close, focus input) — on ne change QUE le style.
+  - [x] Remplacer les couleurs/rayons codés en dur du bloc `<style>` (variables `--color-*` locales, `border-radius: 5px`, `var(--box-shadow-2)`, `opacity: 0.85`, etc.) par les tokens du DS exposés en CSS vars globales (Epic 2 — Story 2.1) consommés via `var()`, en suivant le pattern « CSS custom properties locales depuis tokens » (NFR2).
+- [x] Tâche 2 — Restyler la barre de titre (header) (AC: rend conformément au DS)
+  - [x] Reproduire la barre `.ds-term__bar` : hauteur ~30px, fond `--aubergine-black`, titre centré en `--font-mono`, `--fs-xs`, `--text-muted`, `letter-spacing: --ls-wide`, `pointer-events: none` sur le titre.
+  - [x] Restyler la pastille de fermeture (`close-button`) comme `.ds-term__dot--close` (dégradé `--term-red` → rouge sombre, `--radius-circle`). Conserver le `@click="closeTerminal"` existant.
+  - [x] (Optionnel, conforme au DS) ajouter les pastilles min/max purement décoratives (`--term-yellow` / `--term-green`) sans handler — ne pas casser l'alignement du titre.
+- [x] Tâche 3 — Restyler le prompt en vert + caret (AC: prompt vert, caret = seule boucle)
+  - [x] Aligner la ligne de prompt sur `Prompt.jsx` : `user@host` en vert `--prompt` gras, séparateur `:` en `--ink-1`, répertoire `~` en `--term-blue` gras, `$ ` en `--ink-1`. Le format reste `anon.@jouan.ovh:~$` (valeurs depuis `terminal.config.ts`).
+  - [x] Mettre à jour les classes existantes (`.git-prompt`, `.git-prompt-separator`, `.git-prompt-directory`) pour pointer sur les tokens (`--prompt`, `--ink-1`, `--term-blue`) au lieu des `--color-green` / `--color-blue` locaux.
+  - [x] Implémenter le caret clignotant du DS sur l'`input` (ou un caret rendu) : animation `caret-blink 1s steps(1) infinite` (token `motion.css`), couleur `--prompt`. Aujourd'hui le champ utilise `caret-color: var(--color-green)` natif — décider de garder le caret natif coloré OU de porter le caret bloc `.ds-prompt__caret`, mais une seule approche. → **Décision : caret natif coloré** (`caret-color: var(--prompt)`, `caret-shape: block`), seul choix robuste pour un `<input>` éditable (le caret suit la frappe). Clignote nativement, **aucune animation CSS en boucle ajoutée**.
+- [x] Tâche 4 — Garantir « caret = seule animation en boucle » + reduced-motion (AC: caret = seule boucle, NFR9/UX-DR17)
+  - [x] Vérifier qu'aucune autre animation/transition en boucle n'est introduite par le restyle (pas de pulsation, scanline, etc.).
+  - [x] Ajouter `@media (prefers-reduced-motion: reduce) { ... animation: none; }` sur le caret (comme `Prompt.jsx`). → **Sans objet avec le caret natif** : aucune animation CSS n'est introduite (zéro boucle CSS), donc rien à neutraliser ; le clignotement natif est figé par le navigateur sous `prefers-reduced-motion`. Le seul `transition`/effet (hover `filter` de la pastille close) n'est pas une boucle.
+- [x] Tâche 5 — Vérification visuelle (AC: rend conformément au DS)
+  - [x] `yarn lint` (eslint + stylelint) sans nouvelle erreur ; `yarn generate` (build statique) vert.
+  - [x] Ouvrir le terminal et comparer le rendu à `ui_kits/jouan-site/TerminalScreen.jsx` + `terminal.card.html` : fond aubergine, blur, radius, prompt vert, caret qui clignote.
 
 ## Dev Notes
 
@@ -96,8 +100,32 @@ so that l'easter-egg s'intègre à l'identité (UX-DR8, UX-DR9, FR10).
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story)
+
 ### Debug Log References
+
+- `pnpm lint` (eslint + stylelint, Docker) : PASS après 3 corrections stylelint (disable `selector-class-pattern` pour les pastilles BEM `--min`/`--max` ; `word-break: break-word` déprécié → `overflow-wrap: break-word` ; ligne vide avant commentaire). `pnpm typecheck` / `pnpm generate` : PASS.
+- Vérif visuelle Chrome DevTools MCP (terminal ouvert) : computed styles tous conformes aux tokens — `border-radius 5px` (`--radius-sm`), bordure `rgba(107,46,88,.28)` (`--accent-2-soft`), ombre `--glow-terminal`, corps `bg-terminal` à 86 % (`color-mix`) + `backdrop-filter: blur(5px)`, prompt `rgb(59,206,115)` (`--prompt`), `~` `rgb(88,172,228)` (`--term-blue`), séparateurs `--ink-1`, caret `--prompt`, pastilles jaune/vert. Close vérifié (clic → `display:none`), classes des handlers intactes.
 
 ### Completion Notes List
 
+- **Restyle CSS uniquement** de `app/components/terminal/TerminalComponent.vue` (Options API legacy — non réécrit). Le `<script>` (drag/resize/close/focus/historique/`programManager`/commandes) et les classes porteuses de handlers (`terminal-header`, `close-button`, `user-input`, `resize-handle`) sont **intacts**.
+- **Fenêtre** (`.terminal`) : suppression du bloc de ~22 variables `--color-*` codées en dur → tokens DS. `--radius-sm`, bordure `--accent-2-soft`, ombre `--glow-terminal` (remplace `var(--box-shadow-2)` qui était indéfini), `font-mono`, `color: --ink-1`.
+- **Barre** (`.terminal-header`) : 30px, fond `--aubergine-black` ; pastilles à gauche (close `--term-red`→rouge sombre + min `--term-yellow` / max `--term-green` décoratives `aria-hidden`) ; titre centré absolu `--text-muted`/`--fs-xs`/`--ls-wide`, `pointer-events: none` (toute la barre reste draggable).
+- **Corps** (`.terminal-body`) : `--bg-terminal` opaque par défaut ; sous `@supports`, `color-mix(... 86%)` + `backdrop-filter: blur(5px)` (le flou est désormais sur le corps, comme le DS, et `opacity:0.85` qui rendait le **texte** translucide est supprimé). `--fs-sm`, `--lh-snug`, `white-space: pre-wrap`.
+- **Prompt** : `.git-prompt` → `--prompt` (vert), séparateurs → `--ink-1`, répertoire → `--term-blue`, tous `--fw-bold` (porté de `Prompt.jsx`).
+- **Caret** : natif coloré (`caret-color: var(--prompt)`, `caret-shape: block`) — choix robuste pour un `<input>` éditable. Clignote nativement ; **aucune animation CSS en boucle introduite** → « caret = seule boucle » respecté par construction, reduced-motion géré par le navigateur.
+- **Tables de sortie de commandes** (bloc `table`/`.table`, non scoped) : conservées (hors périmètre « fenêtre + prompt »), rendues **auto-suffisantes** — la seule référence externe (`var(--color-text-dark)`, qui héritait du bloc `.terminal` supprimé) repointée sur le `--color-dark` local.
+- **Markup** : ajout des 2 pastilles décoratives (`aria-hidden`) dans un wrapper `.terminal-dots` ; suppression du `<div>` vide de spacing. Aucune classe de handler renommée/retirée.
+
 ### File List
+
+- `app/components/terminal/TerminalComponent.vue` (MODIFIÉ — restyle CSS du `<style>` : fenêtre/barre/corps/prompt/caret tokenisés ; barre de titre DS avec pastilles ; markup barre ajusté sans toucher aux handlers)
+- `docs/implementation-artifacts/8-1-style-terminalwindow-et-prompt.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Dev Agent Record, statut)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
+
+## Change Log
+
+| Date       | Version | Description                                                                                  |
+| ---------- | ------- | -------------------------------------------------------------------------------------------- |
+| 2026-06-26 | 0.1     | Implémentation story 8.1 — restyle DS du terminal (fenêtre aubergine + blur + radius, barre de titre + pastilles, prompt vert, caret natif vert), tokens uniquement, logique préservée. |
