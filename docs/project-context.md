@@ -21,7 +21,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 > vit désormais sous `app/` (structure Nuxt 4 par défaut, `srcDir = "app"`).
 
 - **Framework :** Nuxt 4 (`^4.4.8`), SSR activé. `experimental.payloadExtraction: false`. Code applicatif sous `app/` (`srcDir = "app"`).
-- **UI :** Vue 3 — `<script setup lang="ts">` pour tout nouveau composant. `vue-property-decorator` et l'option `experimentalDecorators` ont été **retirés** (Epic 3, aucun usage réel). Quelques composants legacy en **Options API** (`defineComponent`, sans décorateur) subsistent (`WindowWrapperComponent`, `CurrentTime`, `terminal/TerminalComponent`) — ne pas les étendre, les migrer vers `<script setup>` lors d'une refonte.
+- **UI :** Vue 3 — `<script setup lang="ts">` pour tout nouveau composant. `vue-property-decorator` et l'option `experimentalDecorators` ont été **retirés** (Epic 3, aucun usage réel). Quelques composants legacy en **Options API** (`defineComponent`, sans décorateur) subsistent (`WindowWrapperComponent`, `CurrentTime`, `terminal/TerminalComponent`, `TerminalManagerComponent`) — ne pas les étendre. **Décision (rétro Epic 7) : Epic 8 = refonte COMPLÈTE du terminal** → migration de ces composants `components/terminal/` vers `<script setup>` **+** restyle DS (pas restyle-only). Les classes `programs/*` (`IProgram`) sont du TS pur et ne bougent pas. ⚠️ Aucun framework de test : vérifier **commande par commande** (`help`/`about`/`skills`/`projets`/`contact`/`clear`) + drag + ouverture au navigateur, avant/après.
 - **Langage :** TypeScript `^6.0.3`.
 - **Styles :** SCSS (`sass ^1.101.0`) via `@use ... as`. **Deux couches de tokens coexistent :** (1) tokens DS portés en **CSS custom properties globales** dans `app/assets/scss/abstract/_root.scss` (chargé via `main.scss`) = source de vérité du nouveau code ; (2) anciens tokens SCSS `$` sous `abstract/` encore consommés par le legacy restant. Cf. règle SCSS.
 - **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
@@ -39,6 +39,8 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Préférer `<script setup lang="ts">` pour tout NOUVEAU composant. Quelques
   composants legacy en Options API (`defineComponent`, sans décorateur) existent
   encore — ne pas les étendre ; les migrer vers `<script setup>` lors d'une refonte.
+  Le sous-système `components/terminal/` (dernier îlot Options API) est **refondu
+  en Epic 8** : migration `<script setup>` + restyle DS (décision rétro Epic 7).
 - `vue-property-decorator` et l'option `experimentalDecorators` ont été retirés
   (Epic 3) : plus aucun décorateur de classe, ne pas en réintroduire.
 - Imports composants via l'alias `~/` ou `@/` (les deux pointent sur project-root).
@@ -66,6 +68,12 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   (prerender-safe) ; rendu article via `<ContentRenderer>`. **Coloration Shiki désactivée**
   (`content.build.markdown.highlight: false`) pour imposer la palette terminale du DS —
   ne pas réactiver sans surcharge (sinon styles inline par token écrasant le DS).
+- **Formulaire `/contact` (Epic 7)** : envoi via **Web3Forms** (tiers _sans serveur_, site
+  reste statique), clé via `runtimeConfig.public.web3formsAccessKey` (env
+  `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY`, cf. `.env.example`). ⚠️ **Sans la clé, l'envoi échoue** —
+  la provisionner en env. `$fetch` **client-only** (prerender-safe) + honeypot anti-spam ;
+  validation/feedback front. Notice RGPD sous le form (page politique de confidentialité à
+  finaliser — cf. `deferred-work.md`).
 
 **SCSS (règle critique)**
 
@@ -256,4 +264,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-06-25 (post-Epic 6 : pipeline `@nuxt/content` v3 — collections typées `content.config.ts`, Shiki désactivé, gotchas Docker/SQLite + `:deep()` ancres de titres ; post-Epic 5 : primitives de layout globales `base/_layout.scss` + convention a11y titres/listes — eyebrow-as-`h2`, séquences en `<ol>`/`<ul>` ; post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)
+Dernière mise à jour : 2026-06-26 (post-Epic 7 : décision Epic 8 = refonte complète du terminal — migration `components/terminal/` vers `<script setup>` + restyle DS, vérif commande-par-commande ; Web3Forms acté côté SPEC pour le formulaire `/contact` ; post-Epic 6 : pipeline `@nuxt/content` v3 — collections typées `content.config.ts`, Shiki désactivé, gotchas Docker/SQLite + `:deep()` ancres de titres ; post-Epic 5 : primitives de layout globales `base/_layout.scss` + convention a11y titres/listes — eyebrow-as-`h2`, séquences en `<ol>`/`<ul>` ; post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)

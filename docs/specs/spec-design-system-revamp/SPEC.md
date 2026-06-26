@@ -95,6 +95,7 @@ Le site jouan.ovh, reconstruit sur Nuxt 4, rend toutes ses pages (Accueil, Servi
 - **Routes** : `/services` et `/contact` ajoutées comme pages dédiées (CAP-6, CAP-9).
 - **Envoi du formulaire `/contact` (CAP-9, décision Simon — Epic 7)** : via **Web3Forms** (service tiers _sans serveur_, clé d'accès en variable d'env). Le formulaire envoie réellement (ni démo factice, ni `mailto:`), tout en gardant le site statique. **Supersede** l'ancienne contrainte « ni service tiers » (NFR4 du ticket 7.1). Implications suivies : clé Web3Forms à provisionner + conformité RGPD (notice posée sous le formulaire ; politique de confidentialité dédiée à finaliser).
 - **Cible de migration (CAP-1, livrée en Epic 1)** : **Nuxt 4 + Vue 3 + TypeScript 6 + ESLint 10 (flat config via `@nuxt/eslint`)**, abandon de `@nuxt/bridge-edge`, code sous `app/`, toutes deps à jour. **Gestionnaire de paquets : pnpm** (migration depuis Yarn) ; **dev et outillage via Docker** (`docker compose`). `@nuxt/content` v3, `@nuxt/image` v2.
+- **Refonte du terminal (CAP-10, décision Simon — rétro Epic 7)** : Epic 8 = refonte **complète** du sous-système `components/terminal/` — **migration Options API → `<script setup>` ET restyle DS** (pas restyle-only). Cohérent avec CAP-3 (`TerminalWindow` en `<script setup>`) ; les classes `programs/*` (`IProgram`) restent du TS pur. Sans framework de test : vérification **commande par commande** + drag + ouverture, avant/après.
 
 ## Assumptions
 

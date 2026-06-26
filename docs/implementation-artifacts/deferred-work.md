@@ -4,7 +4,7 @@ _Travaux réels mais reportés, remontés par les revues de code. À reprendre d
 
 ---
 
-## 📋 Inventaire consolidé (synthèse — maj rétro Epic 6, 2026-06-25)
+## 📋 Inventaire consolidé (synthèse — maj rétro Epic 7, 2026-06-26)
 
 _Vue d'ensemble par destination. Le détail par story est conservé dans les sections chronologiques ci-dessous. Aucune dette technique laissée dans les épics (chaque story a soldé ses findings) ; ce sont des **généralisations DS-wide / d'architecture** délibérément regroupées pour être traitées en un seul passage._
 
@@ -21,11 +21,11 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 ### → Légal / RGPD (fin de refonte)
 
-7. **Politique de confidentialité (RGPD)** — le formulaire `/contact` envoie via **Web3Forms** (sous-traitant tiers) et collecte **nom, email, message**. Une **notice courte est posée sous le formulaire** (finalité). **Reste à publier** une page « politique de confidentialité » dédiée — base légale (consentement / intérêt légitime), finalité, durée de conservation, mention du sous-traitant Web3Forms (hébergement/transfert des données), droits des personnes (accès, rectification, effacement) — et à la lier depuis le footer et/ou le formulaire. Vérifier aussi les **mentions légales**. Cf. skill `rgpd-france`. _(revue 7.1, décision Simon Epic 7)_
+6. **Politique de confidentialité (RGPD)** — le formulaire `/contact` envoie via **Web3Forms** (sous-traitant tiers) et collecte **nom, email, message**. Une **notice courte est posée sous le formulaire** (finalité). **Reste à publier** une page « politique de confidentialité » dédiée — base légale (consentement / intérêt légitime), finalité, durée de conservation, mention du sous-traitant Web3Forms (hébergement/transfert des données), droits des personnes (accès, rectification, effacement) — et à la lier depuis le footer et/ou le formulaire. Vérifier aussi les **mentions légales**. Cf. skill `rgpd-france`. _(revue 7.1, décision Simon Epic 7)_
 
 ### → Fin de refonte (déjà tracé hors ce fichier)
 
-6. **Déploiement gh-pages réel** — chaîne CI + domaine custom (`CNAME`) jamais prouvée ; ~21 stories empilées sur `feat/design-system-revamp`, jamais mergées sur `main`. Report assumé, risque croissant. _(rétros Epic 1→6)_
+7. **Déploiement gh-pages réel** — chaîne CI + domaine custom (`CNAME`) jamais prouvée ; ~23 stories empilées sur `feat/design-system-revamp`, jamais mergées sur `main`. Report assumé, risque croissant. _(rétros Epic 1→7)_
 
 ---
 
