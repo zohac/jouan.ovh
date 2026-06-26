@@ -21,7 +21,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 > vit désormais sous `app/` (structure Nuxt 4 par défaut, `srcDir = "app"`).
 
 - **Framework :** Nuxt 4 (`^4.4.8`), SSR activé. `experimental.payloadExtraction: false`. Code applicatif sous `app/` (`srcDir = "app"`).
-- **UI :** Vue 3 — `<script setup lang="ts">` pour tout nouveau composant. `vue-property-decorator` et l'option `experimentalDecorators` ont été **retirés** (Epic 3, aucun usage réel). Quelques composants legacy en **Options API** (`defineComponent`, sans décorateur) subsistent (`WindowWrapperComponent`, `CurrentTime`, `terminal/TerminalComponent`, `TerminalManagerComponent`) — ne pas les étendre. **Décision (rétro Epic 7) : Epic 8 = refonte COMPLÈTE du terminal** → migration de ces composants `components/terminal/` vers `<script setup>` **+** restyle DS (pas restyle-only). Les classes `programs/*` (`IProgram`) sont du TS pur et ne bougent pas. ⚠️ Aucun framework de test : vérifier **commande par commande** (`help`/`about`/`skills`/`projets`/`contact`/`clear`) + drag + ouverture au navigateur, avant/après.
+- **UI :** Vue 3 — `<script setup lang="ts">` pour tout nouveau composant. `vue-property-decorator` et l'option `experimentalDecorators` ont été **retirés** (Epic 3, aucun usage réel). Quelques composants legacy en **Options API** (`defineComponent`, sans décorateur) subsistent : côté **terminal** (`terminal/TerminalComponent`, `terminal/TerminalManagerComponent`) et côté **header** (`WindowWrapperComponent`, `CurrentTime`) — ne pas les étendre. **Décision (rétro Epic 7) : Epic 8 = refonte COMPLÈTE du terminal** → restyle DS (**story 8.1**, fait) **+** migration des coquilles `components/terminal/` vers `<script setup>` (**story 8.3**). Les classes `programs/*` (`IProgram`) sont du TS pur et ne bougent pas. `WindowWrapperComponent`/`CurrentTime` (propres au header) restent un **résidu Options API distinct**, hors « refonte du terminal » (cleanup optionnel séparé). ⚠️ Migration sans framework de test : vérifier **commande par commande** (`help`/`about`/`skills`/`projets`/`contact`/`clear`) + drag + ouverture au navigateur, avant/après.
 - **Langage :** TypeScript `^6.0.3`.
 - **Styles :** SCSS (`sass ^1.101.0`) via `@use ... as`. **Deux couches de tokens coexistent :** (1) tokens DS portés en **CSS custom properties globales** dans `app/assets/scss/abstract/_root.scss` (chargé via `main.scss`) = source de vérité du nouveau code ; (2) anciens tokens SCSS `$` sous `abstract/` encore consommés par le legacy restant. Cf. règle SCSS.
 - **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
@@ -39,8 +39,9 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Préférer `<script setup lang="ts">` pour tout NOUVEAU composant. Quelques
   composants legacy en Options API (`defineComponent`, sans décorateur) existent
   encore — ne pas les étendre ; les migrer vers `<script setup>` lors d'une refonte.
-  Le sous-système `components/terminal/` (dernier îlot Options API) est **refondu
-  en Epic 8** : migration `<script setup>` + restyle DS (décision rétro Epic 7).
+  Le sous-système `components/terminal/` est **refondu en Epic 8** : restyle DS
+  (story 8.1) + migration `<script setup>` (story 8.3) — décision rétro Epic 7.
+  (Résidu Options API hors terminal : `WindowWrapperComponent`/`CurrentTime`, côté header.)
 - `vue-property-decorator` et l'option `experimentalDecorators` ont été retirés
   (Epic 3) : plus aucun décorateur de classe, ne pas en réintroduire.
 - Imports composants via l'alias `~/` ou `@/` (les deux pointent sur project-root).

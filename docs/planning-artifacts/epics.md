@@ -493,6 +493,21 @@ So that l'easter-egg reste fonctionnel après refonte (FR10, NFR9).
 **Then** `help`, `about`, `skills`, `projets`, `contact`, `clear` répondent sans régression
 **And** le terminal reste draggable
 
+### Story 8.3: Migrer les composants terminal vers `<script setup>`
+
+_(Ajoutée après la rétro Epic 7 — décision Simon : Epic 8 = refonte **complète** du terminal, pas seulement un restyle.)_
+
+As a mainteneur du codebase,
+I want que le sous-système terminal soit en `<script setup>` (plus d'Options API),
+So that le dernier îlot legacy est résorbé sans aucune régression fonctionnelle (FR10, NFR9).
+
+**Acceptance Criteria:**
+
+**Given** `TerminalComponent.vue` / `TerminalManagerComponent.vue` en Options API
+**When** on les réécrit en `<script setup lang="ts">` à comportement constant
+**Then** plus aucune Options API dans le sous-système terminal, et commandes / drag / resize / ouverture (header + `/contact`) sans régression
+**And** le rendu visuel (restyle 8.1) et `lint`/`typecheck`/`generate` restent identiques/verts
+
 ---
 
 ## Epic 9: Accessibilité & finitions motion
