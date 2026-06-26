@@ -1,6 +1,10 @@
+---
+baseline_commit: 15ada823eed910cf51613f57687efe0511723b46
+---
+
 # Story 8.2: Préserver les commandes et l'ouverture
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,23 +23,23 @@ so that l'easter-egg reste fonctionnel après refonte (FR10, NFR9).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Vérifier l'ouverture / la fermeture (AC: ouverture modale)
-  - [ ] Vérifier que `TerminalButton.vue` émet `open-terminal` et que le consommateur (manager/layout) crée bien une instance via `TerminalManagerComponent.createNewTerminal()`.
-  - [ ] Vérifier que la fenêtre s'affiche, prend le focus de l'input (`focusUserInput`) et se ferme via la pastille (`closeTerminal`) sans régression après le restyle (Story 8.1).
-- [ ] Tâche 2 — Vérifier le drag (AC: reste draggable)
-  - [ ] Drag depuis le header (`handleHeaderMouseDown` + écouteurs globaux `mousemove`/`mouseup`) déplace la fenêtre et la borne dans le viewport.
-  - [ ] Le resize (`.resize-handle`) et la remontée de z-index au focus continuent de fonctionner.
-- [ ] Tâche 3 — Vérifier les commandes existantes (AC: répondent sans régression)
-  - [ ] Recenser les programmes réellement enregistrés dans `ProgramManager.ts` et confirmer leur fonctionnement après restyle : `help`, `about`, `helloWorld`, `new`, `system-info`.
-  - [ ] Tester `help` (liste dynamique des commandes), `about` (bio + sortie riche), `system-info` (UAParser), `new` (ouvre un second terminal via `createNewTerminal`), `helloWorld`.
-  - [ ] Vérifier que les sorties HTML (`v-html`, tables `.table`) rendent toujours correctement avec le nouveau style (les sélecteurs `table`/`.table` du composant doivent rester opérants).
-- [ ] Tâche 4 — Ajouter les commandes manquantes (AC: `skills`, `projets`, `contact`, `clear`) — **DÉCISION PO : on ajoute les commandes (alignement UI kit, CAP-10).**
-  - [ ] Ajouter les programmes manquants `skills`, `projets`, `contact` comme nouveaux `IProgram` (`<script setup>`/TS, pattern existant) en réutilisant le contenu du UI kit (`TerminalScreen.jsx` : `skills`, `projets`, `contact`) et `data.js`, enregistrés dans `ProgramManager` et exportés dans le barrel `index.ts`.
-  - [ ] Implémenter `clear` : soit comme programme spécial vidant `commandLines`, soit en cas particulier dans `submitInput`/`runCommand` (cf. `TerminalScreen.jsx` qui traite `clear` à part en réinitialisant les lignes). Préciser le mécanisme retenu dans le File List.
-  - [ ] Vérifier que `help` (liste dynamique) affiche bien les nouvelles commandes une fois enregistrées.
-- [ ] Tâche 5 — Non-régression globale (AC: tout, NFR9)
-  - [ ] Historique de commandes (flèches haut/bas), « Commande inconnue : … », bannière `initialData` (ASCII S/J) toujours présents.
-  - [ ] `yarn lint` + `yarn generate` verts.
+- [x] Tâche 1 — Vérifier l'ouverture / la fermeture (AC: ouverture modale)
+  - [x] Vérifier que `TerminalButton.vue` émet `open-terminal` et que le consommateur (manager/layout) crée bien une instance via `TerminalManagerComponent.createNewTerminal()`.
+  - [x] Vérifier que la fenêtre s'affiche, prend le focus de l'input (`focusUserInput`) et se ferme via la pastille (`closeTerminal`) sans régression après le restyle (Story 8.1).
+- [x] Tâche 2 — Vérifier le drag (AC: reste draggable)
+  - [x] Drag depuis le header (`handleHeaderMouseDown` + écouteurs globaux `mousemove`/`mouseup`) déplace la fenêtre et la borne dans le viewport.
+  - [x] Le resize (`.resize-handle`) et la remontée de z-index au focus continuent de fonctionner.
+- [x] Tâche 3 — Vérifier les commandes existantes (AC: répondent sans régression)
+  - [x] Recenser les programmes réellement enregistrés dans `ProgramManager.ts` et confirmer leur fonctionnement après restyle : `help`, `about`, `helloWorld`, `new`, `system-info`.
+  - [x] Tester `help` (liste dynamique des commandes), `about` (bio + sortie riche), `system-info` (UAParser), `new` (ouvre un second terminal via `createNewTerminal`), `helloWorld`.
+  - [x] Vérifier que les sorties HTML (`v-html`, tables `.table`) rendent toujours correctement avec le nouveau style (les sélecteurs `table`/`.table` du composant doivent rester opérants).
+- [x] Tâche 4 — Ajouter les commandes manquantes (AC: `skills`, `projets`, `contact`, `clear`) — **DÉCISION PO : on ajoute les commandes (alignement UI kit, CAP-10).**
+  - [x] Ajouter les programmes manquants `skills`, `projets`, `contact` comme nouveaux `IProgram` (`<script setup>`/TS, pattern existant) en réutilisant le contenu du UI kit (`TerminalScreen.jsx` : `skills`, `projets`, `contact`) et `data.js`, enregistrés dans `ProgramManager` et exportés dans le barrel `index.ts`.
+  - [x] Implémenter `clear` : soit comme programme spécial vidant `commandLines`, soit en cas particulier dans `submitInput`/`runCommand` (cf. `TerminalScreen.jsx` qui traite `clear` à part en réinitialisant les lignes). Préciser le mécanisme retenu dans le File List.
+  - [x] Vérifier que `help` (liste dynamique) affiche bien les nouvelles commandes une fois enregistrées.
+- [x] Tâche 5 — Non-régression globale (AC: tout, NFR9)
+  - [x] Historique de commandes (flèches haut/bas), « Commande inconnue : … », bannière `initialData` (ASCII S/J) toujours présents.
+  - [x] `yarn lint` + `yarn generate` verts.
 
 ## Dev Notes
 
@@ -116,8 +120,43 @@ Inventaire réel de `components/terminal/programs/` (enregistrement dans `Progra
 
 ### Agent Model Used
 
+claude-opus-4-8[1m] (Claude Code, workflow bmad-dev-story, effort high)
+
 ### Debug Log References
+
+- `pnpm lint` (eslint + stylelint) + `pnpm typecheck` (vue-tsc) + `pnpm generate` (Docker) : **PASS** (11 routes prerendered) après ajout des 4 programmes + interception `clear`.
+- Vérification fonctionnelle complète au navigateur (Chrome DevTools MCP, terminal réel ouvert depuis le header) :
+  - **Ouverture** : input focalisé à l'ouverture (`focusedOnOpen: true`), bannière ASCII présente.
+  - **`help`** liste dynamiquement les **9** commandes, dont les 4 nouvelles (skills/projets/contact/clear).
+  - **Nouvelles commandes** : `skills` → « Ma stack : php · symfony · … » (séparateur `·` qui survit à `white-space: normal`) ; `projets` / `contact` → `<ul>` rendus correctement.
+  - **`clear`** : vide tout (0 ligne de commande, 0 réponse, bannière incluse), ne laisse que le prompt vivant — sans écho ni ligne résiduelle.
+  - **Commandes legacy préservées** : `system-info` (UAParser), `helloWorld`, `new` (ouvre un 2ᵉ terminal), `about` (ouvre un terminal avec **4 tables**) — toutes OK.
+  - **Drag** 1:1 (déplacement = déplacement curseur, ex. +160/+108 px exacts), **resize** OK, **z-index** remonté au focus, **close** → `display:none`.
+  - **Historique** flèches haut/bas correct (`skills`→`contact`→`skills`) ; **« Commande inconnue : … »** présent et **HTML échappé** (injection `<img onerror>` rendue inerte : `&lt;img …&gt;`, aucun `<img>` créé).
 
 ### Completion Notes List
 
+- **Périmètre** : story de non-régression (8.1) **+** ajout des commandes manquantes (décision PO Tâche 4). Le sous-système reste en **Options API** (la migration `<script setup>` est la story 8.3) — on n'a touché qu'aux programmes TS et à un cas particulier `clear` dans `submitInput`, sans réécrire le composant.
+- **Nouvelles commandes** (`programs/Skills.ts`, `Projets.ts`, `Contact.ts`) : nouveaux `IProgram` au pattern existant, contenu repris du UI kit (`TerminalScreen.jsx`) / `data.js`, en français/vouvoiement/sans emoji (NFR6). Enregistrées dans `ProgramManager` + barrel `index.ts`. `help` étant dynamique (`Object.values(programManager.programs)`), elles apparaissent automatiquement.
+- **Sorties & interaction avec le fix 8.1** : `.terminal-response` est en `white-space: normal` (corrigé en 8.1) → les sorties multi-lignes utilisent du **HTML** (`<ul>`) et un séparateur **`·`** (les espaces consécutifs s'effondrent), pas de `\n`.
+- **`clear`** (mécanisme retenu) : **cas particulier dans `TerminalComponent.submitInput`** (seul le composant possède le buffer `commandLines`) qui vide `commandLines` sans écho ni résidu ; un programme `programs/Clear.ts` est enregistré uniquement pour la **découvrabilité via `help`** (son `run` est un fallback défensif). Cf. `TerminalScreen.jsx` qui traite aussi `clear` à part.
+- **Écart de doc corrigé** : la story référence `TerminalButton.vue` « émettant `open-terminal` » — **ce fichier n'existe pas**. Le déclencheur réel d'ouverture est le(s) `ZButton variant="terminal"` du **`HeaderComponent`** (desktop + menu mobile) → `terminalManager.createNewTerminal()`, et le lanceur partagé `useTerminal` (hero d'accueil). Ouverture vérifiée OK par ce chemin réel.
+- **NFR9 respecté** : aucune commande existante cassée (`helloWorld`/`new`/`system-info` conservées et fonctionnelles) ; drag/resize/focus/historique/échappement inchangés et re-vérifiés.
+
 ### File List
+
+- `app/components/terminal/programs/Skills.ts` (NOUVEAU — programme `skills`, stack technique reprise du UI kit/`data.js`)
+- `app/components/terminal/programs/Projets.ts` (NOUVEAU — programme `projets`, liste `<ul>` des projets keova.app / patio-conseil.fr)
+- `app/components/terminal/programs/Contact.ts` (NOUVEAU — programme `contact`, infos email/ville/statut/formulaire en `<ul>`)
+- `app/components/terminal/programs/Clear.ts` (NOUVEAU — programme `clear` pour la découvrabilité `help` ; le vidage réel est intercepté dans `submitInput`)
+- `app/components/terminal/programs/index.ts` (MODIFIÉ — barrel : export des 4 nouveaux programmes)
+- `app/components/terminal/programs/ProgramManager.ts` (MODIFIÉ — import + `add()` des 4 nouveaux programmes)
+- `app/components/terminal/TerminalComponent.vue` (MODIFIÉ — `submitInput` : interception de `clear` qui vide `commandLines` sans écho ; aucune autre logique touchée)
+- `docs/implementation-artifacts/8-2-preserver-les-commandes-et-louverture.md` (MODIFIÉ — frontmatter `baseline_commit`, tâches, Dev Agent Record, statut)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIÉ — statut story `ready-for-dev` → `in-progress` → `review`)
+
+## Change Log
+
+| Date       | Version | Description                                                                                  |
+| ---------- | ------- | -------------------------------------------------------------------------------------------- |
+| 2026-06-26 | 0.1     | Non-régression terminal post-8.1 (ouverture/focus/close, drag 1:1/resize/z-index, commandes legacy, historique, échappement, bannière) **+** ajout des commandes `skills`/`projets`/`contact` (programmes `IProgram`, contenu UI kit/`data.js`) et `clear` (interception `submitInput` + programme pour `help`). Tout vérifié au navigateur ; lint + typecheck + generate verts. |

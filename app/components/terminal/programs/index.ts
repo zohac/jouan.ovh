@@ -3,3 +3,7 @@ export { default as help } from "./Help";
 export { default as newTerminal } from "./NewTerminal";
 export { default as systemInfo } from "./SystemInfos";
 export { default as about } from "./About";
+export { default as skills } from "./Skills";
+export { default as projets } from "./Projets";
+export { default as contact } from "./Contact";
+export { default as clear } from "./Clear";

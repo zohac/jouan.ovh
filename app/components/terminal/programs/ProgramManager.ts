@@ -1,5 +1,5 @@
 import type { IProgram, IProgramManager } from "../interfaces";
-import { about, helloWorld, help, newTerminal, systemInfo } from "./";
+import { about, clear, contact, helloWorld, help, newTerminal, projets, skills, systemInfo } from "./";
 
 class ProgramManager implements IProgramManager {
   public programs: { [key: string]: IProgram } = {};
@@ -42,5 +42,9 @@ programManager.add(helloWorld);
 programManager.add(newTerminal);
 programManager.add(systemInfo);
 programManager.add(about);
+programManager.add(skills);
+programManager.add(projets);
+programManager.add(contact);
+programManager.add(clear);
 
 export default programManager;

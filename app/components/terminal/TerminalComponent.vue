@@ -128,6 +128,17 @@ export default defineComponent({
     const submitInput = (): void => {
       const command = userInput.value.trim();
       if (command) {
+        // `clear` : seul le composant possède le buffer `commandLines` → on l'intercepte ici
+        // pour vider l'écran sans écho ni ligne résiduelle. La commande reste découvrable via
+        // `help` grâce au programme `programs/Clear.ts` enregistré dans le ProgramManager.
+        if (command === "clear") {
+          commandLines.value = [];
+          commandHistory.value.push(userInput.value);
+          commandHistoryPosition.value = -1;
+          userInput.value = "";
+          return;
+        }
+
         commandLines.value.push({
           text: userInput.value,
           isResponse: false,
