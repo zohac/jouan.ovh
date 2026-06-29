@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-26 (8.2 revue traitée : 2 patchs + 2 différés (dont DRY → app/data/site.ts), zéro dette → review)"
+last_updated: "2026-06-26 (8.3 finie : migration terminal <script setup>, vérif avant/après identique → review)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -96,8 +96,8 @@ development_status:
   # Epic 8 — Terminal easter-egg restylé
   epic-8: in-progress
   8-1-style-terminalwindow-et-prompt: done
-  8-2-preserver-les-commandes-et-louverture: review
-  8-3-migrer-composants-terminal-script-setup: ready-for-dev
+  8-2-preserver-les-commandes-et-louverture: done
+  8-3-migrer-composants-terminal-script-setup: review
   epic-8-retrospective: optional
 
   # Epic 9 — Accessibilité & finitions motion

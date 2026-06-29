@@ -60,267 +60,247 @@
   </Teleport>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import type { ITerminalConfig } from "~/components/terminal/interfaces";
 import programManager from "~/components/terminal/programs/ProgramManager";
 import { escapeHtml } from "~/utils/functions";
-// Import statique : les valeurs par défaut sont disponibles dès l'exécution de setup(),
+// Import statique : les valeurs par défaut sont disponibles dès l'exécution du setup,
 // sans course asynchrone qui laissait parfois la config vide à l'initialisation.
 import { terminalDefaults } from "~/terminal.config";
 
-export default defineComponent({
-  name: "TerminalComponent",
-  props: {
-    id: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
-    createNewTerminal: {
-      type: Function,
-      required: false,
-      default: () => {},
-    },
-    terminalConfig: {
-      type: Object,
-      default: () => ({}),
-    },
+// Migration Options API → <script setup> (story 8.3) : comportement strictement constant
+// (props/refs/cycle de vie/handlers identiques). `defineOptions` préserve le nom du composant.
+defineOptions({ name: "TerminalComponent" });
+
+const props = withDefaults(
+  defineProps<{
+    id?: number;
+    createNewTerminal?: (config?: ITerminalConfig) => void;
+    terminalConfig?: ITerminalConfig;
+  }>(),
+  {
+    id: 0,
+    createNewTerminal: () => {},
+    terminalConfig: () => ({}),
   },
+);
 
-  setup(props) {
-    const commandLines = ref<{ text: string; isResponse: boolean }[]>([]);
-    const userInput = ref<string>("");
-    const resizing = ref<boolean>(false);
-    const dragging = ref<boolean>(false);
-    const dragStartPosition = ref<{ x: number; y: number }>({ x: 0, y: 0 });
-    const terminalElement = ref<HTMLElement | null>(null);
-    const userInputRef = ref<HTMLInputElement | null>(null);
-    const commandHistory = ref<string[]>([]);
-    const commandHistoryPosition = ref<number>(-1);
-    const defaultConfig = ref({
-      width: props.terminalConfig.width || terminalDefaults.width,
-      height: props.terminalConfig.height || terminalDefaults.height,
-      userName: props.terminalConfig.userName || terminalDefaults.userName,
-      domainName: props.terminalConfig.domainName || terminalDefaults.domainName,
-      initialData: props.terminalConfig.initialData || terminalDefaults.initialData,
-    });
+const commandLines = ref<{ text: string; isResponse: boolean }[]>([]);
+const userInput = ref<string>("");
+const resizing = ref<boolean>(false);
+const dragging = ref<boolean>(false);
+const dragStartPosition = ref<{ x: number; y: number }>({ x: 0, y: 0 });
+const terminalElement = ref<HTMLElement | null>(null);
+const userInputRef = ref<HTMLInputElement | null>(null);
+const commandHistory = ref<string[]>([]);
+const commandHistoryPosition = ref<number>(-1);
+const defaultConfig = ref({
+  width: props.terminalConfig.width || terminalDefaults.width,
+  height: props.terminalConfig.height || terminalDefaults.height,
+  userName: props.terminalConfig.userName || terminalDefaults.userName,
+  domainName: props.terminalConfig.domainName || terminalDefaults.domainName,
+  initialData: props.terminalConfig.initialData || terminalDefaults.initialData,
+});
 
-    if (defaultConfig.value.initialData) {
-      commandLines.value.push({
-        text: defaultConfig.value.initialData,
-        isResponse: true,
-      });
+if (defaultConfig.value.initialData) {
+  commandLines.value.push({
+    text: defaultConfig.value.initialData,
+    isResponse: true,
+  });
+}
+
+const focusUserInput = () => {
+  if (terminalElement.value) {
+    // Garantir que la valeur de zIndex ne dépasse pas la limite du navigateur.
+    terminalElement.value.style.zIndex = (Date.now() % 2147483647).toString();
+  }
+
+  // Mettre le focus sur l'élément input
+  if (userInputRef.value) {
+    userInputRef.value.focus();
+  }
+};
+
+// Pousse la commande saisie dans l'historique, réinitialise la navigation et vide la saisie.
+// Commun à la branche `clear` et au flux normal (factorisation — pas de bookkeeping dupliqué).
+const recordHistoryAndResetInput = (): void => {
+  commandHistory.value.push(userInput.value);
+  commandHistoryPosition.value = -1;
+  userInput.value = "";
+};
+
+const submitInput = (): void => {
+  const command = userInput.value.trim();
+  if (command) {
+    // `clear` : seul le composant possède le buffer `commandLines` → on l'intercepte ici
+    // pour vider l'écran sans écho ni ligne résiduelle. La commande reste découvrable via
+    // `help` grâce au programme `programs/Clear.ts` enregistré dans le ProgramManager.
+    if (command === "clear") {
+      commandLines.value = [];
+      recordHistoryAndResetInput();
+      return;
     }
 
-    const focusUserInput = () => {
-      if (terminalElement.value) {
-        // Garantir que la valeur de zIndex ne dépasse pas la limite du navigateur.
-        terminalElement.value.style.zIndex = (Date.now() % 2147483647).toString();
-      }
-
-      // Mettre le focus sur l'élément input
-      if (userInputRef.value) {
-        userInputRef.value.focus();
-      }
-    };
-
-    // Pousse la commande saisie dans l'historique, réinitialise la navigation et vide la saisie.
-    // Commun à la branche `clear` et au flux normal (factorisation — pas de bookkeeping dupliqué).
-    const recordHistoryAndResetInput = (): void => {
-      commandHistory.value.push(userInput.value);
-      commandHistoryPosition.value = -1;
-      userInput.value = "";
-    };
-
-    const submitInput = (): void => {
-      const command = userInput.value.trim();
-      if (command) {
-        // `clear` : seul le composant possède le buffer `commandLines` → on l'intercepte ici
-        // pour vider l'écran sans écho ni ligne résiduelle. La commande reste découvrable via
-        // `help` grâce au programme `programs/Clear.ts` enregistré dans le ProgramManager.
-        if (command === "clear") {
-          commandLines.value = [];
-          recordHistoryAndResetInput();
-          return;
-        }
-
-        commandLines.value.push({
-          text: userInput.value,
-          isResponse: false,
-        });
-
-        const output = runCommand(command);
-        if (output instanceof HTMLElement) {
-          commandLines.value.push({ text: output.outerHTML, isResponse: true });
-        } else {
-          commandLines.value.push({ text: output, isResponse: true });
-        }
-
-        recordHistoryAndResetInput();
-      }
-    };
-
-    const runCommand = (command: string): string | HTMLElement => {
-      const program = programManager.get(command);
-      if (program) {
-        return program.run(
-          { userName: defaultConfig.value.userName },
-          props.createNewTerminal as (config?: ITerminalConfig) => void,
-          program.initialData,
-        );
-      }
-      // La commande provient de la saisie utilisateur : on l'échappe car la réponse est rendue via v-html.
-      return `Commande inconnue : ${escapeHtml(command)}`;
-    };
-
-    const handleHistoryNavigation = (event: KeyboardEvent): void => {
-      if (event.key === "ArrowUp") {
-        if (commandHistoryPosition.value < commandHistory.value.length - 1) {
-          commandHistoryPosition.value++;
-        }
-      } else if (event.key === "ArrowDown") {
-        if (commandHistoryPosition.value > -1) {
-          commandHistoryPosition.value--;
-        }
-      }
-
-      if (commandHistoryPosition.value > -1 && commandHistoryPosition.value < commandHistory.value.length) {
-        userInput.value = commandHistory.value[commandHistory.value.length - 1 - commandHistoryPosition.value] ?? "";
-      } else {
-        userInput.value = "";
-      }
-    };
-
-    const handleResizeMouseDown = (event: MouseEvent): void => {
-      if (event.target instanceof HTMLElement && event.target.classList.contains("resize-handle")) {
-        resizing.value = true;
-
-        // Écouteurs globaux : le redimensionnement continue même si le curseur sort
-        // de la poignée de 16px pendant le glissement.
-        window.addEventListener("mousemove", handleGlobalResizeMouseMove);
-        window.addEventListener("mouseup", handleGlobalResizeMouseUp);
-      }
-    };
-
-    const handleGlobalResizeMouseMove = (event: MouseEvent): void => {
-      if (resizing.value && terminalElement.value) {
-        const terminalRect = terminalElement.value.getBoundingClientRect();
-        const minWidth = 320;
-        const minHeight = 180;
-        const newWidth = Math.max(minWidth, event.clientX - terminalRect.left);
-        const newHeight = Math.max(minHeight, event.clientY - terminalRect.top);
-
-        terminalElement.value.style.width = `${newWidth}px`;
-        terminalElement.value.style.height = `${newHeight}px`;
-      }
-    };
-
-    const handleGlobalResizeMouseUp = (): void => {
-      resizing.value = false;
-      window.removeEventListener("mousemove", handleGlobalResizeMouseMove);
-      window.removeEventListener("mouseup", handleGlobalResizeMouseUp);
-    };
-
-    const handleMouseUp = (): void => {
-      resizing.value = false;
-      dragging.value = false;
-    };
-
-    const handleHeaderMouseDown = (event: MouseEvent): void => {
-      if (
-        event.target instanceof HTMLElement &&
-        event.currentTarget instanceof HTMLElement &&
-        event.currentTarget.parentElement &&
-        event.target.classList.contains("terminal-header")
-      ) {
-        dragging.value = true;
-        dragStartPosition.value = {
-          x: event.clientX - event.currentTarget.parentElement.offsetLeft,
-          y: event.clientY - event.currentTarget.parentElement.offsetTop,
-        };
-
-        // Ajouter les écouteurs d'événements globaux
-        window.addEventListener("mousemove", handleGlobalMouseMove);
-        window.addEventListener("mouseup", handleGlobalMouseUp);
-      }
-    };
-
-    // Créer une nouvelle fonction pour gérer les événements globaux de déplacement de la souris
-    const handleGlobalMouseMove = (event: MouseEvent): void => {
-      if (dragging.value && terminalElement.value) {
-        const terminalElementValue = terminalElement.value;
-        // Borne haute clampée à 0 : si le terminal est plus large/haut que le viewport,
-        // on le garde collé au bord (0) plutôt que de le pousser hors écran (valeur négative).
-        const maxLeft = Math.max(0, window.innerWidth - terminalElementValue.offsetWidth);
-        const maxTop = Math.max(0, window.innerHeight - terminalElementValue.offsetHeight);
-        const newLeft = Math.min(Math.max(0, event.clientX - dragStartPosition.value.x), maxLeft);
-        const newTop = Math.min(Math.max(0, event.clientY - dragStartPosition.value.y), maxTop);
-
-        terminalElementValue.style.left = `${newLeft}px`;
-        terminalElementValue.style.top = `${newTop}px`;
-      }
-    };
-
-    // Créer une nouvelle fonction pour gérer les événements globaux de relâchement de la souris
-    const handleGlobalMouseUp = (_: MouseEvent): void => {
-      if (dragging.value) {
-        dragging.value = false;
-
-        // Supprimer les écouteurs d'événements globaux
-        window.removeEventListener("mousemove", handleGlobalMouseMove);
-        window.removeEventListener("mouseup", handleGlobalMouseUp);
-      }
-    };
-
-    const updateTerminalDimensions = (): void => {
-      if (terminalElement.value) {
-        terminalElement.value.style.width = defaultConfig.value.width;
-        terminalElement.value.style.height = defaultConfig.value.height;
-      }
-    };
-
-    const closeTerminal = () => {
-      if (terminalElement.value) {
-        terminalElement.value.style.display = "none";
-      }
-    };
-
-    onMounted(() => {
-      updateTerminalDimensions();
-      focusUserInput();
+    commandLines.value.push({
+      text: userInput.value,
+      isResponse: false,
     });
 
-    watch(
-      () => [defaultConfig.value.width, defaultConfig.value.height],
-      () => {
-        updateTerminalDimensions();
-      },
+    const output = runCommand(command);
+    if (output instanceof HTMLElement) {
+      commandLines.value.push({ text: output.outerHTML, isResponse: true });
+    } else {
+      commandLines.value.push({ text: output, isResponse: true });
+    }
+
+    recordHistoryAndResetInput();
+  }
+};
+
+const runCommand = (command: string): string | HTMLElement => {
+  const program = programManager.get(command);
+  if (program) {
+    return program.run(
+      { userName: defaultConfig.value.userName },
+      props.createNewTerminal as (config?: ITerminalConfig) => void,
+      program.initialData,
     );
+  }
+  // La commande provient de la saisie utilisateur : on l'échappe car la réponse est rendue via v-html.
+  return `Commande inconnue : ${escapeHtml(command)}`;
+};
 
-    onUnmounted(() => {
-      // Filet de sécurité : retrait des écouteurs globaux si le composant est démonté en plein drag/resize.
-      window.removeEventListener("mousemove", handleGlobalMouseMove);
-      window.removeEventListener("mouseup", handleGlobalMouseUp);
-      window.removeEventListener("mousemove", handleGlobalResizeMouseMove);
-      window.removeEventListener("mouseup", handleGlobalResizeMouseUp);
-    });
+const handleHistoryNavigation = (event: KeyboardEvent): void => {
+  if (event.key === "ArrowUp") {
+    if (commandHistoryPosition.value < commandHistory.value.length - 1) {
+      commandHistoryPosition.value++;
+    }
+  } else if (event.key === "ArrowDown") {
+    if (commandHistoryPosition.value > -1) {
+      commandHistoryPosition.value--;
+    }
+  }
 
-    return {
-      defaultConfig,
-      commandLines,
-      userInput,
-      terminalElement,
-      userInputRef,
-      submitInput,
-      handleHistoryNavigation,
-      handleResizeMouseDown,
-      handleMouseUp,
-      handleHeaderMouseDown,
-      closeTerminal,
-      focusUserInput,
+  if (commandHistoryPosition.value > -1 && commandHistoryPosition.value < commandHistory.value.length) {
+    userInput.value = commandHistory.value[commandHistory.value.length - 1 - commandHistoryPosition.value] ?? "";
+  } else {
+    userInput.value = "";
+  }
+};
+
+const handleResizeMouseDown = (event: MouseEvent): void => {
+  if (event.target instanceof HTMLElement && event.target.classList.contains("resize-handle")) {
+    resizing.value = true;
+
+    // Écouteurs globaux : le redimensionnement continue même si le curseur sort
+    // de la poignée de 16px pendant le glissement.
+    window.addEventListener("mousemove", handleGlobalResizeMouseMove);
+    window.addEventListener("mouseup", handleGlobalResizeMouseUp);
+  }
+};
+
+const handleGlobalResizeMouseMove = (event: MouseEvent): void => {
+  if (resizing.value && terminalElement.value) {
+    const terminalRect = terminalElement.value.getBoundingClientRect();
+    const minWidth = 320;
+    const minHeight = 180;
+    const newWidth = Math.max(minWidth, event.clientX - terminalRect.left);
+    const newHeight = Math.max(minHeight, event.clientY - terminalRect.top);
+
+    terminalElement.value.style.width = `${newWidth}px`;
+    terminalElement.value.style.height = `${newHeight}px`;
+  }
+};
+
+const handleGlobalResizeMouseUp = (): void => {
+  resizing.value = false;
+  window.removeEventListener("mousemove", handleGlobalResizeMouseMove);
+  window.removeEventListener("mouseup", handleGlobalResizeMouseUp);
+};
+
+const handleMouseUp = (): void => {
+  resizing.value = false;
+  dragging.value = false;
+};
+
+const handleHeaderMouseDown = (event: MouseEvent): void => {
+  if (
+    event.target instanceof HTMLElement &&
+    event.currentTarget instanceof HTMLElement &&
+    event.currentTarget.parentElement &&
+    event.target.classList.contains("terminal-header")
+  ) {
+    dragging.value = true;
+    dragStartPosition.value = {
+      x: event.clientX - event.currentTarget.parentElement.offsetLeft,
+      y: event.clientY - event.currentTarget.parentElement.offsetTop,
     };
+
+    // Ajouter les écouteurs d'événements globaux
+    window.addEventListener("mousemove", handleGlobalMouseMove);
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+  }
+};
+
+// Créer une nouvelle fonction pour gérer les événements globaux de déplacement de la souris
+const handleGlobalMouseMove = (event: MouseEvent): void => {
+  if (dragging.value && terminalElement.value) {
+    const terminalElementValue = terminalElement.value;
+    // Borne haute clampée à 0 : si le terminal est plus large/haut que le viewport,
+    // on le garde collé au bord (0) plutôt que de le pousser hors écran (valeur négative).
+    const maxLeft = Math.max(0, window.innerWidth - terminalElementValue.offsetWidth);
+    const maxTop = Math.max(0, window.innerHeight - terminalElementValue.offsetHeight);
+    const newLeft = Math.min(Math.max(0, event.clientX - dragStartPosition.value.x), maxLeft);
+    const newTop = Math.min(Math.max(0, event.clientY - dragStartPosition.value.y), maxTop);
+
+    terminalElementValue.style.left = `${newLeft}px`;
+    terminalElementValue.style.top = `${newTop}px`;
+  }
+};
+
+// Créer une nouvelle fonction pour gérer les événements globaux de relâchement de la souris
+const handleGlobalMouseUp = (_: MouseEvent): void => {
+  if (dragging.value) {
+    dragging.value = false;
+
+    // Supprimer les écouteurs d'événements globaux
+    window.removeEventListener("mousemove", handleGlobalMouseMove);
+    window.removeEventListener("mouseup", handleGlobalMouseUp);
+  }
+};
+
+const updateTerminalDimensions = (): void => {
+  if (terminalElement.value) {
+    terminalElement.value.style.width = defaultConfig.value.width;
+    terminalElement.value.style.height = defaultConfig.value.height;
+  }
+};
+
+const closeTerminal = () => {
+  if (terminalElement.value) {
+    terminalElement.value.style.display = "none";
+  }
+};
+
+onMounted(() => {
+  updateTerminalDimensions();
+  focusUserInput();
+});
+
+watch(
+  () => [defaultConfig.value.width, defaultConfig.value.height],
+  () => {
+    updateTerminalDimensions();
   },
+);
+
+onUnmounted(() => {
+  // Filet de sécurité : retrait des écouteurs globaux si le composant est démonté en plein drag/resize.
+  window.removeEventListener("mousemove", handleGlobalMouseMove);
+  window.removeEventListener("mouseup", handleGlobalMouseUp);
+  window.removeEventListener("mousemove", handleGlobalResizeMouseMove);
+  window.removeEventListener("mouseup", handleGlobalResizeMouseUp);
 });
 </script>
 

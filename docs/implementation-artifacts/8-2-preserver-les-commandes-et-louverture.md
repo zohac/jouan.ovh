@@ -4,7 +4,7 @@ baseline_commit: 15ada823eed910cf51613f57687efe0511723b46
 
 # Story 8.2: Préserver les commandes et l'ouverture
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
