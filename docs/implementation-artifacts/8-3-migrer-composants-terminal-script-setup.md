@@ -4,7 +4,7 @@ baseline_commit: 7ea5b6d9cbe5ca8f018dcea57c19bb63c475510a
 
 # Story 8.3: Migrer les composants terminal vers `<script setup>`
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

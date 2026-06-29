@@ -21,7 +21,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 > vit désormais sous `app/` (structure Nuxt 4 par défaut, `srcDir = "app"`).
 
 - **Framework :** Nuxt 4 (`^4.4.8`), SSR activé. `experimental.payloadExtraction: false`. Code applicatif sous `app/` (`srcDir = "app"`).
-- **UI :** Vue 3 — `<script setup lang="ts">` pour tout nouveau composant. `vue-property-decorator` et l'option `experimentalDecorators` ont été **retirés** (Epic 3, aucun usage réel). Quelques composants legacy en **Options API** (`defineComponent`, sans décorateur) subsistent : côté **terminal** (`terminal/TerminalComponent`, `terminal/TerminalManagerComponent`) et côté **header** (`WindowWrapperComponent`, `CurrentTime`) — ne pas les étendre. **Décision (rétro Epic 7) : Epic 8 = refonte COMPLÈTE du terminal** → restyle DS (**story 8.1**, fait) **+** migration des coquilles `components/terminal/` vers `<script setup>` (**story 8.3**). Les classes `programs/*` (`IProgram`) sont du TS pur et ne bougent pas. `WindowWrapperComponent`/`CurrentTime` (propres au header) restent un **résidu Options API distinct**, hors « refonte du terminal » (cleanup optionnel séparé). ⚠️ Migration sans framework de test : vérifier **commande par commande** (`help`/`about`/`skills`/`projets`/`contact`/`clear`) + drag + ouverture au navigateur, avant/après.
+- **UI :** Vue 3 — `<script setup lang="ts">` pour tout nouveau composant. `vue-property-decorator` et l'option `experimentalDecorators` ont été **retirés** (Epic 3, aucun usage réel). ✅ **Epic 8 terminé : le sous-système `components/terminal/` est intégralement migré en `<script setup>`** (coquilles `TerminalComponent` + `TerminalManagerComponent` ; stories 8.1 restyle DS, 8.2 commandes, 8.3 migration). Les classes `programs/*` (`IProgram`) sont du TS pur et ne bougent pas. **Dernier résidu Options API du codebase : `WindowWrapperComponent` / `CurrentTime`, propres au header** (`defineComponent`, sans décorateur) — ne pas les étendre ; cleanup optionnel séparé (hors « refonte du terminal », non planifié). Toute migration future sans framework de test : vérifier **commande/comportement avant-après** au navigateur (Chrome DevTools MCP).
 - **Langage :** TypeScript `^6.0.3`.
 - **Styles :** SCSS (`sass ^1.101.0`) via `@use ... as`. **Deux couches de tokens coexistent :** (1) tokens DS portés en **CSS custom properties globales** dans `app/assets/scss/abstract/_root.scss` (chargé via `main.scss`) = source de vérité du nouveau code ; (2) anciens tokens SCSS `$` sous `abstract/` encore consommés par le legacy restant. Cf. règle SCSS.
 - **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
@@ -36,12 +36,12 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 
 **TypeScript / Vue**
 
-- Préférer `<script setup lang="ts">` pour tout NOUVEAU composant. Quelques
-  composants legacy en Options API (`defineComponent`, sans décorateur) existent
-  encore — ne pas les étendre ; les migrer vers `<script setup>` lors d'une refonte.
-  Le sous-système `components/terminal/` est **refondu en Epic 8** : restyle DS
-  (story 8.1) + migration `<script setup>` (story 8.3) — décision rétro Epic 7.
-  (Résidu Options API hors terminal : `WindowWrapperComponent`/`CurrentTime`, côté header.)
+- Préférer `<script setup lang="ts">` pour tout NOUVEAU composant. Le sous-système
+  `components/terminal/` a été **intégralement migré en Epic 8** (`<script setup>`,
+  décision rétro Epic 7). **Reste un seul résidu Options API** (`defineComponent`,
+  sans décorateur) : `WindowWrapperComponent` / `CurrentTime`, **côté header** — ne
+  pas l'étendre ; le migrer vers `<script setup>` lors d'une refonte du header
+  (cleanup optionnel, non planifié).
 - `vue-property-decorator` et l'option `experimentalDecorators` ont été retirés
   (Epic 3) : plus aucun décorateur de classe, ne pas en réintroduire.
 - Imports composants via l'alias `~/` ou `@/` (les deux pointent sur project-root).
@@ -117,8 +117,10 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   `ZCardComponent` monolithique a été supprimé en story 2.4.)
 - Composants applicatifs legacy : PascalCase suffixé `Component`
   (`HeaderComponent.vue`, `FooterComponent.vue`, `HexagonLinkComponent.vue`…).
-- Sous-système terminal sous `components/terminal/` : `programs/` = classes TS
-  implémentant `IProgram`, `interfaces/` = contrats (`I*` + barrel `index.ts`).
+- Sous-système terminal sous `components/terminal/` : coquilles Vue
+  (`TerminalComponent`, `TerminalManagerComponent`) en **`<script setup>`** (migrées
+  Epic 8) ; `programs/` = classes TS implémentant `IProgram`, `interfaces/` =
+  contrats (`I*` + barrel `index.ts`).
 - Tokens SCSS : fichiers partiels `_nom.scss`, importés en `_alias`
   (ex. `@use "...color" as _color`).
 
@@ -128,6 +130,13 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   `components/`, `pages/`. Point d'entrée global `assets/scss/main.scss`.
 - Copier les SVG/PNG du design system depuis `docs/design_system/assets/` vers
   `public/images/` ou `assets/` lors de l'implémentation.
+- **Contenu partagé : source unique `app/data/site.ts`** (`SITE.profile` /
+  `SITE.skills` / `SITE.projects`, typés `IProfile`/`IProject`) — consommée par les
+  programmes terminal (`skills`/`projets`/`contact`/`about`), `index.vue`,
+  `about.vue`, `contact.vue` et `FooterComponent`. **Ne pas re-hardcoder**
+  profil/skills/projets/email/ville ailleurs (DRY, consolidé en 8.2). _(Les
+  `experiences`/`degrees` divergent volontairement entre le CV terminal détaillé et
+  `/about` condensé — non unifiés, suivi dans `deferred-work.md`.)_
 
 **Langue**
 
@@ -204,6 +213,20 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   **dès la story**, ils étaient sinon systématiquement rattrapés en revue.
 - Leçon rétro Epic 2 : ces points étaient systématiquement rattrapés en revue —
   les traiter en amont (checklist pré-revue dans la consigne de story).
+- **Epic 9 = passe a11y/motion finale (dernier épic du roadmap).** Décision rétro
+  Epic 8 : embarquer la checklist a11y **dès la consigne** de chaque story (9.1/9.2),
+  pas seulement en revue —
+  - repli **`@media (forced-colors: active)`** sur les rings de focus en `box-shadow`,
+    appliqué **une seule fois au niveau des primitives DS** (`ZButton`/`ZTag`/`ZCard`/
+    `ZInput`/liens), pas page par page ;
+  - **navigation clavier** (focus visible, ordre logique, retour de focus après overlay) ;
+  - **contraste** texte/fond lisible ;
+  - généralisation eyebrow→`<h2>` + listes `<ol>`/`<ul>` à **home** et **services**
+    (+ séquence process `<ol>` de 4.2) ; audit site-wide des `target="_blank"`.
+  - Inventaire détaillé et destinations : `deferred-work.md`. ⚠️ **« Epic 9 done »
+    ≠ « refonte livrée »** : restent après Epic 9 (fin de refonte) la story SEO dédiée
+    (+ bascule `SITE_URL` `dev.jouan.ovh` → `jouan.ovh`), la page RGPD/mentions
+    légales, et le **premier merge `main` + déploiement gh-pages prouvé**.
 
 **À préserver pendant la refonte**
 
@@ -244,10 +267,12 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
     `docs/animations_jouan.ovh/screenshots/` (`hero*.png`, `services.png`, `booted.png`).
   - **Services / About / Blog / Contact** → `docs/design_system/ui_kits/jouan-site/index.html`
     (UI kit cible ; ouvrir la section correspondante).
-  - Routine appliquée sans faille sur Epics 4-6 (desktop + mobile) → zéro régression de
-    rendu ; elle a corrigé un défaut de la maquette (centrage timeline `kit.css`, 5.2) et
-    attrapé un bug d'ancres de titres `@nuxt/content` (6.2). À reconduire sur chaque
-    story-page (Epics 7-8).
+  - Routine appliquée sans faille sur Epics 4-8 (desktop + mobile) → zéro régression de
+    rendu ; elle a corrigé un défaut de la maquette (centrage timeline `kit.css`, 5.2),
+    attrapé un bug d'ancres de titres `@nuxt/content` (6.2) et validé la refonte terminal
+    (diff visuel **et comportemental** avant/après, Epic 8). **Epic 9 est transverse**
+    (a11y/motion, pas de page neuve) → privilégier le diff **comportemental** clavier/motion/
+    contraste plutôt que le pixel.
 
 ---
 
@@ -265,4 +290,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-06-26 (post-Epic 7 : décision Epic 8 = refonte complète du terminal — migration `components/terminal/` vers `<script setup>` + restyle DS, vérif commande-par-commande ; Web3Forms acté côté SPEC pour le formulaire `/contact` ; post-Epic 6 : pipeline `@nuxt/content` v3 — collections typées `content.config.ts`, Shiki désactivé, gotchas Docker/SQLite + `:deep()` ancres de titres ; post-Epic 5 : primitives de layout globales `base/_layout.scss` + convention a11y titres/listes — eyebrow-as-`h2`, séquences en `<ol>`/`<ul>` ; post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)
+Dernière mise à jour : 2026-06-29 (post-Epic 8 : refonte terminal **livrée** — `components/terminal/` intégralement en `<script setup>`, commandes `skills`/`projets`/`contact`/`clear` ajoutées, dernier résidu Options API = `WindowWrapperComponent`/`CurrentTime` côté header ; source de contenu partagé unique `app/data/site.ts` (DRY) ; checklist a11y forced-colors/clavier/contraste à embarquer en amont des consignes Epic 9 — dernier épic, puis fin de refonte SEO + RGPD + déploiement gh-pages ; post-Epic 7 : décision Epic 8 = refonte complète du terminal — migration `components/terminal/` vers `<script setup>` + restyle DS, vérif commande-par-commande ; Web3Forms acté côté SPEC pour le formulaire `/contact` ; post-Epic 6 : pipeline `@nuxt/content` v3 — collections typées `content.config.ts`, Shiki désactivé, gotchas Docker/SQLite + `:deep()` ancres de titres ; post-Epic 5 : primitives de layout globales `base/_layout.scss` + convention a11y titres/listes — eyebrow-as-`h2`, séquences en `<ol>`/`<ul>` ; post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)
