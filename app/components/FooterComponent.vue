@@ -168,7 +168,10 @@ const year = new Date().getFullYear();
   padding-top: var(--space-5);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  color: var(--text-faint);
+
+  // Contraste (story 9.2) : --text-faint (~3:1 sur la surface footer) → --text-muted
+  // pour une ligne de copyright lisible (≥ 4.5:1). Token, pas de couleur en dur.
+  color: var(--text-muted);
   border-top: 1px solid var(--border-subtle);
 }
 

@@ -3,6 +3,7 @@
 @use "abstract/fonts";
 @use "abstract/typography";
 @use "base/layout"; // primitives de layout DS (.section / .container / .eyebrow / .prose) mutualisées
+@use "base/motion"; // filet a11y global prefers-reduced-motion (story 9.2)
 
 .fixed-height {
   width: auto;

@@ -240,4 +240,13 @@ function blockDisabledActivation(event: Event) {
     transform: translateY(1px);
   }
 }
+
+// Parité a11y avec les autres primitives (ZCard/ZInput/ZTag) : pas de transition
+// de mouvement en motion réduit. Le filet global (base/_motion.scss) couvre aussi
+// ce cas ; on garde la garde locale pour que la primitive soit robuste en isolation.
+@media (prefers-reduced-motion: reduce) {
+  .zbtn {
+    transition: none;
+  }
+}
 </style>

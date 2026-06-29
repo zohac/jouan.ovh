@@ -7,7 +7,7 @@
     Déplacement de rendu uniquement — drag/resize/focus/historique inchangés.
   -->
   <Teleport to="body">
-    <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput">
+    <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput" @keydown.esc="closeTerminal">
       <div class="terminal-header" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
         <div class="terminal-dots">
           <div
@@ -93,6 +93,9 @@ const dragging = ref<boolean>(false);
 const dragStartPosition = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 const terminalElement = ref<HTMLElement | null>(null);
 const userInputRef = ref<HTMLInputElement | null>(null);
+// Élément déclencheur (bouton Terminal du header / CTA /contact) — mémorisé à
+// l'ouverture pour y renvoyer le focus à la fermeture (a11y clavier, story 9.2).
+const openerElement = ref<HTMLElement | null>(null);
 const commandHistory = ref<string[]>([]);
 const commandHistoryPosition = ref<number>(-1);
 const defaultConfig = ref({
@@ -281,10 +284,18 @@ const closeTerminal = () => {
   if (terminalElement.value) {
     terminalElement.value.style.display = "none";
   }
+  // Retour du focus au déclencheur (a11y : ne pas perdre le focus sur <body>
+  // à la fermeture clavier — Échap ou Entrée/Espace sur la pastille close).
+  openerElement.value?.focus();
 };
 
 onMounted(() => {
   updateTerminalDimensions();
+  // Mémorise le déclencheur AVANT de déplacer le focus dans le terminal : à ce
+  // stade, l'élément actif est encore le bouton qui a ouvert le terminal.
+  if (import.meta.client && document.activeElement instanceof HTMLElement) {
+    openerElement.value = document.activeElement;
+  }
   focusUserInput();
 });
 

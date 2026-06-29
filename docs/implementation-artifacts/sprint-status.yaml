@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-29 (9.1 revue : 0 défaut de code, gate lint+typecheck+generate re-vérifié vert, 1 différé cosmétique → done)"
+last_updated: "2026-06-29 (9.2 revue : 0 défaut bloquant, 1 patch dérogation durées appliqué, gate vert, 2 différés a11y tracés → done)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -103,5 +103,5 @@ development_status:
   # Epic 9 — Accessibilité & finitions motion
   epic-9: in-progress
   9-1-etats-interactifs-coherents: done
-  9-2-motion-reduit-contraste-et-clavier: ready-for-dev
+  9-2-motion-reduit-contraste-et-clavier: done
   epic-9-retrospective: optional

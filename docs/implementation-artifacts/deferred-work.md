@@ -29,6 +29,11 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 ---
 
+## Deferred from: code review of 9-2-motion-reduit-contraste-et-clavier (2026-06-29)
+
+- **Placeholder `ZInput` ~3.7:1 sur `--bg-input` (< 4.5:1 AA)** — résidu conscient : `--text-muted` (relevé de `--text-faint` ~2.2:1) reste sous AA sur la surface la plus claire, mais le champ porte un `<label>` visible persistant (placeholder = texte supplémentaire, zone grise WCAG) ; monter encore le ferait passer pour une saisie. Acceptable tel quel ; à revoir si un token de placeholder dédié ≥ 4.5:1 est introduit. _(revue 9.2)_
+- **Audit a11y émulé OS-level (reduced-motion + forced-colors + lecteur d'écran)** — l'effet runtime du filet `prefers-reduced-motion` (9.2) et du repli `forced-colors` (9.1) n'a pas été émulé visuellement (le MCP n'expose ni l'un ni l'autre) ; seules la présence/résolution des règles CSS sont confirmées. À rejouer d'un coup lors d'un passage a11y émulé en fin de refonte (cf. aussi item « Émulation forced-colors » de la revue 9.1). _(revue 9.2)_
+
 ## Deferred from: code review of 9-1-etats-interactifs-coherents (2026-06-29)
 
 - **Unifier les deux idiomes forced-colors** — depuis 9.1, le repli inline `outline: 2px solid transparent; outline-offset: 2px;` (primitives DS + liens du châssis) cohabite avec un bloc page-level `@media (forced-colors: active) { outline: 2px solid }` préexistant dans `index.vue` (`.hero-term__open`/`.offer__more`, epic 3). Les deux donnent un focus visible en contraste forcé — **inoffensif, non bloquant**. Candidat à une unification DS-wide (un seul idiome) lors d'un futur passage a11y/DS. **Préexistant**, non introduit par 9.1. _(revue 9.1)_

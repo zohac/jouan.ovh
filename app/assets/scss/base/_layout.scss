@@ -73,5 +73,8 @@
   align-items: center;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  color: var(--text-faint);
+
+  // Contraste (story 9.2) : méta d'article (date · lecture) = info réelle → palier
+  // au-dessus (--text-faint échouait ~2.95:1 sur carte ; --text-muted ≥ 4.5:1).
+  color: var(--text-muted);
 }

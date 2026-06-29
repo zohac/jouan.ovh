@@ -162,7 +162,9 @@ function onInput(event: Event) {
     box-shadow var(--dur-fast) var(--ease-standard);
 
   &::placeholder {
-    color: var(--text-faint);
+    // Contraste (story 9.2) : remonté d'un palier (--text-faint → --text-muted).
+    // Le champ porte un <label> ; le placeholder reste supplémentaire mais lisible.
+    color: var(--text-muted);
   }
 
   &:hover {

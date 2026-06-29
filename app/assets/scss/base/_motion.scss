@@ -1,0 +1,40 @@
+// ============================================================
+//  Accessibilité — prefers-reduced-motion (story 9.2, CAP-11)
+// ============================================================
+// Filet de sécurité GLOBAL : dès que l'utilisateur demande moins de mouvement,
+// les animations d'entrée et les transitions non essentielles sont ramenées à
+// l'instantané. Les gardes par composant (ZCard / ZInput / ZTag / index.vue…)
+// restent en place et cohérentes ; cette règle couvre le reste (ZButton, etc.)
+// et tout ajout futur, sans avoir à y penser au cas par cas.
+//
+// EXCEPTION (DS / CAP-11) — le caret du terminal est la SEULE boucle autorisée :
+//  - terminal réel : caret NATIF de l'<input> (caret-color/caret-shape), non
+//    piloté par CSS → intact ici ;
+//  - caret décoratif du hero (`.prm__caret`, animation CSS) : figé sur son état
+//    VISIBLE (bloc plein) plutôt que de sauter à la frame finale (opacity: 0).
+//    Reste donc lisible, ne boucle plus (cf. story 9.2, tâche 1).
+//
+// DÉROGATION « valeurs en dur » (règle SCSS projet) — les durées `0.01ms` / `0ms`
+// ci-dessous sont volontairement littérales : c'est la recette a11y standard de
+// neutralisation du mouvement (quasi-instantané, sans casser les callbacks
+// `animationend`/`transitionend`). Aucun token de durée nulle n'existe (les
+// `--dur-*` sont des durées d'animation positives) → pas de `var()` applicable ici.
+
+/* stylelint-disable declaration-no-important, selector-class-pattern -- réduction de motion : surcharge volontaire et globale (a11y) ; .prm__caret = convention BEM DS */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  // Caret : arrêté sur l'état visible (ne pas sauter à la frame opacity:0).
+  .prm__caret {
+    animation: none !important;
+  }
+}
+/* stylelint-enable declaration-no-important, selector-class-pattern */

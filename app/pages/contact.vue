@@ -325,7 +325,10 @@ useHead({
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   line-height: var(--lh-normal);
-  color: var(--text-faint);
+
+  // Contraste (story 9.2) : notice légale = info réelle → --text-muted (≥ 4.5:1),
+  // plus lisible que --text-faint. Reste discrète. Token, pas de couleur en dur.
+  color: var(--text-muted);
 }
 
 // Carte « envoyé » focalisée par programme (tabindex -1) : pas de contour UA résiduel.
