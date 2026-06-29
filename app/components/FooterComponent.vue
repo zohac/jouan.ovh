@@ -106,6 +106,14 @@ const year = new Date().getFullYear();
     font-weight: var(--fw-bold);
     color: var(--text-strong);
   }
+
+  // Lien focusable (logo + nom) : anneau DS cohérent avec le reste du châssis.
+  &:focus-visible {
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--ring-accent);
+  }
 }
 
 .ftr__tagline {
@@ -140,6 +148,14 @@ const year = new Date().getFullYear();
 
   &:hover {
     color: var(--accent);
+  }
+
+  // Anneau de focus DS (les liens du footer n'avaient que l'outline UA par défaut).
+  &:focus-visible {
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+    box-shadow: var(--ring-accent);
   }
 }
 

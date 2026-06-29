@@ -170,7 +170,10 @@ function onInput(event: Event) {
   }
 
   &:focus {
-    outline: none;
+    // Outline transparent → rendu en couleur système sous forced-colors (où la
+    // box-shadow du ring et la bordure accent ne suffisent plus) — focus visible (AC #2).
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     border-color: var(--accent);
     box-shadow: var(--ring-accent);
   }

@@ -95,7 +95,10 @@ const rootAttrs = computed(() => {
   // (`as="a"`, ex. cartes projet story 3.3), elle est focusable — sans cette règle,
   // aucun indicateur. Sans effet sur les cartes non focusables (div).
   &:focus-visible {
-    outline: none;
+    // Outline transparent → rendu en couleur système sous forced-colors (où les
+    // box-shadow disparaissent) ; le ring box-shadow reste le focus visuel normal.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--ring-accent);
   }
 }

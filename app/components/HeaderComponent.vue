@@ -229,6 +229,14 @@ onBeforeUnmount(() => {
     font-weight: var(--fw-bold);
     color: var(--text-strong);
   }
+
+  // Lien focusable (logo + nom) : anneau DS comme les autres focusables du châssis.
+  &:focus-visible {
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--ring-accent);
+  }
 }
 
 .hdr__nav {
@@ -253,6 +261,13 @@ onBeforeUnmount(() => {
   &:hover {
     color: var(--text-strong);
     background: var(--surface-2);
+  }
+
+  // Anneau de focus DS (les liens de nav n'avaient que l'outline UA par défaut).
+  &:focus-visible {
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
+    box-shadow: var(--ring-accent);
   }
 }
 
@@ -287,7 +302,8 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-md);
 
   &:focus-visible {
-    outline: none;
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
     box-shadow: var(--ring-accent);
   }
 }
@@ -375,6 +391,12 @@ onBeforeUnmount(() => {
   &:hover {
     color: var(--text-strong);
     background: var(--surface-2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
+    box-shadow: var(--ring-accent);
   }
 }
 

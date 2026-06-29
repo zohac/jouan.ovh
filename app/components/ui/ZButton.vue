@@ -132,7 +132,11 @@ function blockDisabledActivation(event: Event) {
     transform var(--dur-fast) var(--ease-standard);
 
   &:focus-visible {
-    outline: none;
+    // Outline transparent : invisible en rendu normal (le ring box-shadow prend le
+    // relais), mais rendu en couleur système sous forced-colors (Windows High
+    // Contrast), où les box-shadow sont neutralisées — focus toujours visible (AC #2).
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--ring-accent);
   }
 

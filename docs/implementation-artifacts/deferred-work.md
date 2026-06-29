@@ -10,7 +10,7 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 ### → Epic 9 — Accessibilité & finitions motion
 
-1. **Repli `forced-colors` DS-wide** — les rings de focus en `box-shadow: var(--ring-accent)` disparaissent en contraste forcé (Windows High Contrast). Corrigés **localement** sur les focusables des pages (`/`, lien bio `/about`) ; reste à corriger **une seule fois au niveau des primitives DS** (`ZButton`, `ZTag`, `ZCard`, `ZInput`, liens) via un repli `outline` sous `@media (forced-colors: active)`. _(revues 3.2, 5.1)_
+1. ~~**Repli `forced-colors` DS-wide**~~ — ✅ **Résolu (story 9.1)** : repli posé une seule fois au niveau des primitives DS (`ZButton`, `ZCard`, `ZTag`, `ZInput`) via `outline: 2px solid transparent; outline-offset: 2px;` sur `:focus-visible` (rendu en couleur système sous forced-colors, le ring `box-shadow` restant le focus normal) ; anneau DS `--ring-accent` + même repli ajoutés aux liens du châssis (logo + nav header/menu, liens footer) qui n'avaient que l'outline UA. _(revues 3.2, 5.1)_
 2. **Généralisation de la convention a11y titres + listes** — établie et appliquée sur `/about` (5.2), `/blog` (6.1) et la vue article (6.2) : libellé de section en `<h2 class="eyebrow">` neutralisé ; séquences/feeds en `<ol>`/`<ul>` + `<li>`. **Reste à généraliser** à **home** et **services** (+ séquence process `<ol>` de 4.2). _(revues 4.2, 5.2, 6.1)_
 3. **Audit site-wide des liens `target="_blank"`** — indication « nouvel onglet » (span sr-only) posée localement sur les cartes projet de `/` (3.3) ; reste à auditer/uniformiser les **autres** `_blank` (hexagones sociaux header/footer…) et à factoriser un helper de lien externe (icône + libellé sr-only, WCAG G201). _(revue 3.3)_
 
@@ -28,6 +28,11 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 7. **Déploiement gh-pages réel** — chaîne CI + domaine custom (`CNAME`) jamais prouvée ; ~23 stories empilées sur `feat/design-system-revamp`, jamais mergées sur `main`. Report assumé, risque croissant. _(rétros Epic 1→7)_
 
 ---
+
+## Deferred from: code review of 9-1-etats-interactifs-coherents (2026-06-29)
+
+- **Unifier les deux idiomes forced-colors** — depuis 9.1, le repli inline `outline: 2px solid transparent; outline-offset: 2px;` (primitives DS + liens du châssis) cohabite avec un bloc page-level `@media (forced-colors: active) { outline: 2px solid }` préexistant dans `index.vue` (`.hero-term__open`/`.offer__more`, epic 3). Les deux donnent un focus visible en contraste forcé — **inoffensif, non bloquant**. Candidat à une unification DS-wide (un seul idiome) lors d'un futur passage a11y/DS. **Préexistant**, non introduit par 9.1. _(revue 9.1)_
+- **Émulation `forced-colors: active` non rejouée** — la visibilité réelle de l'anneau sous Windows High Contrast repose sur l'idiome WHCM (outline transparent → couleur système) ; vérifié par présence/résolution des déclarations + précédent codebase, **pas** par émulation visuelle (navigateur MCP verrouillé au moment de la revue). À confirmer d'un coup lors d'un audit a11y émulé (forced-colors + lecteur d'écran) en fin de refonte. _(revue 9.1)_
 
 ## Deferred from: code review of 7-2-infos-cta-terminal-et-socials (2026-06-26)
 

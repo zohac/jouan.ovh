@@ -145,7 +145,9 @@ function handleRemove(event: MouseEvent) {
   }
 
   &:focus-visible {
-    outline: none;
+    // Outline transparent → couleur système sous forced-colors (box-shadow neutralisée).
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--ring-accent);
   }
 }
@@ -172,7 +174,9 @@ function handleRemove(event: MouseEvent) {
   }
 
   &:focus-visible {
-    outline: none;
+    // Outline transparent → couleur système sous forced-colors (box-shadow neutralisée).
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--ring-accent);
   }
 }
