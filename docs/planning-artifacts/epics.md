@@ -5,6 +5,8 @@ inputDocuments:
   - docs/specs/spec-design-system-revamp/pages.md
   - docs/specs/spec-design-system-revamp/primitives.md
   - docs/project-context.md
+  - docs/implementation-artifacts/deferred-work.md
+  - docs/implementation-artifacts/epic-9-retro-2026-06-29.md
 ---
 
 # jouan.ovh - Epic Breakdown
@@ -31,6 +33,12 @@ FR8: Blog = index (+ empty-state) et vue article prose + code via `@nuxt/content
 FR9: Page Contact = formulaire + carte infos + CTA terminal + socials (route `/contact`). _(CAP-9)_
 FR10: Conserver et restyler l'easter-egg terminal draggable selon le DS. _(CAP-10)_
 FR11: Respecter les fondamentaux d'accessibilité et de motion du DS. _(CAP-11)_
+FR12: Généraliser la convention a11y titres/listes (`<h2 class="eyebrow">` + séquences `<ol>`/`<ul>`) à home et services (+ process `/services` en `<ol>`) et durcir la sémantique de la colonne `/contact` (`<dl>/<dt>/<dd>`, `aria-haspopup="dialog"` sur le CTA terminal, préfixe `//` non vocalisé). _(deferred-work a11y #1, #3 ; rétro Epic 9)_
+FR13: Auditer et uniformiser site-wide les liens `target="_blank"` (indication « nouvel onglet » sr-only) via un helper de lien externe factorisé. _(deferred-work a11y #2 ; WCAG G201)_
+FR14: Valider l'accessibilité en émulation OS-level (forced-colors + `prefers-reduced-motion` + lecteur d'écran) et unifier les deux idiomes forced-colors en un seul pattern DS-wide. _(deferred-work a11y #4, #5)_
+FR15: Centraliser le SEO site-wide (`useSeoMeta`/`app.head` partagé, `SITE_URL` depuis `runtimeConfig`, `publisher`/`Organization`) et étendre OG/JSON-LD aux pages encore nues (home, services, contact). _(deferred-work SEO #6)_
+FR16: Publier la conformité légale — page politique de confidentialité (RGPD, sous-traitant Web3Forms) + mentions légales, liées depuis footer/formulaire. _(deferred-work RGPD #8)_
+FR17: Mettre en production — trancher l'hébergement prod, basculer `SITE_URL` + `CNAME` `dev.jouan.ovh` → `jouan.ovh`, et prouver la chaîne de déploiement gh-pages (premier merge `main`, CI + `CNAME` intacts). _(deferred-work domaine #7 + déploiement #9)_
 
 ### NonFunctional Requirements
 
@@ -87,6 +95,12 @@ FR8: Epic 6 — Blog (index + article)
 FR9: Epic 7 — Page Contact (route /contact)
 FR10: Epic 8 — Terminal easter-egg restylé
 FR11: Epic 9 — Accessibilité & finitions motion
+FR12: Epic 10 — A11y sémantique résiduelle (home/services/contact)
+FR13: Epic 10 — Liens externes accessibles (helper + audit `_blank`)
+FR14: Epic 10 — Validation a11y émulée + unification forced-colors
+FR15: Epic 10 — SEO centralisé site-wide
+FR16: Epic 10 — Conformité légale (RGPD + mentions légales)
+FR17: Epic 10 — Mise en production (domaine prod + déploiement gh-pages prouvé)
 
 ## Epic List
 
@@ -125,6 +139,10 @@ L'easter-egg terminal draggable fonctionne et adopte le style du DS (Prompt + Te
 ### Epic 9: Accessibilité & finitions motion
 Passe transverse finale : états focus/hover/press, `prefers-reduced-motion`, contraste, navigation clavier.
 **FRs covered:** FR11 _(UX-DR17)_
+
+### Epic 10: Fin de refonte
+La refonte est réellement livrée : a11y résiduelle bouclée et validée, SEO centralisé, conformité légale publiée, et le site déployé en production sur `jouan.ovh` (gh-pages prouvé, `CNAME` intact). _(Ajouté après la rétro Epic 9 — décision Simon : consolider la pile `deferred-work.md` « fin de refonte » en un épic.)_
+**FRs covered:** FR12, FR13, FR14, FR15, FR16, FR17 _(NFR5)_
 
 ---
 
@@ -539,3 +557,102 @@ So that je peux l'utiliser quelles que soient mes contraintes (UX-DR17, FR11).
 **When** on audite motion, contraste et navigation clavier
 **Then** `prefers-reduced-motion` désactive les animations (sauf nécessité) et seul le caret boucle par défaut
 **And** le contraste texte/fond est lisible et toutes les pages sont navigables au clavier
+
+---
+
+## Epic 10: Fin de refonte
+
+_(Ajouté après la rétro Epic 9 — décision Simon : consolider la pile `deferred-work.md` « fin de refonte » en un épic. Le roadmap d'épics 1→9 est `done` mais la refonte n'est pas livrée ; cet épic la rend livrable et la met en production.)_
+
+La refonte est **réellement livrée** : l'accessibilité résiduelle est bouclée et validée, le SEO est centralisé, la conformité légale est publiée, et le site est déployé en production sur `jouan.ovh` (chaîne gh-pages prouvée, `CNAME` intact). Source : `deferred-work.md` (section « → Epic 10 »). Barre qualité inchangée (pas de framework de test) : `pnpm lint` + `pnpm typecheck` + `pnpm generate` verts + vérification Chrome DevTools MCP.
+
+### Story 10.1: Décision hébergement prod et dé-risquage du déploiement gh-pages
+
+As a mainteneur du site,
+I want trancher l'hébergement de production et prouver la chaîne de déploiement gh-pages (`CNAME` inclus) sur un dry-run,
+So that la première mise en production de la refonte ne révèle pas de surprise (chaîne CI jamais prouvée, ~28 stories empilées).
+
+**Acceptance Criteria:**
+
+**Given** la cible prod `jouan.ovh` et la chaîne `pnpm generate` → `push-dir` vers `gh-pages`
+**When** on tranche l'hébergement prod (domaine, branche de déploiement, `CNAME`) et on exécute un dry-run du déploiement depuis le staging (`develop`)
+**Then** la décision est consignée et `SITE_URL` est lu depuis `runtimeConfig` (valeur staging/prod swappable, sans domaine hardcodé)
+**And** le dry-run prouve `pnpm generate` vert (11 routes) + un artefact `gh-pages` servant le site avec `CNAME` intact (régression `cf1829e` non reproduite), documenté dans la story
+
+### Story 10.2: A11y sémantique résiduelle (home / services / contact)
+
+As a visiteur utilisant un lecteur d'écran,
+I want une sémantique de titres, de listes et de régions cohérente sur toutes les pages,
+So that la structure du site m'est annoncée correctement (FR12).
+
+**Acceptance Criteria:**
+
+**Given** home, services et la colonne d'infos `/contact`, encore en `<div>`/`<p>` à certains endroits
+**When** on généralise la convention a11y (libellé de section en `<h2 class="eyebrow">` neutralisé, séquences en `<ol>`/`<ul>`, process `/services` en `<ol>`, paires label/valeur `/contact` en `<dl>/<dt>/<dd>`, `aria-haspopup="dialog"` sur le CTA terminal, préfixe `//` en `aria-hidden`)
+**Then** l'outline de titres est `h1 → h2…` sans saut sur home et services, les séquences sont des listes sémantiques, et le **rendu visuel reste identique** (h2 neutralisé, `list-style: none` + reset des marges)
+**And** `pnpm lint`/`typecheck`/`generate` verts ; arbre d'accessibilité vérifié au navigateur (desktop + mobile)
+
+### Story 10.3: Liens externes accessibles (helper + audit `target="_blank"`)
+
+As a visiteur,
+I want savoir quand un lien ouvre un nouvel onglet,
+So that je ne suis pas désorienté par un changement de contexte (FR13, WCAG G201).
+
+**Acceptance Criteria:**
+
+**Given** les liens `target="_blank"` du site (hexagones sociaux header/footer, cartes projet, liens bio…)
+**When** on factorise un helper de lien externe (icône + libellé sr-only « (ouvre dans un nouvel onglet) ») et on l'applique à tous les `_blank`
+**Then** chaque lien `_blank` porte `rel="noopener"` + l'indication sr-only via le helper unique (aucune duplication ad hoc)
+**And** aucun `_blank` non audité ne subsiste (vérif `grep`) ; rendu visuel inchangé ; gate verte
+
+### Story 10.4: Validation a11y émulée OS-level et unification forced-colors
+
+As a visiteur en contraste forcé ou motion réduit,
+I want que les correctifs a11y des stories 9.1/9.2 soient prouvés à l'exécution,
+So that l'accessibilité est réelle et pas seulement déclarée dans le CSS (FR14).
+
+**Acceptance Criteria:**
+
+**Given** le repli `forced-colors` (9.1) et le filet `prefers-reduced-motion` (9.2), non émulés à ce jour, et les deux idiomes forced-colors qui coexistent (repli inline vs `@media` page-level dans `index.vue`)
+**When** on émule `forced-colors: active` et `prefers-reduced-motion: reduce` (navigateur/OS) + un passage lecteur d'écran, et on unifie les deux idiomes forced-colors en un seul pattern DS-wide
+**Then** le focus reste visible sous contraste forcé, les animations non essentielles sont neutralisées (caret terminal = seule boucle conservée), et un seul idiome forced-colors subsiste
+**And** les constats sont consignés ; rendu en mode normal inchangé ; gate verte
+
+### Story 10.5: SEO centralisé site-wide
+
+As a visiteur partageant une page (ou un moteur d'indexation),
+I want des métadonnées SEO cohérentes et complètes sur toutes les pages,
+So that le site est correctement indexé et présenté lors d'un partage (FR15).
+
+**Acceptance Criteria:**
+
+**Given** `app/utils/seo.ts` (helpers `SITE_URL`/`jsonLdScript`) et les pages encore nues (home, services, contact n'exposent que `title`+`description`)
+**When** on centralise via `useSeoMeta`/`app.head` partagé, on source `SITE_URL` depuis `runtimeConfig`, on ajoute `publisher`/`Organization`, et on étend OG/Twitter/canonical + JSON-LD à home/services/contact
+**Then** chaque page expose OG/Twitter/canonical + JSON-LD pertinent dans le HTML prerendu, sans domaine hardcodé (résolu via `runtimeConfig`)
+**And** gate verte ; HTML prerendu (`.output/public`) vérifié pour home, services et contact
+
+### Story 10.6: Conformité légale (RGPD + mentions légales)
+
+As a visiteur,
+I want accéder à la politique de confidentialité et aux mentions légales,
+So that je sais comment mes données (formulaire `/contact` → Web3Forms) sont traitées (FR16).
+
+**Acceptance Criteria:**
+
+**Given** le formulaire `/contact` (Web3Forms, collecte nom/email/message) et sa notice courte sous le formulaire
+**When** on publie une page « politique de confidentialité » (base légale, finalité, durée de conservation, sous-traitant Web3Forms, droits des personnes) + une page mentions légales, liées depuis le footer et/ou le formulaire
+**Then** les deux pages existent, sont liées et rendues en prerender, en français/vouvoiement/sans emoji (NFR6) et stylées au DS
+**And** gate verte ; contenu cadré avec le skill `rgpd-france`
+
+### Story 10.7: Mise en production réelle
+
+As a Simon (propriétaire du site),
+I want merger la refonte sur `main` et la déployer en production sur `jouan.ovh`,
+So that la refonte est enfin livrée aux visiteurs (FR17).
+
+**Acceptance Criteria:**
+
+**Given** la branche `feat/design-system-revamp` (toutes les stories `done`) et l'hébergement tranché (story 10.1)
+**When** on bascule `SITE_URL` + `CNAME` de `dev.jouan.ovh` vers `jouan.ovh`, on merge sur `main` et on exécute le déploiement gh-pages de production
+**Then** le site est servi en production sur `https://jouan.ovh` (`CNAME` intact), toutes les pages rendent, et la chaîne CI gh-pages est **prouvée en réel** (lève le report assumé depuis l'Epic 1)
+**And** non-régression post-déploiement (pages + terminal + formulaire) vérifiée ; `canonical`/`og:url` pointent sur `jouan.ovh`
