@@ -133,9 +133,11 @@ const degrees = [
 const pageTitle = "À propos — jouan.ovh";
 const pageDescription =
   "Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours.";
-// SITE_URL = util partagé (app/utils/seo) — source unique du domaine de production.
-const pageUrl = `${SITE_URL}/about`;
-const pageImage = `${SITE_URL}/images/portrait.jpeg`;
+// URL de prod lue depuis runtimeConfig via useSiteUrl() (swappable staging/prod, sans
+// domaine en dur). Inchangée en staging → canonical/og toujours en https://dev.jouan.ovh.
+const siteUrl = useSiteUrl();
+const pageUrl = `${siteUrl}/about`;
+const pageImage = `${siteUrl}/images/portrait.jpeg`;
 
 useHead({
   title: pageTitle,

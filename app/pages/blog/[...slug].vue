@@ -108,14 +108,17 @@ if (import.meta.client) {
   });
 }
 
-// SEO par article (parité avec /about et /blog). `SITE_URL` = util partagé (app/utils/seo).
+// SEO par article (parité avec /about et /blog). URL de prod via useSiteUrl()
+// (runtimeConfig, swappable staging/prod) ; capturée dans le setup, hors du getter useHead
+// (un composable ne s'appelle pas dans un callback).
+const siteUrl = useSiteUrl();
 useHead(() => {
   const article = page.value;
   if (!article) {
     return {};
   }
-  const url = `${SITE_URL}${article.path}`;
-  const image = article.image ? `${SITE_URL}${article.image.src}` : undefined;
+  const url = `${siteUrl}${article.path}`;
+  const image = article.image ? `${siteUrl}${article.image.src}` : undefined;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",

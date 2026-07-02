@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-06-29 (9.2 revue : 0 défaut bloquant, 1 patch dérogation durées appliqué, gate vert, 2 différés a11y tracés → done)"
+last_updated: "2026-07-02 (Story 10.1 findings de revue soldés : garde-fou fail-fast + strip slash useSiteUrl (prouvés au prerender), epic-9 → done ; 1 différé confirmé hors périmètre → 10.5. Gate vert (11 routes). Retour en review + commit)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -101,7 +101,18 @@ development_status:
   epic-8-retrospective: done
 
   # Epic 9 — Accessibilité & finitions motion
-  epic-9: in-progress
+  epic-9: done
   9-1-etats-interactifs-coherents: done
   9-2-motion-reduit-contraste-et-clavier: done
-  epic-9-retrospective: optional
+  epic-9-retrospective: done
+
+  # Epic 10 — Fin de refonte (a11y résiduel + SEO + RGPD + déploiement prod)
+  epic-10: in-progress
+  10-1-decision-hebergement-prod-et-derisquage-deploiement: review
+  10-2-a11y-semantique-residuelle: ready-for-dev
+  10-3-liens-externes-accessibles: ready-for-dev
+  10-4-validation-a11y-emulee-et-unification-forced-colors: ready-for-dev
+  10-5-seo-centralise-site-wide: ready-for-dev
+  10-6-conformite-legale-rgpd-mentions: ready-for-dev
+  10-7-mise-en-production-reelle: ready-for-dev
+  epic-10-retrospective: optional

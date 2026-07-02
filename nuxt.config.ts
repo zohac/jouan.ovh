@@ -52,6 +52,11 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       web3formsAccessKey: "",
+      // URL de production du site (canonical / og:url / JSON-LD). Défaut = staging
+      // (dev.jouan.ovh, cf. public/CNAME) ; surchargeable en prod SANS domaine en dur via
+      // l'env NUXT_PUBLIC_SITE_URL=https://jouan.ovh (cf. .env.example). Consommée par le
+      // composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
+      siteUrl: "https://dev.jouan.ovh",
     },
   },
   // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").

@@ -1,8 +1,10 @@
-// Constantes & helpers SEO partagés (auto-importés depuis app/utils/).
-
-// Domaine de production — cf. public/CNAME (dev.jouan.ovh). Source unique : évite la
-// duplication de l'URL dans /about, /blog, /blog/[...slug].
-export const SITE_URL = "https://dev.jouan.ovh";
+// Helpers SEO partagés (auto-importés depuis app/utils/).
+//
+// L'URL de production du site n'est plus une constante ici : elle est lue depuis
+// `runtimeConfig.public.siteUrl` via le composable `useSiteUrl()`
+// (app/composables/useSiteUrl.ts) — swappable staging/prod sans domaine en dur.
+// `useRuntimeConfig()` étant un composable (contexte Nuxt requis), elle ne peut pas
+// vivre dans ce module pur.
 
 // Construit l'entrée <script type="application/ld+json"> pour useHead, en échappant
 // « < » → « < ». Garantit qu'aucune séquence "</script>" éventuellement présente

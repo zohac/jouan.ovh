@@ -96,11 +96,13 @@ const { data: articles, error } = await useAsyncData("blog-list", () =>
 
 // `formatDate` (date ISO → français) est un util auto-importé partagé (app/utils/).
 
-// Métadonnées de la page. SITE_URL = util partagé (app/utils/seo).
+// Métadonnées de la page. URL de prod lue depuis runtimeConfig via useSiteUrl()
+// (swappable staging/prod, sans domaine en dur). Inchangée en staging.
+const siteUrl = useSiteUrl();
 const pageTitle = "Blog — jouan.ovh";
 const pageDescription =
   "Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web.";
-const pageUrl = `${SITE_URL}/blog`;
+const pageUrl = `${siteUrl}/blog`;
 
 // JSON-LD : flux d'articles (Blog → BlogPosting) pour les moteurs / agrégateurs.
 // Construit à partir de la liste résolue (snapshot au build, page prerendue).
@@ -115,9 +117,9 @@ const blogJsonLd = {
     headline: article.title,
     description: article.description,
     datePublished: article.date,
-    url: `${SITE_URL}${article.path}`,
+    url: `${siteUrl}${article.path}`,
     ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
-    ...(article.image ? { image: `${SITE_URL}${article.image.src}` } : {}),
+    ...(article.image ? { image: `${siteUrl}${article.image.src}` } : {}),
   })),
 };
 

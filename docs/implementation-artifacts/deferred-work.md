@@ -4,28 +4,41 @@ _Travaux réels mais reportés, remontés par les revues de code. À reprendre d
 
 ---
 
-## 📋 Inventaire consolidé (synthèse — maj rétro Epic 7, 2026-06-26)
+## 📋 Inventaire consolidé (synthèse — maj rétro Epic 9, 2026-06-29)
 
 _Vue d'ensemble par destination. Le détail par story est conservé dans les sections chronologiques ci-dessous. Aucune dette technique laissée dans les épics (chaque story a soldé ses findings) ; ce sont des **généralisations DS-wide / d'architecture** délibérément regroupées pour être traitées en un seul passage._
 
-### → Epic 9 — Accessibilité & finitions motion
+> **Décision rétro Epic 9 (2026-06-29) :** les épics 1→9 sont `done`, **mais la refonte n'est pas livrée**. Tout le reste (a11y résiduel non couvert par 9.1/9.2, SEO, RGPD, déploiement, audit a11y émulé) est **consolidé dans un futur Epic 10 « fin de refonte »** — épic à écrire (handoff `bmad` planification). Epic 9 se clôt tel quel.
 
-1. ~~**Repli `forced-colors` DS-wide**~~ — ✅ **Résolu (story 9.1)** : repli posé une seule fois au niveau des primitives DS (`ZButton`, `ZCard`, `ZTag`, `ZInput`) via `outline: 2px solid transparent; outline-offset: 2px;` sur `:focus-visible` (rendu en couleur système sous forced-colors, le ring `box-shadow` restant le focus normal) ; anneau DS `--ring-accent` + même repli ajoutés aux liens du châssis (logo + nav header/menu, liens footer) qui n'avaient que l'outline UA. _(revues 3.2, 5.1)_
-2. **Généralisation de la convention a11y titres + listes** — établie et appliquée sur `/about` (5.2), `/blog` (6.1) et la vue article (6.2) : libellé de section en `<h2 class="eyebrow">` neutralisé ; séquences/feeds en `<ol>`/`<ul>` + `<li>`. **Reste à généraliser** à **home** et **services** (+ séquence process `<ol>` de 4.2). _(revues 4.2, 5.2, 6.1)_
-3. **Audit site-wide des liens `target="_blank"`** — indication « nouvel onglet » (span sr-only) posée localement sur les cartes projet de `/` (3.3) ; reste à auditer/uniformiser les **autres** `_blank` (hexagones sociaux header/footer…) et à factoriser un helper de lien externe (icône + libellé sr-only, WCAG G201). _(revue 3.3)_
+### ✅ Soldé en Epic 9
 
-### → Story SEO dédiée (fin de refonte — décision Simon, rétro Epic 6)
+- ~~**Repli `forced-colors` DS-wide**~~ — ✅ **Résolu (story 9.1)** : repli posé une seule fois au niveau des primitives DS (`ZButton`, `ZCard`, `ZTag`, `ZInput`) via `outline: 2px solid transparent; outline-offset: 2px;` sur `:focus-visible` (rendu en couleur système sous forced-colors, le ring `box-shadow` restant le focus normal) ; anneau DS `--ring-accent` + même repli ajoutés aux liens du châssis (logo + nav header/menu, liens footer) qui n'avaient que l'outline UA. _(revues 3.2, 5.1)_
+- ~~**Filet `prefers-reduced-motion` global + exception caret**~~ — ✅ **Résolu (story 9.2)** : `base/_motion.scss` ramène animations/transitions à l'instantané site-wide ; caret natif du terminal intact, caret déco du hero figé visible.
+- ~~**Contraste — `--text-faint` sous AA**~~ — ✅ **Résolu (story 9.2)** : 4 textes informatifs réels remontés à `--text-muted` (token-only).
+- ~~**Clavier — Échap + retour de focus terminal**~~ — ✅ **Résolu (story 9.2)**.
 
-4. **Centralisation SEO site-wide** — la **dette concrète est soldée** (6.2) : `SITE_URL` unique dans `app/utils/seo.ts` (dédup `/about`+`/blog`+article), JSON-LD via `jsonLdScript()` qui échappe `</script>`. **Reste** (architecture, non-dette) : migrer vers `useSeoMeta`/`app.head` partagé, sourcer `SITE_URL` depuis `runtimeConfig`, ajouter `publisher`/`Organization` (ou `nuxt-schema-org`), et étendre OG/JSON-LD aux pages encore nues (home, services, contact). _(revues 5.1, 6.1, 6.2)_
-5. **⚠️ Domaine de production dans `SITE_URL`** — `app/utils/seo.ts` et `public/CNAME` pointent sur **`dev.jouan.ovh`** = **staging** (branche `develop` → gh-pages, décision Simon, rétro Epic 6). La **prod cible est `jouan.ovh`** (hébergement encore à décider). Avant mise en prod / indexation : basculer `SITE_URL` (et le `CNAME` du déploiement prod) sur `https://jouan.ovh`, sinon les `canonical`/`og:url`/JSON-LD de `/about`, `/blog`, articles pointeront sur le staging. _(rétro Epic 6)_
+### → Epic 10 — Fin de refonte (épic à écrire ; décision rétro Epic 9)
 
-### → Légal / RGPD (fin de refonte)
+**A11y résiduel (non couvert par les AC de 9.1/9.2) :**
 
-6. **Politique de confidentialité (RGPD)** — le formulaire `/contact` envoie via **Web3Forms** (sous-traitant tiers) et collecte **nom, email, message**. Une **notice courte est posée sous le formulaire** (finalité). **Reste à publier** une page « politique de confidentialité » dédiée — base légale (consentement / intérêt légitime), finalité, durée de conservation, mention du sous-traitant Web3Forms (hébergement/transfert des données), droits des personnes (accès, rectification, effacement) — et à la lier depuis le footer et/ou le formulaire. Vérifier aussi les **mentions légales**. Cf. skill `rgpd-france`. _(revue 7.1, décision Simon Epic 7)_
+1. **Généralisation de la convention a11y titres + listes** — établie et appliquée sur `/about` (5.2), `/blog` (6.1) et la vue article (6.2) : libellé de section en `<h2 class="eyebrow">` neutralisé ; séquences/feeds en `<ol>`/`<ul>` + `<li>`. **Reste à généraliser** à **home** et **services** (+ séquence process `<ol>` de 4.2). _(revues 4.2, 5.2, 6.1 — orphelin à la clôture d'Epic 9)_
+2. **Audit site-wide des liens `target="_blank"`** — indication « nouvel onglet » (span sr-only) posée localement sur les cartes projet de `/` (3.3) ; reste à auditer/uniformiser les **autres** `_blank` (hexagones sociaux header/footer…) et à factoriser un helper de lien externe (icône + libellé sr-only, WCAG G201). _(revue 3.3 — orphelin à la clôture d'Epic 9)_
+3. **Sémantique a11y de la colonne `/contact`** — paires label/valeur en `<dl>/<dt>/<dd>`, titre de section, `aria-haspopup="dialog"` sur le CTA terminal, préfixe `//` non lu « slash slash ». _(différé 7.2 — orphelin à la clôture d'Epic 9)_
+4. **Audit a11y émulé OS-level** — l'effet runtime du filet `prefers-reduced-motion` (9.2) et du repli `forced-colors` (9.1) n'a **pas** été émulé visuellement (le MCP n'expose ni l'un ni l'autre) ; seules présence/résolution des règles CSS confirmées. À rejouer d'un coup (forced-colors + reduced-motion + lecteur d'écran). _(revues 9.1, 9.2)_
+5. **Unifier les deux idiomes forced-colors** — repli inline `outline: 2px solid transparent` (primitives + châssis, 9.1) vs bloc page-level `@media (forced-colors: active)` préexistant dans `index.vue` (epic 3). Inoffensif (les deux donnent un focus visible) ; candidat à unification DS-wide. _(revue 9.1)_
 
-### → Fin de refonte (déjà tracé hors ce fichier)
+**SEO :**
 
-7. **Déploiement gh-pages réel** — chaîne CI + domaine custom (`CNAME`) jamais prouvée ; ~23 stories empilées sur `feat/design-system-revamp`, jamais mergées sur `main`. Report assumé, risque croissant. _(rétros Epic 1→7)_
+6. **Centralisation SEO site-wide** — la **dette concrète est soldée** (6.2) : `SITE_URL` unique dans `app/utils/seo.ts` (dédup `/about`+`/blog`+article), JSON-LD via `jsonLdScript()` qui échappe `</script>`. ✅ **`SITE_URL` sourcé depuis `runtimeConfig` fait en 10.1** (`runtimeConfig.public.siteUrl` + composable `useSiteUrl()`, surchargeable `NUXT_PUBLIC_SITE_URL`). **Reste** (architecture, non-dette) : migrer vers `useSeoMeta`/`app.head` partagé, ajouter `publisher`/`Organization` (ou `nuxt-schema-org`), et étendre OG/JSON-LD aux pages encore nues (home, services, contact). → **story 10.5**. _(revues 5.1, 6.1, 6.2)_
+7. **Domaine de production** — ✅ **Hébergement tranché (Simon, 2026-06-30) + plomberie posée (10.1).** Décision : **prod `jouan.ovh` sur CE repo** (`main` → `gh-pages`, Option A) ; **staging `dev.jouan.ovh` = setup séparé** hors chemin critique (contrainte GitHub Pages : un repo = un seul domaine custom). `SITE_URL` n'est plus en dur : lu depuis `runtimeConfig.public.siteUrl` (défaut staging `https://dev.jouan.ovh`, surchargeable `NUXT_PUBLIC_SITE_URL`) via `useSiteUrl()` — **staging inchangé**, prod = un flip d'env. **Reste (story 10.7)** : basculer la valeur prod (`NUXT_PUBLIC_SITE_URL=https://jouan.ovh` ou défaut), passer `public/CNAME` à `jouan.ovh`, **et mettre à jour dans le même commit le `grep -qx "dev.jouan.ovh"` du step `Verify static output` de `.github/workflows/cd.yml`** (couplé au CNAME, sinon CI rouge) ; + DNS `jouan.ovh` → GitHub Pages chez OVH. _(rétro Epic 6, décision Simon Epic 10, plomberie 10.1)_
+
+**Légal / RGPD :**
+
+8. **Politique de confidentialité (RGPD)** — le formulaire `/contact` envoie via **Web3Forms** (sous-traitant tiers) et collecte **nom, email, message**. Une **notice courte est posée sous le formulaire** (finalité). **Reste à publier** une page « politique de confidentialité » dédiée — base légale (consentement / intérêt légitime), finalité, durée de conservation, mention du sous-traitant Web3Forms (hébergement/transfert des données), droits des personnes (accès, rectification, effacement) — et à la lier depuis le footer et/ou le formulaire. Vérifier aussi les **mentions légales**. Cf. skill `rgpd-france`. _(revue 7.1, décision Simon Epic 7)_
+
+**Déploiement :**
+
+9. **Déploiement gh-pages réel** — ✅ **Chaîne dé-risquée par un dry-run (10.1)** : gate CI de `cd.yml` reproduit localement (Docker) — `lint`+`typecheck`+`generate` **verts**, **11 routes** prerendered, artefact `.output/public` complet (`index/200/404/about/blog` + `_headers` + portrait), step `Verify static output` OK et **`CNAME` = `dev.jouan.ovh` intact** (régression `cf1829e` non reproduite). **Reste (story 10.7)** : la **première exécution réelle sur `main`** — merge des ~28 stories de `feat/design-system-revamp`, étape `Deploy` (`peaceiris/actions-gh-pages`, gardée `if: push`) réellement déclenchée, + bascule domaine (cf. #7). Option validation pré-merge : ouvrir une PR vers `main` (exécute le gate sans déployer). _(rétros Epic 1→9, dry-run 10.1)_
 
 ---
 
@@ -97,3 +110,7 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 
 - ~~**DRY — données dupliquées en dur dans les programmes terminal**~~ — ✅ **Résolu en 8.2** : **source de vérité unique `app/data/site.ts`** (`SITE.profile`/`skills`/`projects`, typée `IProfile`/`IProject`). Tous les consommateurs branchés — `Skills/Projets/Contact/About.ts` (terminal), `index.vue`, `about.vue`, `contact.vue`, `FooterComponent.vue` — rendu **identique** vérifié au navigateur. **Solde aussi** l'item « données de contact inline » de la revue 7.2 (ci-dessus). _Reste, hors-scope DRY_ : les `experiences`/`degrees` divergent de **contenu** entre le CV terminal (`About.ts`, 4 xp / 3 diplômes détaillés) et `/about` (3 xp / 2 diplômes condensés) — leur unification est une **décision de contenu** (choisir la version canonique + adapter l'affichage), à trancher en passage CV dédié, pas un refactor mécanique.
 - ~~**Duplication du bookkeeping d'historique dans la branche `clear`**~~ — ✅ **Résolu en 8.2** : helper `recordHistoryAndResetInput()` partagé entre la branche `clear` et le flux normal de `submitInput`. Plus de report en 8.3.
+
+## Deferred from: code review of 10-1-decision-hebergement-prod-et-derisquage-deploiement (2026-07-02)
+
+- **`article.image.src` sans slash initial → URL d'image malformée** — Dans `blog/index.vue` (JSON-LD `image`) et `blog/[...slug].vue` (`og:image` + JSON-LD), `` `${siteUrl}${article.image.src}` `` concatène sans séparateur : un frontmatter d'article avec `image: { src: "images/x.webp" }` (sans `/` initial) produirait `https://dev.jouan.ovhimages/x.webp`. **Pré-existant** (identique avec l'ancienne constante `SITE_URL`, non introduit par 10.1) et **non déclenchable aujourd'hui** (`content/blog/` vide → 0 article). `content.config.ts` type `image.src` en `z.string()` sans contrainte de format. À corriger à la **factorisation de la construction d'URL SEO de la story 10.5** (helper unique + normalisation slash, ou schéma `image.src` `startsWith("/")`). _(revue 10.1 — Edge Case Hunter)_
