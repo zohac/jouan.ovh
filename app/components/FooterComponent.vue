@@ -51,6 +51,8 @@ const navItems = [
   { to: "/about", label: "À propos" },
   { to: "/blog", label: "Blog" },
   { to: "/contact", label: "Contact" },
+  { to: "/confidentialite", label: "Confidentialité" },
+  { to: "/mentions-legales", label: "Mentions légales" },
 ];
 
 // Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).

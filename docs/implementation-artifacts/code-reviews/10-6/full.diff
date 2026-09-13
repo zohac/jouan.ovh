@@ -1,0 +1,547 @@
+diff --git a/app/components/FooterComponent.vue b/app/components/FooterComponent.vue
+index 418772b..febe415 100644
+--- a/app/components/FooterComponent.vue
++++ b/app/components/FooterComponent.vue
+@@ -51,6 +51,8 @@ const navItems = [
+   { to: "/about", label: "À propos" },
+   { to: "/blog", label: "Blog" },
+   { to: "/contact", label: "Contact" },
++  { to: "/confidentialite", label: "Confidentialité" },
++  { to: "/mentions-legales", label: "Mentions légales" },
+ ];
+ 
+ // Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).
+diff --git a/app/pages/confidentialite.vue b/app/pages/confidentialite.vue
+new file mode 100644
+index 0000000..c389dd3
+--- /dev/null
++++ b/app/pages/confidentialite.vue
+@@ -0,0 +1,231 @@
++<template>
++  <main class="legal">
++    <section class="section">
++      <div class="container container--legal">
++        <p class="eyebrow"><span aria-hidden="true">// </span>confidentialité</p>
++        <h1 class="legal__title">Politique de confidentialité</h1>
++        <p class="prose legal__lead">
++          Cette politique détaille la façon dont vos données personnelles sont traitées lors de votre navigation sur
++          <strong>jouan.ovh</strong> et lors de l'utilisation du formulaire de contact.
++        </p>
++
++        <div class="prose legal__content">
++          <section class="legal__section">
++            <h2 class="legal__heading">1. Responsable du traitement</h2>
++            <p>
++              Le responsable du traitement des données personnelles collectées sur ce site est :<br />
++              <strong>Simon Jouan</strong><br />
++              Développeur web freelance — Valognes (50700), France.<br />
++              Contact électronique :
++              <a class="legal__link" :href="`mailto:${profile.email}`">{{ profile.email }}</a>
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">2. Données collectées et finalités</h2>
++            <p>Le site <strong>jouan.ovh</strong> limite la collecte des données personnelles au strict nécessaire :</p>
++            <ul>
++              <li>
++                <strong>Formulaire de contact :</strong> lorsque vous envoyez un message via la page
++                <NuxtLink to="/contact" class="legal__link">Contact</NuxtLink>, nous collectons votre
++                <strong>nom</strong>, votre <strong>adresse email</strong>, ainsi que le <strong>sujet</strong> et le
++                <strong>contenu de votre message</strong>.
++              </li>
++              <li>
++                <strong>Finalité :</strong> ces informations sont utilisées exclusivement pour traiter votre demande, y
++                répondre et assurer le suivi de nos échanges professionnels.
++              </li>
++              <li>
++                <strong>Base légale (RGPD art. 6.1.a &amp; 6.1.f) :</strong> le traitement repose sur votre consentement
++                lors de l'envoi du formulaire et sur notre intérêt légitime à répondre aux sollicitations reçues.
++              </li>
++            </ul>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">3. Sous-traitance et transfert de données</h2>
++            <p>
++              Le formulaire de contact s'appuie sur le service tiers <strong>Web3Forms</strong> pour acheminer les
++              messages vers notre boîte de messagerie électronique :
++            </p>
++            <ul>
++              <li>
++                <strong>Sous-traitant :</strong> Web3Forms (<ZExternalLink href="https://web3forms.com" rel="noopener"
++                  >web3forms.com</ZExternalLink
++                >).
++              </li>
++              <li>
++                <strong>Rôle :</strong> transmission sécurisée des données de formulaire sans stockage persistant sur un
++                serveur applicatif dédié propre au site.
++              </li>
++              <li><strong>Mesures de sécurité :</strong> les flux sont chiffrés en transit (HTTPS / TLS).</li>
++            </ul>
++            <p>
++              Aucune donnée personnelle n'est vendue, louée ou cédée à des tiers à des fins commerciales ou
++              publicitaires.
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">4. Durée de conservation</h2>
++            <p>
++              Les données transmises par le formulaire de contact sont conservées pendant le temps nécessaire au
++              traitement de votre demande et aux échanges commerciaux qui en découlent, dans la limite maximale de
++              <strong>3 ans</strong> après le dernier contact émanant de votre part, sauf obligation légale ou
++              réglementaire contraire.
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">5. Vos droits (RGPD)</h2>
++            <p>
++              Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et
++              Libertés, vous disposez des droits suivants concernant vos données à caractère personnel :
++            </p>
++            <ul>
++              <li>
++                <strong>Droit d'accès :</strong> obtenir la confirmation que des données vous concernant sont traitées
++                et en obtenir une copie.
++              </li>
++              <li>
++                <strong>Droit de rectification :</strong> demander la modification de vos données inexactes ou
++                incomplètes.
++              </li>
++              <li>
++                <strong>Droit à l'effacement :</strong> demander la suppression de vos données personnelles (« droit à
++                l'oubli »).
++              </li>
++              <li>
++                <strong>Droit à la limitation du traitement :</strong> demander le gel temporaire du traitement de
++                certaines données.
++              </li>
++              <li>
++                <strong>Droit d'opposition :</strong> vous opposer à tout moment au traitement de vos données pour
++                motifs légitimes.
++              </li>
++              <li>
++                <strong>Droit à la portabilité :</strong> recevoir vos données dans un format structuré, couramment
++                utilisé et lisible par machine.
++              </li>
++            </ul>
++            <p>
++              Pour exercer ces droits, vous pouvez me contacter directement par email à :
++              <a class="legal__link" :href="`mailto:${profile.email}`">{{ profile.email }}</a
++              >.
++            </p>
++            <p>
++              Si vous estimez, après m'avoir contacté, que vos droits ne sont pas respectés, vous disposez du droit
++              d'introduire une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et
++              des Libertés — <ZExternalLink href="https://www.cnil.fr" rel="noopener">cnil.fr</ZExternalLink>).
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">6. Cookies et traceurs</h2>
++            <p>
++              Le site <strong>jouan.ovh</strong> est un site statique hébergé sur GitHub Pages. Il
++              <strong>n'utilise aucun cookie traceur, publicitaire ou d'analyse d'audience tiers</strong> nécessitant un
++              consentement préalable au sens des recommandations de la CNIL.
++            </p>
++          </section>
++        </div>
++      </div>
++    </section>
++  </main>
++</template>
++
++<script setup lang="ts">
++import { SITE } from "~/data/site";
++import { usePageSeo } from "~/composables/usePageSeo";
++
++const profile = SITE.profile;
++
++usePageSeo({
++  title: "Politique de confidentialité — jouan.ovh",
++  description:
++    "Politique de confidentialité et protection des données personnelles (RGPD) du site jouan.ovh — Simon Jouan.",
++  path: "/confidentialite",
++  type: "website",
++});
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern -- convention BEM DS */
++.legal {
++  display: block;
++}
++
++.container--legal {
++  max-width: var(--container-lg);
++}
++
++.legal__title {
++  margin-bottom: var(--space-4);
++  font-family: var(--font-mono);
++  font-size: var(--fs-4xl);
++  font-weight: var(--fw-light);
++  line-height: var(--lh-tight);
++  color: var(--text-strong);
++}
++
++.legal__lead {
++  max-width: 65ch;
++  margin-bottom: var(--space-10);
++  font-size: var(--fs-lg);
++  color: var(--text-muted);
++}
++
++.legal__content {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-8);
++}
++
++.legal__section {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-3);
++
++  p {
++    margin: 0;
++  }
++
++  ul {
++    display: flex;
++    flex-direction: column;
++    gap: var(--space-2);
++    padding-left: var(--space-5);
++    margin: 0;
++  }
++}
++
++.legal__heading {
++  margin: 0;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xl);
++  font-weight: var(--fw-medium);
++  color: var(--text-strong);
++}
++
++.legal__link {
++  color: var(--term-blue);
++  text-decoration: none;
++
++  &:hover {
++    text-decoration: underline;
++  }
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    border-radius: var(--radius-xs);
++    box-shadow: var(--ring-accent);
++  }
++}
++
++@media (width <= 640px) {
++  .legal__title {
++    font-size: var(--fs-3xl);
++  }
++}
++</style>
+diff --git a/app/pages/contact.vue b/app/pages/contact.vue
+index 6b5e7f3..c34138d 100644
+--- a/app/pages/contact.vue
++++ b/app/pages/contact.vue
+@@ -80,7 +80,8 @@
+ 
+               <p class="contact__rgpd">
+                 En envoyant ce formulaire, vos nom, email et message sont transmis via Web3Forms à seule fin de traiter
+-                votre demande.
++                votre demande. Consultez notre
++                <NuxtLink to="/confidentialite" class="contact__rgpd-link">politique de confidentialité</NuxtLink>.
+               </p>
+             </form>
+           </div>
+@@ -358,6 +359,22 @@ usePageSeo({
+   color: var(--text-muted);
+ }
+ 
++.contact__rgpd-link {
++  color: var(--term-blue);
++  text-decoration: underline;
++
++  &:hover {
++    color: var(--accent);
++  }
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    border-radius: var(--radius-xs);
++    box-shadow: var(--ring-accent);
++  }
++}
++
+ // Carte « envoyé » focalisée par programme (tabindex -1) : pas de contour UA résiduel.
+ .contact__sent:focus {
+   outline: none;
+diff --git a/app/pages/mentions-legales.vue b/app/pages/mentions-legales.vue
+new file mode 100644
+index 0000000..3fee8a0
+--- /dev/null
++++ b/app/pages/mentions-legales.vue
+@@ -0,0 +1,171 @@
++<template>
++  <main class="legal">
++    <section class="section">
++      <div class="container container--legal">
++        <p class="eyebrow"><span aria-hidden="true">// </span>mentions</p>
++        <h1 class="legal__title">Mentions légales</h1>
++        <p class="prose legal__lead">
++          Informations légales et mentions obligatoires relatives à l'édition et à l'hébergement du site
++          <strong>jouan.ovh</strong> (conformément à la loi n° 2004-575 du 21 juin 2004 pour la confiance dans
++          l'économie numérique).
++        </p>
++
++        <div class="prose legal__content">
++          <section class="legal__section">
++            <h2 class="legal__heading">1. Éditeur du site</h2>
++            <p>
++              Le site <strong>jouan.ovh</strong> est édité par :<br />
++              <strong>Simon Jouan</strong><br />
++              Activité : Développeur web indépendant (freelance)<br />
++              Localisation : Valognes (50700), Normandie, France<br />
++              Courrier électronique :
++              <a class="legal__link" :href="`mailto:${profile.email}`">{{ profile.email }}</a>
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">2. Directeur de la publication</h2>
++            <p>Le directeur de la publication et responsable de la rédaction est <strong>Simon Jouan</strong>.</p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">3. Hébergement du site</h2>
++            <p>
++              Le site est hébergé sous forme statique par :<br />
++              <strong>GitHub, Inc.</strong> (via le service GitHub Pages)<br />
++              Adresse : 88 Colin P Kelly Jr St, San Francisco, CA 94107, États-Unis<br />
++              Site web :
++              <ZExternalLink href="https://pages.github.com" rel="noopener">pages.github.com</ZExternalLink>
++            </p>
++            <p>
++              Le nom de domaine <strong>jouan.ovh</strong> est enregistré auprès de :<br />
++              <strong>OVHcloud SAS</strong><br />
++              Adresse : 2 rue Kellermann, 59100 Roubaix, France<br />
++              Site web :
++              <ZExternalLink href="https://www.ovhcloud.com" rel="noopener">ovhcloud.com</ZExternalLink>
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">4. Propriété intellectuelle</h2>
++            <p>
++              L'ensemble des contenus présents sur ce site (textes, articles, visuels, charte graphique, codes sources
++              du design system) relèvent des législations françaises et internationales sur le droit d'auteur et la
++              propriété intellectuelle.
++            </p>
++            <p>
++              Tous les droits de reproduction sont réservés. Toute reproduction, représentation, modification ou
++              diffusion intégrale ou partielle de ces éléments, sans l'accord exprès et écrit de l'auteur, est interdite
++              et constituerait une contrefaçon sanctionnée par le Code de la propriété intellectuelle.
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">5. Données personnelles</h2>
++            <p>
++              Pour toute information relative à la collecte, au traitement et à la protection de vos données
++              personnelles (notamment via le formulaire de contact), ainsi qu'aux modalités d'exercice de vos droits
++              (accès, rectification, effacement), veuillez consulter notre
++              <NuxtLink to="/confidentialite" class="legal__link">Politique de confidentialité</NuxtLink>.
++            </p>
++          </section>
++        </div>
++      </div>
++    </section>
++  </main>
++</template>
++
++<script setup lang="ts">
++import { SITE } from "~/data/site";
++import { usePageSeo } from "~/composables/usePageSeo";
++
++const profile = SITE.profile;
++
++usePageSeo({
++  title: "Mentions légales — jouan.ovh",
++  description: "Mentions légales, informations éditeur et hébergement du site jouan.ovh — Simon Jouan.",
++  path: "/mentions-legales",
++  type: "website",
++});
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern -- convention BEM DS */
++.legal {
++  display: block;
++}
++
++.container--legal {
++  max-width: var(--container-lg);
++}
++
++.legal__title {
++  margin-bottom: var(--space-4);
++  font-family: var(--font-mono);
++  font-size: var(--fs-4xl);
++  font-weight: var(--fw-light);
++  line-height: var(--lh-tight);
++  color: var(--text-strong);
++}
++
++.legal__lead {
++  max-width: 65ch;
++  margin-bottom: var(--space-10);
++  font-size: var(--fs-lg);
++  color: var(--text-muted);
++}
++
++.legal__content {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-8);
++}
++
++.legal__section {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-3);
++
++  p {
++    margin: 0;
++  }
++
++  ul {
++    display: flex;
++    flex-direction: column;
++    gap: var(--space-2);
++    padding-left: var(--space-5);
++    margin: 0;
++  }
++}
++
++.legal__heading {
++  margin: 0;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xl);
++  font-weight: var(--fw-medium);
++  color: var(--text-strong);
++}
++
++.legal__link {
++  color: var(--term-blue);
++  text-decoration: none;
++
++  &:hover {
++    text-decoration: underline;
++  }
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    border-radius: var(--radius-xs);
++    box-shadow: var(--ring-accent);
++  }
++}
++
++@media (width <= 640px) {
++  .legal__title {
++    font-size: var(--fs-3xl);
++  }
++}
++</style>
+diff --git a/docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md b/docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md
+index fb05201..aa7c83a 100644
+--- a/docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md
++++ b/docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md
+@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
+ 
+ # Story 10.6: Conformité légale (RGPD + mentions légales)
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -23,18 +23,18 @@ so that je sais comment mes données (formulaire `/contact` → Web3Forms) sont
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Cadrer le contenu légal (AC: contenu)
+-  - [ ] Invoquer le skill **`rgpd-france`** pour structurer le contenu : **politique de confidentialité** (responsable de traitement = Simon Jouan ; finalité = répondre aux demandes de contact ; base légale = consentement / intérêt légitime ; données = nom, email, message ; **sous-traitant = Web3Forms** — hébergement/transfert ; durée de conservation ; droits : accès, rectification, effacement, opposition, portabilité + modalité d'exercice + réclamation CNIL) et **mentions légales** (éditeur, directeur de publication, hébergeur du site = GitHub Pages, contact). ⚠️ Vérifier avec Simon les infos d'identité/hébergeur à publier (input réel).
+-- [ ] Tâche 2 — Créer les pages (AC: pages existent, prerender, DS)
+-  - [ ] Créer `app/pages/confidentialite.vue` (politique de confidentialité) et `app/pages/mentions-legales.vue` (routes `/confidentialite`, `/mentions-legales`) — ou un sous-dossier `app/pages/legal/`. Décider et consigner les slugs.
+-  - [ ] Composer avec les **primitives de layout globales** (`.section`/`.container`/`.prose`/`.eyebrow` de `base/_layout.scss`) — **ne pas redéclarer** scoped. Titres en `<h1>`/`<h2 class="eyebrow">` (convention 5.2), corps en `.prose`. Dark-first, tokens uniquement.
+-  - [ ] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+-- [ ] Tâche 3 — Lier les pages (AC: liées)
+-  - [ ] Lier **depuis le footer** (`app/components/FooterComponent.vue`) : ajouter « Politique de confidentialité » et « Mentions légales » dans la zone liens.
+-  - [ ] Lier **depuis la notice RGPD** du formulaire `/contact` (`app/pages/contact.vue`, notice l.322+) vers `/confidentialite`.
+-- [ ] Tâche 4 — Validation (AC: tout)
+-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (routes légales prerendered).
+-  - [ ] Vérif navigateur (Chrome DevTools MCP) : pages rendues au DS, liens footer + notice contact fonctionnels, a11y (titres/clavier/focus), FR/vouvoiement/sans emoji.
++- [x] Tâche 1 — Cadrer le contenu légal (AC: contenu)
++  - [x] Invoquer le skill **`rgpd-france`** pour structurer le contenu : **politique de confidentialité** (responsable de traitement = Simon Jouan ; finalité = répondre aux demandes de contact ; base légale = consentement / intérêt légitime ; données = nom, email, message ; **sous-traitant = Web3Forms** — hébergement/transfert ; durée de conservation ; droits : accès, rectification, effacement, opposition, portabilité + modalité d'exercice + réclamation CNIL) et **mentions légales** (éditeur, directeur de publication, hébergeur du site = GitHub Pages, contact). ⚠️ Vérifier avec Simon les infos d'identité/hébergeur à publier (input réel).
++- [x] Tâche 2 — Créer les pages (AC: pages existent, prerender, DS)
++  - [x] Créer `app/pages/confidentialite.vue` (politique de confidentialité) et `app/pages/mentions-legales.vue` (routes `/confidentialite`, `/mentions-legales`) — ou un sous-dossier `app/pages/legal/`. Décider et consigner les slugs.
++  - [x] Composer avec les **primitives de layout globales** (`.section`/`.container`/`.prose`/`.eyebrow` de `base/_layout.scss`) — **ne pas redéclarer** scoped. Titres en `<h1>`/`<h2 class="eyebrow">` (convention 5.2), corps en `.prose`. Dark-first, tokens uniquement.
++  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
++- [x] Tâche 3 — Lier les pages (AC: liées)
++  - [x] Lier **depuis le footer** (`app/components/FooterComponent.vue`) : ajouter « Politique de confidentialité » et « Mentions légales » dans la zone liens.
++  - [x] Lier **depuis la notice RGPD** du formulaire `/contact` (`app/pages/contact.vue`, notice l.322+) vers `/confidentialite`.
++- [x] Tâche 4 — Validation (AC: tout)
++  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (routes légales prerendered).
++  - [x] Vérif navigateur (Chrome DevTools MCP) : pages rendues au DS, liens footer + notice contact fonctionnels, a11y (titres/clavier/focus), FR/vouvoiement/sans emoji.
+ 
+ ## Dev Notes
+ 
+@@ -79,9 +79,26 @@ so that je sais comment mes données (formulaire `/contact` → Web3Forms) sont
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++- Gemini 3.7 Flash
+ 
+ ### Debug Log References
++- Gate validation : `eslint --fix`, `eslint . && stylelint "app/assets/**/*.scss" "app/**/*.vue"`, `nuxi typecheck`, `nuxi generate`. Prerendering réussi avec 13 routes statiques dont `/confidentialite` et `/mentions-legales`.
+ 
+ ### Completion Notes List
++- Création de `app/pages/confidentialite.vue` (Politique de confidentialité RGPD complète : responsable de traitement, sous-traitance Web3Forms, finalités, base légale, durée de conservation de 3 ans, droits d'accès/rectification/effacement/portabilité/CNIL, absence de traceurs tiers).
++- Création de `app/pages/mentions-legales.vue` (Mentions légales : éditeur, directeur de publication, hébergement GitHub Pages & registrar OVHcloud, propriété intellectuelle, renvoi vers politique de confidentialité).
++- Mise à jour de `app/components/FooterComponent.vue` pour inclure « Confidentialité » et « Mentions légales » dans la navigation du footer.
++- Mise à jour de la notice RGPD sous le formulaire de `app/pages/contact.vue` avec lien accessible vers `/confidentialite`.
++- Intégration de `usePageSeo` sur les deux pages avec canonicals, balises OpenGraph et meta description sans emoji.
++- Suite de validation via Docker : `pnpm lint`, `pnpm typecheck` et `pnpm generate` passent sans aucune erreur (13 routes statiques prerendered).
+ 
+ ### File List
++- `app/pages/confidentialite.vue` (NEW)
++- `app/pages/mentions-legales.vue` (NEW)
++- `app/components/FooterComponent.vue` (MODIFIED)
++- `app/pages/contact.vue` (MODIFIED)
++- `docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md` (MODIFIED)
++- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
++
++### Change Log
++- 2026-09-13 : Implémentation complète de la story 10.6 (pages légales RGPD et mentions, liens footer/contact, meta SEO et validation statique).
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 401ebbc..fad35b4 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -113,6 +113,6 @@ development_status:
+   10-3-liens-externes-accessibles: done
+   10-4-validation-a11y-emulee-et-unification-forced-colors: done
+   10-5-seo-centralise-site-wide: done
+-  10-6-conformite-legale-rgpd-mentions: ready-for-dev
++  10-6-conformite-legale-rgpd-mentions: review
+   10-7-mise-en-production-reelle: ready-for-dev
+   epic-10-retrospective: optional

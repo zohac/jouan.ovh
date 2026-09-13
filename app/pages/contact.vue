@@ -79,8 +79,9 @@
               </div>
 
               <p class="contact__rgpd">
-                En envoyant ce formulaire, vos nom, email et message sont transmis via Web3Forms à seule fin de traiter
-                votre demande.
+                En envoyant ce formulaire, vos nom, email, sujet et message sont transmis via Web3Forms à seule fin de
+                traiter votre demande. Consultez la
+                <NuxtLink to="/confidentialite" class="contact__rgpd-link">politique de confidentialité</NuxtLink>.
               </p>
             </form>
           </div>
@@ -356,6 +357,22 @@ usePageSeo({
   // Contraste (story 9.2) : notice légale = info réelle → --text-muted (≥ 4.5:1),
   // plus lisible que --text-faint. Reste discrète. Token, pas de couleur en dur.
   color: var(--text-muted);
+}
+
+.contact__rgpd-link {
+  color: var(--term-blue);
+  text-decoration: underline;
+
+  &:hover {
+    color: var(--accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+    box-shadow: var(--ring-accent);
+  }
 }
 
 // Carte « envoyé » focalisée par programme (tabindex -1) : pas de contour UA résiduel.

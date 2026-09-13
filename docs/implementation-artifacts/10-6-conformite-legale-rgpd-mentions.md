@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
 
 # Story 10.6: Conformité légale (RGPD + mentions légales)
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -23,18 +23,32 @@ so that je sais comment mes données (formulaire `/contact` → Web3Forms) sont 
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Cadrer le contenu légal (AC: contenu)
-  - [ ] Invoquer le skill **`rgpd-france`** pour structurer le contenu : **politique de confidentialité** (responsable de traitement = Simon Jouan ; finalité = répondre aux demandes de contact ; base légale = consentement / intérêt légitime ; données = nom, email, message ; **sous-traitant = Web3Forms** — hébergement/transfert ; durée de conservation ; droits : accès, rectification, effacement, opposition, portabilité + modalité d'exercice + réclamation CNIL) et **mentions légales** (éditeur, directeur de publication, hébergeur du site = GitHub Pages, contact). ⚠️ Vérifier avec Simon les infos d'identité/hébergeur à publier (input réel).
-- [ ] Tâche 2 — Créer les pages (AC: pages existent, prerender, DS)
-  - [ ] Créer `app/pages/confidentialite.vue` (politique de confidentialité) et `app/pages/mentions-legales.vue` (routes `/confidentialite`, `/mentions-legales`) — ou un sous-dossier `app/pages/legal/`. Décider et consigner les slugs.
-  - [ ] Composer avec les **primitives de layout globales** (`.section`/`.container`/`.prose`/`.eyebrow` de `base/_layout.scss`) — **ne pas redéclarer** scoped. Titres en `<h1>`/`<h2 class="eyebrow">` (convention 5.2), corps en `.prose`. Dark-first, tokens uniquement.
-  - [ ] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
-- [ ] Tâche 3 — Lier les pages (AC: liées)
-  - [ ] Lier **depuis le footer** (`app/components/FooterComponent.vue`) : ajouter « Politique de confidentialité » et « Mentions légales » dans la zone liens.
-  - [ ] Lier **depuis la notice RGPD** du formulaire `/contact` (`app/pages/contact.vue`, notice l.322+) vers `/confidentialite`.
-- [ ] Tâche 4 — Validation (AC: tout)
-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (routes légales prerendered).
-  - [ ] Vérif navigateur (Chrome DevTools MCP) : pages rendues au DS, liens footer + notice contact fonctionnels, a11y (titres/clavier/focus), FR/vouvoiement/sans emoji.
+- [x] Tâche 1 — Cadrer le contenu légal (AC: contenu)
+  - [x] Invoquer le skill **`rgpd-france`** pour structurer le contenu : **politique de confidentialité** (responsable de traitement = Simon Jouan ; finalité = répondre aux demandes de contact ; base légale = consentement / intérêt légitime ; données = nom, email, message ; **sous-traitant = Web3Forms** — hébergement/transfert ; durée de conservation ; droits : accès, rectification, effacement, opposition, portabilité + modalité d'exercice + réclamation CNIL) et **mentions légales** (éditeur, directeur de publication, hébergeur du site = GitHub Pages, contact). ⚠️ Vérifier avec Simon les infos d'identité/hébergeur à publier (input réel).
+- [x] Tâche 2 — Créer les pages (AC: pages existent, prerender, DS)
+  - [x] Créer `app/pages/confidentialite.vue` (politique de confidentialité) et `app/pages/mentions-legales.vue` (routes `/confidentialite`, `/mentions-legales`) — ou un sous-dossier `app/pages/legal/`. Décider et consigner les slugs.
+  - [x] Composer avec les **primitives de layout globales** (`.section`/`.container`/`.prose`/`.eyebrow` de `base/_layout.scss`) — **ne pas redéclarer** scoped. Titres en `<h1>`/`<h2 class="eyebrow">` (convention 5.2), corps en `.prose`. Dark-first, tokens uniquement.
+  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+- [x] Tâche 3 — Lier les pages (AC: liées)
+  - [x] Lier **depuis le footer** (`app/components/FooterComponent.vue`) : ajouter « Politique de confidentialité » et « Mentions légales » dans la zone liens.
+  - [x] Lier **depuis la notice RGPD** du formulaire `/contact` (`app/pages/contact.vue`, notice l.322+) vers `/confidentialite`.
+- [x] Tâche 4 — Validation (AC: tout)
+  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (routes légales prerendered).
+  - [x] Vérif navigateur (Chrome DevTools MCP) : pages rendues au DS, liens footer + notice contact fonctionnels, a11y (titres/clavier/focus), FR/vouvoiement/sans emoji.
+
+### Review Findings
+
+- [x] [Review][Decision] Validation des informations légales réelles pour l'éditeur — Résolu : Choix 1 (mention minimale nom/ville/email `simon@jouan.ovh`) + lien vers le profil Malt (`https://www.malt.fr/profile/simonjouan`).
+- [x] [Review][Patch] Informations légales éditeur et profil Malt [`app/pages/mentions-legales.vue:17-25`]
+- [x] [Review][Patch] Incohérence de la notice courte du formulaire `/contact` [`app/pages/contact.vue:82-84`]
+- [x] [Review][Patch] Voix éditoriale non conforme à NFR6 (1re personne « je ») [`app/pages/confidentialite.vue`, `app/pages/mentions-legales.vue`, `app/pages/contact.vue`]
+- [x] [Review][Patch] Respect du pattern DRY sur `SITE.profile` [`app/pages/confidentialite.vue:17-21`, `app/pages/mentions-legales.vue:18-23`]
+- [x] [Review][Patch] Accessibilité et stylisation des liens légaux et externes [`app/pages/confidentialite.vue`, `app/pages/mentions-legales.vue`]
+- [x] [Review][Patch] Précisions RGPD sur les finalités, sous-traitance et droits [`app/pages/confidentialite.vue:25-130`]
+- [x] [Review][Patch] Nettoyage des doublons dans le Dev Agent Record [`docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md:88-90`]
+- [x] [Review][Defer] Mutualisation des styles partagés `.legal__*` [`app/pages/confidentialite.vue`, `app/pages/mentions-legales.vue`] — deferred, pre-existing
+- [x] [Review][Defer] Domaine canonique staging par défaut en build local (`dev.jouan.ovh`) [`nuxt.config.ts:59`] — deferred, pre-existing (planifié en story 10.7)
+
 
 ## Dev Notes
 
@@ -79,9 +93,26 @@ so that je sais comment mes données (formulaire `/contact` → Web3Forms) sont 
 ## Dev Agent Record
 
 ### Agent Model Used
+- Gemini 3.7 Flash
 
 ### Debug Log References
+- Gate validation : `eslint --fix`, `eslint . && stylelint "app/assets/**/*.scss" "app/**/*.vue"`, `nuxi typecheck`, `nuxi generate`. Prerendering réussi avec 13 routes statiques dont `/confidentialite` et `/mentions-legales`.
 
 ### Completion Notes List
+- Création de `app/pages/confidentialite.vue` (Politique de confidentialité RGPD complète : responsable de traitement, sous-traitance Web3Forms, finalités, base légale, durée de conservation de 3 ans, droits d'accès/rectification/effacement/portabilité/CNIL, absence de traceurs tiers).
+- Création de `app/pages/mentions-legales.vue` (Mentions légales : éditeur, directeur de publication, hébergement GitHub Pages & registrar OVHcloud, propriété intellectuelle, renvoi vers politique de confidentialité).
+- Mise à jour de `app/components/FooterComponent.vue` pour inclure « Confidentialité » et « Mentions légales » dans la navigation du footer.
+- Mise à jour de la notice RGPD sous le formulaire de `app/pages/contact.vue` avec lien accessible vers `/confidentialite`.
+- Intégration de `usePageSeo` sur les deux pages avec canonicals, balises OpenGraph et meta description sans emoji.
+- Suite de validation via Docker : `pnpm lint`, `pnpm typecheck` et `pnpm generate` passent sans aucune erreur (13 routes statiques prerendered).
 
 ### File List
+- `app/pages/confidentialite.vue` (NEW)
+- `app/pages/mentions-legales.vue` (NEW)
+- `app/components/FooterComponent.vue` (MODIFIED)
+- `app/pages/contact.vue` (MODIFIED)
+- `docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md` (MODIFIED)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+
+### Change Log
+- 2026-09-13 : Implémentation complète de la story 10.6 (pages légales RGPD et mentions, liens footer/contact, meta SEO et validation statique).
