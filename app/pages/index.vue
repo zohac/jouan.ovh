@@ -44,17 +44,37 @@
       </div>
     </section>
 
-    <!-- Aperçu services (porté de ServicesPreview, Home.jsx) -->
+    <!-- Ruban défilant de la stack moderne (Story 11.3 / AC-1) -->
+    <HomeStackMarquee />
+
+    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
     <section class="section">
       <div class="container">
-        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je fais</p>
-        <h2 class="section__title">Trois façons de travailler ensemble</h2>
+        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
+        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
         <ul class="grid-3">
           <li v-for="service in services" :key="service.id">
             <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
-              <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+              <div class="offer__top">
+                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+                <span class="offer__no">{{ service.no }}</span>
+              </div>
               <h3 class="offer__title">{{ service.title }}</h3>
               <p class="offer__desc">{{ service.desc }}</p>
+              <ul class="offer__points">
+                <li v-for="point in service.points" :key="point">
+                  <ZIcon name="check" class="offer__check" />
+                  <span>{{ point }}</span>
+                </li>
+              </ul>
+              <ul class="hero__tags offer__tags">
+                <li v-for="tag in service.tags" :key="tag">
+                  <ZTag>{{ tag }}</ZTag>
+                </li>
+              </ul>
+              <div class="offer__price">
+                <span>{{ service.price }}</span>
+              </div>
               <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
                 En savoir plus →
               </NuxtLink>
@@ -116,29 +136,64 @@ function onBootComplete() {
   isBootFinished.value = true;
 }
 
-// Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
-// (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
-// `id` = clé v-for stable (indépendante du contenu affiché).
-const services = [
+interface HomeServiceOffer {
+  id: string;
+  no: string;
+  icon: "code" | "layers" | "spark";
+  title: string;
+  desc: string;
+  points: string[];
+  tags: string[];
+  price: string;
+  featured: boolean;
+}
+
+// Vitrine des 3 offres ciblées Full Stack TS (Story 11.3 / AC-2).
+// Remplacement complet des données legacy.
+const services: HomeServiceOffer[] = [
   {
-    id: "wordpress",
-    icon: "wp",
-    title: "WordPress sur-mesure",
-    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
+    id: "creation",
+    no: "01 / 03",
+    icon: "code",
+    title: "Création d'applications web & SaaS",
+    desc: "De l'idée à la production : architecture, développement front & back, base de données, authentification et paiements Stripe.",
+    points: [
+      "Architecture logicielle & APIs REST",
+      "Applications Vue 3 / Nuxt 4 & NestJS",
+      "Intégration Stripe & PostgreSQL",
+    ],
+    tags: ["Nuxt", "NestJS", "PostgreSQL", "Stripe Connect"],
+    price: "Sur devis / au sprint",
     featured: false,
   },
   {
-    id: "apps",
-    icon: "code",
-    title: "Applications web",
-    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
+    id: "fullstack",
+    no: "02 / 03",
+    icon: "layers",
+    title: "Développement Full Stack TypeScript",
+    desc: "Renfort d'équipe produit ou développement de modules complexes avec une stack moderne unifiée de bout en bout.",
+    points: [
+      "Composants Vue 3 / Nuxt avec TypeScript strict",
+      "Microservices & backend modulaire NestJS",
+      "Fiabilisation et optimisation des performances",
+    ],
+    tags: ["TypeScript", "Vue 3", "Nuxt", "NestJS", "Node.js"],
+    price: "Sur devis / TJM",
     featured: true,
   },
   {
-    id: "ia",
+    id: "evolution",
+    no: "03 / 03",
     icon: "spark",
-    title: "IA & automatisation",
-    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
+    title: "Évolution & Architecture applicative",
+    desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
+    points: [
+      "Audits techniques de code & migrations de versions",
+      "Tests E2E Cypress & tests unitaires Vitest",
+      "Pipelines CI/CD & conteneurisation Docker",
+    ],
+    tags: ["Cypress", "Vitest", "Docker", "CI/CD"],
+    price: "Au forfait / audit",
     featured: false,
   },
 ];
@@ -356,13 +411,19 @@ usePageSeo({
   width: 100%;
 }
 
+.offer__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
 .offer__icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: var(--space-10); // 40px
   height: var(--space-10);
-  margin-bottom: var(--space-4);
 
   // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
   // pas de token d'espacement à 22px (entre --space-5/20 et --space-6/24).
@@ -370,6 +431,13 @@ usePageSeo({
   color: var(--accent);
   background: var(--accent-soft);
   border-radius: var(--radius-md);
+}
+
+.offer__no {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wider);
+  color: var(--text-faint);
 }
 
 .offer__title {
@@ -388,8 +456,47 @@ usePageSeo({
   color: var(--text-body);
 }
 
-.offer__more {
+.offer__points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-normal);
+    color: var(--text-muted);
+  }
+}
+
+.offer__check {
+  flex-shrink: 0;
+  margin-top: calc(var(--space-1) / 2);
+  font-size: var(--fs-sm);
+  color: var(--term-green);
+}
+
+.offer__tags {
+  margin-bottom: var(--space-4);
+}
+
+.offer__price {
   margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
+.offer__more {
+  margin-top: var(--space-3);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   color: var(--accent);

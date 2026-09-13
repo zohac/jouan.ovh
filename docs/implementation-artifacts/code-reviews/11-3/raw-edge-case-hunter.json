@@ -1,0 +1,2069 @@
+Reading prompt from stdin...
+2026-09-13T18:51:09.037319Z ERROR codex_models_manager::cache: failed to load models cache: missing field `base_instructions` at line 133 column 5
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 01a09c1b-e7e5-7142-95f9-827923d75a2d
+--------
+user
+# Edge Case Hunter Prompt — Story 11.3
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/11-3/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’m using `bmad-review-edge-case-hunter` to mechanically enumerate unhandled branches in the specified diff.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.codex/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+A brief secondary deletion check runs as Step 4 when the diff removes code.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Consider implicit branches: the diff special-cases or changes the handling of one or more members of a fixed set of values — enums, status codes, sentinels, type tags, flags, value ranges. The rest of the set is implicit branches (e.g. the diff changes the `RED` and `YELLOW` cases of a `RED`/`YELLOW`/`GREEN` enum; `GREEN` is the implicit branch)
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Deletion Check
+
+If the diff removed or replaced meaningful code (ignore pure renames and whitespace): load `references/deletion-check.md` and follow it.
+
+### Step 5: Present Findings
+
+Output all findings as a single JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when nothing is found. Deletion findings from Step 4, if any, go in the same array with the extra fields defined in `references/deletion-check.md`.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.codex/skills/bmad-review-edge-case-hunter/references/deletion-check.md && printf '\\n--- DIFF ---\\n' && sed -n '1,260p' docs/implementation-artifacts/code-reviews/11-3/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+# Deletion Check
+
+Secondary pass for the Edge Case Hunter — runs only when the diff removed meaningful code. Subordinate to the edge-case pass; findings are usually few or none.
+
+For each chunk of removed or replaced code (ignore pure renames and whitespace), ask: did it carry behavior or a contract that the change neither re-established nor intentionally retired? Add a finding for any resulting regression, orphaned reference, or newly-dead code. Skip anything already covered by your edge-case findings.
+
+Append each finding to the same JSON array as the edge-case findings, with the four standard fields plus:
+
+- `kind`: `"deletion"`
+- `confidence`: `"high"`, `"medium"`, or `"low"` — these are inferences; rate them
+
+For a deletion finding the standard fields read as: `location` = the removed item; `trigger_condition` = the behavior or contract it enforced; `guard_snippet` = where or how to re-establish it; `potential_consequence` = the regression or orphan.
+
+Add nothing if nothing qualifies.
+
+--- DIFF ---
+diff --git a/app/components/home/HomeStackMarquee.vue b/app/components/home/HomeStackMarquee.vue
+new file mode 100644
+index 0000000..a65ef1e
+--- /dev/null
++++ b/app/components/home/HomeStackMarquee.vue
+@@ -0,0 +1,108 @@
++<template>
++  <div class="marquee" aria-hidden="true">
++    <div class="marquee__track">
++      <!-- Première passe -->
++      <span v-for="(skill, index) in skillsList" :key="`skill-a-${index}`" class="marquee__item">
++        <b class="marquee__label">{{ skill }}</b>
++        <span class="marquee__star" aria-hidden="true">✦</span>
++      </span>
++      <!-- Deuxième passe pour la boucle infinie CSS sans coupure -->
++      <span v-for="(skill, index) in skillsList" :key="`skill-b-${index}`" class="marquee__item">
++        <b class="marquee__label">{{ skill }}</b>
++        <span class="marquee__star" aria-hidden="true">✦</span>
++      </span>
++    </div>
++  </div>
++</template>
++
++<script setup lang="ts">
++// Ruban défilant continu de la stack moderne prioritaire (Story 11.3 / AC-1 / CAP-4).
++// Alimenté par SITE.skills (app/data/site.ts) avec mapping soigné des libellés.
++// Défilement continu pur CSS masqué aux lecteurs d'écran (aria-hidden="true").
++// Pause automatique au :hover et arrêt complet sous prefers-reduced-motion.
++import { computed } from "vue";
++import { SITE } from "~/data/site";
++
++const SKILL_LABEL_MAP: Record<string, string> = {
++  typescript: "TypeScript",
++  nuxt: "Nuxt 4",
++  vue: "Vue.js",
++  "nest.js": "NestJS",
++  "node.js": "Node.js",
++  postgresql: "PostgreSQL",
++  typeorm: "TypeORM",
++  stripe: "Stripe Connect",
++  cypress: "Cypress",
++  docker: "Docker",
++  "rest-api": "REST API",
++  vitest: "Vitest",
++};
++
++const skillsList = computed(() => {
++  return SITE.skills.map((skillKey) => SKILL_LABEL_MAP[skillKey] ?? skillKey);
++});
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern */
++.marquee {
++  display: block;
++  width: 100%;
++  padding-block: var(--space-5);
++  overflow: hidden;
++  border-block: 1px solid var(--border-subtle);
++  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
++
++  &:hover .marquee__track {
++    animation-play-state: paused;
++  }
++}
++
++.marquee__track {
++  display: flex;
++  gap: var(--space-8);
++  width: max-content;
++  will-change: transform;
++  animation: scroll-x 32s linear infinite;
++}
++
++.marquee__item {
++  display: inline-flex;
++  gap: var(--space-8);
++  align-items: center;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xl);
++  letter-spacing: var(--ls-wide);
++  color: var(--text-faint);
++  white-space: nowrap;
++}
++
++.marquee__label {
++  font-weight: var(--fw-regular);
++  color: var(--text-body);
++}
++
++.marquee__star {
++  color: var(--accent);
++}
++
++@keyframes scroll-x {
++  from {
++    transform: translateX(0);
++  }
++
++  to {
++    transform: translateX(-50%);
++  }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .marquee {
++    mask-image: none;
++  }
++
++  .marquee__track {
++    animation: none;
++  }
++}
++</style>
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index 07df568..eaedacd 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -44,17 +44,37 @@
+       </div>
+     </section>
+ 
+-    <!-- Aperçu services (porté de ServicesPreview, Home.jsx) -->
++    <!-- Ruban défilant de la stack moderne (Story 11.3 / AC-1) -->
++    <HomeStackMarquee />
++
++    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
+     <section class="section">
+       <div class="container">
+-        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je fais</p>
+-        <h2 class="section__title">Trois façons de travailler ensemble</h2>
++        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
++        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
+         <ul class="grid-3">
+           <li v-for="service in services" :key="service.id">
+             <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+-              <div class="offer__icon"><ZIcon :name="service.icon" /></div>
++              <div class="offer__top">
++                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
++                <span class="offer__no">{{ service.no }}</span>
++              </div>
+               <h3 class="offer__title">{{ service.title }}</h3>
+               <p class="offer__desc">{{ service.desc }}</p>
++              <ul class="offer__points">
++                <li v-for="point in service.points" :key="point">
++                  <ZIcon name="check" class="offer__check" />
++                  <span>{{ point }}</span>
++                </li>
++              </ul>
++              <ul class="hero__tags offer__tags">
++                <li v-for="tag in service.tags" :key="tag">
++                  <ZTag>{{ tag }}</ZTag>
++                </li>
++              </ul>
++              <div class="offer__price">
++                <span>{{ service.price }}</span>
++              </div>
+               <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+                 En savoir plus →
+               </NuxtLink>
+@@ -116,29 +136,52 @@ function onBootComplete() {
+   isBootFinished.value = true;
+ }
+ 
+-// Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
+-// (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
+-// `id` = clé v-for stable (indépendante du contenu affiché).
++// Vitrine des 3 offres ciblées Full Stack TS (Story 11.3 / AC-2).
++// Remplacement complet des données legacy.
+ const services = [
+   {
+-    id: "wordpress",
+-    icon: "wp",
+-    title: "WordPress sur-mesure",
+-    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
++    id: "creation",
++    no: "01 / 03",
++    icon: "code",
++    title: "Création d'applications web & SaaS",
++    desc: "De l'idée à la production : architecture, développement front & back, base de données, authentification et paiements Stripe.",
++    points: [
++      "Architecture logicielle & APIs REST",
++      "Applications Vue 3 / Nuxt 4 & NestJS",
++      "Intégration Stripe & PostgreSQL",
++    ],
++    tags: ["Nuxt", "NestJS", "PostgreSQL", "Stripe Connect"],
++    price: "Sur devis / au sprint",
+     featured: false,
+   },
+   {
+-    id: "apps",
+-    icon: "code",
+-    title: "Applications web",
+-    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
++    id: "fullstack",
++    no: "02 / 03",
++    icon: "layers",
++    title: "Développement Full Stack TypeScript",
++    desc: "Renfort d'équipe produit ou développement de modules complexes avec une stack moderne unifiée de bout en bout.",
++    points: [
++      "Composants Vue 3 / Nuxt avec TypeScript strict",
++      "Microservices & backend modulaire NestJS",
++      "Fiabilisation et optimisation des performances",
++    ],
++    tags: ["TypeScript", "Vue 3", "Nuxt", "NestJS", "Node.js"],
++    price: "Sur devis / TJM",
+     featured: true,
+   },
+   {
+-    id: "ia",
++    id: "evolution",
++    no: "03 / 03",
+     icon: "spark",
+-    title: "IA & automatisation",
+-    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
++    title: "Évolution & Architecture applicative",
++    desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
++    points: [
++      "Audits techniques de code & migrations de versions",
++      "Tests E2E Cypress & tests unitaires Vitest",
++      "Pipelines CI/CD & conteneurisation Docker",
++    ],
++    tags: ["Cypress", "Vitest", "Docker", "CI/CD"],
++    price: "Au forfait / audit",
+     featured: false,
+   },
+ ];
+@@ -356,13 +399,19 @@ usePageSeo({
+   width: 100%;
+ }
+ 
++.offer__top {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  margin-bottom: var(--space-4);
++}
++
+ .offer__icon {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: var(--space-10); // 40px
+   height: var(--space-10);
+-  margin-bottom: var(--space-4);
+ 
+   // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+   // pas de token d'espacement à 22px (entre --space-5/20 et --space-6/24).
+@@ -372,6 +421,13 @@ usePageSeo({
+   border-radius: var(--radius-md);
+ }
+ 
++.offer__no {
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  letter-spacing: var(--ls-wider);
++  color: var(--text-faint);
++}
++
+ .offer__title {
+
+exec
+/bin/zsh -lc "wc -l docs/implementation-artifacts/code-reviews/11-3/full.diff && sed -n '261,520p' docs/implementation-artifacts/code-reviews/11-3/full.diff && printf '\\n--- relevant source context ---\\n' && sed -n '1,260p' app/pages/index.vue && printf '\\n--- remaining styles ---\\n' && sed -n '260,520p' app/pages/index.vue" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     310 docs/implementation-artifacts/code-reviews/11-3/full.diff
+   margin-bottom: var(--space-2);
+   font-family: var(--font-mono);
+@@ -388,8 +444,46 @@ usePageSeo({
+   color: var(--text-body);
+ }
+ 
+-.offer__more {
++.offer__points {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-2);
++  margin: 0 0 var(--space-4);
++  padding: 0;
++  list-style: none;
++
++  li {
++    display: flex;
++    gap: var(--space-2);
++    align-items: flex-start;
++    font-family: var(--font-mono);
++    font-size: var(--fs-xs);
++    line-height: var(--lh-normal);
++    color: var(--text-muted);
++  }
++}
++
++.offer__check {
++  font-size: var(--fs-sm);
++  color: var(--term-green);
++  margin-top: 2px;
++}
++
++.offer__tags {
++  margin-bottom: var(--space-4);
++}
++
++.offer__price {
+   margin-top: auto;
++  padding-top: var(--space-4);
++  border-top: 1px dashed var(--border-subtle);
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  color: var(--accent);
++}
++
++.offer__more {
++  margin-top: var(--space-3);
+   font-family: var(--font-mono);
+   font-size: var(--fs-sm);
+   color: var(--accent);
+
+--- relevant source context ---
+<template>
+  <main class="home">
+    <ClientOnly>
+      <HomeBootOverlay @boot-complete="onBootComplete" />
+    </ClientOnly>
+    <HomeAtmosComponent />
+    <ZCustomCursor />
+
+    <section class="hero hero__grad">
+      <div class="hero__in container">
+        <div class="hero__grid">
+          <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
+          <div class="anim hero__text">
+            <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
+            <h1 class="hero__title">Développeur Full Stack TypeScript</h1>
+            <p class="hero__sub">
+              Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
+              l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
+            </p>
+
+            <div class="hero__badge-wrap">
+              <span class="hero__pulse-dot" aria-hidden="true" />
+              <span>Disponible pour missions freelance</span>
+              <template v-if="SITE.profile.maltUrl">
+                <span aria-hidden="true"> · </span>
+                <ZExternalLink :href="SITE.profile.maltUrl"> Profil Malt vérifié </ZExternalLink>
+              </template>
+            </div>
+
+            <div class="hero__cta">
+              <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+                Discuter de votre projet
+                <template #iconRight><ZIcon name="arrow" /></template>
+              </ZButton>
+              <ZButton :as="NuxtLink" to="/about" variant="secondary" size="lg"> Voir le parcours &amp; CV </ZButton>
+            </div>
+          </div>
+
+          <!-- Colonne droite : terminal hero cinétique -->
+          <div class="anim hero__term-col">
+            <HomeHeroTerminal :auto-start="isBootFinished" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ruban défilant de la stack moderne (Story 11.3 / AC-1) -->
+    <HomeStackMarquee />
+
+    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
+        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
+        <ul class="grid-3">
+          <li v-for="service in services" :key="service.id">
+            <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+              <div class="offer__top">
+                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+                <span class="offer__no">{{ service.no }}</span>
+              </div>
+              <h3 class="offer__title">{{ service.title }}</h3>
+              <p class="offer__desc">{{ service.desc }}</p>
+              <ul class="offer__points">
+                <li v-for="point in service.points" :key="point">
+                  <ZIcon name="check" class="offer__check" />
+                  <span>{{ point }}</span>
+                </li>
+              </ul>
+              <ul class="hero__tags offer__tags">
+                <li v-for="tag in service.tags" :key="tag">
+                  <ZTag>{{ tag }}</ZTag>
+                </li>
+              </ul>
+              <div class="offer__price">
+                <span>{{ service.price }}</span>
+              </div>
+              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+                En savoir plus →
+              </NuxtLink>
+            </ZCard>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Stats + projets sélectionnés — section en creux partagée (stories 3.2 / 3.3) -->
+    <section class="section section--sunken">
+      <div class="container">
+        <div class="statrow">
+          <div v-for="stat in stats" :key="stat.id" class="stat">
+            <b>{{ stat.value }}</b>
+            <span>{{ stat.label }}</span>
+          </div>
+        </div>
+
+        <h2 class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</h2>
+        <ul class="grid-2 projects">
+          <li v-for="project in projects" :key="project.name">
+            <ZCard
+              class="project"
+              :interactive="Boolean(project.url)"
+              :data-hot="Boolean(project.url) ? '' : undefined"
+              :as="project.url ? ZExternalLink : 'div'"
+              :href="project.url || undefined"
+              :rel="project.url ? 'noopener noreferrer' : undefined"
+            >
+              <div class="project__head">
+                <h3 class="project__name">{{ project.name }}</h3>
+                <span class="project__role">{{ project.role }}</span>
+              </div>
+              <p class="prose project__desc">{{ project.desc }}</p>
+              <ul class="hero__tags">
+                <li v-for="tag in project.tags" :key="tag">
+                  <ZTag>{{ tag }}</ZTag>
+                </li>
+              </ul>
+            </ZCard>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</template>
+
+<script setup lang="ts">
+// Page d'accueil — refonte Hero Full Stack TS & Terminal cinétique (Story 11.2).
+// Architecture multi-pages Nuxt 4, dark-first, accent orange.
+import { ref } from "vue";
+import { NuxtLink, ZExternalLink } from "#components";
+import { SITE } from "~/data/site";
+
+const isBootFinished = ref(false);
+
+function onBootComplete() {
+  isBootFinished.value = true;
+}
+
+// Vitrine des 3 offres ciblées Full Stack TS (Story 11.3 / AC-2).
+// Remplacement complet des données legacy.
+const services = [
+  {
+    id: "creation",
+    no: "01 / 03",
+    icon: "code",
+    title: "Création d'applications web & SaaS",
+    desc: "De l'idée à la production : architecture, développement front & back, base de données, authentification et paiements Stripe.",
+    points: [
+      "Architecture logicielle & APIs REST",
+      "Applications Vue 3 / Nuxt 4 & NestJS",
+      "Intégration Stripe & PostgreSQL",
+    ],
+    tags: ["Nuxt", "NestJS", "PostgreSQL", "Stripe Connect"],
+    price: "Sur devis / au sprint",
+    featured: false,
+  },
+  {
+    id: "fullstack",
+    no: "02 / 03",
+    icon: "layers",
+    title: "Développement Full Stack TypeScript",
+    desc: "Renfort d'équipe produit ou développement de modules complexes avec une stack moderne unifiée de bout en bout.",
+    points: [
+      "Composants Vue 3 / Nuxt avec TypeScript strict",
+      "Microservices & backend modulaire NestJS",
+      "Fiabilisation et optimisation des performances",
+    ],
+    tags: ["TypeScript", "Vue 3", "Nuxt", "NestJS", "Node.js"],
+    price: "Sur devis / TJM",
+    featured: true,
+  },
+  {
+    id: "evolution",
+    no: "03 / 03",
+    icon: "spark",
+    title: "Évolution & Architecture applicative",
+    desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
+    points: [
+      "Audits techniques de code & migrations de versions",
+      "Tests E2E Cypress & tests unitaires Vitest",
+      "Pipelines CI/CD & conteneurisation Docker",
+    ],
+    tags: ["Cypress", "Vitest", "Docker", "CI/CD"],
+    price: "Au forfait / audit",
+    featured: false,
+  },
+];
+
+// Chiffres clés (data.js `stats`) — texte exact (séparateur ·), pas d'emoji.
+const stats = [
+  { id: "stat-1", value: "8+", label: "ans dans la tech" },
+  { id: "stat-2", value: "3", label: "stacks maîtrisés" },
+  { id: "stat-3", value: "1", label: "SaaS fondé · keova.app" },
+];
+
+// Projets sélectionnés — source unique `app/data/site.ts`. Cartes rendues en liens externes.
+const projects = SITE.projects;
+
+const siteUrl = useSiteUrl();
+const homeJsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Simon Jouan — Développeur Full Stack TypeScript",
+    url: siteUrl,
+    description: SITE.profile.role,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: SITE.profile.name,
+    jobTitle: SITE.profile.role,
+    url: siteUrl,
+    image: `${siteUrl}/images/portrait.jpeg`,
+    email: SITE.profile.email,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: SITE.profile.city,
+      addressCountry: "FR",
+    },
+  },
+];
+
+usePageSeo({
+  title: "Simon Jouan — Développeur Full Stack TypeScript · Nuxt & NestJS",
+  description:
+    "Développeur Full Stack TypeScript freelance : création d'applications web et plateformes SaaS modernes avec Nuxt, NestJS et PostgreSQL.",
+  path: "/",
+  image: "/images/portrait.jpeg",
+  type: "website",
+  jsonLd: homeJsonLd,
+});
+</script>
+
+<style lang="scss" scoped>
+/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis kit.css / Home.jsx */
+.home {
+  display: block;
+}
+
+// Entrée one-shot (pas une boucle) — keyframe globale fade-rise (_root.scss).
+.anim {
+  animation: fade-rise var(--dur-slow) var(--ease-out) both;
+}
+
+.hero__term-col {
+  // Décalage d'entrée fidèle à Home.jsx (animationDelay 80ms) — pas de token motion
+  // équivalent (les --dur-* couvrent les transitions, pas les délais d'orchestration).
+  animation-delay: 80ms;
+}
+
+// ---- Hero (porté de kit.css : .hero, .hero__grad, .hero__in, .hero__grid…) ----
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__grad {
+  // Dégradés décoratifs dérivés des tokens (orange accent + aubergine saturé) via
+  // color-mix — pas de valeur HSL en dur. Base = fond de page. Fidèle à kit.css
+
+--- remaining styles ---
+  // color-mix — pas de valeur HSL en dur. Base = fond de page. Fidèle à kit.css
+  // (.hero__grad : aubergine ~60 % de saturation → token --aubergine-vivid).
+  background:
+    radial-gradient(900px 500px at 78% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
+    radial-gradient(
+      700px 500px at 0% 110%,
+      color-mix(in srgb, var(--aubergine-vivid) 28%, transparent),
+      transparent 60%
+    ),
+    var(--bg-page);
+}
+
+.hero__in {
+  position: relative;
+  z-index: 1;
+
+  // padding-block uniquement : le gutter horizontal vient de .container
+  // (longhands distincts → pas de conflit de shorthand entre les deux classes).
+  padding-block: var(--space-20);
+}
+
+.hero__grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+// .section / .container / .eyebrow / .prose : primitives de layout globales
+// (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+
+// ---- Colonne texte ----
+.hero__title {
+  font-family: var(--font-mono);
+  font-size: var(--fs-6xl);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-tight);
+  color: var(--text-strong);
+
+  em {
+    font-style: normal;
+    color: var(--accent);
+  }
+}
+
+.hero__sub {
+  max-width: 46ch;
+  margin: var(--space-5) 0 var(--space-6);
+  font-family: var(--font-sans);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+// ---- Badge de disponibilité & CTAs ----
+.hero__badge-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+
+  a {
+    color: var(--accent);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--accent-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      box-shadow: var(--ring-accent);
+    }
+  }
+}
+
+.hero__pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-circle);
+  background: var(--success);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 60%, transparent);
+  animation: pulse-dot 2.2s infinite var(--ease-out);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 60%, transparent);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--success) 0%, transparent);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 0%, transparent);
+  }
+}
+
+.section__title {
+  margin-bottom: var(--space-8);
+  font-family: var(--font-mono);
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+// ---- Aperçu services (porté de .grid-3 / .offer*) ----
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+  }
+}
+
+.offer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.offer__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.offer__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-10); // 40px
+  height: var(--space-10);
+
+  // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+  // pas de token d'espacement à 22px (entre --space-5/20 et --space-6/24).
+  font-size: 22px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-md);
+}
+
+.offer__no {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wider);
+  color: var(--text-faint);
+}
+
+.offer__title {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+.offer__desc {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+.offer__points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-normal);
+    color: var(--text-muted);
+  }
+}
+
+.offer__check {
+  font-size: var(--fs-sm);
+  color: var(--term-green);
+  margin-top: 2px;
+}
+
+.offer__tags {
+  margin-bottom: var(--space-4);
+}
+
+.offer__price {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
+.offer__more {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--accent);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    // Outline transparent : rendu en couleur système sous forced-colors.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--ring-accent);
+    border-radius: var(--radius-xs);
+  }
+}
+
+// ---- Stats (porté de .statrow / .stat) ----
+.statrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+
+  // Espace avant le bloc projets (story 3.3), réf. Home.jsx (statrow marginBottom).
+  margin-bottom: var(--space-12);
+}
+
+.stat {
+  font-family: var(--font-mono);
+
+  b {
+    display: block;
+    font-size: var(--fs-4xl);
+
+codex
+The diff is a new marquee plus a replacement services dataset/rendering; I’m checking referenced contracts and deletion behavior before emitting findings.
+exec
+/bin/zsh -lc "sed -n '1,240p' app/data/site.ts && printf '\\n--- icon implementation/references ---\\n' && rg -n 'layers|name=\"(code|spark|wp|check)\"|ZIcon' app/components app/pages app | head -160 && printf '\\n--- card/tag contracts ---\\n' && sed -n '1,260p' app/components/ui/ZCard.vue && sed -n '1,180p' app/components/ui/ZIcon.vue && sed -n '1,160p' app/components/ui/ZTag.vue" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+// Source de vérité unique du CONTENU partagé du site (DRY / SRP : les données vivent ici,
+// les composants/programmes ne font que les présenter). Forme portée de
+// `docs/design_system/ui_kits/jouan-site/data.js` (référence du UI kit).
+//
+// Consommé par : pages (`index.vue`, `about.vue`, `contact.vue`), `FooterComponent.vue`,
+// et les programmes terminal (`programs/Skills|Projets|Contact|About.ts`).
+//
+// NB : `experiences` / `degrees` ne sont PAS centralisés ici — leurs formes et leur niveau
+// de détail divergent volontairement entre le CV terminal (`About.ts`, détaillé) et la page
+// `/about` (condensée). Leur réconciliation est une décision de contenu, suivie dans
+// `deferred-work.md`, pas un simple refactor.
+
+export interface IProfile {
+  name: string;
+  role: string;
+  email: string;
+  city: string;
+  available: boolean;
+  maltUrl?: string;
+}
+
+export interface IProject {
+  name: string;
+  role: string;
+  desc: string;
+  url?: string;
+  status?: string;
+  tags: string[];
+}
+
+const profile: IProfile = {
+  name: "Simon Jouan",
+  role: "Développeur Full Stack TypeScript — Nuxt / NestJS",
+  email: "simon@jouan.ovh",
+  city: "Rouen, France",
+  available: true,
+  maltUrl: "https://www.malt.fr/profile/simonjouan",
+};
+
+// Stack technique moderne prioritaire ordonnée.
+const skills: string[] = [
+  "typescript",
+  "nuxt",
+  "vue",
+  "nest.js",
+  "node.js",
+  "postgresql",
+  "typeorm",
+  "stripe",
+  "cypress",
+  "docker",
+  "rest-api",
+  "vitest",
+];
+
+const projects: IProject[] = [
+  {
+    name: "keova.app",
+    role: "Co-fondateur & Développeur Full Stack",
+    desc: "Plateforme SaaS ERP équestre complète conçue et opérée de bout en bout (gestion de pensions, facturation automatisée, réservations).",
+    url: "https://keova.app",
+    status: "En production",
+    tags: ["nuxt", "nest.js", "postgresql", "stripe", "saas"],
+  },
+  {
+    name: "TryOn",
+    role: "CTO & Développeur Full Stack",
+    desc: "Plateforme SaaS B2B d'essayage virtuel de vêtements via l'IA générative (diffusion models, microservices asynchrones, files Redis).",
+    status: "Étude de cas (MVP livré)",
+    tags: ["nuxt", "nest.js", "python", "comfyui", "ia"],
+  },
+  {
+    name: "Nodium",
+    role: "Créateur & Ingénieur IA",
+    desc: "Plateforme desktop d'orchestration d'agents IA autonomes, gestion de permissions et mémoire contextuelle.",
+    status: "R&D / En cours",
+    tags: ["typescript", "electron", "agents", "ia"],
+  },
+];
+
+export const SITE = { profile, skills, projects } as const;
+
+--- icon implementation/references ---
+app/pages/about.vue:15:              <ZIcon name="pin" class="about__pin" />
+app/pages/about.vue:15:              <ZIcon name="pin" class="about__pin" />
+app/components/HeaderComponent.vue:5:        <ZIcon name="gem" class="hdr__logo" />
+app/components/HeaderComponent.vue:26:          <template #icon><ZIcon name="terminal" /></template>
+app/components/HeaderComponent.vue:42:          <ZIcon :name="menuOpen ? 'arrow' : 'layers'" />
+app/components/HeaderComponent.vue:65:          <template #icon><ZIcon name="terminal" /></template>
+app/components/LinkListComponent.vue:5:        <template #icon><ZIcon :name="social.icon" /></template>
+app/components/LinkListComponent.vue:13:// Rangée d'hexagones sociaux (footer / contact). Glyphes centralisés via ZIcon (story 2.7).
+app/pages/blog/[...slug].vue:50:              <template #iconRight><ZIcon name="arrow" /></template>
+app/pages/blog/[...slug].vue:50:              <template #iconRight><ZIcon name="arrow" /></template>
+app/components/FooterComponent.vue:7:            <ZIcon name="gem" class="ftr__logo" />
+app/pages/services.vue:19:              <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+app/pages/services.vue:62:            <template #iconRight><ZIcon name="arrow" /></template>
+app/pages/services.vue:79:  /** Nom d'icône dans le set ZIcon (story 2.7). */
+app/pages/services.vue:234:  // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+app/pages/services.vue:19:              <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+app/pages/services.vue:62:            <template #iconRight><ZIcon name="arrow" /></template>
+app/pages/services.vue:79:  /** Nom d'icône dans le set ZIcon (story 2.7). */
+app/pages/services.vue:234:  // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+app/components/HexagonLinkComponent.vue:10:// Hexagone via clip-path (cf. kit.css .hex) ; glyphe en currentColor (ZIcon, story 2.7).
+app/components/HexagonLinkComponent.vue:25:  font-size: 20px; // dimensionne le glyphe ZIcon (1em)
+app/pages/contact.vue:77:                  <template #iconRight><ZIcon name="arrow" /></template>
+app/pages/contact.vue:122:                <template #icon><ZIcon name="terminal" /></template>
+app/pages/contact.vue:77:                  <template #iconRight><ZIcon name="arrow" /></template>
+app/pages/contact.vue:122:                <template #icon><ZIcon name="terminal" /></template>
+app/pages/index.vue:33:                <template #iconRight><ZIcon name="arrow" /></template>
+app/pages/index.vue:59:                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+app/pages/index.vue:66:                  <ZIcon name="check" class="offer__check" />
+app/pages/index.vue:160:    icon: "layers",
+app/pages/index.vue:416:  // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+app/pages/index.vue:33:                <template #iconRight><ZIcon name="arrow" /></template>
+app/pages/index.vue:59:                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+app/pages/index.vue:66:                  <ZIcon name="check" class="offer__check" />
+app/pages/index.vue:160:    icon: "layers",
+app/pages/index.vue:416:  // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+app/components/home/HomeBootOverlay.vue:12:        <ZIcon name="gem" class="boot__logo-icon" />
+app/components/HeaderComponent.vue:5:        <ZIcon name="gem" class="hdr__logo" />
+app/components/HeaderComponent.vue:26:          <template #icon><ZIcon name="terminal" /></template>
+app/components/HeaderComponent.vue:42:          <ZIcon :name="menuOpen ? 'arrow' : 'layers'" />
+app/components/HeaderComponent.vue:65:          <template #icon><ZIcon name="terminal" /></template>
+app/components/LinkListComponent.vue:5:        <template #icon><ZIcon :name="social.icon" /></template>
+app/components/LinkListComponent.vue:13:// Rangée d'hexagones sociaux (footer / contact). Glyphes centralisés via ZIcon (story 2.7).
+app/components/ui/ZIcon.vue:35:  layers: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+app/components/FooterComponent.vue:7:            <ZIcon name="gem" class="ftr__logo" />
+app/components/HexagonLinkComponent.vue:10:// Hexagone via clip-path (cf. kit.css .hex) ; glyphe en currentColor (ZIcon, story 2.7).
+app/components/HexagonLinkComponent.vue:25:  font-size: 20px; // dimensionne le glyphe ZIcon (1em)
+app/components/ui/ZIcon.vue:35:  layers: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+app/components/home/HomeBootOverlay.vue:12:        <ZIcon name="gem" class="boot__logo-icon" />
+
+--- card/tag contracts ---
+<template>
+  <component
+    :is="as"
+    v-bind="rootAttrs"
+    class="zcard"
+    :class="{
+      'zcard--pad': padded,
+      'zcard--interactive': interactive,
+      'zcard--accent': accent,
+      'zcard--featured': featured,
+    }"
+  >
+    <slot />
+  </component>
+</template>
+
+<script setup lang="ts">
+// Primitive carte du DS — surface discrète, le contenu est le héros.
+// Portée de docs/design_system/components/core/Card.jsx (pas de copie JS :
+// le CSS d'injection `ensureStyles()` devient un <style scoped> token-only).
+import type { Component } from "vue";
+import { computed, useAttrs } from "vue";
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+interface Props {
+  /** Hover lift + bordure plus claire. @default false */
+  interactive?: boolean;
+  /** Barre d'accent orange→aubergine en haut. @default false */
+  accent?: boolean;
+  /** Anneau de glow orange (offre mise en avant). @default false */
+  featured?: boolean;
+  /** Padding interne `--space-6`. @default true */
+  padded?: boolean;
+  /** Élément rendu (polymorphe). @default "div" */
+  as?: string | Component;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  interactive: false,
+  accent: false,
+  featured: false,
+  padded: true,
+  as: "div",
+});
+
+const attrs = useAttrs();
+// `as` accepte une balise native ("div", "article") ou une référence de composant
+// (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.
+const isNativeButton = computed(() => props.as === "button");
+const rootAttrs = computed(() => {
+  if (!isNativeButton.value) {
+    return attrs;
+  }
+
+  return {
+    ...attrs,
+    type: typeof attrs.type === "string" ? attrs.type : "button",
+  };
+});
+</script>
+
+<style lang="scss" scoped>
+/* stylelint-disable selector-class-pattern -- convention DS BEM (block--modifier) portée depuis Card.jsx */
+.zcard {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-card);
+  color: var(--text-body);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2), var(--shadow-hairline);
+  transition:
+    border-color var(--dur-base) var(--ease-standard),
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-standard);
+}
+
+.zcard--pad {
+  padding: var(--space-6);
+}
+
+.zcard--interactive {
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-3), var(--shadow-hairline);
+  }
+
+  // Focus clavier : anneau d'accent visible. Quand la carte est rendue en lien
+  // (`as="a"`, ex. cartes projet story 3.3), elle est focusable — sans cette règle,
+  // aucun indicateur. Sans effet sur les cartes non focusables (div).
+  &:focus-visible {
+    // Outline transparent → rendu en couleur système sous forced-colors (où les
+    // box-shadow disparaissent) ; le ring box-shadow reste le focus visuel normal.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--ring-accent);
+  }
+}
+
+.zcard--accent::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--aubergine-light));
+}
+
+.zcard--featured {
+  // Bordure orange translucide de mise en avant : --accent-ring (token le plus proche
+  // de la réf. hsl(24 94% 53% / 0.35), même teinte accent en translucide).
+  border-color: var(--accent-ring);
+  box-shadow: var(--glow-accent), var(--shadow-hairline);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zcard {
+    transition: none;
+  }
+
+  .zcard--interactive:hover {
+    transform: none;
+  }
+}
+</style>
+<template>
+  <!-- eslint-disable vue/no-v-html -->
+  <svg
+    class="zicon"
+    :viewBox="def.box"
+    :fill="def.fill ? 'currentColor' : 'none'"
+    :stroke="def.fill ? undefined : 'currentColor'"
+    :stroke-width="def.fill ? undefined : 2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    :role="label ? 'img' : undefined"
+    :aria-label="label || undefined"
+    :aria-hidden="label ? undefined : 'true'"
+    v-html="def.body"
+  />
+  <!-- eslint-enable vue/no-v-html -->
+</template>
+
+<script setup lang="ts">
+// Système d'icônes du DS — SVG inline, `currentColor` (héritent de la couleur du texte),
+// taille en `em`. Choix prerender-safe : set inline (pas de script Lucide CDN qui muterait
+// le DOM client et laisserait un trou au `nuxi generate`). Aucune police d'icône (AC #2).
+// Icônes au trait = style Lucide ; glyphes de marque (github/twitter/linkedin/wp) + logo
+// diamant (gem) = fill. Porté de docs/design_system/ui_kits/jouan-site/icons.jsx.
+// Le `v-html` du template injecte uniquement ces chaînes internes statiques.
+import { computed } from "vue";
+
+type IconDef = { box: string; fill: boolean; body: string };
+
+// Icônes au trait (viewBox 24, stroke currentColor).
+const STROKE: Record<string, string> = {
+  arrow: '<path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>',
+  terminal: '<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>',
+  code: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+  layers: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+  bot: '<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 4v4"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M2 14h2M20 14h2"/>',
+  spark:
+    '<path d="M12 3l1.8 5.6L19.5 10l-5.7 1.4L12 17l-1.8-5.6L4.5 10l5.7-1.4z"/><path d="M19 15l.7 2.1L22 18l-2.3.9L19 21l-.7-2.1L16 18l2.3-.9z"/>',
+  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/>',
+  pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+};
+
+// Glyphes de marque (fill currentColor). viewBox 16 pour les réseaux, 24 pour wp/gem.
+const GITHUB =
+  '<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>';
+const TWITTER =
+  '<path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/>';
+const LINKEDIN =
+  '<path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>';
+const WP =
+  '<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 1.5a8.5 8.5 0 0 1 4.9 1.55h-.34c-.62 0-1.06.54-1.06 1.12 0 .52.3.96.62 1.48.24.42.52.96.52 1.74 0 .54-.2 1.18-.48 2.06l-.64 2.12-2.3-6.84c.38-.02.72-.06.72-.06.34-.04.3-.54-.04-.52 0 0-1.02.08-1.68.08-.62 0-1.66-.08-1.66-.08-.34-.02-.38.5-.04.52 0 0 .32.04.66.06l.96 2.62-1.34 4.02L7.2 7.34c.38-.02.72-.06.72-.06.34-.04.3-.54-.04-.52 0 0-1.02.08-1.68.08-.12 0-.26 0-.4-.01A8.5 8.5 0 0 1 12 3.5zM3.6 8.7l3.7 10.16A8.5 8.5 0 0 1 3.6 8.7zm8.76 3.18 2.34 6.4c.02.04.04.08.06.1a8.5 8.5 0 0 1-5.04.16l2.64-6.66zm5.96-3.4a8.5 8.5 0 0 1-2.16 9.42l2.58-7.46c.24-.6.4-1.18.48-1.7l.06.04c.24.46.42 1.02.42 1.64 0 .8-.16 1.7-.62 2.86z"/>';
+
+// Logo diamant (gem) : carré pivoté en currentColor + facette haute éclairée
+// (overlay blanc très léger, esprit "lit from above" du logo de marque).
+const GEM =
+  '<path d="M12 1.5 22.5 12 12 22.5 1.5 12z" fill="currentColor"/>' +
+  '<path d="M12 1.5 22.5 12 12 12z" fill="#fff" fill-opacity="0.12"/>';
+
+const ICONS: Record<string, IconDef> = {
+  ...Object.fromEntries(Object.entries(STROKE).map(([k, body]) => [k, { box: "0 0 24 24", fill: false, body }])),
+  github: { box: "0 0 16 16", fill: true, body: GITHUB },
+  x: { box: "0 0 16 16", fill: true, body: TWITTER },
+  twitter: { box: "0 0 16 16", fill: true, body: TWITTER },
+  linkedin: { box: "0 0 16 16", fill: true, body: LINKEDIN },
+  wp: { box: "0 0 24 24", fill: true, body: WP },
+  gem: { box: "0 0 24 24", fill: true, body: GEM },
+};
+
+const EMPTY: IconDef = { box: "0 0 24 24", fill: false, body: "" };
+
+interface Props {
+  /** Nom de l'icône dans le set (arrow, terminal, github, gem…). */
+  name: string;
+  /** Libellé accessible : si fourni, l'icône devient `role="img"` ; sinon décorative (`aria-hidden`). */
+  label?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  label: undefined,
+});
+
+const def = computed<IconDef>(() => ICONS[props.name] ?? EMPTY);
+</script>
+
+<style scoped>
+.zicon {
+  display: inline-block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+}
+</style>
+<template>
+  <span
+    v-bind="rootAttrs"
+    class="ztag"
+    :class="{ 'ztag--plain': !hash, 'ztag--clickable': isClickable }"
+    :role="clickableRole"
+    :tabindex="clickableTabindex"
+    @click="handleClick"
+    @keydown.enter="handleKeyboardClick"
+    @keydown.space="handleKeyboardClick"
+  >
+    <slot />
+    <button v-if="isRemovable" type="button" class="ztag__remove" aria-label="Retirer" @click.stop="handleRemove">
+      ×
+    </button>
+  </span>
+</template>
+
+<script setup lang="ts">
+// Primitive tag du DS — chip pill mono avec préfixe "#" orange (techno / sujets).
+// Porté de docs/design_system/components/core/Tag.jsx (CSS en <style scoped>, prerender-safe).
+// API React → Vue : `onRemove`/`onClick` (callbacks React) deviennent des listeners
+// détectés via les attrs (le `×` et l'état cliquable n'apparaissent que si fournis).
+import { computed, getCurrentInstance, useAttrs } from "vue";
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+interface Props {
+  /** Affiche le préfixe "#". @default true */
+  hash?: boolean;
+}
+
+withDefaults(defineProps<Props>(), {
+  hash: true,
+});
+
+const emit = defineEmits<{
+  click: [event: MouseEvent | KeyboardEvent];
+  remove: [event: MouseEvent];
+}>();
+
+const attrs = useAttrs();
+const instance = getCurrentInstance();
+
+function hasListener(name: "onClick" | "onRemove") {
+  const listener = instance?.vnode.props?.[name];
+  return typeof listener === "function" || Array.isArray(listener);
+}
+
+const isClickable = computed(() => hasListener("onClick"));
+const isRemovable = computed(() => hasListener("onRemove"));
+
+const rootAttrs = computed(() => {
+  if (!isClickable.value) {
+    return attrs;
+  }
+
+  return Object.fromEntries(
+    Object.entries(attrs).filter(([key]) => {
+      return key !== "role" && key !== "tabindex" && key !== "tabIndex";
+    }),
+  );
+});
+
+const clickableRole = computed(() => {
+  if (!isClickable.value) {
+    return undefined;
+  }
+
+  return typeof attrs.role === "string" ? attrs.role : "button";
+});
+
+const clickableTabindex = computed(() => {
+  if (!isClickable.value) {
+    return undefined;
+  }
+
+  const tabindex = attrs.tabindex ?? attrs.tabIndex;
+  return typeof tabindex === "string" || typeof tabindex === "number" ? tabindex : 0;
+});
+
+function handleClick(event: MouseEvent) {
+  if (!isClickable.value) {
+    return;
+  }
+
+  emit("click", event);
+}
+
+function handleKeyboardClick(event: KeyboardEvent) {
+  if (!isClickable.value) {
+    return;
+  }
+
+  event.preventDefault();
+  emit("click", event);
+}
+
+function handleRemove(event: MouseEvent) {
+  emit("remove", event);
+}
+</script>
+
+<style lang="scss" scoped>
+/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis Tag.jsx */
+.ztag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--text-body);
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+
+  &::before {
+    content: "#";
+    color: var(--accent);
+  }
+}
+
+.ztag--plain::before {
+  display: none;
+  content: none;
+}
+
+.ztag--clickable {
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--border-strong);
+    color: var(--text-strong);
+  }
+
+  &:focus-visible {
+    // Outline transparent → couleur système sous forced-colors (box-shadow neutralisée).
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--ring-accent);
+  }
+}
+
+.ztag__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+
+2026-09-13T18:51:39.148081Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 132 column 5
+exec
+/bin/zsh -lc "rg -n -C 5 'hero__tags|grid-3|@media.*(max|small)|offer' app/assets/scss/base app/pages/index.vue | head -260 && printf '\\n--- diff with line numbers ---\\n' && nl -ba docs/implementation-artifacts/code-reviews/11-3/full.diff | sed -n '1,340p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+app/pages/index.vue-50-    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
+app/pages/index.vue-51-    <section class="section">
+app/pages/index.vue-52-      <div class="container">
+app/pages/index.vue-53-        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
+app/pages/index.vue-54-        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
+app/pages/index.vue:55:        <ul class="grid-3">
+app/pages/index.vue-56-          <li v-for="service in services" :key="service.id">
+app/pages/index.vue:57:            <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+app/pages/index.vue:58:              <div class="offer__top">
+app/pages/index.vue:59:                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+app/pages/index.vue:60:                <span class="offer__no">{{ service.no }}</span>
+app/pages/index.vue-61-              </div>
+app/pages/index.vue:62:              <h3 class="offer__title">{{ service.title }}</h3>
+app/pages/index.vue:63:              <p class="offer__desc">{{ service.desc }}</p>
+app/pages/index.vue:64:              <ul class="offer__points">
+app/pages/index.vue-65-                <li v-for="point in service.points" :key="point">
+app/pages/index.vue:66:                  <ZIcon name="check" class="offer__check" />
+app/pages/index.vue-67-                  <span>{{ point }}</span>
+app/pages/index.vue-68-                </li>
+app/pages/index.vue-69-              </ul>
+app/pages/index.vue:70:              <ul class="hero__tags offer__tags">
+app/pages/index.vue-71-                <li v-for="tag in service.tags" :key="tag">
+app/pages/index.vue-72-                  <ZTag>{{ tag }}</ZTag>
+app/pages/index.vue-73-                </li>
+app/pages/index.vue-74-              </ul>
+app/pages/index.vue:75:              <div class="offer__price">
+app/pages/index.vue-76-                <span>{{ service.price }}</span>
+app/pages/index.vue-77-              </div>
+app/pages/index.vue:78:              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+app/pages/index.vue-79-                En savoir plus →
+app/pages/index.vue-80-              </NuxtLink>
+app/pages/index.vue-81-            </ZCard>
+app/pages/index.vue-82-          </li>
+app/pages/index.vue-83-        </ul>
+--
+app/pages/index.vue-108-              <div class="project__head">
+app/pages/index.vue-109-                <h3 class="project__name">{{ project.name }}</h3>
+app/pages/index.vue-110-                <span class="project__role">{{ project.role }}</span>
+app/pages/index.vue-111-              </div>
+app/pages/index.vue-112-              <p class="prose project__desc">{{ project.desc }}</p>
+app/pages/index.vue:113:              <ul class="hero__tags">
+app/pages/index.vue-114-                <li v-for="tag in project.tags" :key="tag">
+app/pages/index.vue-115-                  <ZTag>{{ tag }}</ZTag>
+app/pages/index.vue-116-                </li>
+app/pages/index.vue-117-              </ul>
+app/pages/index.vue-118-            </ZCard>
+--
+app/pages/index.vue-377-  font-size: var(--fs-3xl);
+app/pages/index.vue-378-  font-weight: var(--fw-regular);
+app/pages/index.vue-379-  color: var(--text-strong);
+app/pages/index.vue-380-}
+app/pages/index.vue-381-
+app/pages/index.vue:382:// ---- Aperçu services (porté de .grid-3 / .offer*) ----
+app/pages/index.vue:383:.grid-3 {
+app/pages/index.vue-384-  display: grid;
+app/pages/index.vue-385-  grid-template-columns: repeat(3, 1fr);
+app/pages/index.vue-386-  gap: var(--space-5);
+app/pages/index.vue-387-  margin: 0;
+app/pages/index.vue-388-  padding: 0;
+--
+app/pages/index.vue-391-  > li {
+app/pages/index.vue-392-    display: flex;
+app/pages/index.vue-393-  }
+app/pages/index.vue-394-}
+app/pages/index.vue-395-
+app/pages/index.vue:396:.offer {
+app/pages/index.vue-397-  display: flex;
+app/pages/index.vue-398-  flex-direction: column;
+app/pages/index.vue-399-  width: 100%;
+app/pages/index.vue-400-}
+app/pages/index.vue-401-
+app/pages/index.vue:402:.offer__top {
+app/pages/index.vue-403-  display: flex;
+app/pages/index.vue-404-  align-items: center;
+app/pages/index.vue-405-  justify-content: space-between;
+app/pages/index.vue-406-  margin-bottom: var(--space-4);
+app/pages/index.vue-407-}
+app/pages/index.vue-408-
+app/pages/index.vue:409:.offer__icon {
+app/pages/index.vue-410-  display: flex;
+app/pages/index.vue-411-  align-items: center;
+app/pages/index.vue-412-  justify-content: center;
+app/pages/index.vue-413-  width: var(--space-10); // 40px
+app/pages/index.vue-414-  height: var(--space-10);
+app/pages/index.vue-415-
+app/pages/index.vue:416:  // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+app/pages/index.vue-417-  // pas de token d'espacement à 22px (entre --space-5/20 et --space-6/24).
+app/pages/index.vue-418-  font-size: 22px;
+app/pages/index.vue-419-  color: var(--accent);
+app/pages/index.vue-420-  background: var(--accent-soft);
+app/pages/index.vue-421-  border-radius: var(--radius-md);
+app/pages/index.vue-422-}
+app/pages/index.vue-423-
+app/pages/index.vue:424:.offer__no {
+app/pages/index.vue-425-  font-family: var(--font-mono);
+app/pages/index.vue-426-  font-size: var(--fs-xs);
+app/pages/index.vue-427-  letter-spacing: var(--ls-wider);
+app/pages/index.vue-428-  color: var(--text-faint);
+app/pages/index.vue-429-}
+app/pages/index.vue-430-
+app/pages/index.vue:431:.offer__title {
+app/pages/index.vue-432-  margin-bottom: var(--space-2);
+app/pages/index.vue-433-  font-family: var(--font-mono);
+app/pages/index.vue-434-  font-size: var(--fs-xl);
+app/pages/index.vue-435-  font-weight: var(--fw-regular);
+app/pages/index.vue-436-  color: var(--text-strong);
+app/pages/index.vue-437-}
+app/pages/index.vue-438-
+app/pages/index.vue:439:.offer__desc {
+app/pages/index.vue-440-  margin: 0 0 var(--space-4);
+app/pages/index.vue-441-  font-family: var(--font-sans);
+app/pages/index.vue-442-  font-size: var(--fs-sm);
+app/pages/index.vue-443-  line-height: var(--lh-relaxed);
+app/pages/index.vue-444-  color: var(--text-body);
+app/pages/index.vue-445-}
+app/pages/index.vue-446-
+app/pages/index.vue:447:.offer__points {
+app/pages/index.vue-448-  display: flex;
+app/pages/index.vue-449-  flex-direction: column;
+app/pages/index.vue-450-  gap: var(--space-2);
+app/pages/index.vue-451-  margin: 0 0 var(--space-4);
+app/pages/index.vue-452-  padding: 0;
+--
+app/pages/index.vue-461-    line-height: var(--lh-normal);
+app/pages/index.vue-462-    color: var(--text-muted);
+app/pages/index.vue-463-  }
+app/pages/index.vue-464-}
+app/pages/index.vue-465-
+app/pages/index.vue:466:.offer__check {
+app/pages/index.vue-467-  font-size: var(--fs-sm);
+app/pages/index.vue-468-  color: var(--term-green);
+app/pages/index.vue-469-  margin-top: 2px;
+app/pages/index.vue-470-}
+app/pages/index.vue-471-
+app/pages/index.vue:472:.offer__tags {
+app/pages/index.vue-473-  margin-bottom: var(--space-4);
+app/pages/index.vue-474-}
+app/pages/index.vue-475-
+app/pages/index.vue:476:.offer__price {
+app/pages/index.vue-477-  margin-top: auto;
+app/pages/index.vue-478-  padding-top: var(--space-4);
+app/pages/index.vue-479-  border-top: 1px dashed var(--border-subtle);
+app/pages/index.vue-480-  font-family: var(--font-mono);
+app/pages/index.vue-481-  font-size: var(--fs-xs);
+app/pages/index.vue-482-  color: var(--accent);
+app/pages/index.vue-483-}
+app/pages/index.vue-484-
+app/pages/index.vue:485:.offer__more {
+app/pages/index.vue-486-  margin-top: var(--space-3);
+app/pages/index.vue-487-  font-family: var(--font-mono);
+app/pages/index.vue-488-  font-size: var(--fs-sm);
+app/pages/index.vue-489-  color: var(--accent);
+app/pages/index.vue-490-  text-decoration: none;
+--
+app/pages/index.vue-552-  display: flex;
+app/pages/index.vue-553-  flex-direction: column;
+app/pages/index.vue-554-  width: 100%;
+app/pages/index.vue-555-  text-decoration: none;
+app/pages/index.vue-556-
+app/pages/index.vue:557:  .hero__tags {
+app/pages/index.vue-558-    margin-top: auto;
+app/pages/index.vue-559-  }
+app/pages/index.vue-560-}
+app/pages/index.vue-561-
+app/pages/index.vue-562-.project__head {
+--
+app/pages/index.vue-584-.project__desc {
+app/pages/index.vue-585-  margin: var(--space-3) 0 var(--space-4);
+app/pages/index.vue-586-  font-size: var(--fs-sm);
+app/pages/index.vue-587-}
+app/pages/index.vue-588-
+app/pages/index.vue:589:// ---- Responsive (cf. kit.css @media max-width: 900px) ----
+app/pages/index.vue-590-@media (width <= 900px) {
+app/pages/index.vue-591-  .hero__grid {
+app/pages/index.vue-592-    grid-template-columns: 1fr;
+app/pages/index.vue-593-  }
+app/pages/index.vue-594-
+app/pages/index.vue-595-  .hero__title {
+app/pages/index.vue-596-    font-size: var(--fs-4xl);
+app/pages/index.vue-597-  }
+app/pages/index.vue-598-
+app/pages/index.vue:599:  .grid-3,
+app/pages/index.vue-600-  .grid-2 {
+app/pages/index.vue-601-    grid-template-columns: 1fr;
+app/pages/index.vue-602-  }
+app/pages/index.vue-603-}
+app/pages/index.vue-604-
+--
+app/assets/scss/base/_layout.scss-57-  color: var(--text-body);
+app/assets/scss/base/_layout.scss-58-}
+app/assets/scss/base/_layout.scss-59-
+app/assets/scss/base/_layout.scss-60-// Rangée de tags (chips) qui passent à la ligne — hero, stack /about, etc.
+app/assets/scss/base/_layout.scss-61-// Reset de liste inclus pour un rendu propre en <ul>/<li> (no-op sur un <div>).
+app/assets/scss/base/_layout.scss:62:.hero__tags {
+app/assets/scss/base/_layout.scss-63-  display: flex;
+app/assets/scss/base/_layout.scss-64-  flex-wrap: wrap;
+app/assets/scss/base/_layout.scss-65-  gap: var(--space-2);
+app/assets/scss/base/_layout.scss-66-  margin: 0;
+app/assets/scss/base/_layout.scss-67-  padding: 0;
+
+--- diff with line numbers ---
+     1	diff --git a/app/components/home/HomeStackMarquee.vue b/app/components/home/HomeStackMarquee.vue
+     2	new file mode 100644
+     3	index 0000000..a65ef1e
+     4	--- /dev/null
+     5	+++ b/app/components/home/HomeStackMarquee.vue
+     6	@@ -0,0 +1,108 @@
+     7	+<template>
+     8	+  <div class="marquee" aria-hidden="true">
+     9	+    <div class="marquee__track">
+    10	+      <!-- Première passe -->
+    11	+      <span v-for="(skill, index) in skillsList" :key="`skill-a-${index}`" class="marquee__item">
+    12	+        <b class="marquee__label">{{ skill }}</b>
+    13	+        <span class="marquee__star" aria-hidden="true">✦</span>
+    14	+      </span>
+    15	+      <!-- Deuxième passe pour la boucle infinie CSS sans coupure -->
+    16	+      <span v-for="(skill, index) in skillsList" :key="`skill-b-${index}`" class="marquee__item">
+    17	+        <b class="marquee__label">{{ skill }}</b>
+    18	+        <span class="marquee__star" aria-hidden="true">✦</span>
+    19	+      </span>
+    20	+    </div>
+    21	+  </div>
+    22	+</template>
+    23	+
+    24	+<script setup lang="ts">
+    25	+// Ruban défilant continu de la stack moderne prioritaire (Story 11.3 / AC-1 / CAP-4).
+    26	+// Alimenté par SITE.skills (app/data/site.ts) avec mapping soigné des libellés.
+    27	+// Défilement continu pur CSS masqué aux lecteurs d'écran (aria-hidden="true").
+    28	+// Pause automatique au :hover et arrêt complet sous prefers-reduced-motion.
+    29	+import { computed } from "vue";
+    30	+import { SITE } from "~/data/site";
+    31	+
+    32	+const SKILL_LABEL_MAP: Record<string, string> = {
+    33	+  typescript: "TypeScript",
+    34	+  nuxt: "Nuxt 4",
+    35	+  vue: "Vue.js",
+    36	+  "nest.js": "NestJS",
+    37	+  "node.js": "Node.js",
+    38	+  postgresql: "PostgreSQL",
+    39	+  typeorm: "TypeORM",
+    40	+  stripe: "Stripe Connect",
+    41	+  cypress: "Cypress",
+    42	+  docker: "Docker",
+    43	+  "rest-api": "REST API",
+    44	+  vitest: "Vitest",
+    45	+};
+    46	+
+    47	+const skillsList = computed(() => {
+    48	+  return SITE.skills.map((skillKey) => SKILL_LABEL_MAP[skillKey] ?? skillKey);
+    49	+});
+    50	+</script>
+    51	+
+    52	+<style lang="scss" scoped>
+    53	+/* stylelint-disable selector-class-pattern */
+    54	+.marquee {
+    55	+  display: block;
+    56	+  width: 100%;
+    57	+  padding-block: var(--space-5);
+    58	+  overflow: hidden;
+    59	+  border-block: 1px solid var(--border-subtle);
+    60	+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    61	+
+    62	+  &:hover .marquee__track {
+    63	+    animation-play-state: paused;
+    64	+  }
+    65	+}
+    66	+
+    67	+.marquee__track {
+    68	+  display: flex;
+    69	+  gap: var(--space-8);
+    70	+  width: max-content;
+    71	+  will-change: transform;
+    72	+  animation: scroll-x 32s linear infinite;
+    73	+}
+    74	+
+    75	+.marquee__item {
+    76	+  display: inline-flex;
+    77	+  gap: var(--space-8);
+    78	+  align-items: center;
+    79	+  font-family: var(--font-mono);
+    80	+  font-size: var(--fs-xl);
+    81	+  letter-spacing: var(--ls-wide);
+    82	+  color: var(--text-faint);
+    83	+  white-space: nowrap;
+    84	+}
+    85	+
+    86	+.marquee__label {
+    87	+  font-weight: var(--fw-regular);
+    88	+  color: var(--text-body);
+    89	+}
+    90	+
+    91	+.marquee__star {
+    92	+  color: var(--accent);
+    93	+}
+    94	+
+    95	+@keyframes scroll-x {
+    96	+  from {
+    97	+    transform: translateX(0);
+    98	+  }
+    99	+
+   100	+  to {
+   101	+    transform: translateX(-50%);
+   102	+  }
+   103	+}
+   104	+
+   105	+@media (prefers-reduced-motion: reduce) {
+   106	+  .marquee {
+   107	+    mask-image: none;
+   108	+  }
+   109	+
+   110	+  .marquee__track {
+   111	+    animation: none;
+   112	+  }
+   113	+}
+   114	+</style>
+   115	diff --git a/app/pages/index.vue b/app/pages/index.vue
+   116	index 07df568..eaedacd 100644
+   117	--- a/app/pages/index.vue
+   118	+++ b/app/pages/index.vue
+   119	@@ -44,17 +44,37 @@
+   120	       </div>
+   121	     </section>
+   122	 
+   123	-    <!-- Aperçu services (porté de ServicesPreview, Home.jsx) -->
+   124	+    <!-- Ruban défilant de la stack moderne (Story 11.3 / AC-1) -->
+   125	+    <HomeStackMarquee />
+   126	+
+   127	+    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
+   128	     <section class="section">
+   129	       <div class="container">
+   130	-        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je fais</p>
+   131	-        <h2 class="section__title">Trois façons de travailler ensemble</h2>
+   132	+        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
+   133	+        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
+   134	         <ul class="grid-3">
+   135	           <li v-for="service in services" :key="service.id">
+   136	             <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+   137	-              <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+   138	+              <div class="offer__top">
+   139	+                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+   140	+                <span class="offer__no">{{ service.no }}</span>
+   141	+              </div>
+   142	               <h3 class="offer__title">{{ service.title }}</h3>
+   143	               <p class="offer__desc">{{ service.desc }}</p>
+   144	+              <ul class="offer__points">
+   145	+                <li v-for="point in service.points" :key="point">
+   146	+                  <ZIcon name="check" class="offer__check" />
+   147	+                  <span>{{ point }}</span>
+   148	+                </li>
+   149	+              </ul>
+   150	+              <ul class="hero__tags offer__tags">
+   151	+                <li v-for="tag in service.tags" :key="tag">
+   152	+                  <ZTag>{{ tag }}</ZTag>
+   153	+                </li>
+   154	+              </ul>
+   155	+              <div class="offer__price">
+   156	+                <span>{{ service.price }}</span>
+   157	+              </div>
+   158	               <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+   159	                 En savoir plus →
+   160	               </NuxtLink>
+   161	@@ -116,29 +136,52 @@ function onBootComplete() {
+   162	   isBootFinished.value = true;
+   163	 }
+   164	 
+   165	-// Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
+   166	-// (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
+   167	-// `id` = clé v-for stable (indépendante du contenu affiché).
+   168	+// Vitrine des 3 offres ciblées Full Stack TS (Story 11.3 / AC-2).
+   169	+// Remplacement complet des données legacy.
+   170	 const services = [
+   171	   {
+   172	-    id: "wordpress",
+   173	-    icon: "wp",
+   174	-    title: "WordPress sur-mesure",
+   175	-    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
+   176	+    id: "creation",
+   177	+    no: "01 / 03",
+   178	+    icon: "code",
+   179	+    title: "Création d'applications web & SaaS",
+   180	+    desc: "De l'idée à la production : architecture, développement front & back, base de données, authentification et paiements Stripe.",
+   181	+    points: [
+   182	+      "Architecture logicielle & APIs REST",
+   183	+      "Applications Vue 3 / Nuxt 4 & NestJS",
+   184	+      "Intégration Stripe & PostgreSQL",
+   185	+    ],
+   186	+    tags: ["Nuxt", "NestJS", "PostgreSQL", "Stripe Connect"],
+   187	+    price: "Sur devis / au sprint",
+   188	     featured: false,
+   189	   },
+   190	   {
+   191	-    id: "apps",
+   192	-    icon: "code",
+   193	-    title: "Applications web",
+   194	-    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
+   195	+    id: "fullstack",
+   196	+    no: "02 / 03",
+   197	+    icon: "layers",
+   198	+    title: "Développement Full Stack TypeScript",
+   199	+    desc: "Renfort d'équipe produit ou développement de modules complexes avec une stack moderne unifiée de bout en bout.",
+   200	+    points: [
+   201	+      "Composants Vue 3 / Nuxt avec TypeScript strict",
+   202	+      "Microservices & backend modulaire NestJS",
+   203	+      "Fiabilisation et optimisation des performances",
+   204	+    ],
+   205	+    tags: ["TypeScript", "Vue 3", "Nuxt", "NestJS", "Node.js"],
+   206	+    price: "Sur devis / TJM",
+   207	     featured: true,
+   208	   },
+   209	   {
+   210	-    id: "ia",
+   211	+    id: "evolution",
+   212	+    no: "03 / 03",
+   213	     icon: "spark",
+   214	-    title: "IA & automatisation",
+   215	-    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
+   216	+    title: "Évolution & Architecture applicative",
+   217	+    desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
+   218	+    points: [
+   219	+      "Audits techniques de code & migrations de versions",
+   220	+      "Tests E2E Cypress & tests unitaires Vitest",
+   221	+      "Pipelines CI/CD & conteneurisation Docker",
+   222	+    ],
+   223	+    tags: ["Cypress", "Vitest", "Docker", "CI/CD"],
+   224	+    price: "Au forfait / audit",
+   225	     featured: false,
+   226	   },
+   227	 ];
+   228	@@ -356,13 +399,19 @@ usePageSeo({
+   229	   width: 100%;
+   230	 }
+   231	 
+   232	+.offer__top {
+   233	+  display: flex;
+   234	+  align-items: center;
+   235	+  justify-content: space-between;
+   236	+  margin-bottom: var(--space-4);
+   237	+}
+   238	+
+   239	 .offer__icon {
+   240	   display: flex;
+   241	   align-items: center;
+   242	   justify-content: center;
+   243	   width: var(--space-10); // 40px
+   244	   height: var(--space-10);
+   245	-  margin-bottom: var(--space-4);
+   246	 
+   247	   // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+   248	   // pas de token d'espacement à 22px (entre --space-5/20 et --space-6/24).
+   249	@@ -372,6 +421,13 @@ usePageSeo({
+   250	   border-radius: var(--radius-md);
+   251	 }
+   252	 
+   253	+.offer__no {
+   254	+  font-family: var(--font-mono);
+   255	+  font-size: var(--fs-xs);
+   256	+  letter-spacing: var(--ls-wider);
+   257	+  color: var(--text-faint);
+   258	+}
+   259	+
+   260	 .offer__title {
+   261	   margin-bottom: var(--space-2);
+   262	   font-family: var(--font-mono);
+   263	@@ -388,8 +444,46 @@ usePageSeo({
+   264	   color: var(--text-body);
+   265	 }
+   266	 
+   267	-.offer__more {
+   268	+.offer__points {
+   269	+  display: flex;
+   270	+  flex-direction: column;
+   271	+  gap: var(--space-2);
+   272	+  margin: 0 0 var(--space-4);
+   273	+  padding: 0;
+   274	+  list-style: none;
+   275	+
+   276	+  li {
+   277	+    display: flex;
+   278	+    gap: var(--space-2);
+   279	+    align-items: flex-start;
+   280	+    font-family: var(--font-mono);
+   281	+    font-size: var(--fs-xs);
+   282	+    line-height: var(--lh-normal);
+   283	+    color: var(--text-muted);
+   284	+  }
+   285	+}
+   286	+
+   287	+.offer__check {
+   288	+  font-size: var(--fs-sm);
+   289	+  color: var(--term-green);
+   290	+  margin-top: 2px;
+   291	+}
+   292	+
+   293	+.offer__tags {
+   294	+  margin-bottom: var(--space-4);
+   295	+}
+   296	+
+   297	+.offer__price {
+   298	   margin-top: auto;
+   299	+  padding-top: var(--space-4);
+   300	+  border-top: 1px dashed var(--border-subtle);
+   301	+  font-family: var(--font-mono);
+   302	+  font-size: var(--fs-xs);
+   303	+  color: var(--accent);
+   304	+}
+   305	+
+   306	+.offer__more {
+   307	+  margin-top: var(--space-3);
+   308	   font-family: var(--font-mono);
+   309	   font-size: var(--fs-sm);
+   310	   color: var(--accent);
+
+2026-09-13T18:52:11.044157Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+codex
+[
+  {
+    "location": "app/components/home/HomeStackMarquee.vue:95-102",
+    "trigger_condition": "Non-empty marquee reaches the animation loop boundary with the track gap applied.",
+    "guard_snippet": "@keyframes scroll-x { to { transform: translateX(calc(-50% - var(--space-8) / 2)); } }",
+    "potential_consequence": "Each cycle jumps by half the track gap, visibly breaking the seamless loop."
+  },
+  {
+    "location": "app/components/home/HomeStackMarquee.vue:47-49",
+    "trigger_condition": "SITE.skills is empty.",
+    "guard_snippet": "<div v-if=\"skillsList.length\" class=\"marquee\" aria-hidden=\"true\">",
+    "potential_consequence": "The homepage displays a blank bordered marquee band."
+  },
+  {
+    "location": "app/components/home/HomeStackMarquee.vue:48",
+    "trigger_condition": "SITE.skills contains an inherited property name such as \"toString\".",
+    "guard_snippet": "Object.hasOwn(SKILL_LABEL_MAP, skillKey) ? SKILL_LABEL_MAP[skillKey] : skillKey",
+    "potential_consequence": "An inherited object property renders instead of a skill label."
+  },
+  {
+    "location": "app/components/home/HomeStackMarquee.vue:105-112",
+    "trigger_condition": "Reduced motion is enabled and the viewport exceeds one skill sequence.",
+    "guard_snippet": "class=\"marquee__item marquee__item--duplicate\"; @media (prefers-reduced-motion: reduce) { .marquee__item--duplicate { display: none; } }",
+    "potential_consequence": "Wide reduced-motion layouts show the duplicated skill sequence."
+  }
+]
+tokens used
+48 723
+[
+  {
+    "location": "app/components/home/HomeStackMarquee.vue:95-102",
+    "trigger_condition": "Non-empty marquee reaches the animation loop boundary with the track gap applied.",
+    "guard_snippet": "@keyframes scroll-x { to { transform: translateX(calc(-50% - var(--space-8) / 2)); } }",
+    "potential_consequence": "Each cycle jumps by half the track gap, visibly breaking the seamless loop."
+  },
+  {
+    "location": "app/components/home/HomeStackMarquee.vue:47-49",
+    "trigger_condition": "SITE.skills is empty.",
+    "guard_snippet": "<div v-if=\"skillsList.length\" class=\"marquee\" aria-hidden=\"true\">",
+    "potential_consequence": "The homepage displays a blank bordered marquee band."
+  },
+  {
+    "location": "app/components/home/HomeStackMarquee.vue:48",
+    "trigger_condition": "SITE.skills contains an inherited property name such as \"toString\".",
+    "guard_snippet": "Object.hasOwn(SKILL_LABEL_MAP, skillKey) ? SKILL_LABEL_MAP[skillKey] : skillKey",
+    "potential_consequence": "An inherited object property renders instead of a skill label."
+  },
+  {
+    "location": "app/components/home/HomeStackMarquee.vue:105-112",
+    "trigger_condition": "Reduced motion is enabled and the viewport exceeds one skill sequence.",
+    "guard_snippet": "class=\"marquee__item marquee__item--duplicate\"; @media (prefers-reduced-motion: reduce) { .marquee__item--duplicate { display: none; } }",
+    "potential_consequence": "Wide reduced-motion layouts show the duplicated skill sequence."
+  }
+]

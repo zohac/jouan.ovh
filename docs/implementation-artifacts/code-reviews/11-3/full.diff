@@ -1,0 +1,310 @@
+diff --git a/app/components/home/HomeStackMarquee.vue b/app/components/home/HomeStackMarquee.vue
+new file mode 100644
+index 0000000..a65ef1e
+--- /dev/null
++++ b/app/components/home/HomeStackMarquee.vue
+@@ -0,0 +1,108 @@
++<template>
++  <div class="marquee" aria-hidden="true">
++    <div class="marquee__track">
++      <!-- Première passe -->
++      <span v-for="(skill, index) in skillsList" :key="`skill-a-${index}`" class="marquee__item">
++        <b class="marquee__label">{{ skill }}</b>
++        <span class="marquee__star" aria-hidden="true">✦</span>
++      </span>
++      <!-- Deuxième passe pour la boucle infinie CSS sans coupure -->
++      <span v-for="(skill, index) in skillsList" :key="`skill-b-${index}`" class="marquee__item">
++        <b class="marquee__label">{{ skill }}</b>
++        <span class="marquee__star" aria-hidden="true">✦</span>
++      </span>
++    </div>
++  </div>
++</template>
++
++<script setup lang="ts">
++// Ruban défilant continu de la stack moderne prioritaire (Story 11.3 / AC-1 / CAP-4).
++// Alimenté par SITE.skills (app/data/site.ts) avec mapping soigné des libellés.
++// Défilement continu pur CSS masqué aux lecteurs d'écran (aria-hidden="true").
++// Pause automatique au :hover et arrêt complet sous prefers-reduced-motion.
++import { computed } from "vue";
++import { SITE } from "~/data/site";
++
++const SKILL_LABEL_MAP: Record<string, string> = {
++  typescript: "TypeScript",
++  nuxt: "Nuxt 4",
++  vue: "Vue.js",
++  "nest.js": "NestJS",
++  "node.js": "Node.js",
++  postgresql: "PostgreSQL",
++  typeorm: "TypeORM",
++  stripe: "Stripe Connect",
++  cypress: "Cypress",
++  docker: "Docker",
++  "rest-api": "REST API",
++  vitest: "Vitest",
++};
++
++const skillsList = computed(() => {
++  return SITE.skills.map((skillKey) => SKILL_LABEL_MAP[skillKey] ?? skillKey);
++});
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern */
++.marquee {
++  display: block;
++  width: 100%;
++  padding-block: var(--space-5);
++  overflow: hidden;
++  border-block: 1px solid var(--border-subtle);
++  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
++
++  &:hover .marquee__track {
++    animation-play-state: paused;
++  }
++}
++
++.marquee__track {
++  display: flex;
++  gap: var(--space-8);
++  width: max-content;
++  will-change: transform;
++  animation: scroll-x 32s linear infinite;
++}
++
++.marquee__item {
++  display: inline-flex;
++  gap: var(--space-8);
++  align-items: center;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xl);
++  letter-spacing: var(--ls-wide);
++  color: var(--text-faint);
++  white-space: nowrap;
++}
++
++.marquee__label {
++  font-weight: var(--fw-regular);
++  color: var(--text-body);
++}
++
++.marquee__star {
++  color: var(--accent);
++}
++
++@keyframes scroll-x {
++  from {
++    transform: translateX(0);
++  }
++
++  to {
++    transform: translateX(-50%);
++  }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .marquee {
++    mask-image: none;
++  }
++
++  .marquee__track {
++    animation: none;
++  }
++}
++</style>
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index 07df568..eaedacd 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -44,17 +44,37 @@
+       </div>
+     </section>
+ 
+-    <!-- Aperçu services (porté de ServicesPreview, Home.jsx) -->
++    <!-- Ruban défilant de la stack moderne (Story 11.3 / AC-1) -->
++    <HomeStackMarquee />
++
++    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
+     <section class="section">
+       <div class="container">
+-        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je fais</p>
+-        <h2 class="section__title">Trois façons de travailler ensemble</h2>
++        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
++        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
+         <ul class="grid-3">
+           <li v-for="service in services" :key="service.id">
+             <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+-              <div class="offer__icon"><ZIcon :name="service.icon" /></div>
++              <div class="offer__top">
++                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
++                <span class="offer__no">{{ service.no }}</span>
++              </div>
+               <h3 class="offer__title">{{ service.title }}</h3>
+               <p class="offer__desc">{{ service.desc }}</p>
++              <ul class="offer__points">
++                <li v-for="point in service.points" :key="point">
++                  <ZIcon name="check" class="offer__check" />
++                  <span>{{ point }}</span>
++                </li>
++              </ul>
++              <ul class="hero__tags offer__tags">
++                <li v-for="tag in service.tags" :key="tag">
++                  <ZTag>{{ tag }}</ZTag>
++                </li>
++              </ul>
++              <div class="offer__price">
++                <span>{{ service.price }}</span>
++              </div>
+               <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+                 En savoir plus →
+               </NuxtLink>
+@@ -116,29 +136,52 @@ function onBootComplete() {
+   isBootFinished.value = true;
+ }
+ 
+-// Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
+-// (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
+-// `id` = clé v-for stable (indépendante du contenu affiché).
++// Vitrine des 3 offres ciblées Full Stack TS (Story 11.3 / AC-2).
++// Remplacement complet des données legacy.
+ const services = [
+   {
+-    id: "wordpress",
+-    icon: "wp",
+-    title: "WordPress sur-mesure",
+-    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
++    id: "creation",
++    no: "01 / 03",
++    icon: "code",
++    title: "Création d'applications web & SaaS",
++    desc: "De l'idée à la production : architecture, développement front & back, base de données, authentification et paiements Stripe.",
++    points: [
++      "Architecture logicielle & APIs REST",
++      "Applications Vue 3 / Nuxt 4 & NestJS",
++      "Intégration Stripe & PostgreSQL",
++    ],
++    tags: ["Nuxt", "NestJS", "PostgreSQL", "Stripe Connect"],
++    price: "Sur devis / au sprint",
+     featured: false,
+   },
+   {
+-    id: "apps",
+-    icon: "code",
+-    title: "Applications web",
+-    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
++    id: "fullstack",
++    no: "02 / 03",
++    icon: "layers",
++    title: "Développement Full Stack TypeScript",
++    desc: "Renfort d'équipe produit ou développement de modules complexes avec une stack moderne unifiée de bout en bout.",
++    points: [
++      "Composants Vue 3 / Nuxt avec TypeScript strict",
++      "Microservices & backend modulaire NestJS",
++      "Fiabilisation et optimisation des performances",
++    ],
++    tags: ["TypeScript", "Vue 3", "Nuxt", "NestJS", "Node.js"],
++    price: "Sur devis / TJM",
+     featured: true,
+   },
+   {
+-    id: "ia",
++    id: "evolution",
++    no: "03 / 03",
+     icon: "spark",
+-    title: "IA & automatisation",
+-    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
++    title: "Évolution & Architecture applicative",
++    desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
++    points: [
++      "Audits techniques de code & migrations de versions",
++      "Tests E2E Cypress & tests unitaires Vitest",
++      "Pipelines CI/CD & conteneurisation Docker",
++    ],
++    tags: ["Cypress", "Vitest", "Docker", "CI/CD"],
++    price: "Au forfait / audit",
+     featured: false,
+   },
+ ];
+@@ -356,13 +399,19 @@ usePageSeo({
+   width: 100%;
+ }
+ 
++.offer__top {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  margin-bottom: var(--space-4);
++}
++
+ .offer__icon {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: var(--space-10); // 40px
+   height: var(--space-10);
+-  margin-bottom: var(--space-4);
+ 
+   // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+   // pas de token d'espacement à 22px (entre --space-5/20 et --space-6/24).
+@@ -372,6 +421,13 @@ usePageSeo({
+   border-radius: var(--radius-md);
+ }
+ 
++.offer__no {
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  letter-spacing: var(--ls-wider);
++  color: var(--text-faint);
++}
++
+ .offer__title {
+   margin-bottom: var(--space-2);
+   font-family: var(--font-mono);
+@@ -388,8 +444,46 @@ usePageSeo({
+   color: var(--text-body);
+ }
+ 
+-.offer__more {
++.offer__points {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-2);
++  margin: 0 0 var(--space-4);
++  padding: 0;
++  list-style: none;
++
++  li {
++    display: flex;
++    gap: var(--space-2);
++    align-items: flex-start;
++    font-family: var(--font-mono);
++    font-size: var(--fs-xs);
++    line-height: var(--lh-normal);
++    color: var(--text-muted);
++  }
++}
++
++.offer__check {
++  font-size: var(--fs-sm);
++  color: var(--term-green);
++  margin-top: 2px;
++}
++
++.offer__tags {
++  margin-bottom: var(--space-4);
++}
++
++.offer__price {
+   margin-top: auto;
++  padding-top: var(--space-4);
++  border-top: 1px dashed var(--border-subtle);
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  color: var(--accent);
++}
++
++.offer__more {
++  margin-top: var(--space-3);
+   font-family: var(--font-mono);
+   font-size: var(--fs-sm);
+   color: var(--accent);

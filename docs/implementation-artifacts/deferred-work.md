@@ -147,3 +147,8 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 - **Preuves statistiques SaaS (100k+, 85%), journal technique et bouton CTA vers profil Malt** (`app/pages/index.vue`) — Les indicateurs chiffrés, le journal et le lien de conversion Malt ne sont pas encore intégrés sur la home. → Prévu dans la **Story 11.4** (Preuves concrètes SaaS, journal technique et CTA final de conversion).
 - **Audit SEO transverse et mise à jour des métadonnées secondaires** (`app/pages/about.vue`) — Révision globale du SEO de `about.vue` et des pages secondaires pour refléter la nouvelle position commerciale Full Stack TS. → Prévu dans la **Story 11.5** (Validation transverse a11y multi-pages, SSG Nitro et gate Docker).
 
+## Deferred from: code review of 11-3-marquee-de-stack-moderne-et-vitrine-des-3-services-cibles (2026-09-13)
+
+- **Aligner le catalogue de la page dédiée `/services` et ses métadonnées SEO/JSON-LD avec les 3 nouvelles offres de l'accueil** (`app/pages/services.vue`) — La page `/services` actuelle présente toujours le catalogue historique (WordPress, applications, IA) et les descriptions associées. La refonte complète de `/services` pour calquer les 3 offres SaaS Full Stack TS relève d'une future story d'évolution de la page services.
+- **Couverture automatisée par tests E2E / visuels de la boucle continue du marquee** (`app/components/home/HomeStackMarquee.vue`) — Validation automatisée du défilement, du `:hover` et de l'arrêt sous reduced-motion. Prévu dans la validation transverse de la **Story 11.5**.
+
