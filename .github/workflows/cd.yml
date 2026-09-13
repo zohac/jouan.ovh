@@ -64,7 +64,7 @@ jobs:
           for f in index.html 200.html 404.html about/index.html blog/index.html _headers CNAME images/portrait_512x512_drip_art_8.webp; do
             test -f ".output/public/$f" || { echo "::error::Fichier manquant dans la sortie statique : $f"; exit 1; }
           done
-          grep -qx "dev.jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
+          grep -qx "jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
           echo "Sortie statique validée."
 
       - name: Deploy

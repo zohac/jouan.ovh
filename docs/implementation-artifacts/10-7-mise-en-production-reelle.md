@@ -1,10 +1,10 @@
 ---
-baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
+baseline_commit: cc2f49bf3a314de36d2ce99443488eb9caf7ee66
 ---
 
 # Story 10.7: Mise en production réelle
 
-Status: ready-for-dev
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
