@@ -1,0 +1,1867 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 01a09bf4-2781-7321-a0dd-9da1bfa6c2fc
+--------
+user
+# Edge Case Hunter Prompt — Story 11.2
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/11-2/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+J’utilise `bmad-review-edge-case-hunter` pour parcourir exhaustivement les branches du diff et ne retenir que les cas non gérés.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+exec
+/bin/zsh -lc "wc -l docs/implementation-artifacts/code-reviews/11-2/full.diff && sed -n '1,260p' docs/implementation-artifacts/code-reviews/11-2/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    1138 docs/implementation-artifacts/code-reviews/11-2/full.diff
+diff --git a/app/components/home/HomeBootOverlay.vue b/app/components/home/HomeBootOverlay.vue
+new file mode 100644
+index 0000000..bdd4f89
+--- /dev/null
++++ b/app/components/home/HomeBootOverlay.vue
+@@ -0,0 +1,230 @@
++<template>
++  <div
++    v-if="!isDismissed"
++    class="boot"
++    :class="{ 'boot--done': isDone }"
++    role="status"
++    aria-live="polite"
++    @click="finishBoot"
++  >
++    <div class="boot__in">
++      <div class="boot__logo">
++        <ZIcon name="gem" class="boot__logo-icon" />
++        <b>jouan.os</b>
++      </div>
++      <div class="boot__line">
++        <span aria-hidden="true">&gt; </span>{{ currentStepText }}
++        <span v-if="currentStepOk" class="boot__ok" aria-hidden="true"> [ok]</span>
++      </div>
++      <div class="boot__bar" role="progressbar" :aria-valuenow="progressPercent" aria-valuemin="0" aria-valuemax="100">
++        <i :style="{ width: `${progressPercent}%` }" />
++      </div>
++      <div class="boot__skip">[ cliquez ou appuyez sur Échap pour passer ]</div>
++    </div>
++  </div>
++</template>
++
++<script setup lang="ts">
++import { ref, onMounted, onUnmounted } from "vue";
++
++// Séquence de démarrage stylisée jouan.os (Story 11.2 / AC-1 / CAP-2).
++// S'exécute une seule fois par session (sessionStorage jouan_boot_done).
++// Contournement immédiat sous prefers-reduced-motion ou via clic / touche Escape.
++// Émet 'boot-complete' dès la fin de l'animation pour orchestrer le hero terminal.
++
++const emit = defineEmits<{
++  (e: "boot-complete"): void;
++}>();
++
++const isDismissed = ref(false);
++const isDone = ref(false);
++const currentStepText = ref("");
++const currentStepOk = ref(false);
++const progressPercent = ref(0);
++
++const bootSteps = [
++  { text: "initialisation du noyau…", ok: false },
++  { text: "montage de /dev/portfolio", ok: false },
++  { text: "chargement des polices Ubuntu Mono", ok: false },
++  { text: "compilation des projets", ok: true },
++  { text: "démarrage du serveur", ok: true },
++];
++
++let stepTimeoutId: ReturnType<typeof setTimeout> | null = null;
++let dismissTimeoutId: ReturnType<typeof setTimeout> | null = null;
++
++function finishBoot() {
++  if (isDone.value) return;
++  isDone.value = true;
++  progressPercent.value = 100;
++
++  if (stepTimeoutId !== null) {
++    clearTimeout(stepTimeoutId);
++    stepTimeoutId = null;
++  }
++
++  if (import.meta.client) {
++    try {
++      sessionStorage.setItem("jouan_boot_done", "1");
++    } catch {
++      // Ignore sessionStorage exceptions (private browsing / quota)
++    }
++  }
++
++  emit("boot-complete");
++
++  dismissTimeoutId = setTimeout(() => {
++    isDismissed.value = true;
++  }, 600);
++}
++
++function runBoot() {
++  let stepIndex = 0;
++
++  function next() {
++    if (stepIndex >= bootSteps.length) {
++      stepTimeoutId = setTimeout(finishBoot, 260);
++      return;
++    }
++
++    const step = bootSteps[stepIndex];
++    if (step) {
++      currentStepText.value = step.text;
++      currentStepOk.value = step.ok;
++      progressPercent.value = Math.round(((stepIndex + 1) / bootSteps.length) * 100);
++    }
++    stepIndex++;
++    stepTimeoutId = setTimeout(next, 230);
++  }
++
++  next();
++}
++
++function handleKeydown(e: KeyboardEvent) {
++  if (e.key === "Escape" && !isDone.value) {
++    finishBoot();
++  }
++}
++
++onMounted(() => {
++  if (!import.meta.client) return;
++
++  window.addEventListener("keydown", handleKeydown);
++
++  // Vérifier si la session a déjà vu le boot
++  let alreadyBooted = false;
++  try {
++    alreadyBooted = sessionStorage.getItem("jouan_boot_done") === "1";
++  } catch {
++    alreadyBooted = false;
++  }
++
++  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
++
++  if (alreadyBooted || reduceMotion) {
++    isDone.value = true;
++    isDismissed.value = true;
++    emit("boot-complete");
++    return;
++  }
++
++  runBoot();
++});
++
++onUnmounted(() => {
++  if (!import.meta.client) return;
++  window.removeEventListener("keydown", handleKeydown);
++  if (stepTimeoutId !== null) {
++    clearTimeout(stepTimeoutId);
++    stepTimeoutId = null;
++  }
++  if (dismissTimeoutId !== null) {
++    clearTimeout(dismissTimeoutId);
++    dismissTimeoutId = null;
++  }
++});
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern */
++.boot {
++  position: fixed;
++  inset: 0;
++  z-index: 200;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  cursor: pointer;
++  background: var(--surface-0);
++  transition:
++    opacity var(--dur-slow) var(--ease-out),
++    visibility var(--dur-slow);
++
++  &.boot--done {
++    pointer-events: none;
++    visibility: hidden;
++    opacity: 0;
++  }
++}
++
++.boot__in {
++  width: min(560px, 88vw);
++  font-family: var(--font-mono);
++  font-size: var(--fs-sm);
++}
++
++.boot__logo {
++  display: flex;
++  align-items: center;
++  gap: var(--space-3);
++  margin-bottom: var(--space-5);
++  color: var(--text-strong);
++
++  b {
++    font-size: var(--fs-lg);
++  }
++}
++
++.boot__logo-icon {
++  font-size: 26px;
++  color: var(--accent);
++}
++
++.boot__line {
++  min-height: 1.6em;
++  color: var(--text-muted);
++}
++
++.boot__ok {
++  color: var(--term-green);
++}
++
++.boot__bar {
++  height: 3px;
++  margin-top: var(--space-5);
++  overflow: hidden;
++  background: var(--surface-3);
++  border-radius: var(--radius-xs);
++
++  i {
++    display: block;
++    width: 0;
++    height: 100%;
++    background: linear-gradient(90deg, var(--accent), var(--aubergine-light));
++    transition: width 0.1s linear;
++  }
++}
++
++.boot__skip {
++  margin-top: var(--space-4);
++  font-size: var(--fs-xs);
++  letter-spacing: var(--ls-wide);
++  color: var(--text-faint);
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .boot {
++    display: none;
++  }
++}
++</style>
+diff --git a/app/components/home/HomeHeroTerminal.vue b/app/components/home/HomeHeroTerminal.vue
+new file mode 100644
+index 0000000..82a1aac
+--- /dev/null
++++ b/app/components/home/HomeHeroTerminal.vue
+@@ -0,0 +1,363 @@
++<template>
++  <div class="hero-term">
++    <div class="hero-term__bar">
++      <span class="hero-term__dots" aria-hidden="true">
++        <span class="hero-term__dot hero-term__dot--close" />
++        <span class="hero-term__dot hero-term__dot--min" />
++        <span class="hero-term__dot hero-term__dot--max" />
++      </span>
++      <span class="hero-term__title">anon.@jouan.ovh: ~</span>
++    </div>
++
++    <div class="hero-term__body">
++      <!-- Lignes complètes terminées -->
++      <template v-for="(row, idx) in executedRows" :key="idx">
++        <p class="hero-term__line" aria-hidden="true">
++          <span class="prm">
++            <span class="prm__user">anon.@jouan.ovh</span>
++            <span class="prm__sep">:</span>
+
+exec
+/bin/zsh -lc "sed -n '261,520p' docs/implementation-artifacts/code-reviews/11-2/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
++            <span class="prm__dir">~</span>
++            <span class="prm__sep">$ </span>
++            <span class="prm__cmd">{{ row.cmd }}</span>
++          </span>
++        </p>
++        <p class="hero-term__out" :class="`hero-term__out--${row.tone}`">{{ row.out }}</p>
++      </template>
++
++      <!-- Ligne en cours de frappe -->
++      <p v-if="currentTypingLine" class="hero-term__line" aria-hidden="true">
++        <span class="prm">
++          <span class="prm__user">anon.@jouan.ovh</span>
++          <span class="prm__sep">:</span>
++          <span class="prm__dir">~</span>
++          <span class="prm__sep">$ </span>
++          <span class="prm__cmd">{{ currentTypingText }}</span>
++          <span class="prm__caret" />
++        </span>
++      </p>
++
++      <!-- Bouton d'ouverture du terminal interactif / invite finale -->
++      <button
++        v-if="isSequenceComplete"
++        type="button"
++        class="hero-term__open"
++        aria-label="Ouvrir le terminal interactif"
++        aria-haspopup="dialog"
++        @click="openTerminal"
++      >
++        <span class="prm">
++          <span class="prm__user">anon.@jouan.ovh</span>
++          <span class="prm__sep">:</span>
++          <span class="prm__dir">~</span>
++          <span class="prm__sep">$ </span>
++          <span class="prm__cmd">help</span>
++          <span class="prm__caret" aria-hidden="true" />
++        </span>
++      </button>
++    </div>
++  </div>
++</template>
++
++<script setup lang="ts">
++import { ref, watch, onMounted, onUnmounted } from "vue";
++import { useTerminal } from "~/composables/useTerminal";
++
++// Terminal hero cinétique (Story 11.2 / AC-2 / CAP-3).
++// Déroule une animation de frappe séquentielle pour whoami, cat focus.txt et ls ~/projets.
++// Neutralisé sous prefers-reduced-motion (affichage statique complet immédiat).
++// Ouvre l'easter-egg terminal via useTerminal().open sur l'invite finale help.
++
++const props = withDefaults(
++  defineProps<{
++    autoStart?: boolean;
++  }>(),
++  {
++    autoStart: true,
++  },
++);
++
++const { open: openTerminal } = useTerminal();
++
++interface ITermRow {
++  cmd: string;
++  out: string;
++  tone: "ink" | "blue" | "green";
++}
++
++const fullRows: ITermRow[] = [
++  {
++    cmd: "whoami",
++    out: "Simon Jouan — Full Stack TS Engineer (Nuxt / NestJS)",
++    tone: "ink",
++  },
++  {
++    cmd: "cat focus.txt",
++    out: "SaaS, web apps, clean architecture, automated testing (QA) & AI engineering",
++    tone: "blue",
++  },
++  {
++    cmd: "ls ~/projets",
++    out: "keova.app/  tryon-saas/  nodium-lab/",
++    tone: "green",
++  },
++];
++
++const executedRows = ref<ITermRow[]>([]);
++const currentTypingLine = ref<ITermRow | null>(null);
++const currentTypingText = ref("");
++const isSequenceComplete = ref(false);
++
++let typingTimeoutId: ReturnType<typeof setTimeout> | null = null;
++let stepTimeoutId: ReturnType<typeof setTimeout> | null = null;
++let isStarted = false;
++
++function showInstantState() {
++  executedRows.value = [...fullRows];
++  currentTypingLine.value = null;
++  currentTypingText.value = "";
++  isSequenceComplete.value = true;
++}
++
++function startTypingSequence() {
++  if (isStarted) return;
++  isStarted = true;
++
++  const reduceMotion = import.meta.client && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
++
++  if (reduceMotion) {
++    showInstantState();
++    return;
++  }
++
++  let rowIndex = 0;
++
++  function typeRow() {
++    if (rowIndex >= fullRows.length) {
++      currentTypingLine.value = null;
++      currentTypingText.value = "";
++      isSequenceComplete.value = true;
++      return;
++    }
++
++    const row = fullRows[rowIndex];
++    if (!row) return;
++
++    const activeRow: ITermRow = row;
++    currentTypingLine.value = activeRow;
++    currentTypingText.value = "";
++
++    let charIndex = 0;
++    const fullCmd = activeRow.cmd;
++
++    function typeChar() {
++      if (charIndex < fullCmd.length) {
++        currentTypingText.value = fullCmd.slice(0, charIndex + 1);
++        charIndex++;
++        typingTimeoutId = setTimeout(typeChar, 46);
++      } else {
++        // Commande entièrement tapée, afficher le résultat après une pause
++        stepTimeoutId = setTimeout(() => {
++          executedRows.value.push(activeRow);
++          currentTypingLine.value = null;
++          currentTypingText.value = "";
++          rowIndex++;
++          stepTimeoutId = setTimeout(typeRow, 280);
++        }, 200);
++      }
++    }
++
++    typeChar();
++  }
++
++  typeRow();
++}
++
++watch(
++  () => props.autoStart,
++  (shouldStart) => {
++    if (shouldStart && !isStarted) {
++      startTypingSequence();
++    }
++  },
++);
++
++onMounted(() => {
++  if (!import.meta.client) return;
++
++  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
++  if (reduceMotion) {
++    showInstantState();
++    return;
++  }
++
++  if (props.autoStart) {
++    startTypingSequence();
++  }
++});
++
++onUnmounted(() => {
++  if (typingTimeoutId !== null) {
++    clearTimeout(typingTimeoutId);
++    typingTimeoutId = null;
++  }
++  if (stepTimeoutId !== null) {
++    clearTimeout(stepTimeoutId);
++    stepTimeoutId = null;
++  }
++});
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern */
++.hero-term {
++  display: flex;
++  flex-direction: column;
++  min-height: 300px;
++  overflow: hidden;
++  border: 1px solid var(--accent-2-soft);
++  border-radius: var(--radius-sm);
++  box-shadow: var(--glow-terminal);
++}
++
++.hero-term__bar {
++  position: relative;
++  display: flex;
++  flex: none;
++  align-items: center;
++  gap: var(--space-2);
++  height: 30px;
++  padding: 0 var(--space-3);
++  background: var(--aubergine-black);
++}
++
++.hero-term__dots {
++  display: flex;
++  align-items: center;
++  gap: 7px;
++}
++
++.hero-term__dot {
++  width: 13px;
++  height: 13px;
++  border-radius: var(--radius-circle);
++}
++
++.hero-term__dot--close {
++  background: var(--term-red);
++}
++
++.hero-term__dot--min {
++  background: var(--term-yellow);
++}
++
++.hero-term__dot--max {
++  background: var(--term-green);
++}
++
++.hero-term__title {
++  position: absolute;
++  inset: 0;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  letter-spacing: var(--ls-wide);
++  color: var(--text-muted);
++  text-align: center;
++  pointer-events: none;
++}
++
++.hero-term__body {
++  flex: 1;
++  min-height: 0;
++  padding: var(--space-4);
++  overflow: auto;
++  font-family: var(--font-mono);
++  font-size: var(--fs-sm);
++  line-height: var(--lh-snug);
++  color: var(--ink-1);
++  background: var(--bg-terminal);
++  overflow-wrap: break-word;
+
+exec
+/bin/zsh -lc "sed -n '521,780p' docs/implementation-artifacts/code-reviews/11-2/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
++}
++
++@supports (backdrop-filter: blur(5px)) {
++  .hero-term__body {
++    background: color-mix(in srgb, var(--bg-terminal) 86%, transparent);
++    backdrop-filter: blur(5px);
++  }
++}
++
++.hero-term__line {
++  margin: 0;
++}
++
++.hero-term__out {
++  margin: 0 0 var(--space-4);
++}
++
++.hero-term__out--ink {
++  color: var(--ink-1);
++}
++
++.hero-term__out--blue {
++  color: var(--term-blue);
++}
++
++.hero-term__out--green {
++  color: var(--term-green);
++}
++
++.hero-term__open {
++  display: block;
++  width: 100%;
++  padding: 0;
++  font: inherit;
++  text-align: left;
++  cursor: pointer;
++  background: none;
++  border: none;
++  border-radius: var(--radius-xs);
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    box-shadow: var(--ring-accent);
++  }
++}
++
++.prm {
++  font-family: var(--font-mono);
++}
++
++.prm__user {
++  font-weight: var(--fw-bold);
++  color: var(--prompt);
++}
++
++.prm__sep {
++  color: var(--ink-1);
++}
++
++.prm__dir {
++  font-weight: var(--fw-bold);
++  color: var(--term-blue);
++}
++
++.prm__cmd {
++  color: var(--ink-1);
++}
++
++.prm__caret {
++  display: inline-block;
++  width: 0.55em;
++  height: 1.05em;
++  margin-left: 1px;
++  vertical-align: text-bottom;
++  background: var(--prompt);
++  animation: caret-blink 1s steps(1) infinite;
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .prm__caret {
++    animation: none;
++  }
++}
++</style>
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index e1e048c..51c7a1c 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -1,69 +1,41 @@
+ <template>
+   <main class="home">
++    <HomeBootOverlay @boot-complete="onBootComplete" />
+     <HomeAtmosComponent />
+     <ZCustomCursor />
+ 
+     <section class="hero hero__grad">
+       <div class="hero__in container">
+         <div class="hero__grid">
+-          <!-- Colonne gauche : accroche, CTA, tags -->
++          <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
+           <div class="anim hero__text">
+-            <p class="eyebrow"><span aria-hidden="true">// </span>développeur web freelance</p>
+-            <h1 class="hero__title">Du code <em>sur-mesure</em>,<br />de l'IA <em>utile</em>.</h1>
+-            <p class="hero__sub">{{ tagline }}</p>
++            <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
++            <h1 class="hero__title">Développeur Full Stack TypeScript</h1>
++            <p class="hero__sub">
++              Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
++              l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
++            </p>
++
++            <div class="hero__badge-wrap">
++              <span class="hero__pulse-dot" aria-hidden="true" />
++              <span>Disponible pour missions freelance · </span>
++              <ZExternalLink v-if="SITE.profile.maltUrl" :href="SITE.profile.maltUrl">
++                Profil Malt vérifié
++              </ZExternalLink>
++            </div>
++
+             <div class="hero__cta">
+               <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+-                Démarrer un projet
++                Discuter de votre projet
+                 <template #iconRight><ZIcon name="arrow" /></template>
+               </ZButton>
+-              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir les services </ZButton>
++              <ZButton :as="NuxtLink" to="/about" variant="secondary" size="lg"> Voir le parcours &amp; CV </ZButton>
+             </div>
+-            <ul class="hero__tags">
+-              <li v-for="tag in tags" :key="tag">
+-                <ZTag>{{ tag }}</ZTag>
+-              </li>
+-            </ul>
+           </div>
+ 
+-          <!-- Colonne droite : fenêtre terminal décorative (statique) -->
++          <!-- Colonne droite : terminal hero cinétique -->
+           <div class="anim hero__term-col">
+-            <div class="hero-term">
+-              <div class="hero-term__bar">
+-                <span class="hero-term__dots" aria-hidden="true">
+-                  <span class="hero-term__dot hero-term__dot--close" />
+-                  <span class="hero-term__dot hero-term__dot--min" />
+-                  <span class="hero-term__dot hero-term__dot--max" />
+-                </span>
+-                <span class="hero-term__title">anon.@jouan.ovh: ~</span>
+-              </div>
+-
+-              <div class="hero-term__body">
+-                <template v-for="row in terminalRows" :key="row.id">
+-                  <p class="hero-term__line" aria-hidden="true">
+-                    <span class="prm"
+-                      ><span class="prm__user">anon.@jouan.ovh</span><span class="prm__sep">:</span
+-                      ><span class="prm__dir">~</span><span class="prm__sep">$ </span
+-                      ><span class="prm__cmd">{{ row.cmd }}</span></span
+-                    >
+-                  </p>
+-                  <p class="hero-term__out" :class="`hero-term__out--${row.tone}`">{{ row.out }}</p>
+-                </template>
+-
+-                <button
+-                  type="button"
+-                  class="hero-term__open"
+-                  aria-label="Ouvrir le terminal interactif"
+-                  aria-haspopup="dialog"
+-                  @click="openTerminal"
+-                >
+-                  <span class="prm"
+-                    ><span class="prm__user">anon.@jouan.ovh</span><span class="prm__sep">:</span
+-                    ><span class="prm__dir">~</span><span class="prm__sep">$ </span><span class="prm__cmd">help</span
+-                    ><span class="prm__caret" aria-hidden="true"
+-                  /></span>
+-                </button>
+-              </div>
+-            </div>
++            <HomeHeroTerminal :auto-start="isBootFinished" />
+           </div>
+         </div>
+       </div>
+@@ -129,20 +101,21 @@
+ </template>
+ 
+ <script setup lang="ts">
+-// Page d'accueil — hero Terminal (A) + aperçu services + stats. Porté de Home.jsx
+-// (HeroTerminal / ServicesPreview / StatsProjects) du UI kit : recréation Vue 3 +
+-// tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2, 3.3)
++// Page d'accueil — refonte Hero Full Stack TS & Terminal cinétique (Story 11.2).
++// Architecture multi-pages Nuxt 4, dark-first, accent orange.
++import { ref } from "vue";
+ import { NuxtLink, ZExternalLink } from "#components";
+-import { useTerminal } from "~/composables/useTerminal";
+ import { SITE } from "~/data/site";
+ 
+-// Contenu repris de data.js (window.SITE) — 1re personne, vouvoiement, pas d'emoji.
+-const tagline = "Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils.";
+-const tags = ["php", "symfony", "wordpress", "nest.js", "nuxt.js"];
++const isBootFinished = ref(false);
++
++function onBootComplete() {
++  isBootFinished.value = true;
++}
+ 
+ // Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
+ // (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
+-// `id` = clé v-for stable (indépendante du contenu affiché), cohérent avec terminalRows.
++// `id` = clé v-for stable (indépendante du contenu affiché).
+ const services = [
+   {
+     id: "wordpress",
+@@ -177,28 +150,14 @@ const stats = [
+ // Projets sélectionnés — source unique `app/data/site.ts`. Cartes rendues en liens externes.
+ const projects = SITE.projects;
+ 
+-// Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
+-// côté template (pas de chiffres/projets inventés : stats & projets = stories 3.2 / 3.3).
+-// `id` = clé v-for stable (indépendante du contenu affiché), garantie unique.
+-const terminalRows = [
+-  { id: "line-1", cmd: "whoami", out: "Simon Jouan — Développeur web freelance", tone: "ink" },
+-  { id: "line-2", cmd: "cat stack.txt", out: "PHP/Symfony · WordPress · Node/Nest · Nuxt", tone: "blue" },
+-  { id: "line-3", cmd: "ls ~/projets", out: "keova.app/   patio-conseil.fr/", tone: "green" },
+-];
+-
+-// Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le
+-// header). No-op tant qu'aucun terminal n'est disponible (prerender). La
+-// restylisation du terminal lui-même relève d'Epic 8.
+-const { open: openTerminal } = useTerminal();
+-
+ const siteUrl = useSiteUrl();
+ const homeJsonLd = [
+   {
+     "@context": "https://schema.org",
+     "@type": "WebSite",
+-    name: "Simon Jouan — Développeur web freelance",
++    name: "Simon Jouan — Développeur Full Stack TypeScript",
+     url: siteUrl,
+-    description: tagline,
++    description: SITE.profile.role,
+   },
+   {
+     "@context": "https://schema.org",
+@@ -217,9 +176,9 @@ const homeJsonLd = [
+ ];
+ 
+ usePageSeo({
+-  title: "Simon Jouan — Développeur web freelance & IA",
++  title: "Simon Jouan — Développeur Full Stack TypeScript · Nuxt & NestJS",
+   description:
+-    "Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA.",
++    "Développeur Full Stack TypeScript freelance : création d'applications web et plateformes SaaS modernes avec Nuxt, NestJS et PostgreSQL.",
+   path: "/",
+   image: "/images/portrait.jpeg",
+   type: "website",
+@@ -313,168 +272,32 @@ usePageSeo({
+   margin-bottom: var(--space-6);
+ }
+ 
+-// .hero__tags : primitive de layout globale (app/assets/scss/base/_layout.scss).
+-
+-// ---- Fenêtre terminal décorative (porté de TerminalWindow.jsx / Prompt.jsx) ----
+
+exec
+/bin/zsh -lc "sed -n '781,1040p' docs/implementation-artifacts/code-reviews/11-2/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+-// Dérogation tokens-only assumée : les dimensions fixes du chrome (hauteur min
+-// de fenêtre 300px, barre 30px, pastilles 13px / gap 7px) reproduisent à
+-// l'identique la spec du composant DS et n'ont pas de token d'espacement
+-// équivalent (échelle base-4). Couleurs, rayons et ombres restent en tokens.
+-// `min-height` (et non `height`) : la fenêtre s'étend au contenu — pas de
+-// scrollbar parasite si le rendu mono dépasse de quelques px.
+-.hero-term {
+-  display: flex;
+-  flex-direction: column;
+-  min-height: 300px;
+-  overflow: hidden;
+-  border: 1px solid var(--accent-2-soft);
+-  border-radius: var(--radius-sm);
+-  box-shadow: var(--glow-terminal);
+-}
+-
+-.hero-term__bar {
+-  position: relative;
+-  display: flex;
+-  flex: none;
++// ---- Badge de disponibilité & CTAs ----
++.hero__badge-wrap {
++  display: inline-flex;
+   align-items: center;
+   gap: var(--space-2);
+-  height: 30px;
+-  padding: 0 var(--space-3);
+-  background: var(--aubergine-black);
+-}
+-
+-.hero-term__dots {
+-  display: flex;
+-  align-items: center;
+-  gap: 7px;
+-}
+-
+-.hero-term__dot {
+-  width: 13px;
+-  height: 13px;
+-  border-radius: var(--radius-circle);
+-}
+-
+-.hero-term__dot--close {
+-  background: var(--term-red);
+-}
+-
+-.hero-term__dot--min {
+-  background: var(--term-yellow);
+-}
+-
+-.hero-term__dot--max {
+-  background: var(--term-green);
+-}
+-
+-.hero-term__title {
+-  position: absolute;
+-  inset: 0;
+-  font-family: var(--font-mono);
+-  font-size: var(--fs-xs);
+-  letter-spacing: var(--ls-wide);
+-  color: var(--text-muted);
+-  text-align: center;
+-  pointer-events: none;
+-}
+-
+-.hero-term__body {
+-  flex: 1;
+-  min-height: 0;
+-  padding: var(--space-4);
+-  overflow: auto;
++  margin-bottom: var(--space-6);
+   font-family: var(--font-mono);
+   font-size: var(--fs-sm);
+-  line-height: var(--lh-snug);
+-  color: var(--ink-1);
+-  background: var(--bg-terminal);
+-  overflow-wrap: break-word;
+-}
+-
+-@supports (backdrop-filter: blur(5px)) {
+-  .hero-term__body {
+-    background: color-mix(in srgb, var(--bg-terminal) 86%, transparent);
+-    backdrop-filter: blur(5px);
+-  }
+-}
+-
+-.hero-term__line {
+-  margin: 0;
+-}
+-
+-.hero-term__out {
+-  margin: 0 0 var(--space-4);
+-}
+-
+-.hero-term__out--ink {
+-  color: var(--ink-1);
+-}
+-
+-.hero-term__out--blue {
+-  color: var(--term-blue);
+-}
+-
+-.hero-term__out--green {
+-  color: var(--term-green);
+-}
++  color: var(--text-muted);
+ 
+-// Ligne « help » cliquable → ouvre l'easter-egg terminal (bouton natif = clavier OK).
+-.hero-term__open {
+-  display: block;
+-  width: 100%;
+-  padding: 0;
+-  font: inherit;
+-  text-align: left;
+-  cursor: pointer;
+-  background: none;
+-  border: none;
+-  border-radius: var(--radius-xs);
++  a {
++    color: var(--accent);
++    text-decoration: underline;
+ 
+-  &:focus-visible {
+-    // Outline transparent : invisible en rendu normal (le ring box-shadow prend le
+-    // relais), mais rendu en couleur système sous forced-colors (Windows High
+-    // Contrast), où les box-shadow sont neutralisées — focus toujours visible.
+-    outline: 2px solid transparent;
+-    outline-offset: 2px;
+-    box-shadow: var(--ring-accent);
++    &:hover {
++      color: var(--accent-hover);
++    }
+   }
+ }
+ 
+-// ---- Prompt (porté de Prompt.jsx : couleurs héritage) ----
+-.prm {
+-  font-family: var(--font-mono);
+-}
+-
+-.prm__user {
+-  font-weight: var(--fw-bold);
+-  color: var(--prompt);
+-}
+-
+-.prm__sep {
+-  color: var(--ink-1);
+-}
+-
+-.prm__dir {
+-  font-weight: var(--fw-bold);
+-  color: var(--term-blue);
+-}
+-
+-.prm__cmd {
+-  color: var(--ink-1);
+-}
+-
+-// Caret : dimensions en em reprises telles quelles de Prompt.jsx (glyphe
+-// proportionnel à la police) — pas de token équivalent pour un curseur.
+-.prm__caret {
+-  display: inline-block;
+-  width: 0.55em;
+-  height: 1.05em;
+-  margin-left: 1px;
+-  vertical-align: text-bottom;
+-  background: var(--prompt);
+-
+-  // Seule animation en boucle de l'UI (caret terminal). Keyframe globale (_root.scss).
+-  animation: caret-blink 1s steps(1) infinite;
++.hero__pulse-dot {
++  width: 8px;
++  height: 8px;
++  border-radius: var(--radius-circle);
++  background: var(--term-green);
++  box-shadow: 0 0 8px var(--term-green);
+ }
+ 
+ .section__title {
+@@ -658,8 +481,7 @@ usePageSeo({
+ }
+ 
+ @media (prefers-reduced-motion: reduce) {
+-  .anim,
+-  .prm__caret {
++  .anim {
+     animation: none;
+   }
+ }
+diff --git a/docs/implementation-artifacts/11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique.md b/docs/implementation-artifacts/11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique.md
+new file mode 100644
+index 0000000..7bd200c
+--- /dev/null
++++ b/docs/implementation-artifacts/11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique.md
+@@ -0,0 +1,141 @@
++---
++baseline_commit: 5f72e8c14627deb82e7d7c8f8f7f2227b00bd0d4
++---
++
++# Story 11.2: Séquence de Boot interactive (`jouan.os`) & Hero commercial cinétique
++
++Status: review
++
++<!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
++
++## Story
++
++As a prospect technique ou client potentiel visitant la page d'accueil,
++I want assister au démarrage stylisé du terminal et visualiser immédiatement le titre officiel « Développeur Full Stack TypeScript — Nuxt / NestJS »,
++so that je comprends instantanément le métier de Simon, sa disponibilité et ses technologies phares en moins de 5 secondes (FR19, FR20, UX-DR19, UX-DR20, CAP-2, CAP-3).
++
++## Acceptance Criteria
++
++1. **Given** un visiteur arrivant sur la page d'accueil
++   **When** la page se charge pour la première fois de la session
++   **Then** l'overlay de boot (`HomeBootOverlay.vue`, simulant `jouan.os`) s'affiche au premier plan (`z-index: 200`), déroule la montée en charge système (`initialisation du noyau…`, `montage de /dev/portfolio`, `chargement des polices Ubuntu Mono`, `compilation des projets [ok]`, `démarrage du serveur [ok]`) avec jauge de progression
++   **And** l'overlay s'efface automatiquement (transition d'opacité vers disparition) après 1.0s à 1.5s
++   **And** un clic n'importe où sur l'overlay ou la pression sur la touche `Escape` court-circuite immédiatement l'animation (`finishBoot`)
++   **And** la consultation du boot est mémorisée dans `sessionStorage` (`jouan_boot_done`) afin de ne pas rejouer la séquence lors des navigations ultérieures au sein de la même session
++   **And** sous `@media (prefers-reduced-motion: reduce)`, la séquence de boot est immédiatement court-circuitée sans animation ni délai.
++
++2. **Given** la fin de la séquence de boot (ou son contournement immédiat)
++   **When** le hero s'affiche
++   **Then** le composant terminal hero (`HomeHeroTerminal.vue`) déclenche sa simulation de frappe séquentielle progressive (effet machine à écrire) :
++     - `$ whoami` → `Simon Jouan — Full Stack TS Engineer (Nuxt / NestJS)`
++     - `$ cat focus.txt` → `SaaS, web apps, clean architecture, automated testing (QA) & AI engineering`
++     - `$ ls ~/projets` → `keova.app/  tryon-saas/  nodium-lab/`
++   **And** à la fin de la séquence, une invite `$ help` reste affichée avec un caret natif clignotant (`caret-blink`), et le bouton d'ouverture de l'easter-egg terminal modal (`useTerminal().open`) reste 100 % opérationnel avec son attribut accessible `aria-haspopup="dialog"`
++   **And** sous `@media (prefers-reduced-motion: reduce)`, les lignes du terminal hero s'affichent instantanément en texte statique complet sans animation de frappe, le caret restant figé visible.
++
++3. **Given** la colonne gauche du Hero commercial sur `app/pages/index.vue`
++   **When** le visiteur visualise la zone d'accroche principale
++   **Then** la hiérarchie de contenu affiche en typographie Ubuntu :
++     - Sur-titre / eyebrow : `<p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>` (sans rupture d'outline sémantique)
++     - Titre principal `<h1>` : `Développeur Full Stack TypeScript`
++     - Sous-titre descriptif : `Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.`
++     - Badge de statut de disponibilité : puce pulsée (`--success`), texte `Disponible pour missions freelance · Profil Malt vérifié`, encapsulant un lien accessible vers Malt via `<ZExternalLink :href="SITE.profile.maltUrl">`
++     - Groupe de CTAs d'action :
++       - CTA primaire : `<ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">Discuter de votre projet<template #iconRight><ZIcon name="arrow" /></template></ZButton>`
++       - CTA secondaire : `<ZButton :as="NuxtLink" to="/about" variant="secondary" size="lg">Voir le parcours &amp; CV</ZButton>`
++   **And** les anciens tags WordPress/PHP (`php`, `symfony`, `wordpress`) et l'ancienne accroche (« Du code sur-mesure, de l'IA utile ») sont définitivement retirés du Hero.
++
++4. **Given** l'ensemble des intégrations de la story
++   **When** on exécute la gate de validation Docker
++   **Then** `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` réussit avec 0 erreur ESLint/Stylelint, 0 erreur TypeScript, et 13 routes statiques générées avec succès par Nitro.
++
++## Tasks / Subtasks
++
++- [x] Tâche 1 — Création du composant de démarrage `app/components/home/HomeBootOverlay.vue` (AC: 1)
++  - [x] Définir la structure HTML/template (`.boot`, `.boot__in`, `.boot__logo` avec nom `jouan.os`, `.boot__line`, `.boot__bar` avec barre `<i>`, `.boot__skip`).
++  - [x] Implémenter les étapes de boot textuelles (`bootSteps`) et la barre de progression linéaire.
++  - [x] Ajouter la gestion du stockage en `sessionStorage` (`jouan_boot_done`) encapsulée dans `onMounted()` avec garde `import.meta.client`.
++  - [x] Permettre l'interruption immédiate au clic ou via la touche `Escape` (avec écouteur nettoyé dans `onUnmounted()`).
++  - [x] Supporter `prefers-reduced-motion: reduce` en zappant instantanément la séquence (`finishBoot()`).
++  - [x] Émettre l'événement `@boot-complete` vers le composant parent pour synchroniser le démarrage du terminal hero.
++  - [x] Styliser en SCSS scoped en utilisant exclusivement les tokens CSS (`--surface-0`, `--text-strong`, `--text-muted`, `--term-green`, `--surface-3`, `--accent`, `--aubergine-light`, `--text-faint`).
++
++- [x] Tâche 2 — Création du composant terminal hero `app/components/home/HomeHeroTerminal.vue` (AC: 2)
++  - [x] Extraire et modulariser la fenêtre terminal décorative du hero dans `app/components/home/HomeHeroTerminal.vue`.
++  - [x] Implémenter la séquence de frappe séquentielle progressive (effet machine à écrire) pour les commandes `$ whoami`, `$ cat focus.txt` et `$ ls ~/projets` alignées sur le positionnement Full Stack TS.
+
+exec
+/bin/zsh -lc "sed -n '1041,1300p' docs/implementation-artifacts/code-reviews/11-2/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
++  - [x] Conserver le bouton d'ouverture modal de l'easter-egg terminal (`anon.@jouan.ovh:~$ help`) avec `aria-haspopup="dialog"`, `aria-label="Ouvrir le terminal interactif"` et appel à `useTerminal().open`.
++  - [x] Assurer la neutralisation sous `prefers-reduced-motion: reduce` : contenu affiché immédiatement dans son état final, caret figé visible.
++  - [x] Styliser avec les variables de Design System (`--bg-terminal`, `--font-mono`, `--term-red`, `--term-yellow`, `--term-green`, `--term-blue`, etc.).
++
++- [x] Tâche 3 — Refonte commerciale de la colonne gauche du Hero sur `app/pages/index.vue` (AC: 3)
++  - [x] Mettre à jour l'eyebrow : `// DÉVELOPPEUR FREELANCE · NUXT & NESTJS`.
++  - [x] Mettre à jour le titre `h1` : `Développeur Full Stack TypeScript`.
++  - [x] Remplacer le sous-titre par le pitch commercial ciblé Nuxt / NestJS / PostgreSQL.
++  - [x] Intégrer le badge de disponibilité avec puce pulsée et lien `<ZExternalLink :href="SITE.profile.maltUrl">Profil Malt vérifié</ZExternalLink>`.
++  - [x] Adapter les boutons d'appel à l'action : bouton principal vers `/contact` (« Discuter de votre projet ») et secondaire vers `/about` (« Voir le parcours & CV »).
++  - [x] Supprimer la liste de tags legacy (`tags = ["php", "symfony", "wordpress", ...]`) du template hero.
++  - [x] Intégrer `<HomeBootOverlay @boot-complete="onBootComplete" />` et `<HomeHeroTerminal :auto-start="isBootFinished" />`.
++
++- [x] Tâche 4 — Validation qualité & Gate Docker (AC: 4)
++  - [x] Exécuter la suite de validation Docker : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
++  - [x] Vérifier la conformité de rendu et l'absence de régression d'hydratation (SSR/SSG Nitro).
++  - [x] Vérifier le comportement d'accessibilité au clavier (`Tab`, `Escape`) et sous contraste forcé.
++
++## Dev Notes
++
++### Architecture & Contraintes d'environnement
++- **Environnement Docker STRICT :** Toute commande d'outillage (`pnpm lint`, `pnpm typecheck`, `pnpm generate`) doit impérativement s'exécuter dans le conteneur Docker `docker compose run --rm web sh -c "corepack enable && pnpm <cmd>"`. Ne jamais lancer `pnpm` sur la machine hôte macOS. [Source: AGENTS.md#Section 2]
++- **Tokens CSS & Design System :** Aucune couleur ou espacement en dur. Consommer exclusivement les variables de tokens exposées dans `:root` (`var(--surface-0)`, `var(--text-strong)`, `var(--text-muted)`, `var(--term-green)`, `var(--accent)`, etc.). Pas de préfixes vendeurs manuels (Stylelint interdit `-webkit-*`). [Source: AGENTS.md#Section 3]
++- **SSR / SSG Nitro Prerender Safety :** Tout accès direct aux APIs navigateur (`window`, `document`, `sessionStorage`, `matchMedia`) DOIT être encapsulé dans un hook `onMounted()` ou conditionné par `if (import.meta.client)`. [Source: AGENTS.md#Section 5]
++- **Accessibilité (a11y) :**
++  - Le lien externe vers Malt DOIT utiliser `<ZExternalLink>` (`app/components/ui/ZExternalLink.vue`).
++  - Seul le caret de frappe actif clignote ; les carets décoratifs ou sous reduced-motion doivent être figés visibles.
++  - La touche `Escape` court-circuite le boot overlay et ne bloque aucun focus.
++  - Les puces pulsées doivent être stylisées sans animations violentes (pulsation douce ou opacité).
++
++### Analyse des fichiers modifiés et créés
++- **`app/components/home/HomeBootOverlay.vue`** (NEW) : Overlay de démarrage `jouan.os`. Déclenche la montée système, gère le dismiss (`click`, `Escape`, timer, `sessionStorage`), neutralisé sous reduced motion.
++- **`app/components/home/HomeHeroTerminal.vue`** (NEW) : Terminal hero cinétique avec animation de frappe des commandes cibles, invitant ensuite à ouvrir l'easter-egg terminal.
++- **`app/pages/index.vue`** (UPDATE) : Remplacement du hero existant par le nouveau hero commercial Full Stack TS, intégration de `HomeBootOverlay` et `HomeHeroTerminal`, suppression des données legacy (`tags`, ancienne `tagline`).
++
++### Données & Textes exacts (Source : `sections-mapping.md` et `SPEC.md`)
++- **Eyebrow hero :** `// DÉVELOPPEUR FREELANCE · NUXT & NESTJS`
++- **Titre principal H1 :** `Développeur Full Stack TypeScript`
++- **Pitch sous-titre :** `Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.`
++- **Badge disponibilité :** `Disponible pour missions freelance · Profil Malt vérifié` (lien `SITE.profile.maltUrl`).
++- **Commandes terminal hero :**
++  1. `$ whoami` → `Simon Jouan — Full Stack TS Engineer (Nuxt / NestJS)`
++  2. `$ cat focus.txt` → `SaaS, web apps, clean architecture, automated testing (QA) & AI engineering`
++  3. `$ ls ~/projets` → `keova.app/  tryon-saas/  nodium-lab/`
++  4. Invite finale : `anon.@jouan.ovh:~$ help` avec caret clignotant et déclencheur `openTerminal`.
++
++## Dev Agent Record
++
++### Agent Model Used
++- Gemini 3.7 Flash
++
++### Debug Log References
++- Résolution des erreurs de formatage Prettier sur `HomeHeroTerminal.vue` et `app/pages/index.vue`.
++- Résolution du typage TypeScript (`ITermRow` narrow) dans le callback asynchrone `typeRow` de `HomeHeroTerminal.vue`.
++- Validation complète de la suite Docker avec 0 erreur ESLint/Stylelint, 0 erreur TypeScript et 13 routes statiques générées avec succès par Nitro.
++
++### Completion Notes List
++- Composant `HomeBootOverlay.vue` créé avec simulation de démarrage `jouan.os`, barre de progression, écouteur clavier `Escape`, clic de contournement, persistance en `sessionStorage` et support complet de `prefers-reduced-motion`.
++- Composant `HomeHeroTerminal.vue` créé avec simulation de frappe séquentielle des commandes Full Stack TS (`whoami`, `cat focus.txt`, `ls ~/projets`), bouton accessible `help` déclenchant l'easter egg terminal modal, et figeage statique sous reduced motion.
++- Page `app/pages/index.vue` refondue avec nouveau positionnement commercial Full Stack TS, badge Malt vérifié avec lien `<ZExternalLink>`, CTAs d'action ciblés, et orchestration via événement `@boot-complete`.
++
++### File List
++- `app/components/home/HomeBootOverlay.vue` (NEW)
++- `app/components/home/HomeHeroTerminal.vue` (NEW)
++- `app/pages/index.vue` (MODIFIED)
++- `docs/implementation-artifacts/11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique.md` (MODIFIED)
++- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
++
++## References
++
++- [Contrat canonique : docs/specs/spec-home-awwwards/SPEC.md]
++- [Cartographie détaillée : docs/specs/spec-home-awwwards/sections-mapping.md]
++- [Maquette prototype : docs/design_system/ui_kits/jouan-site/Home - Awwwards.html]
++- [Profil Malt officiel : docs/contexte_malt.md]
++- [Directives globales pour agents : AGENTS.md]
++- [Leçons de la Story 11.1 : docs/implementation-artifacts/11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique.md]
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 9235a51..6706d58 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-13 (Story 11.1 done : Préparation de branche, site.ts & Atmosphère)"
++last_updated: "2026-09-13 (Story 11.2 review : Séquence de Boot & Hero commercial)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -120,7 +120,7 @@ development_status:
+   # Epic 11 — Refonte d'accueil Awwwards & Repositionnement Commercial Full Stack TS
+   epic-11: in-progress
+   11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique: done
+-  11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique: backlog
++  11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique: review
+   11-3-marquee-de-stack-moderne-et-vitrine-des-3-services-cibles: backlog
+   11-4-preuves-concretes-saas-journal-technique-et-cta-final-de-conversion: backlog
+   11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker: backlog
+
+codex
+Le diff contient trois surfaces comportementales à tracer : le cycle de boot, l’orchestration `autoStart` du terminal et le lien Malt conditionnel.
+exec
+/bin/zsh -lc "nl -ba app/components/home/HomeBootOverlay.vue | sed -n '35,155p'
+nl -ba app/components/home/HomeHeroTerminal.vue | sed -n '70,190p'
+nl -ba app/pages/index.vue | sed -n '1,55p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    35	const emit = defineEmits<{
+    36	  (e: "boot-complete"): void;
+    37	}>();
+    38	
+    39	const isDismissed = ref(false);
+    40	const isDone = ref(false);
+    41	const currentStepText = ref("");
+    42	const currentStepOk = ref(false);
+    43	const progressPercent = ref(0);
+    44	
+    45	const bootSteps = [
+    46	  { text: "initialisation du noyau…", ok: false },
+    47	  { text: "montage de /dev/portfolio", ok: false },
+    48	  { text: "chargement des polices Ubuntu Mono", ok: false },
+    49	  { text: "compilation des projets", ok: true },
+    50	  { text: "démarrage du serveur", ok: true },
+    51	];
+    52	
+    53	let stepTimeoutId: ReturnType<typeof setTimeout> | null = null;
+    54	let dismissTimeoutId: ReturnType<typeof setTimeout> | null = null;
+    55	
+    56	function finishBoot() {
+    57	  if (isDone.value) return;
+    58	  isDone.value = true;
+    59	  progressPercent.value = 100;
+    60	
+    61	  if (stepTimeoutId !== null) {
+    62	    clearTimeout(stepTimeoutId);
+    63	    stepTimeoutId = null;
+    64	  }
+    65	
+    66	  if (import.meta.client) {
+    67	    try {
+    68	      sessionStorage.setItem("jouan_boot_done", "1");
+    69	    } catch {
+    70	      // Ignore sessionStorage exceptions (private browsing / quota)
+    71	    }
+    72	  }
+    73	
+    74	  emit("boot-complete");
+    75	
+    76	  dismissTimeoutId = setTimeout(() => {
+    77	    isDismissed.value = true;
+    78	  }, 600);
+    79	}
+    80	
+    81	function runBoot() {
+    82	  let stepIndex = 0;
+    83	
+    84	  function next() {
+    85	    if (stepIndex >= bootSteps.length) {
+    86	      stepTimeoutId = setTimeout(finishBoot, 260);
+    87	      return;
+    88	    }
+    89	
+    90	    const step = bootSteps[stepIndex];
+    91	    if (step) {
+    92	      currentStepText.value = step.text;
+    93	      currentStepOk.value = step.ok;
+    94	      progressPercent.value = Math.round(((stepIndex + 1) / bootSteps.length) * 100);
+    95	    }
+    96	    stepIndex++;
+    97	    stepTimeoutId = setTimeout(next, 230);
+    98	  }
+    99	
+   100	  next();
+   101	}
+   102	
+   103	function handleKeydown(e: KeyboardEvent) {
+   104	  if (e.key === "Escape" && !isDone.value) {
+   105	    finishBoot();
+   106	  }
+   107	}
+   108	
+   109	onMounted(() => {
+   110	  if (!import.meta.client) return;
+   111	
+   112	  window.addEventListener("keydown", handleKeydown);
+   113	
+   114	  // Vérifier si la session a déjà vu le boot
+   115	  let alreadyBooted = false;
+   116	  try {
+   117	    alreadyBooted = sessionStorage.getItem("jouan_boot_done") === "1";
+   118	  } catch {
+   119	    alreadyBooted = false;
+   120	  }
+   121	
+   122	  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+   123	
+   124	  if (alreadyBooted || reduceMotion) {
+   125	    isDone.value = true;
+   126	    isDismissed.value = true;
+   127	    emit("boot-complete");
+   128	    return;
+   129	  }
+   130	
+   131	  runBoot();
+   132	});
+   133	
+   134	onUnmounted(() => {
+   135	  if (!import.meta.client) return;
+   136	  window.removeEventListener("keydown", handleKeydown);
+   137	  if (stepTimeoutId !== null) {
+   138	    clearTimeout(stepTimeoutId);
+   139	    stepTimeoutId = null;
+   140	  }
+   141	  if (dismissTimeoutId !== null) {
+   142	    clearTimeout(dismissTimeoutId);
+   143	    dismissTimeoutId = null;
+   144	  }
+   145	});
+   146	</script>
+   147	
+   148	<style lang="scss" scoped>
+   149	/* stylelint-disable selector-class-pattern */
+   150	.boot {
+   151	  position: fixed;
+   152	  inset: 0;
+   153	  z-index: 200;
+   154	  display: flex;
+   155	  align-items: center;
+    70	const props = withDefaults(
+    71	  defineProps<{
+    72	    autoStart?: boolean;
+    73	  }>(),
+    74	  {
+    75	    autoStart: true,
+    76	  },
+    77	);
+    78	
+    79	const { open: openTerminal } = useTerminal();
+    80	
+    81	interface ITermRow {
+    82	  cmd: string;
+    83	  out: string;
+    84	  tone: "ink" | "blue" | "green";
+    85	}
+    86	
+    87	const fullRows: ITermRow[] = [
+    88	  {
+    89	    cmd: "whoami",
+    90	    out: "Simon Jouan — Full Stack TS Engineer (Nuxt / NestJS)",
+    91	    tone: "ink",
+    92	  },
+    93	  {
+    94	    cmd: "cat focus.txt",
+    95	    out: "SaaS, web apps, clean architecture, automated testing (QA) & AI engineering",
+    96	    tone: "blue",
+    97	  },
+    98	  {
+    99	    cmd: "ls ~/projets",
+   100	    out: "keova.app/  tryon-saas/  nodium-lab/",
+   101	    tone: "green",
+   102	  },
+   103	];
+   104	
+   105	const executedRows = ref<ITermRow[]>([]);
+   106	const currentTypingLine = ref<ITermRow | null>(null);
+   107	const currentTypingText = ref("");
+   108	const isSequenceComplete = ref(false);
+   109	
+   110	let typingTimeoutId: ReturnType<typeof setTimeout> | null = null;
+   111	let stepTimeoutId: ReturnType<typeof setTimeout> | null = null;
+   112	let isStarted = false;
+   113	
+   114	function showInstantState() {
+   115	  executedRows.value = [...fullRows];
+   116	  currentTypingLine.value = null;
+   117	  currentTypingText.value = "";
+   118	  isSequenceComplete.value = true;
+   119	}
+   120	
+   121	function startTypingSequence() {
+   122	  if (isStarted) return;
+   123	  isStarted = true;
+   124	
+   125	  const reduceMotion = import.meta.client && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+   126	
+   127	  if (reduceMotion) {
+   128	    showInstantState();
+   129	    return;
+   130	  }
+   131	
+   132	  let rowIndex = 0;
+   133	
+   134	  function typeRow() {
+   135	    if (rowIndex >= fullRows.length) {
+   136	      currentTypingLine.value = null;
+   137	      currentTypingText.value = "";
+   138	      isSequenceComplete.value = true;
+   139	      return;
+   140	    }
+   141	
+   142	    const row = fullRows[rowIndex];
+   143	    if (!row) return;
+   144	
+   145	    const activeRow: ITermRow = row;
+   146	    currentTypingLine.value = activeRow;
+   147	    currentTypingText.value = "";
+   148	
+   149	    let charIndex = 0;
+   150	    const fullCmd = activeRow.cmd;
+   151	
+   152	    function typeChar() {
+   153	      if (charIndex < fullCmd.length) {
+   154	        currentTypingText.value = fullCmd.slice(0, charIndex + 1);
+   155	        charIndex++;
+   156	        typingTimeoutId = setTimeout(typeChar, 46);
+   157	      } else {
+   158	        // Commande entièrement tapée, afficher le résultat après une pause
+   159	        stepTimeoutId = setTimeout(() => {
+   160	          executedRows.value.push(activeRow);
+   161	          currentTypingLine.value = null;
+   162	          currentTypingText.value = "";
+   163	          rowIndex++;
+   164	          stepTimeoutId = setTimeout(typeRow, 280);
+   165	        }, 200);
+   166	      }
+   167	    }
+   168	
+   169	    typeChar();
+   170	  }
+   171	
+   172	  typeRow();
+   173	}
+   174	
+   175	watch(
+   176	  () => props.autoStart,
+   177	  (shouldStart) => {
+   178	    if (shouldStart && !isStarted) {
+   179	      startTypingSequence();
+   180	    }
+   181	  },
+   182	);
+   183	
+   184	onMounted(() => {
+   185	  if (!import.meta.client) return;
+   186	
+   187	  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+   188	  if (reduceMotion) {
+   189	    showInstantState();
+   190	    return;
+     1	<template>
+     2	  <main class="home">
+     3	    <HomeBootOverlay @boot-complete="onBootComplete" />
+     4	    <HomeAtmosComponent />
+     5	    <ZCustomCursor />
+     6	
+     7	    <section class="hero hero__grad">
+     8	      <div class="hero__in container">
+     9	        <div class="hero__grid">
+    10	          <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
+    11	          <div class="anim hero__text">
+    12	            <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
+    13	            <h1 class="hero__title">Développeur Full Stack TypeScript</h1>
+    14	            <p class="hero__sub">
+    15	              Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
+    16	              l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
+    17	            </p>
+    18	
+    19	            <div class="hero__badge-wrap">
+    20	              <span class="hero__pulse-dot" aria-hidden="true" />
+    21	              <span>Disponible pour missions freelance · </span>
+    22	              <ZExternalLink v-if="SITE.profile.maltUrl" :href="SITE.profile.maltUrl">
+    23	                Profil Malt vérifié
+    24	              </ZExternalLink>
+    25	            </div>
+    26	
+    27	            <div class="hero__cta">
+    28	              <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+    29	                Discuter de votre projet
+    30	                <template #iconRight><ZIcon name="arrow" /></template>
+    31	              </ZButton>
+    32	              <ZButton :as="NuxtLink" to="/about" variant="secondary" size="lg"> Voir le parcours &amp; CV </ZButton>
+    33	            </div>
+    34	          </div>
+    35	
+    36	          <!-- Colonne droite : terminal hero cinétique -->
+    37	          <div class="anim hero__term-col">
+    38	            <HomeHeroTerminal :auto-start="isBootFinished" />
+    39	          </div>
+    40	        </div>
+    41	      </div>
+    42	    </section>
+    43	
+    44	    <!-- Aperçu services (porté de ServicesPreview, Home.jsx) -->
+    45	    <section class="section">
+    46	      <div class="container">
+    47	        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je fais</p>
+    48	        <h2 class="section__title">Trois façons de travailler ensemble</h2>
+    49	        <ul class="grid-3">
+    50	          <li v-for="service in services" :key="service.id">
+    51	            <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+    52	              <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+    53	              <h3 class="offer__title">{{ service.title }}</h3>
+    54	              <p class="offer__desc">{{ service.desc }}</p>
+    55	              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+
+exec
+/bin/zsh -lc "nl -ba app/components/home/HomeHeroTerminal.vue | sed -n '184,230p'
+git diff --unified=0 -- docs/implementation-artifacts/code-reviews/11-2/full.diff 2>/dev/null || true" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   184	onMounted(() => {
+   185	  if (!import.meta.client) return;
+   186	
+   187	  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+   188	  if (reduceMotion) {
+   189	    showInstantState();
+   190	    return;
+   191	  }
+   192	
+   193	  if (props.autoStart) {
+   194	    startTypingSequence();
+   195	  }
+   196	});
+   197	
+   198	onUnmounted(() => {
+   199	  if (typingTimeoutId !== null) {
+   200	    clearTimeout(typingTimeoutId);
+   201	    typingTimeoutId = null;
+   202	  }
+   203	  if (stepTimeoutId !== null) {
+   204	    clearTimeout(stepTimeoutId);
+   205	    stepTimeoutId = null;
+   206	  }
+   207	});
+   208	</script>
+   209	
+   210	<style lang="scss" scoped>
+   211	/* stylelint-disable selector-class-pattern */
+   212	.hero-term {
+   213	  display: flex;
+   214	  flex-direction: column;
+   215	  min-height: 300px;
+   216	  overflow: hidden;
+   217	  border: 1px solid var(--accent-2-soft);
+   218	  border-radius: var(--radius-sm);
+   219	  box-shadow: var(--glow-terminal);
+   220	}
+   221	
+   222	.hero-term__bar {
+   223	  position: relative;
+   224	  display: flex;
+   225	  flex: none;
+   226	  align-items: center;
+   227	  gap: var(--space-2);
+   228	  height: 30px;
+   229	  padding: 0 var(--space-3);
+   230	  background: var(--aubergine-black);
+
+exec
+/bin/zsh -lc "rg -n \"maltUrl|interface|profile\" app/data/site.ts app/components/ui/ZExternalLink.vue app/composables/useTerminal.ts | head -80 && sed -n '1,90p' app/data/site.ts && sed -n '1,160p' app/components/ui/ZExternalLink.vue && sed -n '1,180p' app/composables/useTerminal.ts" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+app/components/ui/ZExternalLink.vue:14:interface Props {
+app/data/site.ts:13:export interface IProfile {
+app/data/site.ts:19:  maltUrl?: string;
+app/data/site.ts:22:export interface IProject {
+app/data/site.ts:31:const profile: IProfile = {
+app/data/site.ts:37:  maltUrl: "https://www.malt.fr/profile/simonjouan",
+app/data/site.ts:81:export const SITE = { profile, skills, projects } as const;
+// Source de vérité unique du CONTENU partagé du site (DRY / SRP : les données vivent ici,
+// les composants/programmes ne font que les présenter). Forme portée de
+// `docs/design_system/ui_kits/jouan-site/data.js` (référence du UI kit).
+//
+// Consommé par : pages (`index.vue`, `about.vue`, `contact.vue`), `FooterComponent.vue`,
+// et les programmes terminal (`programs/Skills|Projets|Contact|About.ts`).
+//
+// NB : `experiences` / `degrees` ne sont PAS centralisés ici — leurs formes et leur niveau
+// de détail divergent volontairement entre le CV terminal (`About.ts`, détaillé) et la page
+// `/about` (condensée). Leur réconciliation est une décision de contenu, suivie dans
+// `deferred-work.md`, pas un simple refactor.
+
+export interface IProfile {
+  name: string;
+  role: string;
+  email: string;
+  city: string;
+  available: boolean;
+  maltUrl?: string;
+}
+
+export interface IProject {
+  name: string;
+  role: string;
+  desc: string;
+  url?: string;
+  status?: string;
+  tags: string[];
+}
+
+const profile: IProfile = {
+  name: "Simon Jouan",
+  role: "Développeur Full Stack TypeScript — Nuxt / NestJS",
+  email: "simon@jouan.ovh",
+  city: "Rouen, France",
+  available: true,
+  maltUrl: "https://www.malt.fr/profile/simonjouan",
+};
+
+// Stack technique moderne prioritaire ordonnée.
+const skills: string[] = [
+  "typescript",
+  "nuxt",
+  "vue",
+  "nest.js",
+  "node.js",
+  "postgresql",
+  "typeorm",
+  "stripe",
+  "cypress",
+  "docker",
+  "rest-api",
+  "vitest",
+];
+
+const projects: IProject[] = [
+  {
+    name: "keova.app",
+    role: "Co-fondateur & Développeur Full Stack",
+    desc: "Plateforme SaaS ERP équestre complète conçue et opérée de bout en bout (gestion de pensions, facturation automatisée, réservations).",
+    url: "https://keova.app",
+    status: "En production",
+    tags: ["nuxt", "nest.js", "postgresql", "stripe", "saas"],
+  },
+  {
+    name: "TryOn",
+    role: "CTO & Développeur Full Stack",
+    desc: "Plateforme SaaS B2B d'essayage virtuel de vêtements via l'IA générative (diffusion models, microservices asynchrones, files Redis).",
+    status: "Étude de cas (MVP livré)",
+    tags: ["nuxt", "nest.js", "python", "comfyui", "ia"],
+  },
+  {
+    name: "Nodium",
+    role: "Créateur & Ingénieur IA",
+    desc: "Plateforme desktop d'orchestration d'agents IA autonomes, gestion de permissions et mémoire contextuelle.",
+    status: "R&D / En cours",
+    tags: ["typescript", "electron", "agents", "ia"],
+  },
+];
+
+export const SITE = { profile, skills, projects } as const;
+<template>
+  <a :href="href" :rel="computedRel" target="_blank">
+    <slot />
+    <span class="screen-reader-text">{{ computedSrText }}</span>
+  </a>
+</template>
+
+<script setup lang="ts">
+// Primitive lien externe accessible (DS) — force target="_blank", rel sécurisé ("noopener" garanti),
+// et adjoint un libellé sr-only « (ouvre dans un nouvel onglet) » sans impacter le rendu visuel.
+// (Story 10.3 — WCAG G201 / FR13).
+import { computed } from "vue";
+
+interface Props {
+  /** URL externe cible. */
+  href: string;
+  /**
+   * Relation de lien. Par défaut "noopener" (sécurité window.opener).
+   * Peut être étendu à "noopener noreferrer" si nécessaire. "noopener" reste garanti.
+   * @default "noopener"
+   */
+  rel?: string;
+  /** Libellé accessible alternatif pour l'annonce sr-only. */
+  srText?: string;
+}
+
+const DEFAULT_SR_TEXT = " (ouvre dans un nouvel onglet)";
+
+const props = withDefaults(defineProps<Props>(), {
+  rel: "noopener",
+  srText: DEFAULT_SR_TEXT,
+});
+
+const computedRel = computed(() => {
+  const custom = props.rel?.trim();
+  if (!custom) {
+    return "noopener";
+  }
+  const tokens = new Set(custom.split(/\s+/));
+  tokens.add("noopener");
+  return Array.from(tokens).join(" ");
+});
+
+const computedSrText = computed(() => {
+  return props.srText && props.srText.trim() ? props.srText : DEFAULT_SR_TEXT;
+});
+</script>
+import { ref } from "vue";
+
+// Lanceur partagé de l'easter-egg terminal.
+//
+// Le `TerminalManagerComponent` (qui expose `createNewTerminal()`) est monté dans
+// le `HeaderComponent` ; il n'existe pas d'API globale d'ouverture. Ce registre
+// minimal expose cette ouverture aux autres parties du site (ex. le hero d'accueil
+// story 3.1) sans dupliquer le gestionnaire ni dépendre d'Epic 8.
+//
+// Le header enregistre son lanceur au montage (`register`), les appelants
+// déclenchent l'ouverture (`open`). Tant qu'aucun lanceur n'est enregistré (ex.
+// au prerender `nuxi generate`, avant hydratation), `open()` est un no-op sûr.
+// La restylisation complète du terminal reste du périmètre d'Epic 8.
+
+type TerminalLauncher = () => void;
+
+const launcher = ref<TerminalLauncher | null>(null);
+
+export function useTerminal() {
+  return {
+    /** Enregistre le lanceur réel (appelé par le header au montage). */
+    register(fn: TerminalLauncher) {
+      launcher.value = fn;
+    },
+    /**
+     * Désenregistre le lanceur au démontage. Ne nullifie que si le lanceur
+     * courant est bien `fn` (évite d'effacer un enregistrement plus récent).
+     */
+    unregister(fn: TerminalLauncher) {
+      if (launcher.value === fn) {
+        launcher.value = null;
+      }
+    },
+    /** Ouvre un terminal si un lanceur est disponible ; no-op sinon. */
+    open() {
+      launcher.value?.();
+    },
+  };
+}
+
+codex
+[
+  {
+    "location": "app/pages/index.vue:3",
+    "trigger_condition": "JavaScript is disabled or hydration never starts",
+    "guard_snippet": "<ClientOnly><HomeBootOverlay @boot-complete=\"onBootComplete\" /></ClientOnly>",
+    "potential_consequence": "Static page remains covered by a non-dismissible boot overlay."
+  },
+  {
+    "location": "app/components/home/HomeBootOverlay.vue:124-128",
+    "trigger_condition": "Reduced-motion bypass completes before storing the session marker",
+    "guard_snippet": "try { sessionStorage.setItem('jouan_boot_done', '1'); } catch { /* ignore */ }",
+    "potential_consequence": "Preference changes later replay the boot within the same session."
+  },
+  {
+    "location": "app/pages/index.vue:19-24",
+    "trigger_condition": "SITE.profile.available is false",
+    "guard_snippet": "v-if=\"SITE.profile.available\"",
+    "potential_consequence": "Hero falsely claims Simon is available for freelance missions."
+  },
+  {
+    "location": "app/pages/index.vue:21-24",
+    "trigger_condition": "SITE.profile.maltUrl is missing or empty",
+    "guard_snippet": "<span>Disponible pour missions freelance<template v-if='SITE.profile.maltUrl'> · </template></span>",
+    "potential_consequence": "Badge displays a dangling separator and omits the Malt link."
+  },
+  {
+    "location": "app/components/home/HomeHeroTerminal.vue:187-190",
+    "trigger_condition": "Reduced motion is enabled initially, then disabled before autoStart becomes true",
+    "guard_snippet": "isStarted = true; showInstantState();",
+    "potential_consequence": "Static rows remain and the same rows are appended again."
+  }
+]
+tokens used
+56 867
+[
+  {
+    "location": "app/pages/index.vue:3",
+    "trigger_condition": "JavaScript is disabled or hydration never starts",
+    "guard_snippet": "<ClientOnly><HomeBootOverlay @boot-complete=\"onBootComplete\" /></ClientOnly>",
+    "potential_consequence": "Static page remains covered by a non-dismissible boot overlay."
+  },
+  {
+    "location": "app/components/home/HomeBootOverlay.vue:124-128",
+    "trigger_condition": "Reduced-motion bypass completes before storing the session marker",
+    "guard_snippet": "try { sessionStorage.setItem('jouan_boot_done', '1'); } catch { /* ignore */ }",
+    "potential_consequence": "Preference changes later replay the boot within the same session."
+  },
+  {
+    "location": "app/pages/index.vue:19-24",
+    "trigger_condition": "SITE.profile.available is false",
+    "guard_snippet": "v-if=\"SITE.profile.available\"",
+    "potential_consequence": "Hero falsely claims Simon is available for freelance missions."
+  },
+  {
+    "location": "app/pages/index.vue:21-24",
+    "trigger_condition": "SITE.profile.maltUrl is missing or empty",
+    "guard_snippet": "<span>Disponible pour missions freelance<template v-if='SITE.profile.maltUrl'> · </template></span>",
+    "potential_consequence": "Badge displays a dangling separator and omits the Malt link."
+  },
+  {
+    "location": "app/components/home/HomeHeroTerminal.vue:187-190",
+    "trigger_condition": "Reduced motion is enabled initially, then disabled before autoStart becomes true",
+    "guard_snippet": "isStarted = true; showInstantState();",
+    "potential_consequence": "Static rows remain and the same rows are appended again."
+  }
+]

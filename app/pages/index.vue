@@ -1,69 +1,44 @@
 <template>
   <main class="home">
+    <ClientOnly>
+      <HomeBootOverlay @boot-complete="onBootComplete" />
+    </ClientOnly>
     <HomeAtmosComponent />
     <ZCustomCursor />
 
     <section class="hero hero__grad">
       <div class="hero__in container">
         <div class="hero__grid">
-          <!-- Colonne gauche : accroche, CTA, tags -->
+          <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
           <div class="anim hero__text">
-            <p class="eyebrow"><span aria-hidden="true">// </span>développeur web freelance</p>
-            <h1 class="hero__title">Du code <em>sur-mesure</em>,<br />de l'IA <em>utile</em>.</h1>
-            <p class="hero__sub">{{ tagline }}</p>
+            <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
+            <h1 class="hero__title">Développeur Full Stack TypeScript</h1>
+            <p class="hero__sub">
+              Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
+              l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
+            </p>
+
+            <div class="hero__badge-wrap">
+              <span class="hero__pulse-dot" aria-hidden="true" />
+              <span>Disponible pour missions freelance</span>
+              <template v-if="SITE.profile.maltUrl">
+                <span aria-hidden="true"> · </span>
+                <ZExternalLink :href="SITE.profile.maltUrl"> Profil Malt vérifié </ZExternalLink>
+              </template>
+            </div>
+
             <div class="hero__cta">
               <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
-                Démarrer un projet
+                Discuter de votre projet
                 <template #iconRight><ZIcon name="arrow" /></template>
               </ZButton>
-              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir les services </ZButton>
+              <ZButton :as="NuxtLink" to="/about" variant="secondary" size="lg"> Voir le parcours &amp; CV </ZButton>
             </div>
-            <ul class="hero__tags">
-              <li v-for="tag in tags" :key="tag">
-                <ZTag>{{ tag }}</ZTag>
-              </li>
-            </ul>
           </div>
 
-          <!-- Colonne droite : fenêtre terminal décorative (statique) -->
+          <!-- Colonne droite : terminal hero cinétique -->
           <div class="anim hero__term-col">
-            <div class="hero-term">
-              <div class="hero-term__bar">
-                <span class="hero-term__dots" aria-hidden="true">
-                  <span class="hero-term__dot hero-term__dot--close" />
-                  <span class="hero-term__dot hero-term__dot--min" />
-                  <span class="hero-term__dot hero-term__dot--max" />
-                </span>
-                <span class="hero-term__title">anon.@jouan.ovh: ~</span>
-              </div>
-
-              <div class="hero-term__body">
-                <template v-for="row in terminalRows" :key="row.id">
-                  <p class="hero-term__line" aria-hidden="true">
-                    <span class="prm"
-                      ><span class="prm__user">anon.@jouan.ovh</span><span class="prm__sep">:</span
-                      ><span class="prm__dir">~</span><span class="prm__sep">$ </span
-                      ><span class="prm__cmd">{{ row.cmd }}</span></span
-                    >
-                  </p>
-                  <p class="hero-term__out" :class="`hero-term__out--${row.tone}`">{{ row.out }}</p>
-                </template>
-
-                <button
-                  type="button"
-                  class="hero-term__open"
-                  aria-label="Ouvrir le terminal interactif"
-                  aria-haspopup="dialog"
-                  @click="openTerminal"
-                >
-                  <span class="prm"
-                    ><span class="prm__user">anon.@jouan.ovh</span><span class="prm__sep">:</span
-                    ><span class="prm__dir">~</span><span class="prm__sep">$ </span><span class="prm__cmd">help</span
-                    ><span class="prm__caret" aria-hidden="true"
-                  /></span>
-                </button>
-              </div>
-            </div>
+            <HomeHeroTerminal :auto-start="isBootFinished" />
           </div>
         </div>
       </div>
@@ -129,20 +104,21 @@
 </template>
 
 <script setup lang="ts">
-// Page d'accueil — hero Terminal (A) + aperçu services + stats. Porté de Home.jsx
-// (HeroTerminal / ServicesPreview / StatsProjects) du UI kit : recréation Vue 3 +
-// tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2, 3.3)
+// Page d'accueil — refonte Hero Full Stack TS & Terminal cinétique (Story 11.2).
+// Architecture multi-pages Nuxt 4, dark-first, accent orange.
+import { ref } from "vue";
 import { NuxtLink, ZExternalLink } from "#components";
-import { useTerminal } from "~/composables/useTerminal";
 import { SITE } from "~/data/site";
 
-// Contenu repris de data.js (window.SITE) — 1re personne, vouvoiement, pas d'emoji.
-const tagline = "Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils.";
-const tags = ["php", "symfony", "wordpress", "nest.js", "nuxt.js"];
+const isBootFinished = ref(false);
+
+function onBootComplete() {
+  isBootFinished.value = true;
+}
 
 // Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
 // (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
-// `id` = clé v-for stable (indépendante du contenu affiché), cohérent avec terminalRows.
+// `id` = clé v-for stable (indépendante du contenu affiché).
 const services = [
   {
     id: "wordpress",
@@ -177,28 +153,14 @@ const stats = [
 // Projets sélectionnés — source unique `app/data/site.ts`. Cartes rendues en liens externes.
 const projects = SITE.projects;
 
-// Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
-// côté template (pas de chiffres/projets inventés : stats & projets = stories 3.2 / 3.3).
-// `id` = clé v-for stable (indépendante du contenu affiché), garantie unique.
-const terminalRows = [
-  { id: "line-1", cmd: "whoami", out: "Simon Jouan — Développeur web freelance", tone: "ink" },
-  { id: "line-2", cmd: "cat stack.txt", out: "PHP/Symfony · WordPress · Node/Nest · Nuxt", tone: "blue" },
-  { id: "line-3", cmd: "ls ~/projets", out: "keova.app/   patio-conseil.fr/", tone: "green" },
-];
-
-// Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le
-// header). No-op tant qu'aucun terminal n'est disponible (prerender). La
-// restylisation du terminal lui-même relève d'Epic 8.
-const { open: openTerminal } = useTerminal();
-
 const siteUrl = useSiteUrl();
 const homeJsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Simon Jouan — Développeur web freelance",
+    name: "Simon Jouan — Développeur Full Stack TypeScript",
     url: siteUrl,
-    description: tagline,
+    description: SITE.profile.role,
   },
   {
     "@context": "https://schema.org",
@@ -217,9 +179,9 @@ const homeJsonLd = [
 ];
 
 usePageSeo({
-  title: "Simon Jouan — Développeur web freelance & IA",
+  title: "Simon Jouan — Développeur Full Stack TypeScript · Nuxt & NestJS",
   description:
-    "Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA.",
+    "Développeur Full Stack TypeScript freelance : création d'applications web et plateformes SaaS modernes avec Nuxt, NestJS et PostgreSQL.",
   path: "/",
   image: "/images/portrait.jpeg",
   type: "website",
@@ -313,168 +275,57 @@ usePageSeo({
   margin-bottom: var(--space-6);
 }
 
-// .hero__tags : primitive de layout globale (app/assets/scss/base/_layout.scss).
-
-// ---- Fenêtre terminal décorative (porté de TerminalWindow.jsx / Prompt.jsx) ----
-// Dérogation tokens-only assumée : les dimensions fixes du chrome (hauteur min
-// de fenêtre 300px, barre 30px, pastilles 13px / gap 7px) reproduisent à
-// l'identique la spec du composant DS et n'ont pas de token d'espacement
-// équivalent (échelle base-4). Couleurs, rayons et ombres restent en tokens.
-// `min-height` (et non `height`) : la fenêtre s'étend au contenu — pas de
-// scrollbar parasite si le rendu mono dépasse de quelques px.
-.hero-term {
-  display: flex;
-  flex-direction: column;
-  min-height: 300px;
-  overflow: hidden;
-  border: 1px solid var(--accent-2-soft);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--glow-terminal);
-}
-
-.hero-term__bar {
-  position: relative;
-  display: flex;
-  flex: none;
+// ---- Badge de disponibilité & CTAs ----
+.hero__badge-wrap {
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  height: 30px;
-  padding: 0 var(--space-3);
-  background: var(--aubergine-black);
-}
-
-.hero-term__dots {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.hero-term__dot {
-  width: 13px;
-  height: 13px;
-  border-radius: var(--radius-circle);
-}
-
-.hero-term__dot--close {
-  background: var(--term-red);
-}
-
-.hero-term__dot--min {
-  background: var(--term-yellow);
-}
-
-.hero-term__dot--max {
-  background: var(--term-green);
-}
-
-.hero-term__title {
-  position: absolute;
-  inset: 0;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--ls-wide);
-  color: var(--text-muted);
-  text-align: center;
-  pointer-events: none;
-}
-
-.hero-term__body {
-  flex: 1;
-  min-height: 0;
-  padding: var(--space-4);
-  overflow: auto;
+  margin-bottom: var(--space-6);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  line-height: var(--lh-snug);
-  color: var(--ink-1);
-  background: var(--bg-terminal);
-  overflow-wrap: break-word;
-}
+  color: var(--text-muted);
 
-@supports (backdrop-filter: blur(5px)) {
-  .hero-term__body {
-    background: color-mix(in srgb, var(--bg-terminal) 86%, transparent);
-    backdrop-filter: blur(5px);
+  a {
+    color: var(--accent);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--accent-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      box-shadow: var(--ring-accent);
+    }
   }
 }
 
-.hero-term__line {
-  margin: 0;
-}
+.hero__pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-circle);
+  background: var(--success);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 60%, transparent);
+  animation: pulse-dot 2.2s infinite var(--ease-out);
 
-.hero-term__out {
-  margin: 0 0 var(--space-4);
-}
-
-.hero-term__out--ink {
-  color: var(--ink-1);
-}
-
-.hero-term__out--blue {
-  color: var(--term-blue);
-}
-
-.hero-term__out--green {
-  color: var(--term-green);
-}
-
-// Ligne « help » cliquable → ouvre l'easter-egg terminal (bouton natif = clavier OK).
-.hero-term__open {
-  display: block;
-  width: 100%;
-  padding: 0;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  background: none;
-  border: none;
-  border-radius: var(--radius-xs);
-
-  &:focus-visible {
-    // Outline transparent : invisible en rendu normal (le ring box-shadow prend le
-    // relais), mais rendu en couleur système sous forced-colors (Windows High
-    // Contrast), où les box-shadow sont neutralisées — focus toujours visible.
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    box-shadow: var(--ring-accent);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 }
 
-// ---- Prompt (porté de Prompt.jsx : couleurs héritage) ----
-.prm {
-  font-family: var(--font-mono);
-}
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 60%, transparent);
+  }
 
-.prm__user {
-  font-weight: var(--fw-bold);
-  color: var(--prompt);
-}
+  70% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--success) 0%, transparent);
+  }
 
-.prm__sep {
-  color: var(--ink-1);
-}
-
-.prm__dir {
-  font-weight: var(--fw-bold);
-  color: var(--term-blue);
-}
-
-.prm__cmd {
-  color: var(--ink-1);
-}
-
-// Caret : dimensions en em reprises telles quelles de Prompt.jsx (glyphe
-// proportionnel à la police) — pas de token équivalent pour un curseur.
-.prm__caret {
-  display: inline-block;
-  width: 0.55em;
-  height: 1.05em;
-  margin-left: 1px;
-  vertical-align: text-bottom;
-  background: var(--prompt);
-
-  // Seule animation en boucle de l'UI (caret terminal). Keyframe globale (_root.scss).
-  animation: caret-blink 1s steps(1) infinite;
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 0%, transparent);
+  }
 }
 
 .section__title {
@@ -658,8 +509,7 @@ usePageSeo({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .anim,
-  .prm__caret {
+  .anim {
     animation: none;
   }
 }

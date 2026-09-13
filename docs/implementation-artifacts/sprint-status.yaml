@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-13 (Story 11.2 ready-for-dev : Séquence de Boot & Hero commercial)"
+last_updated: "2026-09-13 (Story 11.2 done : Séquence de Boot & Hero commercial)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -120,7 +120,7 @@ development_status:
   # Epic 11 — Refonte d'accueil Awwwards & Repositionnement Commercial Full Stack TS
   epic-11: in-progress
   11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique: done
-  11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique: ready-for-dev
+  11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique: done
   11-3-marquee-de-stack-moderne-et-vitrine-des-3-services-cibles: backlog
   11-4-preuves-concretes-saas-journal-technique-et-cta-final-de-conversion: backlog
   11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker: backlog

@@ -4,7 +4,7 @@ baseline_commit: 5f72e8c14627deb82e7d7c8f8f7f2227b00bd0d4
 
 # Story 11.2: Séquence de Boot interactive (`jouan.os`) & Hero commercial cinétique
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -51,35 +51,45 @@ so that je comprends instantanément le métier de Simon, sa disponibilité et s
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Création du composant de démarrage `app/components/home/HomeBootOverlay.vue` (AC: 1)
-  - [ ] Définir la structure HTML/template (`.boot`, `.boot__in`, `.boot__logo` avec nom `jouan.os`, `.boot__line`, `.boot__bar` avec barre `<i>`, `.boot__skip`).
-  - [ ] Implémenter les étapes de boot textuelles (`bootSteps`) et la barre de progression linéaire.
-  - [ ] Ajouter la gestion du stockage en `sessionStorage` (`jouan_boot_done`) encapsulée dans `onMounted()` avec garde `import.meta.client`.
-  - [ ] Permettre l'interruption immédiate au clic ou via la touche `Escape` (avec écouteur nettoyé dans `onUnmounted()`).
-  - [ ] Supporter `prefers-reduced-motion: reduce` en zappant instantanément la séquence (`finishBoot()`).
-  - [ ] Émettre l'événement `@boot-complete` vers le composant parent pour synchroniser le démarrage du terminal hero.
-  - [ ] Styliser en SCSS scoped en utilisant exclusivement les tokens CSS (`--surface-0`, `--text-strong`, `--text-muted`, `--term-green`, `--surface-3`, `--accent`, `--aubergine-light`, `--text-faint`).
+- [x] Tâche 1 — Création du composant de démarrage `app/components/home/HomeBootOverlay.vue` (AC: 1)
+  - [x] Définir la structure HTML/template (`.boot`, `.boot__in`, `.boot__logo` avec nom `jouan.os`, `.boot__line`, `.boot__bar` avec barre `<i>`, `.boot__skip`).
+  - [x] Implémenter les étapes de boot textuelles (`bootSteps`) et la barre de progression linéaire.
+  - [x] Ajouter la gestion du stockage en `sessionStorage` (`jouan_boot_done`) encapsulée dans `onMounted()` avec garde `import.meta.client`.
+  - [x] Permettre l'interruption immédiate au clic ou via la touche `Escape` (avec écouteur nettoyé dans `onUnmounted()`).
+  - [x] Supporter `prefers-reduced-motion: reduce` en zappant instantanément la séquence (`finishBoot()`).
+  - [x] Émettre l'événement `@boot-complete` vers le composant parent pour synchroniser le démarrage du terminal hero.
+  - [x] Styliser en SCSS scoped en utilisant exclusivement les tokens CSS (`--surface-0`, `--text-strong`, `--text-muted`, `--term-green`, `--surface-3`, `--accent`, `--aubergine-light`, `--text-faint`).
 
-- [ ] Tâche 2 — Création du composant terminal hero `app/components/home/HomeHeroTerminal.vue` (AC: 2)
-  - [ ] Extraire et modulariser la fenêtre terminal décorative du hero dans `app/components/home/HomeHeroTerminal.vue`.
-  - [ ] Implémenter la séquence de frappe séquentielle progressive (effet machine à écrire) pour les commandes `$ whoami`, `$ cat focus.txt` et `$ ls ~/projets` alignées sur le positionnement Full Stack TS.
-  - [ ] Conserver le bouton d'ouverture modal de l'easter-egg terminal (`anon.@jouan.ovh:~$ help`) avec `aria-haspopup="dialog"`, `aria-label="Ouvrir le terminal interactif"` et appel à `useTerminal().open`.
-  - [ ] Assurer la neutralisation sous `prefers-reduced-motion: reduce` : contenu affiché immédiatement dans son état final, caret figé visible.
-  - [ ] Styliser avec les variables de Design System (`--bg-terminal`, `--font-mono`, `--term-red`, `--term-yellow`, `--term-green`, `--term-blue`, etc.).
+- [x] Tâche 2 — Création du composant terminal hero `app/components/home/HomeHeroTerminal.vue` (AC: 2)
+  - [x] Extraire et modulariser la fenêtre terminal décorative du hero dans `app/components/home/HomeHeroTerminal.vue`.
+  - [x] Implémenter la séquence de frappe séquentielle progressive (effet machine à écrire) pour les commandes `$ whoami`, `$ cat focus.txt` et `$ ls ~/projets` alignées sur le positionnement Full Stack TS.
+  - [x] Conserver le bouton d'ouverture modal de l'easter-egg terminal (`anon.@jouan.ovh:~$ help`) avec `aria-haspopup="dialog"`, `aria-label="Ouvrir le terminal interactif"` et appel à `useTerminal().open`.
+  - [x] Assurer la neutralisation sous `prefers-reduced-motion: reduce` : contenu affiché immédiatement dans son état final, caret figé visible.
+  - [x] Styliser avec les variables de Design System (`--bg-terminal`, `--font-mono`, `--term-red`, `--term-yellow`, `--term-green`, `--term-blue`, etc.).
 
-- [ ] Tâche 3 — Refonte commerciale de la colonne gauche du Hero sur `app/pages/index.vue` (AC: 3)
-  - [ ] Mettre à jour l'eyebrow : `// DÉVELOPPEUR FREELANCE · NUXT & NESTJS`.
-  - [ ] Mettre à jour le titre `h1` : `Développeur Full Stack TypeScript`.
-  - [ ] Remplacer le sous-titre par le pitch commercial ciblé Nuxt / NestJS / PostgreSQL.
-  - [ ] Intégrer le badge de disponibilité avec puce pulsée et lien `<ZExternalLink :href="SITE.profile.maltUrl">Profil Malt vérifié</ZExternalLink>`.
-  - [ ] Adapter les boutons d'appel à l'action : bouton principal vers `/contact` (« Discuter de votre projet ») et secondaire vers `/about` (« Voir le parcours & CV »).
-  - [ ] Supprimer la liste de tags legacy (`tags = ["php", "symfony", "wordpress", ...]`) du template hero.
-  - [ ] Intégrer `<HomeBootOverlay @boot-complete="onBootComplete" />` et `<HomeHeroTerminal :auto-start="isBootFinished" />`.
+- [x] Tâche 3 — Refonte commerciale de la colonne gauche du Hero sur `app/pages/index.vue` (AC: 3)
+  - [x] Mettre à jour l'eyebrow : `// DÉVELOPPEUR FREELANCE · NUXT & NESTJS`.
+  - [x] Mettre à jour le titre `h1` : `Développeur Full Stack TypeScript`.
+  - [x] Remplacer le sous-titre par le pitch commercial ciblé Nuxt / NestJS / PostgreSQL.
+  - [x] Intégrer le badge de disponibilité avec puce pulsée et lien `<ZExternalLink :href="SITE.profile.maltUrl">Profil Malt vérifié</ZExternalLink>`.
+  - [x] Adapter les boutons d'appel à l'action : bouton principal vers `/contact` (« Discuter de votre projet ») et secondaire vers `/about` (« Voir le parcours & CV »).
+  - [x] Supprimer la liste de tags legacy (`tags = ["php", "symfony", "wordpress", ...]`) du template hero.
+  - [x] Intégrer `<HomeBootOverlay @boot-complete="onBootComplete" />` et `<HomeHeroTerminal :auto-start="isBootFinished" />`.
 
-- [ ] Tâche 4 — Validation qualité & Gate Docker (AC: 4)
-  - [ ] Exécuter la suite de validation Docker : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
-  - [ ] Vérifier la conformité de rendu et l'absence de régression d'hydratation (SSR/SSG Nitro).
-  - [ ] Vérifier le comportement d'accessibilité au clavier (`Tab`, `Escape`) et sous contraste forcé.
+- [x] Tâche 4 — Validation qualité & Gate Docker (AC: 4)
+  - [x] Exécuter la suite de validation Docker : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
+  - [x] Vérifier la conformité de rendu et l'absence de régression d'hydratation (SSR/SSG Nitro).
+  - [x] Vérifier le comportement d'accessibilité au clavier (`Tab`, `Escape`) et sous contraste forcé.
+
+### Review Findings
+
+- [x] [Review][Patch] Puce de disponibilité non pulsée et mauvais token CSS (`--term-green` au lieu de `--success`) [app/pages/index.vue:295]
+- [x] [Review][Patch] Persistance sessionStorage manquante lors du contournement prefers-reduced-motion [app/components/home/HomeBootOverlay.vue:124]
+- [x] [Review][Patch] Données projets et profil hardcodées dans le terminal hero (violation DRY) [app/components/home/HomeHeroTerminal.vue:87]
+- [x] [Review][Patch] Calibrage des temporisations du boot overlay dans la fenêtre 1.0s à 1.5s [app/components/home/HomeBootOverlay.vue:45]
+- [x] [Review][Patch] Séparateur orphelin si MaltUrl absent et repli a11y focus-visible forced-colors [app/pages/index.vue:21,285]
+- [x] [Review][Patch] Encapsulation ClientOnly du boot overlay pour éliminer le flash SSR [app/pages/index.vue:3]
+- [x] [Review][Patch] Accessibilité de la barre de progression (aria-label manquant) [app/components/home/HomeBootOverlay.vue:19]
 
 ## Dev Notes
 
@@ -112,12 +122,24 @@ so that je comprends instantanément le métier de Simon, sa disponibilité et s
 ## Dev Agent Record
 
 ### Agent Model Used
+- Gemini 3.7 Flash
 
 ### Debug Log References
+- Résolution des erreurs de formatage Prettier sur `HomeHeroTerminal.vue` et `app/pages/index.vue`.
+- Résolution du typage TypeScript (`ITermRow` narrow) dans le callback asynchrone `typeRow` de `HomeHeroTerminal.vue`.
+- Validation complète de la suite Docker avec 0 erreur ESLint/Stylelint, 0 erreur TypeScript et 13 routes statiques générées avec succès par Nitro.
 
 ### Completion Notes List
+- Composant `HomeBootOverlay.vue` créé avec simulation de démarrage `jouan.os`, barre de progression, écouteur clavier `Escape`, clic de contournement, persistance en `sessionStorage` et support complet de `prefers-reduced-motion`.
+- Composant `HomeHeroTerminal.vue` créé avec simulation de frappe séquentielle des commandes Full Stack TS (`whoami`, `cat focus.txt`, `ls ~/projets`), bouton accessible `help` déclenchant l'easter egg terminal modal, et figeage statique sous reduced motion.
+- Page `app/pages/index.vue` refondue avec nouveau positionnement commercial Full Stack TS, badge Malt vérifié avec lien `<ZExternalLink>`, CTAs d'action ciblés, et orchestration via événement `@boot-complete`.
 
 ### File List
+- `app/components/home/HomeBootOverlay.vue` (NEW)
+- `app/components/home/HomeHeroTerminal.vue` (NEW)
+- `app/pages/index.vue` (MODIFIED)
+- `docs/implementation-artifacts/11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique.md` (MODIFIED)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
 
 ## References
 
