@@ -386,7 +386,11 @@ const { open: openTerminal } = useTerminal();
   border-radius: var(--radius-xs);
 
   &:focus-visible {
-    outline: none;
+    // Outline transparent : invisible en rendu normal (le ring box-shadow prend le
+    // relais), mais rendu en couleur système sous forced-colors (Windows High
+    // Contrast), où les box-shadow sont neutralisées — focus toujours visible.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--ring-accent);
   }
 }
@@ -500,7 +504,9 @@ const { open: openTerminal } = useTerminal();
   }
 
   &:focus-visible {
-    outline: none;
+    // Outline transparent : rendu en couleur système sous forced-colors.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--ring-accent);
     border-radius: var(--radius-xs);
   }
@@ -610,18 +616,6 @@ const { open: openTerminal } = useTerminal();
   .anim,
   .prm__caret {
     animation: none;
-  }
-}
-
-// Mode contraste forcé (forced-colors) : les `box-shadow` (ring de focus) sont
-// neutralisées → on restaure un outline système visible sur les éléments focusables
-// propres à cette page. Le repli équivalent pour les primitives DS (ZButton/ZTag/
-// ZCard, focus via box-shadow) est un correctif central qui relève d'Epic 9.
-@media (forced-colors: active) {
-  .hero-term__open:focus-visible,
-  .offer__more:focus-visible {
-    outline: 2px solid;
-    outline-offset: 2px;
   }
 }
 </style>

@@ -1,5 +1,5 @@
 # generated: 2026-06-18
-# last_updated: 2026-06-18 (toutes les stories ready-for-dev)
+# last_updated: 2026-09-13 (story 10.4 done)
 # project: jouan.ovh
 # project_key: NOKEY
 # tracking_system: file-system
@@ -111,7 +111,7 @@ development_status:
   10-1-decision-hebergement-prod-et-derisquage-deploiement: done
   10-2-a11y-semantique-residuelle: done
   10-3-liens-externes-accessibles: done
-  10-4-validation-a11y-emulee-et-unification-forced-colors: ready-for-dev
+  10-4-validation-a11y-emulee-et-unification-forced-colors: done
   10-5-seo-centralise-site-wide: ready-for-dev
   10-6-conformite-legale-rgpd-mentions: ready-for-dev
   10-7-mise-en-production-reelle: ready-for-dev

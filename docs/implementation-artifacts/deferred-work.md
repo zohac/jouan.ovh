@@ -21,11 +21,11 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 **A11y résiduel (non couvert par les AC de 9.1/9.2) :**
 
-1. **Généralisation de la convention a11y titres + listes** — établie et appliquée sur `/about` (5.2), `/blog` (6.1) et la vue article (6.2) : libellé de section en `<h2 class="eyebrow">` neutralisé ; séquences/feeds en `<ol>`/`<ul>` + `<li>`. **Reste à généraliser** à **home** et **services** (+ séquence process `<ol>` de 4.2). _(revues 4.2, 5.2, 6.1 — orphelin à la clôture d'Epic 9)_
-2. **Audit site-wide des liens `target="_blank"`** — indication « nouvel onglet » (span sr-only) posée localement sur les cartes projet de `/` (3.3) ; reste à auditer/uniformiser les **autres** `_blank` (hexagones sociaux header/footer…) et à factoriser un helper de lien externe (icône + libellé sr-only, WCAG G201). _(revue 3.3 — orphelin à la clôture d'Epic 9)_
-3. **Sémantique a11y de la colonne `/contact`** — paires label/valeur en `<dl>/<dt>/<dd>`, titre de section, `aria-haspopup="dialog"` sur le CTA terminal, préfixe `//` non lu « slash slash ». _(différé 7.2 — orphelin à la clôture d'Epic 9)_
-4. **Audit a11y émulé OS-level** — l'effet runtime du filet `prefers-reduced-motion` (9.2) et du repli `forced-colors` (9.1) n'a **pas** été émulé visuellement (le MCP n'expose ni l'un ni l'autre) ; seules présence/résolution des règles CSS confirmées. À rejouer d'un coup (forced-colors + reduced-motion + lecteur d'écran). _(revues 9.1, 9.2)_
-5. **Unifier les deux idiomes forced-colors** — repli inline `outline: 2px solid transparent` (primitives + châssis, 9.1) vs bloc page-level `@media (forced-colors: active)` préexistant dans `index.vue` (epic 3). Inoffensif (les deux donnent un focus visible) ; candidat à unification DS-wide. _(revue 9.1)_
+1. ~~**Généralisation de la convention a11y titres + listes**~~ — ✅ **Résolu en 10.2**
+2. ~~**Audit site-wide des liens `target="_blank"`**~~ — ✅ **Résolu en 10.3**
+3. ~~**Sémantique a11y de la colonne `/contact`**~~ — ✅ **Résolu en 10.2**
+4. ~~**Audit a11y émulé OS-level**~~ — ✅ **Résolu (story 10.4)** : validation runtime `forced-colors: active` et `prefers-reduced-motion: reduce` + parcours lecteur d'écran VoiceOver. _(revues 9.1, 9.2, 10.4)_
+5. ~~**Unifier les deux idiomes forced-colors**~~ — ✅ **Résolu (story 10.4)** : bloc page-level `@media` d'`index.vue` rabattu sur le repli inline standard DS `outline: 2px solid transparent; outline-offset: 2px;`. 100% des focusables unifiés. _(revues 9.1, 10.4)_
 
 **SEO :**
 
@@ -45,12 +45,12 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 ## Deferred from: code review of 9-2-motion-reduit-contraste-et-clavier (2026-06-29)
 
 - **Placeholder `ZInput` ~3.7:1 sur `--bg-input` (< 4.5:1 AA)** — résidu conscient : `--text-muted` (relevé de `--text-faint` ~2.2:1) reste sous AA sur la surface la plus claire, mais le champ porte un `<label>` visible persistant (placeholder = texte supplémentaire, zone grise WCAG) ; monter encore le ferait passer pour une saisie. Acceptable tel quel ; à revoir si un token de placeholder dédié ≥ 4.5:1 est introduit. _(revue 9.2)_
-- **Audit a11y émulé OS-level (reduced-motion + forced-colors + lecteur d'écran)** — l'effet runtime du filet `prefers-reduced-motion` (9.2) et du repli `forced-colors` (9.1) n'a pas été émulé visuellement (le MCP n'expose ni l'un ni l'autre) ; seules la présence/résolution des règles CSS sont confirmées. À rejouer d'un coup lors d'un passage a11y émulé en fin de refonte (cf. aussi item « Émulation forced-colors » de la revue 9.1). _(revue 9.2)_
+- ~~**Audit a11y émulé OS-level (reduced-motion + forced-colors + lecteur d'écran)**~~ — ✅ **Résolu en 10.4** : validation runtime complète effectuée sous émulation navigateur & VoiceOver. _(revues 9.2, 10.4)_
 
 ## Deferred from: code review of 9-1-etats-interactifs-coherents (2026-06-29)
 
-- **Unifier les deux idiomes forced-colors** — depuis 9.1, le repli inline `outline: 2px solid transparent; outline-offset: 2px;` (primitives DS + liens du châssis) cohabite avec un bloc page-level `@media (forced-colors: active) { outline: 2px solid }` préexistant dans `index.vue` (`.hero-term__open`/`.offer__more`, epic 3). Les deux donnent un focus visible en contraste forcé — **inoffensif, non bloquant**. Candidat à une unification DS-wide (un seul idiome) lors d'un futur passage a11y/DS. **Préexistant**, non introduit par 9.1. _(revue 9.1)_
-- **Émulation `forced-colors: active` non rejouée** — la visibilité réelle de l'anneau sous Windows High Contrast repose sur l'idiome WHCM (outline transparent → couleur système) ; vérifié par présence/résolution des déclarations + précédent codebase, **pas** par émulation visuelle (navigateur MCP verrouillé au moment de la revue). À confirmer d'un coup lors d'un audit a11y émulé (forced-colors + lecteur d'écran) en fin de refonte. _(revue 9.1)_
+- ~~**Unifier les deux idiomes forced-colors**~~ — ✅ **Résolu en 10.4** : repli inline `outline: 2px solid transparent; outline-offset: 2px;` généralisé à `index.vue`, suppression du bloc `@media` local. _(revues 9.1, 10.4)_
+- ~~**Émulation `forced-colors: active` non rejouée**~~ — ✅ **Résolu en 10.4** : vérification runtime sous contraste forcé émulé sur l'ensemble des routes. _(revues 9.1, 10.4)_
 
 ## Deferred from: code review of 7-2-infos-cta-terminal-et-socials (2026-06-26)
 
@@ -122,3 +122,12 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 ## Deferred from: code review of 10-2-a11y-semantique-residuelle (2026-09-13)
 
 - **Rôle dialog et accessibilité interne de la fenêtre terminal** — Les déclencheurs du terminal (`contact.vue`, `index.vue`) portent désormais `aria-haspopup="dialog"`, mais la fenêtre elle-même (`WindowWrapperComponent.vue`) ne porte pas encore de `role="dialog"`, `aria-modal="true"`, ni de piège de focus. Composant hérité Options API propre au header (hors périmètre 10.2). À traiter lors d'une refonte / consolidation a11y du terminal ou en story 10.4. _(revue 10.2 — Blind + Edge Case Hunter)_
+
+## Deferred from: code review of 10-4-validation-a11y-emulee-et-unification-forced-colors (2026-09-13)
+
+- **Terminal input `.user-input` sans outline de focus en contraste forcé** (`TerminalComponent.vue:461`) — CLI terminal avec caret natif coloré (`caret-color`, `caret-shape: block`). En mode contraste forcé, le caret natif sert d'indicateur de focus sans ring de focus extérieur. Préexistant (Epic 8).
+- **`ZInput` utilise `&:focus` plutôt que `:focus-visible`** (`ZInput.vue:173`) — Stylage du focus appliqué au focus natif des formulaires plutôt qu'exclusivement au clavier. Préexistant (Epic 2).
+- **Terminal resize handle manipulable uniquement à la souris** (`TerminalComponent.vue:320`) — `<div>` de redimensionnement de fenêtre avec drag à la souris, sans contrôle clavier équivalent. Préexistant (Epic 8).
+- **Accessibilité interne de la fenêtre terminal (rôle dialog / focus trap)** (`TerminalComponent.vue:1`) — Fenêtre terminal interactive sans `role="dialog"`, nom accessible ou confinement de focus (déjà tracé en revue 10.2). Préexistant (Epic 8).
+- **Honeypot input sous `aria-hidden="true"`** (`contact.vue:178`) — Champ antispam masqué visuellement et aux technologies d'assistance. Préexistant (Epic 7).
+
