@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
 
 # Story 10.3: Liens externes accessibles (helper + audit `target="_blank"`)
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -23,19 +23,27 @@ so that je ne suis pas désorienté par un changement de contexte (FR13, WCAG G2
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Factoriser le helper de lien externe (AC: #1)
-  - [ ] Créer un mécanisme unique réutilisable : soit un **composant** `app/components/ui/ZExternalLink.vue` (ou `app/components/ExternalLinkComponent.vue` selon le nommage retenu), soit un **petit utilitaire/snippet sr-only** partagé. Décision à consigner. Le helper fournit : `rel="noopener"` (a minima ; `noopener noreferrer` selon le cas), `target="_blank"`, et un **libellé sr-only** « (ouvre dans un nouvel onglet) » réutilisant la classe existante `.screen-reader-text` (déjà utilisée `index.vue:121`). Optionnellement une icône « lien externe » (`ZIcon`) décorative `aria-hidden`.
-  - [ ] Le helper doit composer avec les usages existants (lien texte, carte cliquable, hexagone) sans casser le style — vérifier qu'il n'impose pas de wrapper cassant la mise en page.
-- [ ] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
-  - [ ] Inventaire `grep -rn 'target="_blank"' app/` (4 occurrences au baseline) et migration via le helper :
-    - **`app/components/HexagonLinkComponent.vue:2`** — `target="_blank" rel="noopener noreferrer"`, **sans** libellé sr-only → ajouter l'indication « nouvel onglet » (les hexagones sociaux n'ont qu'un `aria-label` ?). Vérifier le nom accessible (réseau social) + sr-only onglet.
-    - **`app/components/FooterComponent.vue:24`** — `target="_blank"` → vérifier `rel` + ajouter sr-only.
-    - **`app/pages/index.vue:110`** — carte projet : **déjà** dotée du sr-only (`index.vue:121`, fix 3.3). L'aligner sur le helper pour cohérence (pas de régression).
-    - **`app/pages/about.vue:34`** — `keova.app` `target="_blank" rel="noreferrer"` → passer `rel` à `noopener` (sécurité) + ajouter sr-only via le helper.
-  - [ ] Vérifier qu'**aucun** `target="_blank"` ne subsiste sans helper/sr-only (`grep` final).
-- [ ] Tâche 3 — Validation (AC: tout)
-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts.
-  - [ ] Vérif navigateur (Chrome DevTools MCP) : nom accessible de chaque lien externe = libellé + « (ouvre dans un nouvel onglet) » ; **rendu visuel inchangé** (sr-only hors écran) ; focus visible préservé (9.1).
+- [x] Tâche 1 — Factoriser le helper de lien externe (AC: #1)
+  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
+  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
+- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
+    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
+    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
+    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
+    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
+  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
+- [x] Tâche 3 — Validation (AC: tout)
+  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` exécuté avec succès (code 0).
+  - [x] Vérification du nom accessible et préservation du rendu visuel.
+
+### Review Findings
+
+- [x] [Review][Patch] Unifier tous les liens externes via le helper unique ZExternalLink [app/components/HexagonLinkComponent.vue:2, app/pages/index.vue:102]
+- [x] [Review][Patch] Garantir la présence systématique de noopener dans computedRel [app/components/ui/ZExternalLink.vue:36]
+- [x] [Review][Patch] Retirer le bridage de prop class?: string pour exploiter le fallthrough natif [app/components/ui/ZExternalLink.vue:24]
+- [x] [Review][Patch] Sécuriser computedSrText contre les chaînes vides ou d'espaces [app/components/ui/ZExternalLink.vue:37]
+- [x] [Review][Patch] Aligner le statut de la story 10.3 dans sprint-status.yaml [docs/implementation-artifacts/sprint-status.yaml:186]
 
 ## Dev Notes
 
@@ -77,9 +85,27 @@ so that je ne suis pas désorienté par un changement de contexte (FR13, WCAG G2
 ## Dev Agent Record
 
 ### Agent Model Used
+Gemini 2.5 Pro
 
 ### Debug Log References
+- Lint initial ajusté avec Prettier / ESLint.
+- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+- Revue de code adversariale : 5 patchs appliqués (unification complète ZExternalLink sur HexagonLinkComponent et index.vue, enforcement noopener, fallthrough class, garde srText, alignement sprint status).
 
 ### Completion Notes List
+- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` garanti, slots et mention screen-reader-text.
+- Mise à jour de `app/components/HexagonLinkComponent.vue` pour router intégralement via `<ZExternalLink>`.
+- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
+- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
+- Refactorisation de la carte projet dans `app/pages/index.vue` pour utiliser `:as="ZExternalLink"`, éliminant le span sr-only ad-hoc en double.
+- Audit exhaustif `grep` : 100 % des `target="_blank"` passent désormais par le helper unique `ZExternalLink`.
+- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
 
 ### File List
+- `app/components/ui/ZExternalLink.vue` (NEW)
+- `app/components/HexagonLinkComponent.vue` (MODIFIED)
+- `app/components/FooterComponent.vue` (MODIFIED)
+- `app/pages/about.vue` (MODIFIED)
+- `app/pages/index.vue` (MODIFIED)
+- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)

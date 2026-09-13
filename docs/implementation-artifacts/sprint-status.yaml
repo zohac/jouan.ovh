@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-12 (Story 10.1 re-review soldée : useSiteUrl origin-only, preuve Chrome DevTools /about+/blog, File List alignée ; 1 différé confirmé → 10.5. Story done)"
+last_updated: "2026-09-13 (Story 10.3 soldée par revue de code : 100% liens _blank unifiés sur ZExternalLink, noopener garanti, statut done)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -109,8 +109,8 @@ development_status:
   # Epic 10 — Fin de refonte (a11y résiduel + SEO + RGPD + déploiement prod)
   epic-10: in-progress
   10-1-decision-hebergement-prod-et-derisquage-deploiement: done
-  10-2-a11y-semantique-residuelle: ready-for-dev
-  10-3-liens-externes-accessibles: ready-for-dev
+  10-2-a11y-semantique-residuelle: done
+  10-3-liens-externes-accessibles: done
   10-4-validation-a11y-emulee-et-unification-forced-colors: ready-for-dev
   10-5-seo-centralise-site-wide: ready-for-dev
   10-6-conformite-legale-rgpd-mentions: ready-for-dev

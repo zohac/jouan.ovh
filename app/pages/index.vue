@@ -5,7 +5,7 @@
         <div class="hero__grid">
           <!-- Colonne gauche : accroche, CTA, tags -->
           <div class="anim hero__text">
-            <p class="eyebrow">// développeur web freelance</p>
+            <p class="eyebrow"><span aria-hidden="true">// </span>développeur web freelance</p>
             <h1 class="hero__title">Du code <em>sur-mesure</em>,<br />de l'IA <em>utile</em>.</h1>
             <p class="hero__sub">{{ tagline }}</p>
             <div class="hero__cta">
@@ -15,9 +15,11 @@
               </ZButton>
               <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir les services </ZButton>
             </div>
-            <div class="hero__tags">
-              <ZTag v-for="tag in tags" :key="tag">{{ tag }}</ZTag>
-            </div>
+            <ul class="hero__tags">
+              <li v-for="tag in tags" :key="tag">
+                <ZTag>{{ tag }}</ZTag>
+              </li>
+            </ul>
           </div>
 
           <!-- Colonne droite : fenêtre terminal décorative (statique) -->
@@ -48,6 +50,7 @@
                   type="button"
                   class="hero-term__open"
                   aria-label="Ouvrir le terminal interactif"
+                  aria-haspopup="dialog"
                   @click="openTerminal"
                 >
                   <span class="prm"
@@ -66,25 +69,20 @@
     <!-- Aperçu services (porté de ServicesPreview, Home.jsx) -->
     <section class="section">
       <div class="container">
-        <p class="eyebrow">// ce que je fais</p>
+        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je fais</p>
         <h2 class="section__title">Trois façons de travailler ensemble</h2>
-        <div class="grid-3">
-          <ZCard
-            v-for="service in services"
-            :key="service.id"
-            class="offer"
-            interactive
-            :accent="service.featured"
-            :featured="service.featured"
-          >
-            <div class="offer__icon"><ZIcon :name="service.icon" /></div>
-            <h3 class="offer__title">{{ service.title }}</h3>
-            <p class="offer__desc">{{ service.desc }}</p>
-            <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
-              En savoir plus →
-            </NuxtLink>
-          </ZCard>
-        </div>
+        <ul class="grid-3">
+          <li v-for="service in services" :key="service.id">
+            <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+              <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+              <h3 class="offer__title">{{ service.title }}</h3>
+              <p class="offer__desc">{{ service.desc }}</p>
+              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+                En savoir plus →
+              </NuxtLink>
+            </ZCard>
+          </li>
+        </ul>
       </div>
     </section>
 
@@ -98,29 +96,23 @@
           </div>
         </div>
 
-        <p class="eyebrow">// projets sélectionnés</p>
-        <div class="grid-2 projects">
-          <ZCard
-            v-for="project in projects"
-            :key="project.url"
-            class="project"
-            interactive
-            as="a"
-            :href="project.url"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <div class="project__head">
-              <h3 class="project__name">{{ project.name }}</h3>
-              <span class="project__role">{{ project.role }}</span>
-            </div>
-            <p class="prose project__desc">{{ project.desc }}</p>
-            <div class="hero__tags">
-              <ZTag v-for="tag in project.tags" :key="tag">{{ tag }}</ZTag>
-            </div>
-            <span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span>
-          </ZCard>
-        </div>
+        <h2 class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</h2>
+        <ul class="grid-2 projects">
+          <li v-for="project in projects" :key="project.url">
+            <ZCard class="project" interactive :as="ZExternalLink" :href="project.url" rel="noopener noreferrer">
+              <div class="project__head">
+                <h3 class="project__name">{{ project.name }}</h3>
+                <span class="project__role">{{ project.role }}</span>
+              </div>
+              <p class="prose project__desc">{{ project.desc }}</p>
+              <ul class="hero__tags">
+                <li v-for="tag in project.tags" :key="tag">
+                  <ZTag>{{ tag }}</ZTag>
+                </li>
+              </ul>
+            </ZCard>
+          </li>
+        </ul>
       </div>
     </section>
   </main>
@@ -130,7 +122,7 @@
 // Page d'accueil — hero Terminal (A) + aperçu services + stats. Porté de Home.jsx
 // (HeroTerminal / ServicesPreview / StatsProjects) du UI kit : recréation Vue 3 +
 // tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2, 3.3)
-import { NuxtLink } from "#components";
+import { NuxtLink, ZExternalLink } from "#components";
 import { useTerminal } from "~/composables/useTerminal";
 import { SITE } from "~/data/site";
 
@@ -449,6 +441,19 @@ const { open: openTerminal } = useTerminal();
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+  }
+}
+
+.offer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .offer__icon {
@@ -484,6 +489,7 @@ const { open: openTerminal } = useTerminal();
 }
 
 .offer__more {
+  margin-top: auto;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   color: var(--accent);
@@ -531,6 +537,13 @@ const { open: openTerminal } = useTerminal();
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+  }
 }
 
 .projects {
@@ -540,7 +553,14 @@ const { open: openTerminal } = useTerminal();
 // Carte rendue en lien (`as="a"`) : neutralise le soulignement par défaut du
 // <a> (le contenu porte ses propres couleurs/typo). ZCard reste générique.
 .project {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   text-decoration: none;
+
+  .hero__tags {
+    margin-top: auto;
+  }
 }
 
 .project__head {

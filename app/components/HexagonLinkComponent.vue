@@ -1,8 +1,8 @@
 <template>
-  <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+  <ZExternalLink class="hex" :href="link" rel="noopener noreferrer">
     <slot name="icon" />
     <span class="hex__label"><slot name="title" /></span>
-  </a>
+  </ZExternalLink>
 </template>
 
 <script setup lang="ts">

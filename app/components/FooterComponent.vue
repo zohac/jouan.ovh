@@ -17,14 +17,13 @@
 
         <div class="ftr__col">
           <h2 class="ftr__title">// Projets</h2>
-          <a
+          <ZExternalLink
             v-for="project in projects"
             :key="project.url"
             :href="project.url"
-            target="_blank"
             rel="noopener noreferrer"
             class="ftr__link"
-            >{{ project.name }}</a
+            >{{ project.name }}</ZExternalLink
           >
         </div>
 

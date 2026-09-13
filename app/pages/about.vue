@@ -31,7 +31,7 @@
             </p>
             <p class="prose about__para">
               Je suis aussi fondateur du SaaS
-              <a href="https://keova.app" target="_blank" rel="noreferrer">keova.app</a>, et j'aime mettre l'IA au
+              <ZExternalLink href="https://keova.app" rel="noopener">keova.app</ZExternalLink>, et j'aime mettre l'IA au
               service du code — agents, automatisations, intégrations LLM.
             </p>
 
