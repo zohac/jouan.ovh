@@ -105,7 +105,7 @@ interface ITermRow {
 
 const projectsOutput = SITE.projects
   .map((p) => {
-    if (p.name === "keova.app") return "keova.app/";
+    if (p.name === "keova.app" || p.name === "Keova App") return "keova.app/";
     if (p.name === "TryOn") return "tryon-saas/";
     if (p.name === "Nodium") return "nodium-lab/";
     return `${p.name.toLowerCase()}/`;

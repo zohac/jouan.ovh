@@ -1,0 +1,686 @@
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index f49add5..8a04ba6 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -84,47 +84,149 @@
+       </div>
+     </section>
+ 
+-    <!-- Stats + projets sélectionnés — section en creux partagée (stories 3.2 / 3.3) -->
++    <!-- Projets sélectionnés & Statistiques de réassurance (Story 11.4 / AC-1 & AC-2) -->
+     <section class="section section--sunken">
+       <div class="container">
+-        <div class="statrow">
+-          <div v-for="stat in stats" :key="stat.id" class="stat">
++        <div class="block__head">
++          <p class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</p>
++          <h2 class="section__title">Des produits qui tournent en production</h2>
++        </div>
++
++        <ul class="work">
++          <li v-for="(project, index) in projects" :key="project.name">
++            <component
++              :is="project.url ? ZExternalLink : 'div'"
++              :href="project.url"
++              class="work__row"
++              :class="{ 'work__row--link': Boolean(project.url) }"
++              :data-hot="project.url ? '' : undefined"
++            >
++              <span class="work__no">0{{ index + 1 }}</span>
++              <div class="work__main">
++                <div class="work__topline">
++                  <h3 class="work__name">{{ project.name }}</h3>
++                  <span v-if="project.status" class="work__status">{{ project.status }}</span>
++                </div>
++                <p class="work__role">{{ project.role }}</p>
++                <p class="prose work__desc">{{ project.desc }}</p>
++                <ul class="hero__tags work__tags">
++                  <li v-for="tag in project.tags" :key="tag">
++                    <ZTag>{{ tag }}</ZTag>
++                  </li>
++                </ul>
++              </div>
++              <span v-if="project.url" class="work__go" aria-hidden="true">
++                <ZIcon name="arrow" />
++              </span>
++            </component>
++          </li>
++        </ul>
++
++        <!-- Statistiques clés de réassurance (Story 11.4 / AC-2) -->
++        <ul class="stats">
++          <li v-for="stat in stats" :key="stat.id" class="stat">
+             <b>{{ stat.value }}</b>
+             <span>{{ stat.label }}</span>
++          </li>
++        </ul>
++      </div>
++    </section>
++
++    <!-- Journal technique / Notes de dev (Story 11.4 / AC-3) -->
++    <section class="section">
++      <div class="container">
++        <div class="block__head block__head--row">
++          <div>
++            <p class="eyebrow"><span aria-hidden="true">// </span>~/journal</p>
++            <h2 class="section__title">Notes de dev, écrites en construisant</h2>
+           </div>
++          <NuxtLink to="/blog" class="seeall" data-hot>
++            cat tous-les-articles
++            <ZIcon name="arrow" class="seeall__icon" />
++          </NuxtLink>
+         </div>
+ 
+-        <h2 class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</h2>
+-        <ul class="grid-2 projects">
+-          <li v-for="project in projects" :key="project.name">
+-            <ZCard
+-              class="project"
+-              :interactive="Boolean(project.url)"
+-              :data-hot="Boolean(project.url) ? '' : undefined"
+-              :as="project.url ? ZExternalLink : 'div'"
+-              :href="project.url || undefined"
+-              :rel="project.url ? 'noopener noreferrer' : undefined"
+-            >
+-              <div class="project__head">
+-                <h3 class="project__name">{{ project.name }}</h3>
+-                <span class="project__role">{{ project.role }}</span>
++        <!-- Liste des articles les plus récents -->
++        <ul v-if="articles && articles.length" class="journal">
++          <li v-for="article in articles" :key="article.path" class="journal__item">
++            <ZCard :as="NuxtLink" :to="article.path" interactive class="jpost" data-hot>
++              <NuxtImg
++                v-if="article.image"
++                class="jpost__thumb"
++                :src="article.image.src"
++                :alt="article.image.alt"
++                width="360"
++                height="200"
++                sizes="360px"
++                format="webp"
++              />
++              <div class="jpost__body">
++                <ul v-if="article.tags?.length" class="hero__tags jpost__tags">
++                  <li v-for="tag in article.tags" :key="tag">
++                    <ZTag>{{ tag }}</ZTag>
++                  </li>
++                </ul>
++                <h3 class="jpost__title">{{ article.title }}</h3>
++                <p v-if="article.description" class="prose jpost__desc">{{ article.description }}</p>
++                <div class="jpost__meta">
++                  <time :datetime="article.date">{{ formatDate(article.date) }}</time>
++                  <template v-if="article.read">
++                    <span aria-hidden="true">·</span>
++                    <span>{{ article.read }} de lecture</span>
++                  </template>
++                  <span class="jpost__arrow" aria-hidden="true">
++                    <ZIcon name="arrow" />
++                  </span>
++                </div>
+               </div>
+-              <p class="prose project__desc">{{ project.desc }}</p>
+-              <ul class="hero__tags">
+-                <li v-for="tag in project.tags" :key="tag">
+-                  <ZTag>{{ tag }}</ZTag>
+-                </li>
+-              </ul>
+             </ZCard>
+           </li>
+         </ul>
++
++        <!-- État d'attente sobre lorsque aucun article n'est encore publié -->
++        <ZCard v-else class="journal__empty" padded>
++          <p class="journal__empty-code">$ cat ~/journal/*.md</p>
++          <p class="journal__empty-text">Les notes d'ingénierie et retours d'expérience sont en cours de rédaction.</p>
++          <ZButton :as="NuxtLink" to="/blog" variant="secondary" size="sm"> Consulter la section blog </ZButton>
++        </ZCard>
++      </div>
++    </section>
++
++    <!-- Bloc CTA final de conversion (Story 11.4 / AC-4) -->
++    <section class="section section--sunken">
++      <div class="container">
++        <div class="cta">
++          <p class="eyebrow cta__eyebrow"><span aria-hidden="true">$ </span>./contact --start</p>
++          <h2 class="cta__title">Un projet en tête ? Mettons-le <span class="cta__highlight">en production</span>.</h2>
++          <p class="cta__subtitle">
++            Que ce soit pour concevoir un nouveau SaaS, accélérer votre roadmap ou fiabiliser votre stack TypeScript,
++            parlons-en.
++          </p>
++          <div class="cta__actions">
++            <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg" data-hot>
++              Discuter de votre projet
++              <template #iconRight><ZIcon name="arrow" /></template>
++            </ZButton>
++            <ZButton
++              v-if="SITE.profile.maltUrl"
++              :as="ZExternalLink"
++              :href="SITE.profile.maltUrl"
++              variant="secondary"
++              size="lg"
++              data-hot
++            >
++              Me contacter sur Malt
++            </ZButton>
++            <ZButton :as="NuxtLink" to="/about" variant="ghost" size="lg" data-hot> Voir le parcours &amp; CV </ZButton>
++          </div>
++        </div>
+       </div>
+     </section>
+   </main>
+ </template>
+ 
+ <script setup lang="ts">
+-// Page d'accueil — refonte Hero Full Stack TS & Terminal cinétique (Story 11.2).
++// Page d'accueil — refonte Hero Full Stack TS, Projets SaaS, Journal & CTA final (Story 11.4).
+ // Architecture multi-pages Nuxt 4, dark-first, accent orange.
+ import { ref } from "vue";
+ import { NuxtLink, ZExternalLink } from "#components";
+@@ -149,7 +251,6 @@ interface HomeServiceOffer {
+ }
+ 
+ // Vitrine des 3 offres ciblées Full Stack TS (Story 11.3 / AC-2).
+-// Remplacement complet des données legacy.
+ const services: HomeServiceOffer[] = [
+   {
+     id: "creation",
+@@ -198,15 +299,20 @@ const services: HomeServiceOffer[] = [
+   },
+ ];
+ 
+-// Chiffres clés (data.js `stats`) — texte exact (séparateur ·), pas d'emoji.
++// Projets sélectionnés — source unique `app/data/site.ts` (Story 11.4 / AC-1).
++const projects = SITE.projects;
++
++// Chiffres clés de réassurance (Story 11.4 / AC-2).
+ const stats = [
+-  { id: "stat-1", value: "8+", label: "ans dans la tech" },
+-  { id: "stat-2", value: "3", label: "stacks maîtrisés" },
+-  { id: "stat-3", value: "1", label: "SaaS fondé · keova.app" },
++  { id: "stat-1", value: "11", label: "années d'expérience web" },
++  { id: "stat-2", value: "100%", label: "TypeScript & SaaS de bout en bout" },
++  { id: "stat-3", value: "QA", label: "culture d'automatisation & zéro régression" },
+ ];
+ 
+-// Projets sélectionnés — source unique `app/data/site.ts`. Cartes rendues en liens externes.
+-const projects = SITE.projects;
++// Récupération des 3 derniers articles du journal technique (Story 11.4 / AC-3).
++const { data: articles } = await useAsyncData("home-articles", () =>
++  queryCollection("blog").order("date", "DESC").limit(3).all(),
++);
+ 
+ const siteUrl = useSiteUrl();
+ const homeJsonLd = [
+@@ -515,37 +621,217 @@ usePageSeo({
+   }
+ }
+ 
+-// ---- Stats (porté de .statrow / .stat) ----
+-.statrow {
++// ---- Section Projets sélectionnés (porté de Home - Awwwards.html .work) ----
++.work {
++  display: flex;
++  flex-direction: column;
++  margin: 0;
++  padding: 0;
++  list-style: none;
++
++  > li {
++    display: block;
++    width: 100%;
++  }
++}
++
++.work__row {
++  position: relative;
++  display: grid;
++  grid-template-columns: 56px 1fr auto;
++  gap: var(--space-6);
++  align-items: center;
++  padding: var(--space-8) var(--space-3);
++  border-top: 1px solid var(--border-subtle);
++  text-decoration: none;
++  color: inherit;
++  transition:
++    padding-left var(--dur-slow) var(--ease-out),
++    background var(--dur-slow) var(--ease-standard);
++
++  &::before {
++    content: "";
++    position: absolute;
++    inset: 0;
++    background: linear-gradient(90deg, var(--accent-soft), transparent 60%);
++    opacity: 0;
++    transition: opacity var(--dur-slow) var(--ease-standard);
++  }
++}
++
++li:last-child .work__row {
++  border-bottom: 1px solid var(--border-subtle);
++}
++
++.work__row--link {
++  cursor: pointer;
++
++  &:hover {
++    padding-left: var(--space-6);
++
++    &::before {
++      opacity: 1;
++    }
++
++    .work__name {
++      color: var(--accent);
++    }
++
++    .work__go {
++      color: var(--accent);
++      transform: translate(6px, -6px);
++    }
++  }
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    box-shadow: var(--ring-accent);
++    border-radius: var(--radius-xs);
++  }
++}
++
++.work__no {
++  position: relative;
++  font-family: var(--font-mono);
++  font-size: var(--fs-sm);
++  color: var(--text-faint);
++}
++
++.work__main {
++  position: relative;
++}
++
++.work__topline {
+   display: flex;
+   flex-wrap: wrap;
+-  gap: var(--space-12);
++  align-items: baseline;
++  gap: var(--space-3);
++}
+ 
+-  // Espace avant le bloc projets (story 3.3), réf. Home.jsx (statrow marginBottom).
+-  margin-bottom: var(--space-12);
++.work__name {
++  margin: 0;
++  font-family: var(--font-mono);
++  font-size: clamp(1.4rem, 2.8vw, 2rem);
++  font-weight: var(--fw-regular);
++  letter-spacing: var(--ls-tight);
++  color: var(--text-strong);
++  transition: color var(--dur-base) var(--ease-standard);
+ }
+ 
+-.stat {
++.work__status {
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  color: var(--accent);
++  letter-spacing: var(--ls-wide);
++}
++
++.work__role {
++  margin: var(--space-1) 0 0;
+   font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  color: var(--text-muted);
++}
++
++.work__desc {
++  max-width: 65ch;
++  margin: var(--space-3) 0 0;
++  font-size: var(--fs-sm);
++}
++
++.work__tags {
++  margin-top: var(--space-4);
++}
++
++.work__go {
++  position: relative;
++  font-size: var(--fs-xl);
++  color: var(--text-faint);
++  transition:
++    transform var(--dur-base) var(--ease-out),
++    color var(--dur-base) var(--ease-standard);
++}
++
++// ---- Stats (porté de .stats) ----
++.stats {
++  display: grid;
++  grid-template-columns: repeat(3, 1fr);
++  gap: var(--space-4);
++  margin: var(--space-12) 0 0;
++  padding: 0;
++  list-style: none;
++}
++
++.stat {
++  padding: var(--space-6);
++  background: color-mix(in srgb, var(--surface-1) 70%, transparent);
++  border: 1px solid var(--border-subtle);
++  border-radius: var(--radius-md);
+ 
+   b {
+     display: block;
+-    font-size: var(--fs-4xl);
++    margin-bottom: var(--space-1);
++    font-family: var(--font-mono);
++    font-size: var(--fs-5xl);
+     font-weight: var(--fw-light);
++    line-height: 1;
++    letter-spacing: var(--ls-tight);
+     color: var(--text-strong);
+   }
+ 
+   span {
++    font-family: var(--font-mono);
+     font-size: var(--fs-sm);
++    letter-spacing: var(--ls-wide);
+     color: var(--text-muted);
+   }
+ }
+ 
+-// ---- Projets sélectionnés (porté de StatsProjects / .grid-2 / .prose) ----
+-.grid-2 {
+-  display: grid;
+-  grid-template-columns: 1fr 1fr;
++// ---- Section Journal (porté de Home - Awwwards.html .journal) ----
++.block__head--row {
++  display: flex;
++  align-items: flex-end;
++  justify-content: space-between;
+   gap: var(--space-6);
++  margin-bottom: var(--space-8);
++
++  .section__title {
++    margin-bottom: 0;
++  }
++}
++
++.seeall {
++  display: inline-flex;
++  flex: none;
++  align-items: center;
++  gap: var(--space-2);
++  font-family: var(--font-mono);
++  font-size: var(--fs-sm);
++  color: var(--text-muted);
++  text-decoration: none;
++  white-space: nowrap;
++  transition: color var(--dur-base) var(--ease-standard);
++
++  &:hover {
++    color: var(--accent);
++  }
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    box-shadow: var(--ring-accent);
++    border-radius: var(--radius-xs);
++  }
++}
++
++.seeall__icon {
++  font-size: var(--fs-base);
++}
++
++.journal {
++  display: grid;
++  grid-template-columns: repeat(3, 1fr);
++  gap: var(--space-5);
+   margin: 0;
+   padding: 0;
+   list-style: none;
+@@ -555,51 +841,150 @@ usePageSeo({
+   }
+ }
+ 
+-.projects {
+-  margin-top: var(--space-5);
+-}
+-
+-// Carte rendue en lien (`as="a"`) : neutralise le soulignement par défaut du
+-// <a> (le contenu porte ses propres couleurs/typo). ZCard reste générique.
+-.project {
++.jpost {
+   display: flex;
+   flex-direction: column;
+   width: 100%;
++  color: inherit;
+   text-decoration: none;
+ 
+-  .hero__tags {
+-    margin-top: auto;
++  &:hover {
++    .jpost__title {
++      color: var(--accent);
++    }
++
++    .jpost__arrow {
++      color: var(--accent);
++      transform: translate(4px, -4px);
++    }
+   }
+ }
+ 
+-.project__head {
++.jpost__thumb {
++  width: 100%;
++  height: 160px;
++  object-fit: cover;
++  border-bottom: 1px solid var(--border-subtle);
++}
++
++.jpost__body {
+   display: flex;
+-  align-items: baseline;
+-  justify-content: space-between;
+-  gap: var(--space-3);
++  flex: 1;
++  flex-direction: column;
++  padding: var(--space-5);
+ }
+ 
+-.project__name {
+-  margin: 0;
++.jpost__tags {
++  margin-bottom: var(--space-3);
++}
++
++.jpost__title {
++  margin: 0 0 var(--space-2);
+   font-family: var(--font-mono);
+-  font-size: var(--fs-xl);
++  font-size: var(--fs-lg);
+   font-weight: var(--fw-regular);
++  line-height: var(--lh-snug);
+   color: var(--text-strong);
++  transition: color var(--dur-base) var(--ease-standard);
++}
++
++.jpost__desc {
++  margin: 0 0 var(--space-4);
++  font-size: var(--fs-sm);
++  color: var(--text-muted);
+ }
+ 
+-.project__role {
++.jpost__meta {
++  display: flex;
++  align-items: center;
++  gap: var(--space-2);
++  margin-top: auto;
++  padding-top: var(--space-4);
++  border-top: 1px dashed var(--border-subtle);
+   font-family: var(--font-mono);
+   font-size: var(--fs-xs);
+-  color: var(--text-muted);
+-  white-space: nowrap;
++  color: var(--text-faint);
++}
++
++.jpost__arrow {
++  margin-left: auto;
++  font-size: var(--fs-base);
++  color: var(--text-faint);
++  transition:
++    transform var(--dur-base) var(--ease-out),
++    color var(--dur-base) var(--ease-standard);
++}
++
++.journal__empty {
++  max-width: 60ch;
++  margin: 0 auto;
++  text-align: center;
+ }
+ 
+-.project__desc {
+-  margin: var(--space-3) 0 var(--space-4);
++.journal__empty-code {
++  margin: 0 0 var(--space-2);
++  font-family: var(--font-mono);
+   font-size: var(--fs-sm);
++  color: var(--accent);
++}
++
++.journal__empty-text {
++  margin: 0 0 var(--space-5);
++  font-family: var(--font-sans);
++  font-size: var(--fs-sm);
++  line-height: var(--lh-relaxed);
++  color: var(--text-muted);
++}
++
++// ---- Bloc CTA final (porté de .cta) ----
++.cta {
++  position: relative;
++  padding: clamp(48px, 6vw, 72px) var(--space-6);
++  overflow: hidden;
++  text-align: center;
++  background:
++    radial-gradient(ellipse 80% 120% at 50% 0%, var(--accent-2-soft), transparent 70%),
++    color-mix(in srgb, var(--surface-2) 60%, transparent);
++  border: 1px solid var(--border-subtle);
++  border-radius: var(--radius-lg);
++}
++
++.cta__eyebrow {
++  display: inline-block;
++}
++
++.cta__title {
++  margin: 0 0 var(--space-4);
++  font-family: var(--font-mono);
++  font-size: clamp(1.8rem, 4vw, 2.8rem);
++  font-weight: var(--fw-light);
++  line-height: var(--lh-tight);
++  letter-spacing: var(--ls-tight);
++  color: var(--text-strong);
++}
++
++.cta__highlight {
++  font-style: italic;
++  color: var(--accent);
++}
++
++.cta__subtitle {
++  max-width: 58ch;
++  margin: 0 auto var(--space-8);
++  font-family: var(--font-sans);
++  font-size: var(--fs-base);
++  line-height: var(--lh-relaxed);
++  color: var(--text-muted);
+ }
+ 
+-// ---- Responsive (cf. kit.css @media max-width: 900px) ----
++.cta__actions {
++  display: flex;
++  flex-wrap: wrap;
++  gap: var(--space-4);
++  justify-content: center;
++}
++
++// ---- Responsive ----
+ @media (width <= 900px) {
+   .hero__grid {
+     grid-template-columns: 1fr;
+@@ -610,7 +995,28 @@ usePageSeo({
+   }
+ 
+   .grid-3,
+-  .grid-2 {
++  .journal {
++    grid-template-columns: 1fr;
++  }
++
++  .block__head--row {
++    flex-direction: column;
++    align-items: flex-start;
++  }
++}
++
++@media (width <= 680px) {
++  .work__row {
++    grid-template-columns: 1fr;
++    gap: var(--space-3);
++  }
++
++  .work__no,
++  .work__go {
++    display: none;
++  }
++
++  .stats {
+     grid-template-columns: 1fr;
+   }
+ }
+@@ -619,5 +1025,19 @@ usePageSeo({
+   .anim {
+     animation: none;
+   }
++
++  .work__row,
++  .work__go,
++  .jpost__arrow {
++    transition: none;
++  }
++
++  .work__row--link:hover {
++    padding-left: var(--space-3);
++
++    .work__go {
++      transform: none;
++    }
++  }
+ }
+ </style>
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index d8c88fd..e661d81 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-13 (Story 11.3 done : Marquee stack & Vitrine services)"
++last_updated: "2026-09-13 (Story 11.4 ready-for-dev : Preuves SaaS, Journal & CTA final)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -122,6 +122,6 @@ development_status:
+   11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique: done
+   11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique: done
+   11-3-marquee-de-stack-moderne-et-vitrine-des-3-services-cibles: done
+-  11-4-preuves-concretes-saas-journal-technique-et-cta-final-de-conversion: backlog
++  11-4-preuves-concretes-saas-journal-technique-et-cta-final-de-conversion: review
+   11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker: backlog
+   epic-11-retrospective: optional

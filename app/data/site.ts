@@ -55,26 +55,26 @@ const skills: string[] = [
 
 const projects: IProject[] = [
   {
-    name: "keova.app",
+    name: "Keova App",
     role: "Co-fondateur & Développeur Full Stack",
     desc: "Plateforme SaaS ERP équestre complète conçue et opérée de bout en bout (gestion de pensions, facturation automatisée, réservations).",
     url: "https://keova.app",
-    status: "En production",
-    tags: ["nuxt", "nest.js", "postgresql", "stripe", "saas"],
+    status: "● En production",
+    tags: ["Nuxt 4", "NestJS", "PostgreSQL", "Stripe Connect", "SaaS"],
   },
   {
     name: "TryOn",
     role: "CTO & Développeur Full Stack",
     desc: "Plateforme SaaS B2B d'essayage virtuel de vêtements via l'IA générative (diffusion models, microservices asynchrones, files Redis).",
-    status: "Étude de cas (MVP livré)",
-    tags: ["nuxt", "nest.js", "python", "comfyui", "ia"],
+    status: "○ Étude de cas (MVP livré)",
+    tags: ["Nuxt 3", "NestJS", "Python", "ComfyUI", "IA"],
   },
   {
     name: "Nodium",
     role: "Créateur & Ingénieur IA",
     desc: "Plateforme desktop d'orchestration d'agents IA autonomes, gestion de permissions et mémoire contextuelle.",
-    status: "R&D / En cours",
-    tags: ["typescript", "electron", "agents", "ia"],
+    status: "◐ R&D / En cours",
+    tags: ["TypeScript", "Electron", "Agents", "IA"],
   },
 ];
 
