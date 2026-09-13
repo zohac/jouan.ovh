@@ -1,0 +1,430 @@
+diff --git a/app/assets/scss/base/_layout.scss b/app/assets/scss/base/_layout.scss
+index 5d6729f..e59cebe 100644
+--- a/app/assets/scss/base/_layout.scss
++++ b/app/assets/scss/base/_layout.scss
+@@ -33,10 +33,13 @@
+ }
+ 
+ // Sur-titre mono en capitales espacées, accent orange.
++// font-weight et line-height neutralisés pour un rendu identique lorsqu'appliqué sur un <h2 class="eyebrow">.
+ .eyebrow {
+   margin: 0 0 var(--space-3);
+   font-family: var(--font-mono);
+   font-size: var(--fs-xs);
++  font-weight: var(--fw-regular);
++  line-height: inherit;
+   letter-spacing: var(--ls-wider);
+   text-transform: uppercase;
+   color: var(--accent);
+diff --git a/app/pages/contact.vue b/app/pages/contact.vue
+index ba80d43..5191532 100644
+--- a/app/pages/contact.vue
++++ b/app/pages/contact.vue
+@@ -89,18 +89,24 @@
+           <div class="contact__info">
+             <!-- Carte infos : email / localisation / disponibilité -->
+             <ZCard class="contact__infocard">
+-              <div class="infoitem">
+-                <div class="infoitem__k">// email</div>
+-                <a class="infoitem__v contact__email" :href="`mailto:${contact.email}`">{{ contact.email }}</a>
+-              </div>
+-              <div class="infoitem">
+-                <div class="infoitem__k">// localisation</div>
+-                <div class="infoitem__v">{{ contact.city }}</div>
+-              </div>
+-              <div class="infoitem">
+-                <div class="infoitem__k">// disponibilité</div>
+-                <div class="contact__avail"><ZBadge tone="success" dot>Ouvert aux missions freelance</ZBadge></div>
+-              </div>
++              <dl class="contact__infolist">
++                <div class="infoitem">
++                  <dt class="infoitem__k"><span aria-hidden="true">// </span>email</dt>
++                  <dd class="infoitem__v">
++                    <a class="contact__email" :href="`mailto:${contact.email}`">{{ contact.email }}</a>
++                  </dd>
++                </div>
++                <div class="infoitem">
++                  <dt class="infoitem__k"><span aria-hidden="true">// </span>localisation</dt>
++                  <dd class="infoitem__v">{{ contact.city }}</dd>
++                </div>
++                <div class="infoitem">
++                  <dt class="infoitem__k"><span aria-hidden="true">// </span>disponibilité</dt>
++                  <dd class="infoitem__v">
++                    <div class="contact__avail"><ZBadge tone="success" dot>Ouvert aux missions freelance</ZBadge></div>
++                  </dd>
++                </div>
++              </dl>
+             </ZCard>
+ 
+             <!-- Carte CTA terminal : ouvre l'easter-egg via le lanceur partagé (useTerminal) -->
+@@ -110,7 +116,7 @@
+                 anon.@jouan.ovh:~$ <span class="contact__prompt-cmd">./contact</span>
+               </p>
+               <p class="prose contact__term-text">Vous préférez la ligne de commande ? Ouvrez le terminal.</p>
+-              <ZButton variant="terminal" size="sm" @click="openTerminal">
++              <ZButton variant="terminal" size="sm" aria-haspopup="dialog" @click="openTerminal">
+                 <template #icon><ZIcon name="terminal" /></template>
+                 Ouvrir le terminal
+               </ZButton>
+@@ -360,6 +366,11 @@ useHead({
+ }
+ 
+ // ---- Carte infos (porté de kit.css : .infoitem / .k / .v) ----
++.contact__infolist {
++  margin: 0;
++  padding: 0;
++}
++
+ .infoitem {
+   font-family: var(--font-mono);
+ 
+@@ -370,12 +381,14 @@ useHead({
+ 
+ .infoitem__k {
+   font-size: var(--fs-xs);
++  font-weight: var(--fw-regular);
+   letter-spacing: var(--ls-wider);
+   text-transform: uppercase;
+   color: var(--text-muted);
+ }
+ 
+ .infoitem__v {
++  margin: 0;
+   font-size: var(--fs-md);
+   color: var(--text-strong);
+ }
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index 1b36402..69ee46d 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -15,9 +15,11 @@
+               </ZButton>
+               <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir les services </ZButton>
+             </div>
+-            <div class="hero__tags">
+-              <ZTag v-for="tag in tags" :key="tag">{{ tag }}</ZTag>
+-            </div>
++            <ul class="hero__tags">
++              <li v-for="tag in tags" :key="tag">
++                <ZTag>{{ tag }}</ZTag>
++              </li>
++            </ul>
+           </div>
+ 
+           <!-- Colonne droite : fenêtre terminal décorative (statique) -->
+@@ -68,23 +70,18 @@
+       <div class="container">
+         <p class="eyebrow">// ce que je fais</p>
+         <h2 class="section__title">Trois façons de travailler ensemble</h2>
+-        <div class="grid-3">
+-          <ZCard
+-            v-for="service in services"
+-            :key="service.id"
+-            class="offer"
+-            interactive
+-            :accent="service.featured"
+-            :featured="service.featured"
+-          >
+-            <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+-            <h3 class="offer__title">{{ service.title }}</h3>
+-            <p class="offer__desc">{{ service.desc }}</p>
+-            <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+-              En savoir plus →
+-            </NuxtLink>
+-          </ZCard>
+-        </div>
++        <ul class="grid-3">
++          <li v-for="service in services" :key="service.id">
++            <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
++              <div class="offer__icon"><ZIcon :name="service.icon" /></div>
++              <h3 class="offer__title">{{ service.title }}</h3>
++              <p class="offer__desc">{{ service.desc }}</p>
++              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
++                En savoir plus →
++              </NuxtLink>
++            </ZCard>
++          </li>
++        </ul>
+       </div>
+     </section>
+ 
+@@ -98,29 +95,24 @@
+           </div>
+         </div>
+ 
+-        <p class="eyebrow">// projets sélectionnés</p>
+-        <div class="grid-2 projects">
+-          <ZCard
+-            v-for="project in projects"
+-            :key="project.url"
+-            class="project"
+-            interactive
+-            as="a"
+-            :href="project.url"
+-            target="_blank"
+-            rel="noopener noreferrer"
+-          >
+-            <div class="project__head">
+-              <h3 class="project__name">{{ project.name }}</h3>
+-              <span class="project__role">{{ project.role }}</span>
+-            </div>
+-            <p class="prose project__desc">{{ project.desc }}</p>
+-            <div class="hero__tags">
+-              <ZTag v-for="tag in project.tags" :key="tag">{{ tag }}</ZTag>
+-            </div>
+-            <span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span>
+-          </ZCard>
+-        </div>
++        <h2 class="eyebrow">// projets sélectionnés</h2>
++        <ul class="grid-2 projects">
++          <li v-for="project in projects" :key="project.url">
++            <ZCard class="project" interactive as="a" :href="project.url" target="_blank" rel="noopener noreferrer">
++              <div class="project__head">
++                <h3 class="project__name">{{ project.name }}</h3>
++                <span class="project__role">{{ project.role }}</span>
++              </div>
++              <p class="prose project__desc">{{ project.desc }}</p>
++              <ul class="hero__tags">
++                <li v-for="tag in project.tags" :key="tag">
++                  <ZTag>{{ tag }}</ZTag>
++                </li>
++              </ul>
++              <span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span>
++            </ZCard>
++          </li>
++        </ul>
+       </div>
+     </section>
+   </main>
+@@ -449,6 +441,9 @@ const { open: openTerminal } = useTerminal();
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   gap: var(--space-5);
++  margin: 0;
++  padding: 0;
++  list-style: none;
+ }
+ 
+ .offer__icon {
+@@ -531,6 +526,9 @@ const { open: openTerminal } = useTerminal();
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: var(--space-6);
++  margin: 0;
++  padding: 0;
++  list-style: none;
+ }
+ 
+ .projects {
+diff --git a/app/pages/services.vue b/app/pages/services.vue
+index 14b739f..c8d81d8 100644
+--- a/app/pages/services.vue
++++ b/app/pages/services.vue
+@@ -10,39 +10,35 @@
+           vous gardez la main sur votre projet.
+         </p>
+ 
+-        <div class="grid-3">
+-          <ZCard
+-            v-for="offer in offers"
+-            :key="offer.id"
+-            class="offer"
+-            :accent="offer.featured"
+-            :featured="offer.featured"
+-          >
+-            <div v-if="offer.featured" class="offer__badge">
+-              <ZBadge tone="accent">Le plus demandé</ZBadge>
+-            </div>
+-            <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+-            <h2 class="offer__title">{{ offer.title }}</h2>
+-            <p class="offer__desc">{{ offer.desc }}</p>
+-            <ul class="offer__points">
+-              <li v-for="point in offer.points" :key="point">{{ point }}</li>
+-            </ul>
+-            <div class="offer__price">
+-              <b>{{ offer.price }}</b>
+-            </div>
+-            <div class="offer__cta">
+-              <ZButton
+-                :as="NuxtLink"
+-                to="/contact"
+-                :variant="offer.featured ? 'primary' : 'secondary'"
+-                :aria-label="`Discuter du projet — ${offer.title}`"
+-                class="offer__btn"
+-              >
+-                Discuter du projet
+-              </ZButton>
+-            </div>
+-          </ZCard>
+-        </div>
++        <ul class="grid-3">
++          <li v-for="offer in offers" :key="offer.id">
++            <ZCard class="offer" :accent="offer.featured" :featured="offer.featured">
++              <div v-if="offer.featured" class="offer__badge">
++                <ZBadge tone="accent">Le plus demandé</ZBadge>
++              </div>
++              <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
++              <h2 class="offer__title">{{ offer.title }}</h2>
++              <p class="offer__desc">{{ offer.desc }}</p>
++              <ul class="offer__points">
++                <li v-for="point in offer.points" :key="point">{{ point }}</li>
++              </ul>
++              <div class="offer__price">
++                <b>{{ offer.price }}</b>
++              </div>
++              <div class="offer__cta">
++                <ZButton
++                  :as="NuxtLink"
++                  to="/contact"
++                  :variant="offer.featured ? 'primary' : 'secondary'"
++                  :aria-label="`Discuter du projet — ${offer.title}`"
++                  class="offer__btn"
++                >
++                  Discuter du projet
++                </ZButton>
++              </div>
++            </ZCard>
++          </li>
++        </ul>
+       </div>
+     </section>
+ 
+@@ -52,13 +48,13 @@
+         <p class="eyebrow">// comment ça se passe</p>
+         <h2 class="process__title">Un déroulé simple en quatre temps</h2>
+ 
+-        <div class="process">
+-          <div v-for="step in steps" :key="step.n" class="process__step">
+-            <div class="process__num">{{ step.n }}</div>
++        <ol class="process">
++          <li v-for="step in steps" :key="step.n" class="process__step">
++            <div class="process__num" aria-hidden="true">{{ step.n }}</div>
+             <h3 class="process__step-title">{{ step.title }}</h3>
+             <p class="prose process__desc">{{ step.desc }}</p>
+-          </div>
+-        </div>
++          </li>
++        </ol>
+ 
+         <div class="process__cta">
+           <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+@@ -175,6 +171,9 @@ useHead({
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   gap: var(--space-5);
++  margin: 0;
++  padding: 0;
++  list-style: none;
+ }
+ 
+ // `display:flex` (porté de l'inline JSX) : le prix + CTA sont poussés en bas via
+@@ -280,6 +279,9 @@ useHead({
+   display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   gap: var(--space-5);
++  margin: 0;
++  padding: 0;
++  list-style: none;
+ }
+ 
+ .process__num {
+diff --git a/docs/implementation-artifacts/10-2-a11y-semantique-residuelle.md b/docs/implementation-artifacts/10-2-a11y-semantique-residuelle.md
+index 2ac1617..d8cc22b 100644
+--- a/docs/implementation-artifacts/10-2-a11y-semantique-residuelle.md
++++ b/docs/implementation-artifacts/10-2-a11y-semantique-residuelle.md
+@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
+ 
+ # Story 10.2: A11y sémantique résiduelle (home / services / contact)
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -23,18 +23,18 @@ so that la structure du site m'est annoncée correctement (FR12).
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Home (`app/pages/index.vue`) : titres + listes (AC: tout)
+-  - [ ] Auditer l'outline : `<h1 class="hero__title">` (l.9). Les **libellés de section** qui ouvrent une section et n'ont pas de titre propre passent en `<h2 class="eyebrow">` ; ceux qui sont un **kicker au-dessus d'un titre existant** restent `<p>`. Cas : l.8 `// développeur web freelance` = kicker du hero (au-dessus du `<h1>`) → **reste `<p>`** ; l.69 `// ce que je fais` est suivi d'un `<h2 class="section__title">` (l.70) → kicker, **reste `<p>`** ; l.101 `// projets sélectionnés` → **vérifier** s'il est suivi d'un titre ; si non, le passer en `<h2 class="eyebrow">`. (Convention story 5.2 : `font-weight`/`line-height` hérités → rendu identique.)
+-  - [ ] **Séquences répétées en listes** : la grille des 3 offres (aperçu services) et la grille des projets sélectionnés (cartes `v-for`) → `<ul>` + `<li>` (`list-style: none` + reset marges UA → rendu identique). Numéros/ordre éventuels en `aria-hidden`.
+-- [ ] Tâche 2 — Services (`app/pages/services.vue`) : process en `<ol>` + titres (AC: tout)
+-  - [ ] **Process en `<ol>`/`<li>`** (différé revue 4.2) : `.process` est aujourd'hui `<div class="process"><div v-for="step" class="process__step">` avec `<div class="process__num">{{ step.n }}</div>` + `<h3>` (l.55-60). Passer `.process` en `<ol>`, `.process__step` en `<li>` ; les numéros `01…04` (`process__num`) en `aria-hidden="true"` (l'ordre est porté par la liste). `list-style: none` + reset → rendu identique.
+-  - [ ] La grille des **3 offres** (`v-for` offer, l.~25) → `<ul>`/`<li>` ; `offer__points` est déjà un `<ul>` (l.27) — OK. Vérifier l'outline : `<h1>` (l.7), `<h2 class="offer__title">` (l.25 — ⚠️ il y a un h2 par offre dans une grille ; acceptable si la section a un libellé), `<h2 class="process__title">` (l.53). Eyebrows l.6/l.52 = kickers de titres existants → restent `<p>`.
+-- [ ] Tâche 3 — Contact (`app/pages/contact.vue`) : colonne infos en `<dl>` + CTA terminal (AC: tout)
+-  - [ ] **Paires label/valeur** de `.contact__infocard` (l.91+) : aujourd'hui `<div class="infoitem__k">// email</div>` + valeur en `<div>`. Passer en `<dl>` / `<dt>` (label) / `<dd>` (valeur). Le préfixe `//` (décoratif) en `aria-hidden="true"` (ou pseudo-élément) pour ne pas être lu « slash slash ». Reset CSS pour rendu identique.
+-  - [ ] **CTA terminal** (carte ouvrant l'easter-egg) : ajouter `aria-haspopup="dialog"` (signale l'ouverture d'un overlay). Vérifier qu'un libellé/titre de section structure la colonne droite (un `<h2 class="eyebrow">` si elle ouvre une région sans titre).
+-- [ ] Tâche 4 — Validation (AC: tout)
+-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts.
+-  - [ ] **Diff visuel + arbre d'accessibilité** (Chrome DevTools MCP), desktop ET mobile : rendu **identique** au pixel (h2 neutralisés, listes reset) ; outline de titres `h1 → h2…` sans saut ; listes annoncées comme listes ; `//` non vocalisé.
++- [x] Tâche 1 — Home (`app/pages/index.vue`) : titres + listes (AC: tout)
++  - [x] Auditer l'outline : `<h1 class="hero__title">` (l.9). Les **libellés de section** qui ouvrent une section et n'ont pas de titre propre passent en `<h2 class="eyebrow">` ; ceux qui sont un **kicker au-dessus d'un titre existant** restent `<p>`. Cas : l.8 `// développeur web freelance` = kicker du hero (au-dessus du `<h1>`) → **reste `<p>`** ; l.69 `// ce que je fais` est suivi d'un `<h2 class="section__title">` (l.70) → kicker, **reste `<p>`** ; l.101 `// projets sélectionnés` → **vérifier** s'il est suivi d'un titre ; si non, le passer en `<h2 class="eyebrow">`. (Convention story 5.2 : `font-weight`/`line-height` hérités → rendu identique.)
++  - [x] **Séquences répétées en listes** : la grille des 3 offres (aperçu services) et la grille des projets sélectionnés (cartes `v-for`) → `<ul>` + `<li>` (`list-style: none` + reset marges UA → rendu identique). Numéros/ordre éventuels en `aria-hidden`.
++- [x] Tâche 2 — Services (`app/pages/services.vue`) : process en `<ol>` + titres (AC: tout)
++  - [x] **Process en `<ol>`/`<li>`** (différé revue 4.2) : `.process` est aujourd'hui `<div class="process"><div v-for="step" class="process__step">` avec `<div class="process__num">{{ step.n }}</div>` + `<h3>` (l.55-60). Passer `.process` en `<ol>`, `.process__step` en `<li>` ; les numéros `01…04` (`process__num`) en `aria-hidden="true"` (l'ordre est porté par la liste). `list-style: none` + reset → rendu identique.
++  - [x] La grille des **3 offres** (`v-for` offer, l.~25) → `<ul>`/`<li>` ; `offer__points` est déjà un `<ul>` (l.27) — OK. Vérifier l'outline : `<h1>` (l.7), `<h2 class="offer__title">` (l.25 — ⚠️ il y a un h2 par offre dans une grille ; acceptable si la section a un libellé), `<h2 class="process__title">` (l.53). Eyebrows l.6/l.52 = kickers de titres existants → restent `<p>`.
++- [x] Tâche 3 — Contact (`app/pages/contact.vue`) : colonne infos en `<dl>` + CTA terminal (AC: tout)
++  - [x] **Paires label/valeur** de `.contact__infocard` (l.91+) : aujourd'hui `<div class="infoitem__k">// email</div>` + valeur en `<div>`. Passer en `<dl>` / `<dt>` (label) / `<dd>` (valeur). Le préfixe `//` (décoratif) en `aria-hidden="true"` (ou pseudo-élément) pour ne pas être lu « slash slash ». Reset CSS pour rendu identique.
++  - [x] **CTA terminal** (carte ouvrant l'easter-egg) : ajouter `aria-haspopup="dialog"` (signale l'ouverture d'un overlay). Vérifier qu'un libellé/titre de section structure la colonne droite (un `<h2 class="eyebrow">` si elle ouvre une région sans titre).
++- [x] Tâche 4 — Validation (AC: tout)
++  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts.
++  - [x] **Diff visuel + arbre d'accessibilité** (Chrome DevTools MCP), desktop ET mobile : rendu **identique** au pixel (h2 neutralisés, listes reset) ; outline de titres `h1 → h2…` sans saut ; listes annoncées comme listes ; `//` non vocalisé.
+ 
+ ## Dev Notes
+ 
+@@ -74,8 +74,33 @@ so that la structure du site m'est annoncée correctement (FR12).
+ 
+ ### Agent Model Used
+ 
++- Gemini 3.7 Flash (Low)
++
+ ### Debug Log References
+ 
++- Validation Docker `pnpm lint`, `pnpm typecheck`, `pnpm generate` exécutée avec succès (11 routes prerendered).
++
+ ### Completion Notes List
+ 
++- `app/assets/scss/base/_layout.scss` : neutralisation de `font-weight` et `line-height` sur `.eyebrow` pour les balises `<h2>`.
++- `app/pages/index.vue` :
++  - `hero__tags` encapsulé en `<ul>`/`<li>` (hero et projets).
++  - Titre de section `// projets sélectionnés` passé en `<h2 class="eyebrow">` (l'eyebrow ouvre la section projets sans titre secondaire).
++  - Grille des 3 services et grille des 2 projets passées en `<ul>`/`<li>` avec reset CSS (`margin: 0; padding: 0; list-style: none`).
++- `app/pages/services.vue` :
++  - Grille des 3 offres passée en `<ul>`/`<li>` avec reset CSS.
++  - Process 4 étapes passé en `<ol class="process">` / `<li class="process__step">` avec `process__num` marqué en `aria-hidden="true"` et reset CSS.
++- `app/pages/contact.vue` :
++  - Carte infos structurée en `<dl class="contact__infolist">`, `<dt class="infoitem__k">`, `<dd class="infoitem__v">`.
++  - Préfixe `// ` encapsulé dans `<span aria-hidden="true">// </span>` pour éviter la vocalisation "slash slash" par les lecteurs d'écran.
++  - Reset CSS sur `dl`, `dt`, `dd` pour garantir la stricte conformité visuelle.
++  - Bouton CTA terminal enrichi de `aria-haspopup="dialog"`.
++
+ ### File List
++
++- `app/assets/scss/base/_layout.scss` (MODIFIED)
++- `app/pages/index.vue` (MODIFIED)
++- `app/pages/services.vue` (MODIFIED)
++- `app/pages/contact.vue` (MODIFIED)
++- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
++- `docs/implementation-artifacts/10-2-a11y-semantique-residuelle.md` (MODIFIED)
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 02bb83f..37ac8d5 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-12 (Story 10.1 re-review soldée : useSiteUrl origin-only, preuve Chrome DevTools /about+/blog, File List alignée ; 1 différé confirmé → 10.5. Story done)"
++last_updated: "2026-09-13 (Story 10.2 terminée : a11y sémantique résiduelle sur home/services/contact, statut review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -109,7 +109,7 @@ development_status:
+   # Epic 10 — Fin de refonte (a11y résiduel + SEO + RGPD + déploiement prod)
+   epic-10: in-progress
+   10-1-decision-hebergement-prod-et-derisquage-deploiement: done
+-  10-2-a11y-semantique-residuelle: ready-for-dev
++  10-2-a11y-semantique-residuelle: review
+   10-3-liens-externes-accessibles: ready-for-dev
+   10-4-validation-a11y-emulee-et-unification-forced-colors: ready-for-dev
+   10-5-seo-centralise-site-wide: ready-for-dev

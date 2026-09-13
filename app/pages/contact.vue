@@ -5,7 +5,7 @@
         <div class="contact__grid">
           <!-- Colonne gauche : en-tête + formulaire (story 7.1) -->
           <div class="contact__main">
-            <p class="eyebrow">// contact</p>
+            <p class="eyebrow"><span aria-hidden="true">// </span>contact</p>
             <h1 class="contact__title">Parlons de votre projet</h1>
             <p class="prose contact__intro">
               Une idée, un site à refaire, une automatisation à mettre en place ? Décrivez-moi le besoin — je réponds
@@ -87,20 +87,27 @@
 
           <!-- Colonne droite (story 7.2) : carte infos + carte CTA terminal + hexagones sociaux -->
           <div class="contact__info">
+            <h2 class="screen-reader-text">Coordonnées et terminal</h2>
             <!-- Carte infos : email / localisation / disponibilité -->
             <ZCard class="contact__infocard">
-              <div class="infoitem">
-                <div class="infoitem__k">// email</div>
-                <a class="infoitem__v contact__email" :href="`mailto:${contact.email}`">{{ contact.email }}</a>
-              </div>
-              <div class="infoitem">
-                <div class="infoitem__k">// localisation</div>
-                <div class="infoitem__v">{{ contact.city }}</div>
-              </div>
-              <div class="infoitem">
-                <div class="infoitem__k">// disponibilité</div>
-                <div class="contact__avail"><ZBadge tone="success" dot>Ouvert aux missions freelance</ZBadge></div>
-              </div>
+              <dl class="contact__infolist">
+                <div class="infoitem">
+                  <dt class="infoitem__k"><span aria-hidden="true">// </span>email</dt>
+                  <dd class="infoitem__v">
+                    <a class="contact__email" :href="`mailto:${contact.email}`">{{ contact.email }}</a>
+                  </dd>
+                </div>
+                <div class="infoitem">
+                  <dt class="infoitem__k"><span aria-hidden="true">// </span>localisation</dt>
+                  <dd class="infoitem__v">{{ contact.city }}</dd>
+                </div>
+                <div class="infoitem">
+                  <dt class="infoitem__k"><span aria-hidden="true">// </span>disponibilité</dt>
+                  <dd class="infoitem__v">
+                    <div class="contact__avail"><ZBadge tone="success" dot>Ouvert aux missions freelance</ZBadge></div>
+                  </dd>
+                </div>
+              </dl>
             </ZCard>
 
             <!-- Carte CTA terminal : ouvre l'easter-egg via le lanceur partagé (useTerminal) -->
@@ -110,7 +117,7 @@
                 anon.@jouan.ovh:~$ <span class="contact__prompt-cmd">./contact</span>
               </p>
               <p class="prose contact__term-text">Vous préférez la ligne de commande ? Ouvrez le terminal.</p>
-              <ZButton variant="terminal" size="sm" @click="openTerminal">
+              <ZButton variant="terminal" size="sm" aria-haspopup="dialog" @click="openTerminal">
                 <template #icon><ZIcon name="terminal" /></template>
                 Ouvrir le terminal
               </ZButton>
@@ -360,6 +367,11 @@ useHead({
 }
 
 // ---- Carte infos (porté de kit.css : .infoitem / .k / .v) ----
+.contact__infolist {
+  margin: 0;
+  padding: 0;
+}
+
 .infoitem {
   font-family: var(--font-mono);
 
@@ -370,12 +382,14 @@ useHead({
 
 .infoitem__k {
   font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
   letter-spacing: var(--ls-wider);
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .infoitem__v {
+  margin: 0;
   font-size: var(--fs-md);
   color: var(--text-strong);
 }

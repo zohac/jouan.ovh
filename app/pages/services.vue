@@ -3,66 +3,62 @@
     <!-- En-tête + grille d'offres (story 4.1). La 2e section (process) viendra en 4.2. -->
     <section class="section">
       <div class="container">
-        <p class="eyebrow">// services</p>
+        <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
         <h1 class="services__title">Des prestations claires, pensées comme des produits.</h1>
         <p class="prose services__intro">
           Du site WordPress à l'application sur-mesure, en passant par l'IA appliquée — je m'occupe de la technique,
           vous gardez la main sur votre projet.
         </p>
 
-        <div class="grid-3">
-          <ZCard
-            v-for="offer in offers"
-            :key="offer.id"
-            class="offer"
-            :accent="offer.featured"
-            :featured="offer.featured"
-          >
-            <div v-if="offer.featured" class="offer__badge">
-              <ZBadge tone="accent">Le plus demandé</ZBadge>
-            </div>
-            <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
-            <h2 class="offer__title">{{ offer.title }}</h2>
-            <p class="offer__desc">{{ offer.desc }}</p>
-            <ul class="offer__points">
-              <li v-for="point in offer.points" :key="point">{{ point }}</li>
-            </ul>
-            <div class="offer__price">
-              <b>{{ offer.price }}</b>
-            </div>
-            <div class="offer__cta">
-              <ZButton
-                :as="NuxtLink"
-                to="/contact"
-                :variant="offer.featured ? 'primary' : 'secondary'"
-                :aria-label="`Discuter du projet — ${offer.title}`"
-                class="offer__btn"
-              >
-                Discuter du projet
-              </ZButton>
-            </div>
-          </ZCard>
-        </div>
+        <ul class="grid-3">
+          <li v-for="offer in offers" :key="offer.id">
+            <ZCard class="offer" :accent="offer.featured" :featured="offer.featured">
+              <div v-if="offer.featured" class="offer__badge">
+                <ZBadge tone="accent">Le plus demandé</ZBadge>
+              </div>
+              <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+              <h2 class="offer__title">{{ offer.title }}</h2>
+              <p class="offer__desc">{{ offer.desc }}</p>
+              <ul class="offer__points">
+                <li v-for="point in offer.points" :key="point">{{ point }}</li>
+              </ul>
+              <div class="offer__price">
+                <b>{{ offer.price }}</b>
+              </div>
+              <div class="offer__cta">
+                <ZButton
+                  :as="NuxtLink"
+                  to="/contact"
+                  :variant="offer.featured ? 'primary' : 'secondary'"
+                  :aria-label="`Discuter du projet — ${offer.title}`"
+                  class="offer__btn"
+                >
+                  Discuter du projet
+                </ZButton>
+              </div>
+            </ZCard>
+          </li>
+        </ul>
       </div>
     </section>
 
     <!-- Section process : 4 étapes ordonnées + CTA (story 4.2). Porté de Services.jsx L45-61. -->
     <section class="section section--sunken">
       <div class="container">
-        <p class="eyebrow">// comment ça se passe</p>
+        <p class="eyebrow"><span aria-hidden="true">// </span>comment ça se passe</p>
         <h2 class="process__title">Un déroulé simple en quatre temps</h2>
 
-        <div class="process">
-          <div v-for="step in steps" :key="step.n" class="process__step">
-            <div class="process__num">{{ step.n }}</div>
+        <ol class="process">
+          <li v-for="step in steps" :key="step.n" class="process__step">
+            <div class="process__num" aria-hidden="true">{{ step.n }}</div>
             <h3 class="process__step-title">{{ step.title }}</h3>
             <p class="prose process__desc">{{ step.desc }}</p>
-          </div>
-        </div>
+          </li>
+        </ol>
 
         <div class="process__cta">
           <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
-            Demander un devis
+            Me parler de votre besoin
             <template #iconRight><ZIcon name="arrow" /></template>
           </ZButton>
         </div>
@@ -72,9 +68,8 @@
 </template>
 
 <script setup lang="ts">
-// Page Services — en-tête + grille des 3 offres (story 4.1) puis section process
-// (4 étapes ordonnées + CTA « Demander un devis », story 4.2). Porté de Services.jsx
-// du UI kit : recréation Vue 3 + tokens (aucune copie JSX). Dark-first, accent orange.
+// Page Services : catalogue d'offres packagées + process 4 étapes + CTA contact.
+// Données statiques (3 offres, 4 étapes) déclarées localement. Prerender-safe, dark-first.
 import { NuxtLink } from "#components";
 
 interface Offer {
@@ -175,6 +170,13 @@ useHead({
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+  }
 }
 
 // `display:flex` (porté de l'inline JSX) : le prix + CTA sont poussés en bas via
@@ -182,6 +184,7 @@ useHead({
 .offer {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .offer__badge {
@@ -280,6 +283,9 @@ useHead({
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .process__num {
