@@ -1,0 +1,617 @@
+diff --git a/app/components/FooterComponent.vue b/app/components/FooterComponent.vue
+index febe415..a583c55 100644
+--- a/app/components/FooterComponent.vue
++++ b/app/components/FooterComponent.vue
+@@ -7,7 +7,7 @@
+             <ZIcon name="gem" class="ftr__logo" />
+             <b>jouan.ovh</b>
+           </NuxtLink>
+-          <p class="ftr__tagline">Développeur web freelance. Valognes, France.</p>
++          <p class="ftr__tagline">{{ profile.role }}. {{ profile.city }}.</p>
+         </div>
+ 
+         <nav class="ftr__col" aria-label="Navigation du pied de page">
+@@ -17,14 +17,12 @@
+ 
+         <div class="ftr__col">
+           <h2 class="ftr__title">// Projets</h2>
+-          <ZExternalLink
+-            v-for="project in projects"
+-            :key="project.url"
+-            :href="project.url"
+-            rel="noopener noreferrer"
+-            class="ftr__link"
+-            >{{ project.name }}</ZExternalLink
+-          >
++          <template v-for="project in projects" :key="project.name">
++            <ZExternalLink v-if="project.url" :href="project.url" rel="noopener noreferrer" class="ftr__link">{{
++              project.name
++            }}</ZExternalLink>
++            <span v-else class="ftr__link ftr__link--static">{{ project.name }}</span>
++          </template>
+         </div>
+ 
+         <div class="ftr__col">
+@@ -55,6 +53,7 @@ const navItems = [
+   { to: "/mentions-legales", label: "Mentions légales" },
+ ];
+ 
++const profile = SITE.profile;
+ // Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).
+ const projects = SITE.projects;
+ 
+diff --git a/app/components/home/HomeAtmosComponent.vue b/app/components/home/HomeAtmosComponent.vue
+new file mode 100644
+index 0000000..b9f7223
+--- /dev/null
++++ b/app/components/home/HomeAtmosComponent.vue
+@@ -0,0 +1,124 @@
++<template>
++  <div class="atmos" aria-hidden="true">
++    <div class="aurora aurora--auberg" />
++    <div class="aurora aurora--orange" />
++    <div class="aurora aurora--red" />
++    <div class="grid-dots" />
++    <div class="scanlines" />
++    <div class="vignette" />
++  </div>
++</template>
++
++<script setup lang="ts">
++// Composant atmosphérique décoratif pour la page d'accueil (Story 11.1 / CAP-1).
++// Entièrement rendu en pur CSS, marqué aria-hidden="true", animations neutralisées sous prefers-reduced-motion.
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern */
++.atmos {
++  position: fixed;
++  inset: 0;
++  z-index: 0;
++  overflow: hidden;
++  pointer-events: none;
++}
++
++.aurora {
++  position: absolute;
++  border-radius: var(--radius-circle);
++  filter: blur(80px);
++  mix-blend-mode: screen;
++  will-change: transform;
++}
++
++.aurora--orange {
++  top: -22%;
++  left: 48%;
++  width: 60vw;
++  height: 60vw;
++  background: radial-gradient(circle at center, var(--orange-500), transparent 62%);
++  opacity: 0.55;
++  animation: drift-orange 26s var(--ease-in-out) infinite;
++}
++
++.aurora--auberg {
++  top: 6%;
++  left: -22%;
++  width: 64vw;
++  height: 64vw;
++  background: radial-gradient(circle at center, var(--aubergine-vivid), transparent 62%);
++  opacity: 0.7;
++  animation: drift-auberg 32s var(--ease-in-out) infinite;
++}
++
++.aurora--red {
++  top: 44%;
++  left: 26%;
++  width: 44vw;
++  height: 44vw;
++  background: radial-gradient(circle at center, var(--term-red), transparent 64%);
++  opacity: 0.4;
++  animation: drift-red 30s var(--ease-in-out) infinite;
++}
++
++.grid-dots {
++  position: absolute;
++  inset: 0;
++  background-image: radial-gradient(hsl(30deg 20% 100% / 5%) 1px, transparent 1px);
++  background-size: 34px 34px;
++  mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 30%, transparent 78%);
++}
++
++.scanlines {
++  position: absolute;
++  inset: 0;
++  opacity: 0.35;
++  background: repeating-linear-gradient(0deg, hsl(0deg 0% 0% / 18%) 0 1px, transparent 1px 3px);
++}
++
++.vignette {
++  position: absolute;
++  inset: 0;
++  background: radial-gradient(ellipse 120% 90% at 50% 0%, transparent 55%, var(--surface-0) 100%);
++}
++
++@keyframes drift-orange {
++  0%,
++  100% {
++    transform: translate(0, 0) scale(1);
++  }
++
++  50% {
++    transform: translate(-6vw, 5vh) scale(1.12);
++  }
++}
++
++@keyframes drift-auberg {
++  0%,
++  100% {
++    transform: translate(0, 0) scale(1);
++  }
++
++  50% {
++    transform: translate(7vw, -4vh) scale(1.08);
++  }
++}
++
++@keyframes drift-red {
++  0%,
++  100% {
++    transform: translate(0, 0) scale(1);
++  }
++
++  50% {
++    transform: translate(-4vw, -6vh) scale(1.15);
++  }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .aurora {
++    animation: none;
++  }
++}
++</style>
+diff --git a/app/components/terminal/programs/Projets.ts b/app/components/terminal/programs/Projets.ts
+index 9333808..46b4ff8 100644
+--- a/app/components/terminal/programs/Projets.ts
++++ b/app/components/terminal/programs/Projets.ts
+@@ -7,7 +7,12 @@ const projets: IProgram = {
+   command: "projets",
+   description: "Mes projets.",
+   run: function (): string {
+-    const items = SITE.projects.map((p) => `<li>${p.name} — ${p.role} — ${p.desc} (${p.url})</li>`).join("");
++    const items = SITE.projects
++      .map((p) => {
++        const meta = p.url ? ` (${p.url})` : p.status ? ` [${p.status}]` : "";
++        return `<li>${p.name} — ${p.role} — ${p.desc}${meta}</li>`;
++      })
++      .join("");
+     return `<ul>${items}</ul>`;
+   },
+ };
+diff --git a/app/components/ui/ZCustomCursor.vue b/app/components/ui/ZCustomCursor.vue
+new file mode 100644
+index 0000000..c43f680
+--- /dev/null
++++ b/app/components/ui/ZCustomCursor.vue
+@@ -0,0 +1,142 @@
++<template>
++  <div v-if="isEnabled" aria-hidden="true">
++    <div
++      class="cursor-ring"
++      :class="{ 'is-hot': isHot, 'is-visible': isVisible }"
++      :style="{ transform: `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)` }"
++    />
++    <div
++      class="cursor-dot"
++      :class="{ 'is-visible': isVisible }"
++      :style="{ transform: `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)` }"
++    />
++  </div>
++</template>
++
++<script setup lang="ts">
++import { ref, onMounted, onUnmounted } from "vue";
++
++// Micro-curseur interactif progressif (Story 11.1 / AC-4 / CAP-10).
++// Purement décoratif (aria-hidden="true").
++// Masqué sur mobile/tactile (hover: none) et prefers-reduced-motion.
++// N'altère pas le curseur natif système et supporte le SSR sans effet de bord.
++
++const isEnabled = ref(false);
++const isVisible = ref(false);
++const isHot = ref(false);
++
++const dotX = ref(0);
++const dotY = ref(0);
++const ringX = ref(0);
++const ringY = ref(0);
++
++let mouseX = 0;
++let mouseY = 0;
++let currentRingX = 0;
++let currentRingY = 0;
++let rafId: number | null = null;
++
++function updateAnimationLoop() {
++  currentRingX += (mouseX - currentRingX) * 0.18;
++  currentRingY += (mouseY - currentRingY) * 0.18;
++  ringX.value = currentRingX;
++  ringY.value = currentRingY;
++  rafId = requestAnimationFrame(updateAnimationLoop);
++}
++
++function handlePointerMove(e: PointerEvent) {
++  if (!isVisible.value) {
++    isVisible.value = true;
++    currentRingX = e.clientX;
++    currentRingY = e.clientY;
++    ringX.value = e.clientX;
++    ringY.value = e.clientY;
++  }
++  mouseX = e.clientX;
++  mouseY = e.clientY;
++  dotX.value = e.clientX;
++  dotY.value = e.clientY;
++}
++
++function handlePointerOver(e: Event) {
++  const target = e.target as HTMLElement | null;
++  if (!target) return;
++  const isInteractive = target.closest("a, button, [data-hot], input, textarea, select, [role='button']");
++  isHot.value = Boolean(isInteractive);
++}
++
++onMounted(() => {
++  if (!import.meta.client) return;
++
++  const hasHover = window.matchMedia("(hover: hover)").matches;
++  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
++
++  if (!hasHover || prefersReducedMotion) {
++    return;
++  }
++
++  isEnabled.value = true;
++  window.addEventListener("pointermove", handlePointerMove, { passive: true });
++  document.addEventListener("pointerover", handlePointerOver, { passive: true });
++  rafId = requestAnimationFrame(updateAnimationLoop);
++});
++
++onUnmounted(() => {
++  if (!import.meta.client) return;
++  window.removeEventListener("pointermove", handlePointerMove);
++  document.removeEventListener("pointerover", handlePointerOver);
++  if (rafId !== null) {
++    cancelAnimationFrame(rafId);
++  }
++});
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern */
++.cursor-dot,
++.cursor-ring {
++  position: fixed;
++  top: 0;
++  left: 0;
++  z-index: 90;
++  border-radius: var(--radius-circle);
++  mix-blend-mode: difference;
++  opacity: 0;
++  pointer-events: none;
++  transition: opacity var(--dur-base) var(--ease-standard);
++
++  &.is-visible {
++    opacity: 1;
++  }
++}
++
++.cursor-dot {
++  width: 6px;
++  height: 6px;
++  background: var(--ink-1);
++}
++
++.cursor-ring {
++  width: 34px;
++  height: 34px;
++  border: 1px solid hsl(0deg 0% 100% / 70%);
++  transition:
++    width var(--dur-base) var(--ease-out),
++    height var(--dur-base) var(--ease-out),
++    border-color var(--dur-base) var(--ease-out),
++    opacity var(--dur-base) var(--ease-standard);
++
++  &.is-hot {
++    width: 56px;
++    height: 56px;
++    border-color: var(--accent);
++  }
++}
++
++@media (hover: none), (prefers-reduced-motion: reduce) {
++  .cursor-dot,
++  .cursor-ring {
++    display: none;
++  }
++}
++</style>
+diff --git a/app/data/site.ts b/app/data/site.ts
+index 81fd41d..d87e1d2 100644
+--- a/app/data/site.ts
++++ b/app/data/site.ts
+@@ -16,54 +16,65 @@ export interface IProfile {
+   email: string;
+   city: string;
+   available: boolean;
++  maltUrl?: string;
+ }
+ 
+ export interface IProject {
+   name: string;
+   role: string;
+   desc: string;
+-  url: string;
++  url?: string;
++  status?: string;
+   tags: string[];
+ }
+ 
+ const profile: IProfile = {
+   name: "Simon Jouan",
+-  role: "Développeur web freelance",
++  role: "Développeur Full Stack TypeScript — Nuxt / NestJS",
+   email: "simon@jouan.ovh",
+-  city: "Valognes, France",
++  city: "Rouen, France",
+   available: true,
++  maltUrl: "https://www.malt.fr/profile/simonjouan",
+ };
+ 
+-// Stack technique — ordre conservé (tags hero de la home = sous-ensemble curé, non dérivé d'ici).
++// Stack technique moderne prioritaire ordonnée.
+ const skills: string[] = [
+-  "php",
+-  "symfony",
+-  "wordpress",
+-  "node.js",
+-  "nest.js",
+-  "nuxt.js",
+-  "vue",
+   "typescript",
++  "nuxt",
++  "vue",
++  "nest.js",
++  "node.js",
++  "postgresql",
++  "typeorm",
++  "stripe",
++  "cypress",
+   "docker",
+-  "tailwind",
+-  "n8n",
+-  "mysql",
++  "rest-api",
++  "vitest",
+ ];
+ 
+ const projects: IProject[] = [
+   {
+     name: "keova.app",
+-    role: "Fondateur · SaaS",
+-    desc: "Plateforme SaaS que je conçois et opère de bout en bout.",
++    role: "Co-fondateur & Développeur Full Stack",
++    desc: "Plateforme SaaS ERP équestre complète conçue et opérée de bout en bout (gestion de pensions, facturation automatisée, réservations).",
+     url: "https://keova.app",
+-    tags: ["nest.js", "nuxt", "saas"],
++    status: "En production",
++    tags: ["nuxt", "nest.js", "postgresql", "stripe", "saas"],
++  },
++  {
++    name: "TryOn",
++    role: "CTO & Développeur Full Stack",
++    desc: "Plateforme SaaS B2B d'essayage virtuel de vêtements via l'IA générative (diffusion models, microservices asynchrones, files Redis).",
++    status: "Étude de cas (MVP livré)",
++    tags: ["nuxt", "nest.js", "python", "comfyui", "ia"],
+   },
+   {
+-    name: "patio-conseil.fr",
+-    role: "Client",
+-    desc: "Site et outils pour un cabinet de conseil.",
+-    url: "https://patio-conseil.fr",
+-    tags: ["wordpress", "conseil"],
++    name: "Nodium",
++    role: "Créateur & Ingénieur IA",
++    desc: "Plateforme desktop d'orchestration d'agents IA autonomes, gestion de permissions et mémoire contextuelle.",
++    status: "R&D / En cours",
++    tags: ["typescript", "electron", "agents", "ia"],
+   },
+ ];
+ 
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index cb89e65..fbd4f5c 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -1,5 +1,8 @@
+ <template>
+   <main class="home">
++    <HomeAtmosComponent />
++    <ZCustomCursor />
++
+     <section class="hero hero__grad">
+       <div class="hero__in container">
+         <div class="hero__grid">
+@@ -98,8 +101,14 @@
+ 
+         <h2 class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</h2>
+         <ul class="grid-2 projects">
+-          <li v-for="project in projects" :key="project.url">
+-            <ZCard class="project" interactive :as="ZExternalLink" :href="project.url" rel="noopener noreferrer">
++          <li v-for="project in projects" :key="project.name">
++            <ZCard
++              class="project"
++              interactive
++              :as="project.url ? ZExternalLink : 'div'"
++              :href="project.url || undefined"
++              :rel="project.url ? 'noopener noreferrer' : undefined"
++            >
+               <div class="project__head">
+                 <h3 class="project__name">{{ project.name }}</h3>
+                 <span class="project__role">{{ project.role }}</span>
+diff --git a/docs/implementation-artifacts/11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique.md b/docs/implementation-artifacts/11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique.md
+index 44ad82b..38abf8d 100644
+--- a/docs/implementation-artifacts/11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique.md
++++ b/docs/implementation-artifacts/11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique.md
+@@ -1,6 +1,10 @@
++---
++baseline_commit: 42d7d7e888dbe812ec7d9d21a0f7c071ed3faeed
++---
++
+ # Story 11.1: Préparation de branche, mise à jour des données `site.ts` & Atmosphère cinétique
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -41,36 +45,36 @@ so that j'entre immédiatement dans l'univers technique haut de gamme du site sa
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Préparation Git : branche dédiée issue de `develop` (AC: 1)
+-  - [ ] Vérifier l'état de l'arbre de travail (`git status`).
+-  - [ ] S'assurer que la branche `develop` est à jour.
+-  - [ ] Créer et basculer sur la branche `feat/home-awwwards` depuis `develop`.
+-
+-- [ ] Tâche 2 — Mise à jour de la source unique de données `app/data/site.ts` (AC: 2)
+-  - [ ] Mettre à jour l'interface `IProject` pour inclure `status?: string` et rendre `url?: string` optionnel.
+-  - [ ] Mettre à jour `SITE.profile` (rôle « Développeur Full Stack TypeScript — Nuxt / NestJS », ville « Rouen, France », champ `maltUrl: "https://www.malt.fr/profile/simonjouan"`).
+-  - [ ] Mettre à jour `SITE.skills` avec la stack moderne ciblée.
+-  - [ ] Remplacer les projets dans `SITE.projects` par Keova, TryOn (sans URL externe) et Nodium.
+-  - [ ] Vérifier la non-régression sur les consommateurs existants (`FooterComponent.vue`, `app/components/terminal/programs/Projets.ts`).
+-
+-- [ ] Tâche 3 — Implémentation du composant atmosphérique `.atmos` (AC: 3)
+-  - [ ] Créer `app/components/home/HomeAtmosComponent.vue`.
+-  - [ ] Intégrer les 3 calques auroras (`.aurora--auberg`, `.aurora--orange`, `.aurora--red`) en pur SCSS/CSS utilisant les variables de couleur du Design System (`--color-aubergine-base`, `--color-orange-base`, etc.).
+-  - [ ] Ajouter la grille de points SVG/CSS et la texture scanlines CRT.
+-  - [ ] Baliser le bloc avec `aria-hidden="true"`.
+-  - [ ] Intégrer la règle `@media (prefers-reduced-motion: reduce)` désactivant les animations.
+-
+-- [ ] Tâche 4 — Implémentation du micro-curseur interactif progressif (AC: 4)
+-  - [ ] Créer `app/components/ui/ZCustomCursor.vue`.
+-  - [ ] Implémenter le suivi du curseur avec `pointermove` encapsulé dans `onMounted()` avec garde `import.meta.client`.
+-  - [ ] Gérer les classes actives d'expansion au survol des éléments interactifs (`[data-hot]`, `a`, `button`).
+-  - [ ] Masquer le curseur custom sous `@media (hover: none)` et `@media (prefers-reduced-motion: reduce)`.
+-  - [ ] Nettoyer les listeners lors du `onUnmounted()`.
+-
+-- [ ] Tâche 5 — Intégration sur `app/pages/index.vue` et validation qualité Docker (AC: 5)
+-  - [ ] Intégrer `<HomeAtmosComponent />` et `<ZCustomCursor />` sur `app/pages/index.vue`.
+-  - [ ] Exécuter la validation qualité Docker : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
+-  - [ ] Vérifier que les 13 routes statiques sont générées sans avertissement.
++- [x] Tâche 1 — Préparation Git : branche dédiée issue de `develop` (AC: 1)
++  - [x] Vérifier l'état de l'arbre de travail (`git status`).
++  - [x] S'assurer que la branche `develop` est à jour.
++  - [x] Créer et basculer sur la branche `feat/home-awwwards` depuis `develop`.
++
++- [x] Tâche 2 — Mise à jour de la source unique de données `app/data/site.ts` (AC: 2)
++  - [x] Mettre à jour l'interface `IProject` pour inclure `status?: string` et rendre `url?: string` optionnel.
++  - [x] Mettre à jour `SITE.profile` (rôle « Développeur Full Stack TypeScript — Nuxt / NestJS », ville « Rouen, France », champ `maltUrl: "https://www.malt.fr/profile/simonjouan"`).
++  - [x] Mettre à jour `SITE.skills` avec la stack moderne ciblée.
++  - [x] Remplacer les projets dans `SITE.projects` par Keova, TryOn (sans URL externe) et Nodium.
++  - [x] Vérifier la non-régression sur les consommateurs existants (`FooterComponent.vue`, `app/components/terminal/programs/Projets.ts`).
++
++- [x] Tâche 3 — Implémentation du composant atmosphérique `.atmos` (AC: 3)
++  - [x] Créer `app/components/home/HomeAtmosComponent.vue`.
++  - [x] Intégrer les 3 calques auroras (`.aurora--auberg`, `.aurora--orange`, `.aurora--red`) en pur SCSS/CSS utilisant les variables de couleur du Design System (`--color-aubergine-base`, `--color-orange-base`, etc.).
++  - [x] Ajouter la grille de points SVG/CSS et la texture scanlines CRT.
++  - [x] Baliser le bloc avec `aria-hidden="true"`.
++  - [x] Intégrer la règle `@media (prefers-reduced-motion: reduce)` désactivant les animations.
++
++- [x] Tâche 4 — Implémentation du micro-curseur interactif progressif (AC: 4)
++  - [x] Créer `app/components/ui/ZCustomCursor.vue`.
++  - [x] Implémenter le suivi du curseur avec `pointermove` encapsulé dans `onMounted()` avec garde `import.meta.client`.
++  - [x] Gérer les classes actives d'expansion au survol des éléments interactifs (`[data-hot]`, `a`, `button`).
++  - [x] Masquer le curseur custom sous `@media (hover: none)` et `@media (prefers-reduced-motion: reduce)`.
++  - [x] Nettoyer les listeners lors du `onUnmounted()`.
++
++- [x] Tâche 5 — Intégration sur `app/pages/index.vue` et validation qualité Docker (AC: 5)
++  - [x] Intégrer `<HomeAtmosComponent />` et `<ZCustomCursor />` sur `app/pages/index.vue`.
++  - [x] Exécuter la validation qualité Docker : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
++  - [x] Vérifier que les 13 routes statiques sont générées sans avertissement.
+ 
+ ## Dev Notes
+ 
+@@ -93,6 +97,51 @@ so that j'entre immédiatement dans l'univers technique haut de gamme du site sa
+ - **Pile atmosphérique :** Strictement décorative (`aria-hidden="true"`). Neutralisation des `@keyframes` sous `prefers-reduced-motion: reduce`.
+ - **Micro-curseur :** Ne jamais cacher le curseur système de manière irréversible (`cursor: none` uniquement appliqué sur `body` si le JS a monté avec succès le curseur et sur écran avec hover). Désactivé sous reduced motion.
+ 
++## Dev Agent Record
++
++### Implementation Plan
++1. **Isolation Git :** Création et bascule sur la branche `feat/home-awwwards` depuis `develop`.
++2. **Données centralisées (`site.ts`) :**
++   - Mise à jour de `IProject` (`status?: string`, `url?: string`) et `IProfile` (`maltUrl?: string`).
++   - Rôle commercial unifié : « Développeur Full Stack TypeScript — Nuxt / NestJS », ville « Rouen, France », lien Malt.
++   - Stack ordonnée moderne : TypeScript, Nuxt, Vue, NestJS, Node.js, PostgreSQL, TypeORM, Stripe, Cypress, Docker, REST API, Vitest.
++   - Projets phares : Keova (live SaaS), TryOn (étude de cas MVP IA), Nodium (lab R&D agents IA).
++3. **Rétrocompatibilité :**
++   - Sécurisation de `FooterComponent.vue` pour supporter les projets sans URL externe.
++   - Sécurisation de `programs/Projets.ts` dans le terminal pour afficher `[status]` au lieu d'une URL vide.
++4. **Atmosphère cinétique (`HomeAtmosComponent.vue`) :**
++   - 3 auroras floutées (aubergine, orange, rouge) avec dérive lente fluide en CSS pur.
++   - Grille de points et scanlines CRT en overlay.
++   - Balisage `aria-hidden="true"` et neutralisation stricte sous `@media (prefers-reduced-motion: reduce)`.
++5. **Micro-curseur interactif (`ZCustomCursor.vue`) :**
++   - Suivi fluide (`dot` + `ring`) avec interpolation par `requestAnimationFrame`.
++   - Expansion (`.is-hot`) au survol des éléments interactifs (`a`, `button`, `[data-hot]`).
++   - Masquage sur écrans tactiles (`@media (hover: none)`) et sous `prefers-reduced-motion: reduce`.
++6. **Intégration & Gate Docker :**
++   - Intégration sur `app/pages/index.vue`.
++   - Validation 100% verte : `pnpm lint`, `pnpm typecheck`, `pnpm generate` (13 routes pré-rendues).
++
++### Completion Notes
++- Branche `feat/home-awwwards` initialisée à partir de `develop` (`baseline_commit: 42d7d7e888dbe812ec7d9d21a0f7c071ed3faeed`).
++- Données `SITE` alignées rigoureusement sur le profil Malt et la direction stratégique.
++- Arrière-plan atmosphérique cinétique et micro-curseur opérationnels et respectueux de l'accessibilité (`aria-hidden="true"`, `prefers-reduced-motion`).
++- Gate Docker 100% verte : 0 erreur ESLint/Stylelint, 0 erreur TypeScript, 13 routes statiques générées avec succès par Nitro.
++
++## File List
++
++- `app/data/site.ts` (MODIFIED)
++- `app/components/terminal/programs/Projets.ts` (MODIFIED)
++- `app/components/FooterComponent.vue` (MODIFIED)
++- `app/components/home/HomeAtmosComponent.vue` (NEW)
++- `app/components/ui/ZCustomCursor.vue` (NEW)
++- `app/pages/index.vue` (MODIFIED)
++- `docs/implementation-artifacts/11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique.md` (MODIFIED)
++- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
++
++## Change Log
++
++- 2026-09-13 : Implémentation complète de la Story 11.1 (branche `feat/home-awwwards`, données `site.ts`, composant `HomeAtmosComponent.vue`, micro-curseur `ZCustomCursor.vue`, adaptation `FooterComponent.vue` et `Projets.ts`, validation Docker).
++
+ ### References
+ - [Contrat canonique : docs/specs/spec-home-awwwards/SPEC.md]
+ - [Cartographie détaillée : docs/specs/spec-home-awwwards/sections-mapping.md]
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 5d9dab6..b28e1fb 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-13 (Story 11.1 ready-for-dev : Préparation de branche, site.ts & Atmosphère)"
++last_updated: "2026-09-13 (Story 11.1 review : Préparation de branche, site.ts & Atmosphère)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -119,7 +119,7 @@ development_status:
+ 
+   # Epic 11 — Refonte d'accueil Awwwards & Repositionnement Commercial Full Stack TS
+   epic-11: in-progress
+-  11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique: ready-for-dev
++  11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique: review
+   11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique: backlog
+   11-3-marquee-de-stack-moderne-et-vitrine-des-3-services-cibles: backlog
+   11-4-preuves-concretes-saas-journal-technique-et-cta-final-de-conversion: backlog

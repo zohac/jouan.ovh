@@ -140,3 +140,10 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 - **Mutualisation des styles partagés `.legal__*`** (`app/pages/confidentialite.vue`, `app/pages/mentions-legales.vue`) — Les deux pages dupliquent actuellement leur bloc `<style scoped>` `.legal__*`. Préexistant/standard pour des pages Vue distinctes ; factorisable dans un partiel SCSS si d'autres pages légales devaient être créées.
 - **Domaine canonique staging par défaut en build local (`dev.jouan.ovh`)** (`nuxt.config.ts:59`) — Dépend de la story 10.7 (Mise en production réelle, FR17 : bascule de `SITE_URL` vers `https://jouan.ovh` et domaine de production). Déjà tracé et planifié en story 10.7.
 
+## Deferred from: code review of 11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique (2026-09-13)
+
+- **Alignement de la copie commerciale, terminal JouanOS et tags hero de la page d'accueil** (`app/pages/index.vue`) — L'en-tête hero de `index.vue` conserve temporairement l'ancienne accroche et les tags PHP/WordPress jusqu'à son remplacement par JouanOS. → Prévu dans la **Story 11.2** (Séquence de boot interactive JouanOS et hero commercial cinétique).
+- **Marquee de stack moderne ordonnée et mise en avant des 3 services** (`app/pages/index.vue`) — La section des compétences et des services n'affiche pas encore le marquee ni les 3 offres commerciales. → Prévu dans la **Story 11.3** (Marquee de stack moderne et vitrine des 3 services cibles).
+- **Preuves statistiques SaaS (100k+, 85%), journal technique et bouton CTA vers profil Malt** (`app/pages/index.vue`) — Les indicateurs chiffrés, le journal et le lien de conversion Malt ne sont pas encore intégrés sur la home. → Prévu dans la **Story 11.4** (Preuves concrètes SaaS, journal technique et CTA final de conversion).
+- **Audit SEO transverse et mise à jour des métadonnées secondaires** (`app/pages/about.vue`) — Révision globale du SEO de `about.vue` et des pages secondaires pour refléter la nouvelle position commerciale Full Stack TS. → Prévu dans la **Story 11.5** (Validation transverse a11y multi-pages, SSG Nitro et gate Docker).
+

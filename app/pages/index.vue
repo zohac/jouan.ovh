@@ -1,5 +1,8 @@
 <template>
   <main class="home">
+    <HomeAtmosComponent />
+    <ZCustomCursor />
+
     <section class="hero hero__grad">
       <div class="hero__in container">
         <div class="hero__grid">
@@ -98,8 +101,15 @@
 
         <h2 class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</h2>
         <ul class="grid-2 projects">
-          <li v-for="project in projects" :key="project.url">
-            <ZCard class="project" interactive :as="ZExternalLink" :href="project.url" rel="noopener noreferrer">
+          <li v-for="project in projects" :key="project.name">
+            <ZCard
+              class="project"
+              :interactive="Boolean(project.url)"
+              :data-hot="Boolean(project.url) ? '' : undefined"
+              :as="project.url ? ZExternalLink : 'div'"
+              :href="project.url || undefined"
+              :rel="project.url ? 'noopener noreferrer' : undefined"
+            >
               <div class="project__head">
                 <h3 class="project__name">{{ project.name }}</h3>
                 <span class="project__role">{{ project.role }}</span>

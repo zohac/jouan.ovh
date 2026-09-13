@@ -7,7 +7,7 @@
             <ZIcon name="gem" class="ftr__logo" />
             <b>jouan.ovh</b>
           </NuxtLink>
-          <p class="ftr__tagline">Développeur web freelance. Valognes, France.</p>
+          <p class="ftr__tagline">{{ profile.role }}. {{ profile.city }}.</p>
         </div>
 
         <nav class="ftr__col" aria-label="Navigation du pied de page">
@@ -17,14 +17,14 @@
 
         <div class="ftr__col">
           <h2 class="ftr__title">// Projets</h2>
-          <ZExternalLink
-            v-for="project in projects"
-            :key="project.url"
-            :href="project.url"
-            rel="noopener noreferrer"
-            class="ftr__link"
-            >{{ project.name }}</ZExternalLink
-          >
+          <ul class="ftr__list">
+            <li v-for="project in projects" :key="project.name">
+              <ZExternalLink v-if="project.url" :href="project.url" rel="noopener noreferrer" class="ftr__link">{{
+                project.name
+              }}</ZExternalLink>
+              <span v-else class="ftr__link ftr__link--static">{{ project.name }}</span>
+            </li>
+          </ul>
         </div>
 
         <div class="ftr__col">
@@ -55,6 +55,7 @@ const navItems = [
   { to: "/mentions-legales", label: "Mentions légales" },
 ];
 
+const profile = SITE.profile;
 // Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).
 const projects = SITE.projects;
 
@@ -138,6 +139,14 @@ const year = new Date().getFullYear();
   color: var(--text-muted);
 }
 
+.ftr__list {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
 .ftr__link {
   display: block;
   padding: var(--space-1) 0;
@@ -157,6 +166,15 @@ const year = new Date().getFullYear();
     outline-offset: 2px;
     border-radius: var(--radius-xs);
     box-shadow: var(--ring-accent);
+  }
+
+  &--static {
+    color: var(--text-muted);
+    cursor: default;
+
+    &:hover {
+      color: var(--text-muted);
+    }
   }
 }
 

@@ -16,54 +16,65 @@ export interface IProfile {
   email: string;
   city: string;
   available: boolean;
+  maltUrl?: string;
 }
 
 export interface IProject {
   name: string;
   role: string;
   desc: string;
-  url: string;
+  url?: string;
+  status?: string;
   tags: string[];
 }
 
 const profile: IProfile = {
   name: "Simon Jouan",
-  role: "Développeur web freelance",
+  role: "Développeur Full Stack TypeScript — Nuxt / NestJS",
   email: "simon@jouan.ovh",
-  city: "Valognes, France",
+  city: "Rouen, France",
   available: true,
+  maltUrl: "https://www.malt.fr/profile/simonjouan",
 };
 
-// Stack technique — ordre conservé (tags hero de la home = sous-ensemble curé, non dérivé d'ici).
+// Stack technique moderne prioritaire ordonnée.
 const skills: string[] = [
-  "php",
-  "symfony",
-  "wordpress",
-  "node.js",
-  "nest.js",
-  "nuxt.js",
-  "vue",
   "typescript",
+  "nuxt",
+  "vue",
+  "nest.js",
+  "node.js",
+  "postgresql",
+  "typeorm",
+  "stripe",
+  "cypress",
   "docker",
-  "tailwind",
-  "n8n",
-  "mysql",
+  "rest-api",
+  "vitest",
 ];
 
 const projects: IProject[] = [
   {
     name: "keova.app",
-    role: "Fondateur · SaaS",
-    desc: "Plateforme SaaS que je conçois et opère de bout en bout.",
+    role: "Co-fondateur & Développeur Full Stack",
+    desc: "Plateforme SaaS ERP équestre complète conçue et opérée de bout en bout (gestion de pensions, facturation automatisée, réservations).",
     url: "https://keova.app",
-    tags: ["nest.js", "nuxt", "saas"],
+    status: "En production",
+    tags: ["nuxt", "nest.js", "postgresql", "stripe", "saas"],
   },
   {
-    name: "patio-conseil.fr",
-    role: "Client",
-    desc: "Site et outils pour un cabinet de conseil.",
-    url: "https://patio-conseil.fr",
-    tags: ["wordpress", "conseil"],
+    name: "TryOn",
+    role: "CTO & Développeur Full Stack",
+    desc: "Plateforme SaaS B2B d'essayage virtuel de vêtements via l'IA générative (diffusion models, microservices asynchrones, files Redis).",
+    status: "Étude de cas (MVP livré)",
+    tags: ["nuxt", "nest.js", "python", "comfyui", "ia"],
+  },
+  {
+    name: "Nodium",
+    role: "Créateur & Ingénieur IA",
+    desc: "Plateforme desktop d'orchestration d'agents IA autonomes, gestion de permissions et mémoire contextuelle.",
+    status: "R&D / En cours",
+    tags: ["typescript", "electron", "agents", "ia"],
   },
 ];
 

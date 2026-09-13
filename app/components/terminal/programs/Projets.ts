@@ -7,7 +7,13 @@ const projets: IProgram = {
   command: "projets",
   description: "Mes projets.",
   run: function (): string {
-    const items = SITE.projects.map((p) => `<li>${p.name} — ${p.role} — ${p.desc} (${p.url})</li>`).join("");
+    const items = SITE.projects
+      .map((p) => {
+        const status = p.status ? ` [${p.status}]` : "";
+        const url = p.url ? ` (${p.url})` : "";
+        return `<li>${p.name} — ${p.role} — ${p.desc}${status}${url}</li>`;
+      })
+      .join("");
     return `<ul>${items}</ul>`;
   },
 };
