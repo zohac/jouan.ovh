@@ -71,6 +71,7 @@
 // Page Services : catalogue d'offres packagées + process 4 étapes + CTA contact.
 // Données statiques (3 offres, 4 étapes) déclarées localement. Prerender-safe, dark-first.
 import { NuxtLink } from "#components";
+import { SITE } from "~/data/site";
 
 interface Offer {
   /** Clé v-for stable (indépendante du contenu affiché). */
@@ -127,15 +128,46 @@ const steps = [
   { n: "04", title: "Livraison & suivi", desc: "Mise en ligne, documentation, et accompagnement." },
 ];
 
-useHead({
+const siteUrl = useSiteUrl();
+
+const servicesJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Services — jouan.ovh",
+  description:
+    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
+  url: `${siteUrl}/services`,
+  mainEntity: {
+    "@type": "ItemList",
+    itemListElement: offers.map((offer, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Service",
+        name: offer.title,
+        description: offer.desc,
+        provider: {
+          "@type": "Organization",
+          "@id": `${siteUrl}/#organization`,
+          name: SITE.profile.name,
+        },
+        offers: {
+          "@type": "Offer",
+          description: offer.price,
+        },
+      },
+    })),
+  },
+};
+
+usePageSeo({
   title: "Services — jouan.ovh",
-  meta: [
-    {
-      name: "description",
-      content:
-        "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
-    },
-  ],
+  description:
+    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
+  path: "/services",
+  image: "/images/portrait.jpeg",
+  type: "website",
+  jsonLd: servicesJsonLd,
 });
 </script>
 

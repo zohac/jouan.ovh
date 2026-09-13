@@ -1,0 +1,517 @@
+diff --git a/app/app.vue b/app/app.vue
+index 84b23a4..6016dd4 100644
+--- a/app/app.vue
++++ b/app/app.vue
+@@ -4,4 +4,29 @@
+   </NuxtLayout>
+ </template>
+ 
++<script setup lang="ts">
++import { SITE } from "~/data/site";
++
++// Métadonnées Schema.org globales (Organization / publisher du site).
++// Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).
++const siteUrl = useSiteUrl();
++
++const organizationJsonLd = {
++  "@context": "https://schema.org",
++  "@type": "Organization",
++  name: SITE.profile.name,
++  url: siteUrl,
++  logo: `${siteUrl}/images/logo.png`,
++  email: SITE.profile.email,
++  address: {
++    "@type": "PostalAddress",
++    addressLocality: SITE.profile.city,
++  },
++};
++
++useHead({
++  script: [jsonLdScript(organizationJsonLd)],
++});
++</script>
++
+ <style lang="scss" scoped></style>
+diff --git a/app/composables/usePageSeo.ts b/app/composables/usePageSeo.ts
+new file mode 100644
+index 0000000..6a238eb
+--- /dev/null
++++ b/app/composables/usePageSeo.ts
+@@ -0,0 +1,103 @@
++import { computed, toValue, type MaybeRefOrGetter } from "vue";
++import { useSiteUrl } from "./useSiteUrl";
++
++export interface PageSeoOptions {
++  /** Titre de la page (utilisé pour <title>, og:title, twitter:title). */
++  title: string;
++  /** Description de la page (utilisée pour <meta name="description">, og:description, twitter:description). */
++  description: string;
++  /** Chemin relatif de la page (ex. "/" ou "/services" ou "/blog/slug"). Si omis, résolu sur siteUrl. */
++  path?: string;
++  /** Chemin relatif ou absolu de l'image OG/Twitter (ex. "/images/portrait.jpeg"). Résolue en URL absolue. */
++  image?: string;
++  /** Type Open Graph : "website" (défaut), "article" ou "profile". */
++  type?: "website" | "article" | "profile";
++  /** Format Twitter Card : si omis, "summary_large_image" si type article avec image, sinon "summary". */
++  twitterCard?: "summary" | "summary_large_image";
++  /** Données JSON-LD (objet Schema.org ou tableau d'objets) injectées via jsonLdScript. */
++  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
++}
++
++/**
++ * Composable centralisant la déclaration des métadonnées SEO par page :
++ * <title>, canonical, description, Open Graph (type, title, desc, url, image)
++ * et Twitter Card (card, title, desc, image) + JSON-LD échappé.
++ *
++ * Résout automatiquement les URLs absolues à partir de `useSiteUrl()` (runtimeConfig).
++ */
++export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined | null>): void {
++  const siteUrl = useSiteUrl();
++
++  const seo = computed(() => {
++    const opts = toValue(options);
++    if (!opts) {
++      return null;
++    }
++
++    const rawPath = opts.path ?? "";
++    const cleanPath = rawPath === "" || rawPath === "/" ? "" : rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
++    const canonicalUrl = cleanPath ? `${siteUrl}${cleanPath}` : siteUrl;
++
++    let imageUrl: string | undefined;
++    if (opts.image) {
++      imageUrl =
++        opts.image.startsWith("http://") || opts.image.startsWith("https://")
++          ? opts.image
++          : `${siteUrl}${opts.image.startsWith("/") ? opts.image : `/${opts.image}`}`;
++    }
++
++    const type = opts.type ?? "website";
++    const twitterCard =
++      opts.twitterCard ??
++      (imageUrl && (type === "article" || opts.twitterCard === "summary_large_image")
++        ? "summary_large_image"
++        : "summary");
++
++    return {
++      title: opts.title,
++      description: opts.description,
++      canonicalUrl,
++      imageUrl,
++      type,
++      twitterCard,
++      jsonLd: opts.jsonLd,
++    };
++  });
++
++  useHead(() => {
++    if (!seo.value) {
++      return {};
++    }
++
++    const scripts: Array<{ type: string; innerHTML: string }> = [];
++    if (seo.value.jsonLd) {
++      if (Array.isArray(seo.value.jsonLd)) {
++        for (const item of seo.value.jsonLd) {
++          scripts.push(jsonLdScript(item));
++        }
++      } else {
++        scripts.push(jsonLdScript(seo.value.jsonLd));
++      }
++    }
++
++    return {
++      title: seo.value.title,
++      link: [{ rel: "canonical", href: seo.value.canonicalUrl }],
++      script: scripts,
++    };
++  });
++
++  useSeoMeta({
++    title: () => seo.value?.title,
++    description: () => seo.value?.description,
++    ogTitle: () => seo.value?.title,
++    ogDescription: () => seo.value?.description,
++    ogUrl: () => seo.value?.canonicalUrl,
++    ogType: () => seo.value?.type,
++    ogImage: () => seo.value?.imageUrl,
++    twitterCard: () => seo.value?.twitterCard,
++    twitterTitle: () => seo.value?.title,
++    twitterDescription: () => seo.value?.description,
++    twitterImage: () => seo.value?.imageUrl,
++  });
++}
+diff --git a/app/pages/about.vue b/app/pages/about.vue
+index 997bc7f..3266cce 100644
+--- a/app/pages/about.vue
++++ b/app/pages/about.vue
+@@ -133,29 +133,30 @@ const degrees = [
+ const pageTitle = "À propos — jouan.ovh";
+ const pageDescription =
+   "Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours.";
+-// URL de prod lue depuis runtimeConfig via useSiteUrl() (swappable staging/prod, sans
+-// domaine en dur). Inchangée en staging → canonical/og restent sur le domaine staging.
++
+ const siteUrl = useSiteUrl();
+-const pageUrl = `${siteUrl}/about`;
+-const pageImage = `${siteUrl}/images/portrait.jpeg`;
++const aboutJsonLd = {
++  "@context": "https://schema.org",
++  "@type": "ProfilePage",
++  name: pageTitle,
++  url: `${siteUrl}/about`,
++  mainEntity: {
++    "@type": "Person",
++    name: "Simon Jouan",
++    jobTitle: "Développeur web freelance",
++    url: siteUrl,
++    image: `${siteUrl}/images/portrait.jpeg`,
++  },
++};
+ 
+-useHead({
++usePageSeo({
+   title: pageTitle,
+-  link: [{ rel: "canonical", href: pageUrl }],
+-  meta: [
+-    { name: "description", content: pageDescription },
+-    // Open Graph (partage Facebook/LinkedIn…).
+-    { property: "og:type", content: "profile" },
+-    { property: "og:title", content: pageTitle },
+-    { property: "og:description", content: pageDescription },
+-    { property: "og:url", content: pageUrl },
+-    { property: "og:image", content: pageImage },
+-    // Twitter Card.
+-    { name: "twitter:card", content: "summary" },
+-    { name: "twitter:title", content: pageTitle },
+-    { name: "twitter:description", content: pageDescription },
+-    { name: "twitter:image", content: pageImage },
+-  ],
++  description: pageDescription,
++  path: "/about",
++  image: "/images/portrait.jpeg",
++  type: "profile",
++  twitterCard: "summary",
++  jsonLd: aboutJsonLd,
+ });
+ </script>
+ 
+diff --git a/app/pages/blog/[...slug].vue b/app/pages/blog/[...slug].vue
+index 155153b..0cda25f 100644
+--- a/app/pages/blog/[...slug].vue
++++ b/app/pages/blog/[...slug].vue
+@@ -108,14 +108,13 @@ if (import.meta.client) {
+   });
+ }
+ 
+-// SEO par article (parité avec /about et /blog). URL de prod via useSiteUrl()
+-// (runtimeConfig, swappable staging/prod) ; capturée dans le setup, hors du getter useHead
+-// (un composable ne s'appelle pas dans un callback).
++// SEO par article (centralisé via usePageSeo, parité /about, /blog).
++// usePageSeo résout siteUrl, canonical, og:*, twitter:* et le JSON-LD échappé.
+ const siteUrl = useSiteUrl();
+-useHead(() => {
++usePageSeo(() => {
+   const article = page.value;
+   if (!article) {
+-    return {};
++    return null;
+   }
+   const url = `${siteUrl}${article.path}`;
+   const image = article.image ? `${siteUrl}${article.image.src}` : undefined;
+@@ -130,22 +129,14 @@ useHead(() => {
+     ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
+     ...(image ? { image } : {}),
+   };
++
+   return {
+     title: `${article.title} — jouan.ovh`,
+-    link: [{ rel: "canonical", href: url }],
+-    meta: [
+-      { name: "description", content: article.description },
+-      { property: "og:type", content: "article" },
+-      { property: "og:title", content: article.title },
+-      { property: "og:description", content: article.description },
+-      { property: "og:url", content: url },
+-      ...(image ? [{ property: "og:image", content: image }] : []),
+-      { name: "twitter:card", content: image ? "summary_large_image" : "summary" },
+-      { name: "twitter:title", content: article.title },
+-      { name: "twitter:description", content: article.description },
+-      ...(image ? [{ name: "twitter:image", content: image }] : []),
+-    ],
+-    script: [jsonLdScript(jsonLd)],
++    description: article.description,
++    path: article.path,
++    image: article.image?.src,
++    type: "article",
++    jsonLd,
+   };
+ });
+ </script>
+diff --git a/app/pages/blog/index.vue b/app/pages/blog/index.vue
+index a4fcc16..73aca76 100644
+--- a/app/pages/blog/index.vue
++++ b/app/pages/blog/index.vue
+@@ -123,22 +123,12 @@ const blogJsonLd = {
+   })),
+ };
+ 
+-useHead({
++usePageSeo({
+   title: pageTitle,
+-  link: [{ rel: "canonical", href: pageUrl }],
+-  meta: [
+-    { name: "description", content: pageDescription },
+-    // Open Graph (partage Facebook/LinkedIn…).
+-    { property: "og:type", content: "website" },
+-    { property: "og:title", content: pageTitle },
+-    { property: "og:description", content: pageDescription },
+-    { property: "og:url", content: pageUrl },
+-    // Twitter Card.
+-    { name: "twitter:card", content: "summary" },
+-    { name: "twitter:title", content: pageTitle },
+-    { name: "twitter:description", content: pageDescription },
+-  ],
+-  script: [jsonLdScript(blogJsonLd)],
++  description: pageDescription,
++  path: "/blog",
++  type: "website",
++  jsonLd: blogJsonLd,
+ });
+ </script>
+ 
+diff --git a/app/pages/contact.vue b/app/pages/contact.vue
+index 0680a12..ce95b45 100644
+--- a/app/pages/contact.vue
++++ b/app/pages/contact.vue
+@@ -250,15 +250,34 @@ async function onSubmit(): Promise<void> {
+   }
+ }
+ 
+-useHead({
+-  title: "Contact — jouan.ovh",
+-  meta: [
+-    {
+-      name: "description",
+-      content:
+-        "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
++const siteUrl = useSiteUrl();
++
++const contactJsonLd = {
++  "@context": "https://schema.org",
++  "@type": "ContactPage",
++  name: "Contact — jouan.ovh",
++  description:
++    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
++  url: `${siteUrl}/contact`,
++  mainEntity: {
++    "@type": "Person",
++    name: SITE.profile.name,
++    email: SITE.profile.email,
++    address: {
++      "@type": "PostalAddress",
++      addressLocality: SITE.profile.city,
+     },
+-  ],
++  },
++};
++
++usePageSeo({
++  title: "Contact — jouan.ovh",
++  description:
++    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
++  path: "/contact",
++  image: "/images/portrait.jpeg",
++  type: "website",
++  jsonLd: contactJsonLd,
+ });
+ </script>
+ 
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index f6139f4..6d5bc04 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -180,6 +180,40 @@ const terminalRows = [
+ // header). No-op tant qu'aucun terminal n'est disponible (prerender). La
+ // restylisation du terminal lui-même relève d'Epic 8.
+ const { open: openTerminal } = useTerminal();
++
++const siteUrl = useSiteUrl();
++const homeJsonLd = [
++  {
++    "@context": "https://schema.org",
++    "@type": "WebSite",
++    name: "Simon Jouan — Développeur web freelance",
++    url: siteUrl,
++    description: tagline,
++  },
++  {
++    "@context": "https://schema.org",
++    "@type": "Person",
++    name: SITE.profile.name,
++    jobTitle: SITE.profile.role,
++    url: siteUrl,
++    image: `${siteUrl}/images/portrait.jpeg`,
++    email: SITE.profile.email,
++    address: {
++      "@type": "PostalAddress",
++      addressLocality: SITE.profile.city,
++    },
++  },
++];
++
++usePageSeo({
++  title: "Simon Jouan — Développeur web freelance & IA",
++  description:
++    "Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA.",
++  path: "/",
++  image: "/images/portrait.jpeg",
++  type: "website",
++  jsonLd: homeJsonLd,
++});
+ </script>
+ 
+ <style lang="scss" scoped>
+diff --git a/app/pages/services.vue b/app/pages/services.vue
+index 83fb5a1..b458474 100644
+--- a/app/pages/services.vue
++++ b/app/pages/services.vue
+@@ -127,15 +127,35 @@ const steps = [
+   { n: "04", title: "Livraison & suivi", desc: "Mise en ligne, documentation, et accompagnement." },
+ ];
+ 
+-useHead({
++const siteUrl = useSiteUrl();
++
++const servicesJsonLd = {
++  "@context": "https://schema.org",
++  "@type": "WebPage",
++  name: "Services — jouan.ovh",
++  description:
++    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
++  url: `${siteUrl}/services`,
++  mainEntity: {
++    "@type": "ItemList",
++    itemListElement: offers.map((offer, index) => ({
++      "@type": "Offer",
++      position: index + 1,
++      name: offer.title,
++      description: offer.desc,
++      price: offer.price,
++    })),
++  },
++};
++
++usePageSeo({
+   title: "Services — jouan.ovh",
+-  meta: [
+-    {
+-      name: "description",
+-      content:
+-        "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
+-    },
+-  ],
++  description:
++    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
++  path: "/services",
++  image: "/images/portrait.jpeg",
++  type: "website",
++  jsonLd: servicesJsonLd,
+ });
+ </script>
+ 
+diff --git a/docs/implementation-artifacts/10-5-seo-centralise-site-wide.md b/docs/implementation-artifacts/10-5-seo-centralise-site-wide.md
+index 1c23450..fbbe359 100644
+--- a/docs/implementation-artifacts/10-5-seo-centralise-site-wide.md
++++ b/docs/implementation-artifacts/10-5-seo-centralise-site-wide.md
+@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
+ 
+ # Story 10.5: SEO centralisé site-wide
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -23,17 +23,17 @@ so that le site est correctement indexé et présenté lors d'un partage (FR15).
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Factoriser un helper SEO partagé (AC: #1)
+-  - [ ] Créer un composable `app/composables/usePageSeo.ts` (ou util) qui pose `useSeoMeta` (title, description, og:title/description/url/image/type, twitter:card/title/description/image, canonical) à partir d'un objet `{ title, description, path, image? }`, en résolvant l'URL absolue via `useRuntimeConfig().public.siteUrl` (story 10.1). Objectif : **un seul point** de vérité pour le pattern OG/Twitter/canonical, consommé par toutes les pages (dédup `/about` + `/blog` qui le font déjà à la main).
+-  - [ ] Ajouter `Organization`/`publisher` au JSON-LD partagé (via `app.head` global dans `nuxt.config.ts` ou un plugin), avec `name`/`url`/`logo` issus de `SITE` (`app/data/site.ts`) et `siteUrl` (runtimeConfig). Envisager (optionnel, à décider) `nuxt-schema-org` — sinon JSON-LD manuel via `jsonLdScript()` (déjà sûr, échappe `</script>`).
+-- [ ] Tâche 2 — Étendre aux pages nues (AC: tout)
+-  - [ ] **Home `app/pages/index.vue`** : ajouter `usePageSeo` (aujourd'hui **aucune** meta dédiée → hérite seulement de `app.head` de `nuxt.config.ts`). OG/Twitter/canonical + JSON-LD (`WebSite`/`Person` selon pertinence) + image OG.
+-  - [ ] **Services `app/pages/services.vue`** : passer de `title`+`description` seuls à OG/Twitter/canonical + JSON-LD (`Service`/`WebPage`).
+-  - [ ] **Contact `app/pages/contact.vue`** : idem (OG/Twitter/canonical + `ContactPage`).
+-  - [ ] **Migrer `/about` + `/blog` + article** vers le helper partagé **sans régresser** leur SEO existant (ils ont déjà OG/Twitter/canonical + JSON-LD via `SITE_URL`/`jsonLdScript`) — dédup, rendu identique.
+-- [ ] Tâche 3 — Validation (AC: tout)
+-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (11 routes).
+-  - [ ] Inspecter le HTML **prerendu** (`.output/public/index.html`, `services/index.html`, `contact/index.html`, + re-vérifier `about`/`blog`) : présence de `og:*`, `twitter:*`, `<link rel="canonical">`, `<script type="application/ld+json">` ; URLs absolues résolues depuis `runtimeConfig` (staging tant que non basculé).
++- [x] Tâche 1 — Factoriser un helper SEO partagé (AC: #1)
++  - [x] Créer un composable `app/composables/usePageSeo.ts` (ou util) qui pose `useSeoMeta` (title, description, og:title/description/url/image/type, twitter:card/title/description/image, canonical) à partir d'un objet `{ title, description, path, image? }`, en résolvant l'URL absolue via `useRuntimeConfig().public.siteUrl` (story 10.1). Objectif : **un seul point** de vérité pour le pattern OG/Twitter/canonical, consommé par toutes les pages (dédup `/about` + `/blog` qui le font déjà à la main).
++  - [x] Ajouter `Organization`/`publisher` au JSON-LD partagé (via `app.head` global dans `nuxt.config.ts` ou un plugin), avec `name`/`url`/`logo` issus de `SITE` (`app/data/site.ts`) et `siteUrl` (runtimeConfig). Envisager (optionnel, à décider) `nuxt-schema-org` — sinon JSON-LD manuel via `jsonLdScript()` (déjà sûr, échappe `</script>`).
++- [x] Tâche 2 — Étendre aux pages nues (AC: tout)
++  - [x] **Home `app/pages/index.vue`** : ajouter `usePageSeo` (aujourd'hui **aucune** meta dédiée → hérite seulement de `app.head` de `nuxt.config.ts`). OG/Twitter/canonical + JSON-LD (`WebSite`/`Person` selon pertinence) + image OG.
++  - [x] **Services `app/pages/services.vue`** : passer de `title`+`description` seuls à OG/Twitter/canonical + JSON-LD (`Service`/`WebPage`).
++  - [x] **Contact `app/pages/contact.vue`** : idem (OG/Twitter/canonical + `ContactPage`).
++  - [x] **Migrer `/about` + `/blog` + article** vers le helper partagé **sans régresser** leur SEO existant (ils ont déjà OG/Twitter/canonical + JSON-LD via `SITE_URL`/`jsonLdScript`) — dédup, rendu identique.
++- [x] Tâche 3 — Validation (AC: tout)
++  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (11 routes).
++  - [x] Inspecter le HTML **prerendu** (`.output/public/index.html`, `services/index.html`, `contact/index.html`, + re-vérifier `about`/`blog`) : présence de `og:*`, `twitter:*`, `<link rel="canonical">`, `<script type="application/ld+json">` ; URLs absolues résolues depuis `runtimeConfig` (staging tant que non basculé).
+ 
+ ## Dev Notes
+ 
+@@ -79,9 +79,30 @@ so that le site est correctement indexé et présenté lors d'un partage (FR15).
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++- Gemini 3.7 Flash
+ 
+ ### Debug Log References
++- Build & gate : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 error, 11 prerendered routes.
++- HTML inspection : `.output/public/{index,services,contact,about,blog}/index.html` checked for `<title>`, `<meta name="description">`, `og:*`, `twitter:*`, `<link rel="canonical">`, and `<script type="application/ld+json">`.
+ 
+ ### Completion Notes List
++- Création de `app/composables/usePageSeo.ts` qui centralise `useSeoMeta`, `<link rel="canonical">` et l'injection JSON-LD échappée via `jsonLdScript()`.
++- Injection du schéma global `Organization` dans `app/app.vue` alimenté par `useSiteUrl()` et `SITE.profile`.
++- Ajout des métadonnées SEO et schémas Schema.org (`WebSite`, `Person`, `Service`/`WebPage`, `ContactPage`, `ProfilePage`, `Blog`, `BlogPosting`) sur toutes les pages (`/`, `/services`, `/contact`, `/about`, `/blog`, `/blog/[...slug]`).
++- Aucune URL hardcodée : résolution dynamique via `useSiteUrl()`.
++- Validation complète via Docker (`pnpm lint`, `pnpm typecheck`, `pnpm generate`) avec 11 routes prerendues avec succès et inspection conforme du HTML généré.
+ 
+ ### File List
++- `app/composables/usePageSeo.ts` (NEW)
++- `app/app.vue` (MODIFIED)
++- `app/pages/index.vue` (MODIFIED)
++- `app/pages/services.vue` (MODIFIED)
++- `app/pages/contact.vue` (MODIFIED)
++- `app/pages/about.vue` (MODIFIED)
++- `app/pages/blog/index.vue` (MODIFIED)
++- `app/pages/blog/[...slug].vue` (MODIFIED)
++- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
++- `docs/implementation-artifacts/10-5-seo-centralise-site-wide.md` (MODIFIED)
++
++## Change Log
++- 2026-09-13 : Implémentation complète de la Story 10.5 — Centralisation du SEO et Schema.org site-wide via `usePageSeo` et `useSiteUrl()`. Statut passé à `review`.
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 7ccabba..dd09c09 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-13 (Story 10.3 soldée par revue de code : 100% liens _blank unifiés sur ZExternalLink, noopener garanti, statut done)"
++last_updated: "2026-09-13 (Story 10.5 prête pour revue : SEO centralisé site-wide via usePageSeo, statut review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -112,7 +112,7 @@ development_status:
+   10-2-a11y-semantique-residuelle: done
+   10-3-liens-externes-accessibles: done
+   10-4-validation-a11y-emulee-et-unification-forced-colors: done
+-  10-5-seo-centralise-site-wide: ready-for-dev
++  10-5-seo-centralise-site-wide: review
+   10-6-conformite-legale-rgpd-mentions: ready-for-dev
+   10-7-mise-en-production-reelle: ready-for-dev
+   epic-10-retrospective: optional

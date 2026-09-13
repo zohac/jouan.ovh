@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
 
 # Story 10.5: SEO centralisé site-wide
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -23,17 +23,30 @@ so that le site est correctement indexé et présenté lors d'un partage (FR15).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Factoriser un helper SEO partagé (AC: #1)
-  - [ ] Créer un composable `app/composables/usePageSeo.ts` (ou util) qui pose `useSeoMeta` (title, description, og:title/description/url/image/type, twitter:card/title/description/image, canonical) à partir d'un objet `{ title, description, path, image? }`, en résolvant l'URL absolue via `useRuntimeConfig().public.siteUrl` (story 10.1). Objectif : **un seul point** de vérité pour le pattern OG/Twitter/canonical, consommé par toutes les pages (dédup `/about` + `/blog` qui le font déjà à la main).
-  - [ ] Ajouter `Organization`/`publisher` au JSON-LD partagé (via `app.head` global dans `nuxt.config.ts` ou un plugin), avec `name`/`url`/`logo` issus de `SITE` (`app/data/site.ts`) et `siteUrl` (runtimeConfig). Envisager (optionnel, à décider) `nuxt-schema-org` — sinon JSON-LD manuel via `jsonLdScript()` (déjà sûr, échappe `</script>`).
-- [ ] Tâche 2 — Étendre aux pages nues (AC: tout)
-  - [ ] **Home `app/pages/index.vue`** : ajouter `usePageSeo` (aujourd'hui **aucune** meta dédiée → hérite seulement de `app.head` de `nuxt.config.ts`). OG/Twitter/canonical + JSON-LD (`WebSite`/`Person` selon pertinence) + image OG.
-  - [ ] **Services `app/pages/services.vue`** : passer de `title`+`description` seuls à OG/Twitter/canonical + JSON-LD (`Service`/`WebPage`).
-  - [ ] **Contact `app/pages/contact.vue`** : idem (OG/Twitter/canonical + `ContactPage`).
-  - [ ] **Migrer `/about` + `/blog` + article** vers le helper partagé **sans régresser** leur SEO existant (ils ont déjà OG/Twitter/canonical + JSON-LD via `SITE_URL`/`jsonLdScript`) — dédup, rendu identique.
-- [ ] Tâche 3 — Validation (AC: tout)
-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (11 routes).
-  - [ ] Inspecter le HTML **prerendu** (`.output/public/index.html`, `services/index.html`, `contact/index.html`, + re-vérifier `about`/`blog`) : présence de `og:*`, `twitter:*`, `<link rel="canonical">`, `<script type="application/ld+json">` ; URLs absolues résolues depuis `runtimeConfig` (staging tant que non basculé).
+- [x] Tâche 1 — Factoriser un helper SEO partagé (AC: #1)
+  - [x] Créer un composable `app/composables/usePageSeo.ts` (ou util) qui pose `useSeoMeta` (title, description, og:title/description/url/image/type, twitter:card/title/description/image, canonical) à partir d'un objet `{ title, description, path, image? }`, en résolvant l'URL absolue via `useRuntimeConfig().public.siteUrl` (story 10.1). Objectif : **un seul point** de vérité pour le pattern OG/Twitter/canonical, consommé par toutes les pages (dédup `/about` + `/blog` qui le font déjà à la main).
+  - [x] Ajouter `Organization`/`publisher` au JSON-LD partagé (via `app.head` global dans `nuxt.config.ts` ou un plugin), avec `name`/`url`/`logo` issus de `SITE` (`app/data/site.ts`) et `siteUrl` (runtimeConfig). Envisager (optionnel, à décider) `nuxt-schema-org` — sinon JSON-LD manuel via `jsonLdScript()` (déjà sûr, échappe `</script>`).
+- [x] Tâche 2 — Étendre aux pages nues (AC: tout)
+  - [x] **Home `app/pages/index.vue`** : ajouter `usePageSeo` (aujourd'hui **aucune** meta dédiée → hérite seulement de `app.head` de `nuxt.config.ts`). OG/Twitter/canonical + JSON-LD (`WebSite`/`Person` selon pertinence) + image OG.
+  - [x] **Services `app/pages/services.vue`** : passer de `title`+`description` seuls à OG/Twitter/canonical + JSON-LD (`Service`/`WebPage`).
+  - [x] **Contact `app/pages/contact.vue`** : idem (OG/Twitter/canonical + `ContactPage`).
+  - [x] **Migrer `/about` + `/blog` + article** vers le helper partagé **sans régresser** leur SEO existant (ils ont déjà OG/Twitter/canonical + JSON-LD via `SITE_URL`/`jsonLdScript`) — dédup, rendu identique.
+- [x] Tâche 3 — Validation (AC: tout)
+  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (11 routes).
+  - [x] Inspecter le HTML **prerendu** (`.output/public/index.html`, `services/index.html`, `contact/index.html`, + re-vérifier `about`/`blog`) : présence de `og:*`, `twitter:*`, `<link rel="canonical">`, `<script type="application/ld+json">` ; URLs absolues résolues depuis `runtimeConfig` (staging tant que non basculé).
+
+### Review Findings
+
+- [x] [Review][Patch] Préserver les titres de partage social og:title et twitter:title d'article [app/pages/blog/[...slug].vue:134-140]
+- [x] [Review][Patch] Ajouter @id (#organization) à l'Organization globale et lier le publisher aux BlogPosting [app/app.vue:87-98, app/pages/blog/[...slug].vue:121-131, app/pages/blog/index.vue:115-123]
+- [x] [Review][Patch] Utiliser SITE.profile pour le schéma Person de la page /about [app/pages/about.vue:142-149]
+- [x] [Review][Patch] Structurer les offres en Service / ListItem dans le schéma de la page services [app/pages/services.vue:139-148]
+- [x] [Review][Patch] Supprimer la condition morte dans la sélection twitterCard de usePageSeo [app/composables/usePageSeo.ts:50-54]
+- [x] [Review][Patch] Supporter imageAlt pour og:image:alt et twitter:image:alt dans usePageSeo [app/composables/usePageSeo.ts:4-18, app/pages/blog/[...slug].vue:137]
+- [x] [Review][Patch] Robustifier le parsing d'URL absolue d'image dans usePageSeo via regex insensible à la casse [app/composables/usePageSeo.ts:44]
+- [x] [Review][Patch] Normaliser le slash séparateur pour les images d'article dans le JSON-LD du blog [app/pages/blog/[...slug].vue:120, app/pages/blog/index.vue:122]
+- [x] [Review][Patch] Ajouter addressCountry: "FR" dans les schémas PostalAddress [app/app.vue:94-97, app/pages/index.vue:356-359, app/pages/contact.vue:152-155]
+- [x] [Review][Defer] Prix numériques et devise structurée (priceCurrency) pour les offres dans Schema.org [app/pages/services.vue:141-147] — deferred, pre-existing (décision de contenu/commerciale tarifaire)
 
 ## Dev Notes
 
@@ -79,9 +92,31 @@ so that le site est correctement indexé et présenté lors d'un partage (FR15).
 ## Dev Agent Record
 
 ### Agent Model Used
+- Gemini 3.7 Flash
 
 ### Debug Log References
+- Build & gate : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 error, 11 prerendered routes.
+- HTML inspection : `.output/public/{index,services,contact,about,blog}/index.html` checked for `<title>`, `<meta name="description">`, `og:*`, `twitter:*`, `<link rel="canonical">`, and `<script type="application/ld+json">`.
 
 ### Completion Notes List
+- Création de `app/composables/usePageSeo.ts` qui centralise `useSeoMeta`, `<link rel="canonical">` et l'injection JSON-LD échappée via `jsonLdScript()`.
+- Injection du schéma global `Organization` dans `app/app.vue` alimenté par `useSiteUrl()` et `SITE.profile`.
+- Ajout des métadonnées SEO et schémas Schema.org (`WebSite`, `Person`, `Service`/`WebPage`, `ContactPage`, `ProfilePage`, `Blog`, `BlogPosting`) sur toutes les pages (`/`, `/services`, `/contact`, `/about`, `/blog`, `/blog/[...slug]`).
+- Aucune URL hardcodée : résolution dynamique via `useSiteUrl()`.
+- Validation complète via Docker (`pnpm lint`, `pnpm typecheck`, `pnpm generate`) avec 11 routes prerendues avec succès et inspection conforme du HTML généré.
 
 ### File List
+- `app/composables/usePageSeo.ts` (NEW)
+- `app/app.vue` (MODIFIED)
+- `app/pages/index.vue` (MODIFIED)
+- `app/pages/services.vue` (MODIFIED)
+- `app/pages/contact.vue` (MODIFIED)
+- `app/pages/about.vue` (MODIFIED)
+- `app/pages/blog/index.vue` (MODIFIED)
+- `app/pages/blog/[...slug].vue` (MODIFIED)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+- `docs/implementation-artifacts/10-5-seo-centralise-site-wide.md` (MODIFIED)
+
+## Change Log
+- 2026-09-13 : Implémentation complète de la Story 10.5 — Centralisation du SEO et Schema.org site-wide via `usePageSeo` et `useSiteUrl()`. Statut passé à `review`.
+- 2026-09-13 : Revue de code adverse (Blind, Edge, Auditor) — 9 patchs appliqués (préservation og:title, @id organization, publisher blog, Schema.org Service/ListItem, regex imageUrl, imageAlt, PostalAddress addressCountry). Validation CI et HTML prerendu verts. Statut passé à `done`.

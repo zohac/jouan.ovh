@@ -62,6 +62,7 @@
 // palette terminale (Shiki désactivé, cf. nuxt.config), CTA de fin. Contenu via
 // @nuxt/content v3 (queryCollection + ContentRenderer). Prerender-safe (useAsyncData).
 import { NuxtLink } from "#components";
+import { SITE } from "~/data/site";
 
 const route = useRoute();
 
@@ -108,44 +109,52 @@ if (import.meta.client) {
   });
 }
 
-// SEO par article (parité avec /about et /blog). URL de prod via useSiteUrl()
-// (runtimeConfig, swappable staging/prod) ; capturée dans le setup, hors du getter useHead
-// (un composable ne s'appelle pas dans un callback).
+// SEO par article (centralisé via usePageSeo, parité /about, /blog).
+// usePageSeo résout siteUrl, canonical, og:*, twitter:* et le JSON-LD échappé.
 const siteUrl = useSiteUrl();
-useHead(() => {
+usePageSeo(() => {
   const article = page.value;
   if (!article) {
-    return {};
+    return null;
   }
   const url = `${siteUrl}${article.path}`;
-  const image = article.image ? `${siteUrl}${article.image.src}` : undefined;
+  const image = article.image
+    ? article.image.src.startsWith("/")
+      ? `${siteUrl}${article.image.src}`
+      : `${siteUrl}/${article.image.src}`
+    : undefined;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: article.title,
     description: article.description,
     datePublished: article.date,
-    author: { "@type": "Person", name: "Simon Jouan" },
+    author: {
+      "@type": "Person",
+      name: SITE.profile.name,
+      url: siteUrl,
+    },
+    publisher: {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: SITE.profile.name,
+      url: siteUrl,
+      logo: `${siteUrl}/images/logo.png`,
+    },
     url,
     ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
     ...(image ? { image } : {}),
   };
+
   return {
     title: `${article.title} — jouan.ovh`,
-    link: [{ rel: "canonical", href: url }],
-    meta: [
-      { name: "description", content: article.description },
-      { property: "og:type", content: "article" },
-      { property: "og:title", content: article.title },
-      { property: "og:description", content: article.description },
-      { property: "og:url", content: url },
-      ...(image ? [{ property: "og:image", content: image }] : []),
-      { name: "twitter:card", content: image ? "summary_large_image" : "summary" },
-      { name: "twitter:title", content: article.title },
-      { name: "twitter:description", content: article.description },
-      ...(image ? [{ name: "twitter:image", content: image }] : []),
-    ],
-    script: [jsonLdScript(jsonLd)],
+    ogTitle: article.title,
+    description: article.description,
+    path: article.path,
+    image: article.image?.src,
+    imageAlt: article.image?.alt,
+    type: "article",
+    jsonLd,
   };
 });
 </script>

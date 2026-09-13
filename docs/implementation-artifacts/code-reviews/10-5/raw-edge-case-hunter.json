@@ -1,0 +1,2316 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 01a099e8-f357-72c1-a527-cd3768fedb5e
+--------
+user
+# Edge Case Hunter Prompt — Story 10.5
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/10-5/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’m using `bmad-review-edge-case-hunter` to mechanically enumerate unhandled branches in the specified diff and return only the required JSON.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+exec
+/bin/zsh -lc "wc -l docs/implementation-artifacts/code-reviews/10-5/full.diff && sed -n '1,260p' docs/implementation-artifacts/code-reviews/10-5/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     517 docs/implementation-artifacts/code-reviews/10-5/full.diff
+diff --git a/app/app.vue b/app/app.vue
+index 84b23a4..6016dd4 100644
+--- a/app/app.vue
++++ b/app/app.vue
+@@ -4,4 +4,29 @@
+   </NuxtLayout>
+ </template>
+ 
++<script setup lang="ts">
++import { SITE } from "~/data/site";
++
++// Métadonnées Schema.org globales (Organization / publisher du site).
++// Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).
++const siteUrl = useSiteUrl();
++
++const organizationJsonLd = {
++  "@context": "https://schema.org",
++  "@type": "Organization",
++  name: SITE.profile.name,
++  url: siteUrl,
++  logo: `${siteUrl}/images/logo.png`,
++  email: SITE.profile.email,
++  address: {
++    "@type": "PostalAddress",
++    addressLocality: SITE.profile.city,
++  },
++};
++
++useHead({
++  script: [jsonLdScript(organizationJsonLd)],
++});
++</script>
++
+ <style lang="scss" scoped></style>
+diff --git a/app/composables/usePageSeo.ts b/app/composables/usePageSeo.ts
+new file mode 100644
+index 0000000..6a238eb
+--- /dev/null
++++ b/app/composables/usePageSeo.ts
+@@ -0,0 +1,103 @@
++import { computed, toValue, type MaybeRefOrGetter } from "vue";
++import { useSiteUrl } from "./useSiteUrl";
++
++export interface PageSeoOptions {
++  /** Titre de la page (utilisé pour <title>, og:title, twitter:title). */
++  title: string;
++  /** Description de la page (utilisée pour <meta name="description">, og:description, twitter:description). */
++  description: string;
++  /** Chemin relatif de la page (ex. "/" ou "/services" ou "/blog/slug"). Si omis, résolu sur siteUrl. */
++  path?: string;
++  /** Chemin relatif ou absolu de l'image OG/Twitter (ex. "/images/portrait.jpeg"). Résolue en URL absolue. */
++  image?: string;
++  /** Type Open Graph : "website" (défaut), "article" ou "profile". */
++  type?: "website" | "article" | "profile";
++  /** Format Twitter Card : si omis, "summary_large_image" si type article avec image, sinon "summary". */
++  twitterCard?: "summary" | "summary_large_image";
++  /** Données JSON-LD (objet Schema.org ou tableau d'objets) injectées via jsonLdScript. */
++  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
++}
++
++/**
++ * Composable centralisant la déclaration des métadonnées SEO par page :
++ * <title>, canonical, description, Open Graph (type, title, desc, url, image)
++ * et Twitter Card (card, title, desc, image) + JSON-LD échappé.
++ *
++ * Résout automatiquement les URLs absolues à partir de `useSiteUrl()` (runtimeConfig).
++ */
++export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined | null>): void {
++  const siteUrl = useSiteUrl();
++
++  const seo = computed(() => {
++    const opts = toValue(options);
++    if (!opts) {
++      return null;
++    }
++
++    const rawPath = opts.path ?? "";
++    const cleanPath = rawPath === "" || rawPath === "/" ? "" : rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
++    const canonicalUrl = cleanPath ? `${siteUrl}${cleanPath}` : siteUrl;
++
++    let imageUrl: string | undefined;
++    if (opts.image) {
++      imageUrl =
++        opts.image.startsWith("http://") || opts.image.startsWith("https://")
++          ? opts.image
++          : `${siteUrl}${opts.image.startsWith("/") ? opts.image : `/${opts.image}`}`;
++    }
++
++    const type = opts.type ?? "website";
++    const twitterCard =
++      opts.twitterCard ??
++      (imageUrl && (type === "article" || opts.twitterCard === "summary_large_image")
++        ? "summary_large_image"
++        : "summary");
++
++    return {
++      title: opts.title,
++      description: opts.description,
++      canonicalUrl,
++      imageUrl,
++      type,
++      twitterCard,
++      jsonLd: opts.jsonLd,
++    };
++  });
++
++  useHead(() => {
++    if (!seo.value) {
++      return {};
++    }
++
++    const scripts: Array<{ type: string; innerHTML: string }> = [];
++    if (seo.value.jsonLd) {
++      if (Array.isArray(seo.value.jsonLd)) {
++        for (const item of seo.value.jsonLd) {
++          scripts.push(jsonLdScript(item));
++        }
++      } else {
++        scripts.push(jsonLdScript(seo.value.jsonLd));
++      }
++    }
++
++    return {
++      title: seo.value.title,
++      link: [{ rel: "canonical", href: seo.value.canonicalUrl }],
++      script: scripts,
++    };
++  });
++
++  useSeoMeta({
++    title: () => seo.value?.title,
++    description: () => seo.value?.description,
++    ogTitle: () => seo.value?.title,
++    ogDescription: () => seo.value?.description,
++    ogUrl: () => seo.value?.canonicalUrl,
++    ogType: () => seo.value?.type,
++    ogImage: () => seo.value?.imageUrl,
++    twitterCard: () => seo.value?.twitterCard,
++    twitterTitle: () => seo.value?.title,
++    twitterDescription: () => seo.value?.description,
++    twitterImage: () => seo.value?.imageUrl,
++  });
++}
+diff --git a/app/pages/about.vue b/app/pages/about.vue
+index 997bc7f..3266cce 100644
+--- a/app/pages/about.vue
++++ b/app/pages/about.vue
+@@ -133,29 +133,30 @@ const degrees = [
+ const pageTitle = "À propos — jouan.ovh";
+ const pageDescription =
+   "Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours.";
+-// URL de prod lue depuis runtimeConfig via useSiteUrl() (swappable staging/prod, sans
+-// domaine en dur). Inchangée en staging → canonical/og restent sur le domaine staging.
++
+ const siteUrl = useSiteUrl();
+-const pageUrl = `${siteUrl}/about`;
+-const pageImage = `${siteUrl}/images/portrait.jpeg`;
++const aboutJsonLd = {
++  "@context": "https://schema.org",
++  "@type": "ProfilePage",
++  name: pageTitle,
++  url: `${siteUrl}/about`,
++  mainEntity: {
++    "@type": "Person",
++    name: "Simon Jouan",
++    jobTitle: "Développeur web freelance",
++    url: siteUrl,
++    image: `${siteUrl}/images/portrait.jpeg`,
++  },
++};
+ 
+-useHead({
++usePageSeo({
+   title: pageTitle,
+-  link: [{ rel: "canonical", href: pageUrl }],
+-  meta: [
+-    { name: "description", content: pageDescription },
+-    // Open Graph (partage Facebook/LinkedIn…).
+-    { property: "og:type", content: "profile" },
+-    { property: "og:title", content: pageTitle },
+-    { property: "og:description", content: pageDescription },
+-    { property: "og:url", content: pageUrl },
+-    { property: "og:image", content: pageImage },
+-    // Twitter Card.
+-    { name: "twitter:card", content: "summary" },
+-    { name: "twitter:title", content: pageTitle },
+-    { name: "twitter:description", content: pageDescription },
+-    { name: "twitter:image", content: pageImage },
+-  ],
++  description: pageDescription,
++  path: "/about",
++  image: "/images/portrait.jpeg",
++  type: "profile",
++  twitterCard: "summary",
++  jsonLd: aboutJsonLd,
+ });
+ </script>
+ 
+diff --git a/app/pages/blog/[...slug].vue b/app/pages/blog/[...slug].vue
+index 155153b..0cda25f 100644
+--- a/app/pages/blog/[...slug].vue
++++ b/app/pages/blog/[...slug].vue
+@@ -108,14 +108,13 @@ if (import.meta.client) {
+   });
+ }
+ 
+-// SEO par article (parité avec /about et /blog). URL de prod via useSiteUrl()
+-// (runtimeConfig, swappable staging/prod) ; capturée dans le setup, hors du getter useHead
+-// (un composable ne s'appelle pas dans un callback).
++// SEO par article (centralisé via usePageSeo, parité /about, /blog).
++// usePageSeo résout siteUrl, canonical, og:*, twitter:* et le JSON-LD échappé.
+ const siteUrl = useSiteUrl();
+-useHead(() => {
++usePageSeo(() => {
+   const article = page.value;
+   if (!article) {
+-    return {};
++    return null;
+   }
+   const url = `${siteUrl}${article.path}`;
+   const image = article.image ? `${siteUrl}${article.image.src}` : undefined;
+@@ -130,22 +129,14 @@ useHead(() => {
+     ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
+     ...(image ? { image } : {}),
+   };
++
+   return {
+     title: `${article.title} — jouan.ovh`,
+-    link: [{ rel: "canonical", href: url }],
+-    meta: [
+-      { name: "description", content: article.description },
+-      { property: "og:type", content: "article" },
+-      { property: "og:title", content: article.title },
+-      { property: "og:description", content: article.description },
+-      { property: "og:url", content: url },
+-      ...(image ? [{ property: "og:image", content: image }] : []),
+-      { name: "twitter:card", content: image ? "summary_large_image" : "summary" },
+-      { name: "twitter:title", content: article.title },
+-      { name: "twitter:description", content: article.description },
+-      ...(image ? [{ name: "twitter:image", content: image }] : []),
+-    ],
+-    script: [jsonLdScript(jsonLd)],
++    description: article.description,
++    path: article.path,
++    image: article.image?.src,
++    type: "article",
++    jsonLd,
+   };
+ });
+ </script>
+diff --git a/app/pages/blog/index.vue b/app/pages/blog/index.vue
+index a4fcc16..73aca76 100644
+--- a/app/pages/blog/index.vue
++++ b/app/pages/blog/index.vue
+@@ -123,22 +123,12 @@ const blogJsonLd = {
+   })),
+ };
+ 
+-useHead({
++usePageSeo({
+
+exec
+/bin/zsh -lc "sed -n '261,560p' docs/implementation-artifacts/code-reviews/10-5/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   title: pageTitle,
+-  link: [{ rel: "canonical", href: pageUrl }],
+-  meta: [
+-    { name: "description", content: pageDescription },
+-    // Open Graph (partage Facebook/LinkedIn…).
+-    { property: "og:type", content: "website" },
+-    { property: "og:title", content: pageTitle },
+-    { property: "og:description", content: pageDescription },
+-    { property: "og:url", content: pageUrl },
+-    // Twitter Card.
+-    { name: "twitter:card", content: "summary" },
+-    { name: "twitter:title", content: pageTitle },
+-    { name: "twitter:description", content: pageDescription },
+-  ],
+-  script: [jsonLdScript(blogJsonLd)],
++  description: pageDescription,
++  path: "/blog",
++  type: "website",
++  jsonLd: blogJsonLd,
+ });
+ </script>
+ 
+diff --git a/app/pages/contact.vue b/app/pages/contact.vue
+index 0680a12..ce95b45 100644
+--- a/app/pages/contact.vue
++++ b/app/pages/contact.vue
+@@ -250,15 +250,34 @@ async function onSubmit(): Promise<void> {
+   }
+ }
+ 
+-useHead({
+-  title: "Contact — jouan.ovh",
+-  meta: [
+-    {
+-      name: "description",
+-      content:
+-        "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
++const siteUrl = useSiteUrl();
++
++const contactJsonLd = {
++  "@context": "https://schema.org",
++  "@type": "ContactPage",
++  name: "Contact — jouan.ovh",
++  description:
++    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
++  url: `${siteUrl}/contact`,
++  mainEntity: {
++    "@type": "Person",
++    name: SITE.profile.name,
++    email: SITE.profile.email,
++    address: {
++      "@type": "PostalAddress",
++      addressLocality: SITE.profile.city,
+     },
+-  ],
++  },
++};
++
++usePageSeo({
++  title: "Contact — jouan.ovh",
++  description:
++    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
++  path: "/contact",
++  image: "/images/portrait.jpeg",
++  type: "website",
++  jsonLd: contactJsonLd,
+ });
+ </script>
+ 
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index f6139f4..6d5bc04 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -180,6 +180,40 @@ const terminalRows = [
+ // header). No-op tant qu'aucun terminal n'est disponible (prerender). La
+ // restylisation du terminal lui-même relève d'Epic 8.
+ const { open: openTerminal } = useTerminal();
++
++const siteUrl = useSiteUrl();
++const homeJsonLd = [
++  {
++    "@context": "https://schema.org",
++    "@type": "WebSite",
++    name: "Simon Jouan — Développeur web freelance",
++    url: siteUrl,
++    description: tagline,
++  },
++  {
++    "@context": "https://schema.org",
++    "@type": "Person",
++    name: SITE.profile.name,
++    jobTitle: SITE.profile.role,
++    url: siteUrl,
++    image: `${siteUrl}/images/portrait.jpeg`,
++    email: SITE.profile.email,
++    address: {
++      "@type": "PostalAddress",
++      addressLocality: SITE.profile.city,
++    },
++  },
++];
++
++usePageSeo({
++  title: "Simon Jouan — Développeur web freelance & IA",
++  description:
++    "Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA.",
++  path: "/",
++  image: "/images/portrait.jpeg",
++  type: "website",
++  jsonLd: homeJsonLd,
++});
+ </script>
+ 
+ <style lang="scss" scoped>
+diff --git a/app/pages/services.vue b/app/pages/services.vue
+index 83fb5a1..b458474 100644
+--- a/app/pages/services.vue
++++ b/app/pages/services.vue
+@@ -127,15 +127,35 @@ const steps = [
+   { n: "04", title: "Livraison & suivi", desc: "Mise en ligne, documentation, et accompagnement." },
+ ];
+ 
+-useHead({
++const siteUrl = useSiteUrl();
++
++const servicesJsonLd = {
++  "@context": "https://schema.org",
++  "@type": "WebPage",
++  name: "Services — jouan.ovh",
++  description:
++    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
++  url: `${siteUrl}/services`,
++  mainEntity: {
++    "@type": "ItemList",
++    itemListElement: offers.map((offer, index) => ({
++      "@type": "Offer",
++      position: index + 1,
++      name: offer.title,
++      description: offer.desc,
++      price: offer.price,
++    })),
++  },
++};
++
++usePageSeo({
+   title: "Services — jouan.ovh",
+-  meta: [
+-    {
+-      name: "description",
+-      content:
+-        "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
+-    },
+-  ],
++  description:
++    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
++  path: "/services",
++  image: "/images/portrait.jpeg",
++  type: "website",
++  jsonLd: servicesJsonLd,
+ });
+ </script>
+ 
+diff --git a/docs/implementation-artifacts/10-5-seo-centralise-site-wide.md b/docs/implementation-artifacts/10-5-seo-centralise-site-wide.md
+index 1c23450..fbbe359 100644
+--- a/docs/implementation-artifacts/10-5-seo-centralise-site-wide.md
++++ b/docs/implementation-artifacts/10-5-seo-centralise-site-wide.md
+@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
+ 
+ # Story 10.5: SEO centralisé site-wide
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -23,17 +23,17 @@ so that le site est correctement indexé et présenté lors d'un partage (FR15).
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Factoriser un helper SEO partagé (AC: #1)
+-  - [ ] Créer un composable `app/composables/usePageSeo.ts` (ou util) qui pose `useSeoMeta` (title, description, og:title/description/url/image/type, twitter:card/title/description/image, canonical) à partir d'un objet `{ title, description, path, image? }`, en résolvant l'URL absolue via `useRuntimeConfig().public.siteUrl` (story 10.1). Objectif : **un seul point** de vérité pour le pattern OG/Twitter/canonical, consommé par toutes les pages (dédup `/about` + `/blog` qui le font déjà à la main).
+-  - [ ] Ajouter `Organization`/`publisher` au JSON-LD partagé (via `app.head` global dans `nuxt.config.ts` ou un plugin), avec `name`/`url`/`logo` issus de `SITE` (`app/data/site.ts`) et `siteUrl` (runtimeConfig). Envisager (optionnel, à décider) `nuxt-schema-org` — sinon JSON-LD manuel via `jsonLdScript()` (déjà sûr, échappe `</script>`).
+-- [ ] Tâche 2 — Étendre aux pages nues (AC: tout)
+-  - [ ] **Home `app/pages/index.vue`** : ajouter `usePageSeo` (aujourd'hui **aucune** meta dédiée → hérite seulement de `app.head` de `nuxt.config.ts`). OG/Twitter/canonical + JSON-LD (`WebSite`/`Person` selon pertinence) + image OG.
+-  - [ ] **Services `app/pages/services.vue`** : passer de `title`+`description` seuls à OG/Twitter/canonical + JSON-LD (`Service`/`WebPage`).
+-  - [ ] **Contact `app/pages/contact.vue`** : idem (OG/Twitter/canonical + `ContactPage`).
+-  - [ ] **Migrer `/about` + `/blog` + article** vers le helper partagé **sans régresser** leur SEO existant (ils ont déjà OG/Twitter/canonical + JSON-LD via `SITE_URL`/`jsonLdScript`) — dédup, rendu identique.
+-- [ ] Tâche 3 — Validation (AC: tout)
+-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (11 routes).
+-  - [ ] Inspecter le HTML **prerendu** (`.output/public/index.html`, `services/index.html`, `contact/index.html`, + re-vérifier `about`/`blog`) : présence de `og:*`, `twitter:*`, `<link rel="canonical">`, `<script type="application/ld+json">` ; URLs absolues résolues depuis `runtimeConfig` (staging tant que non basculé).
++- [x] Tâche 1 — Factoriser un helper SEO partagé (AC: #1)
++  - [x] Créer un composable `app/composables/usePageSeo.ts` (ou util) qui pose `useSeoMeta` (title, description, og:title/description/url/image/type, twitter:card/title/description/image, canonical) à partir d'un objet `{ title, description, path, image? }`, en résolvant l'URL absolue via `useRuntimeConfig().public.siteUrl` (story 10.1). Objectif : **un seul point** de vérité pour le pattern OG/Twitter/canonical, consommé par toutes les pages (dédup `/about` + `/blog` qui le font déjà à la main).
++  - [x] Ajouter `Organization`/`publisher` au JSON-LD partagé (via `app.head` global dans `nuxt.config.ts` ou un plugin), avec `name`/`url`/`logo` issus de `SITE` (`app/data/site.ts`) et `siteUrl` (runtimeConfig). Envisager (optionnel, à décider) `nuxt-schema-org` — sinon JSON-LD manuel via `jsonLdScript()` (déjà sûr, échappe `</script>`).
++- [x] Tâche 2 — Étendre aux pages nues (AC: tout)
++  - [x] **Home `app/pages/index.vue`** : ajouter `usePageSeo` (aujourd'hui **aucune** meta dédiée → hérite seulement de `app.head` de `nuxt.config.ts`). OG/Twitter/canonical + JSON-LD (`WebSite`/`Person` selon pertinence) + image OG.
++  - [x] **Services `app/pages/services.vue`** : passer de `title`+`description` seuls à OG/Twitter/canonical + JSON-LD (`Service`/`WebPage`).
++  - [x] **Contact `app/pages/contact.vue`** : idem (OG/Twitter/canonical + `ContactPage`).
++  - [x] **Migrer `/about` + `/blog` + article** vers le helper partagé **sans régresser** leur SEO existant (ils ont déjà OG/Twitter/canonical + JSON-LD via `SITE_URL`/`jsonLdScript`) — dédup, rendu identique.
++- [x] Tâche 3 — Validation (AC: tout)
++  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (11 routes).
++  - [x] Inspecter le HTML **prerendu** (`.output/public/index.html`, `services/index.html`, `contact/index.html`, + re-vérifier `about`/`blog`) : présence de `og:*`, `twitter:*`, `<link rel="canonical">`, `<script type="application/ld+json">` ; URLs absolues résolues depuis `runtimeConfig` (staging tant que non basculé).
+ 
+ ## Dev Notes
+ 
+@@ -79,9 +79,30 @@ so that le site est correctement indexé et présenté lors d'un partage (FR15).
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++- Gemini 3.7 Flash
+ 
+ ### Debug Log References
++- Build & gate : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 error, 11 prerendered routes.
++- HTML inspection : `.output/public/{index,services,contact,about,blog}/index.html` checked for `<title>`, `<meta name="description">`, `og:*`, `twitter:*`, `<link rel="canonical">`, and `<script type="application/ld+json">`.
+ 
+ ### Completion Notes List
++- Création de `app/composables/usePageSeo.ts` qui centralise `useSeoMeta`, `<link rel="canonical">` et l'injection JSON-LD échappée via `jsonLdScript()`.
++- Injection du schéma global `Organization` dans `app/app.vue` alimenté par `useSiteUrl()` et `SITE.profile`.
++- Ajout des métadonnées SEO et schémas Schema.org (`WebSite`, `Person`, `Service`/`WebPage`, `ContactPage`, `ProfilePage`, `Blog`, `BlogPosting`) sur toutes les pages (`/`, `/services`, `/contact`, `/about`, `/blog`, `/blog/[...slug]`).
++- Aucune URL hardcodée : résolution dynamique via `useSiteUrl()`.
++- Validation complète via Docker (`pnpm lint`, `pnpm typecheck`, `pnpm generate`) avec 11 routes prerendues avec succès et inspection conforme du HTML généré.
+ 
+ ### File List
++- `app/composables/usePageSeo.ts` (NEW)
++- `app/app.vue` (MODIFIED)
++- `app/pages/index.vue` (MODIFIED)
++- `app/pages/services.vue` (MODIFIED)
++- `app/pages/contact.vue` (MODIFIED)
++- `app/pages/about.vue` (MODIFIED)
++- `app/pages/blog/index.vue` (MODIFIED)
++- `app/pages/blog/[...slug].vue` (MODIFIED)
++- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
++- `docs/implementation-artifacts/10-5-seo-centralise-site-wide.md` (MODIFIED)
++
++## Change Log
++- 2026-09-13 : Implémentation complète de la Story 10.5 — Centralisation du SEO et Schema.org site-wide via `usePageSeo` et `useSiteUrl()`. Statut passé à `review`.
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 7ccabba..dd09c09 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-13 (Story 10.3 soldée par revue de code : 100% liens _blank unifiés sur ZExternalLink, noopener garanti, statut done)"
++last_updated: "2026-09-13 (Story 10.5 prête pour revue : SEO centralisé site-wide via usePageSeo, statut review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -112,7 +112,7 @@ development_status:
+   10-2-a11y-semantique-residuelle: done
+   10-3-liens-externes-accessibles: done
+   10-4-validation-a11y-emulee-et-unification-forced-colors: done
+-  10-5-seo-centralise-site-wide: ready-for-dev
++  10-5-seo-centralise-site-wide: review
+   10-6-conformite-legale-rgpd-mentions: ready-for-dev
+   10-7-mise-en-production-reelle: ready-for-dev
+   epic-10-retrospective: optional
+
+exec
+/bin/zsh -lc 'rg -n "function useSiteUrl|const useSiteUrl|jsonLdScript|runtimeConfig|siteUrl" app nuxt.config.ts package.json | head -120' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+nuxt.config.ts:52:  runtimeConfig: {
+nuxt.config.ts:59:      siteUrl: "https://dev.jouan.ovh",
+app/pages/about.vue:137:const siteUrl = useSiteUrl();
+app/pages/about.vue:142:  url: `${siteUrl}/about`,
+app/pages/about.vue:147:    url: siteUrl,
+app/pages/about.vue:148:    image: `${siteUrl}/images/portrait.jpeg`,
+app/pages/blog/[...slug].vue:112:// usePageSeo résout siteUrl, canonical, og:*, twitter:* et le JSON-LD échappé.
+app/pages/blog/[...slug].vue:113:const siteUrl = useSiteUrl();
+app/pages/blog/[...slug].vue:119:  const url = `${siteUrl}${article.path}`;
+app/pages/blog/[...slug].vue:120:  const image = article.image ? `${siteUrl}${article.image.src}` : undefined;
+app/pages/blog/index.vue:99:// Métadonnées de la page. URL de prod lue depuis runtimeConfig via useSiteUrl()
+app/pages/blog/index.vue:101:const siteUrl = useSiteUrl();
+app/pages/blog/index.vue:105:const pageUrl = `${siteUrl}/blog`;
+app/pages/blog/index.vue:120:    url: `${siteUrl}${article.path}`,
+app/pages/blog/index.vue:122:    ...(article.image ? { image: `${siteUrl}${article.image.src}` } : {}),
+app/pages/services.vue:130:const siteUrl = useSiteUrl();
+app/pages/services.vue:138:  url: `${siteUrl}/services`,
+app/pages/contact.vue:253:const siteUrl = useSiteUrl();
+app/pages/contact.vue:261:  url: `${siteUrl}/contact`,
+app/pages/index.vue:184:const siteUrl = useSiteUrl();
+app/pages/index.vue:190:    url: siteUrl,
+app/pages/index.vue:198:    url: siteUrl,
+app/pages/index.vue:199:    image: `${siteUrl}/images/portrait.jpeg`,
+app/composables/useSiteUrl.ts:2:// La valeur vient de `runtimeConfig.public.siteUrl` (défaut staging dans nuxt.config,
+app/composables/useSiteUrl.ts:7:export function useSiteUrl(): string {
+app/composables/useSiteUrl.ts:8:  const siteUrl = useRuntimeConfig().public.siteUrl;
+app/composables/useSiteUrl.ts:11:  // `NUXT_PUBLIC_SITE_URL=` vide décommentée dans .env → siteUrl=""). On fait plutôt
+app/composables/useSiteUrl.ts:15:    url = new URL(siteUrl);
+app/composables/useSiteUrl.ts:18:      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une URL absolue (http[s]://), ` +
+app/composables/useSiteUrl.ts:19:        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+app/composables/useSiteUrl.ts:27:      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une origin http(s) sans chemin, query ni hash, ` +
+app/composables/useSiteUrl.ts:28:        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+app/composables/useSiteUrl.ts:32:  // Retourne l'origin normalisée pour une concaténation sûre (`${siteUrl}/about`),
+app/composables/usePageSeo.ts:9:  /** Chemin relatif de la page (ex. "/" ou "/services" ou "/blog/slug"). Si omis, résolu sur siteUrl. */
+app/composables/usePageSeo.ts:17:  /** Données JSON-LD (objet Schema.org ou tableau d'objets) injectées via jsonLdScript. */
+app/composables/usePageSeo.ts:26: * Résout automatiquement les URLs absolues à partir de `useSiteUrl()` (runtimeConfig).
+app/composables/usePageSeo.ts:29:  const siteUrl = useSiteUrl();
+app/composables/usePageSeo.ts:39:    const canonicalUrl = cleanPath ? `${siteUrl}${cleanPath}` : siteUrl;
+app/composables/usePageSeo.ts:46:          : `${siteUrl}${opts.image.startsWith("/") ? opts.image : `/${opts.image}`}`;
+app/composables/usePageSeo.ts:76:          scripts.push(jsonLdScript(item));
+app/composables/usePageSeo.ts:79:        scripts.push(jsonLdScript(seo.value.jsonLd));
+app/app.vue:11:// Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).
+app/app.vue:12:const siteUrl = useSiteUrl();
+app/app.vue:18:  url: siteUrl,
+app/app.vue:19:  logo: `${siteUrl}/images/logo.png`,
+app/app.vue:28:  script: [jsonLdScript(organizationJsonLd)],
+app/utils/seo.ts:4:// `runtimeConfig.public.siteUrl` via le composable `useSiteUrl()`
+app/utils/seo.ts:12:export function jsonLdScript(data: Record<string, unknown>) {
+
+exec
+/bin/zsh -lc 'nl -ba app/composables/useSiteUrl.ts; nl -ba app/utils/seo.ts; nl -ba app/composables/usePageSeo.ts' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     1	// URL publique du site (canonical / og:url / JSON-LD) — point d'accès unique.
+     2	// La valeur vient de `runtimeConfig.public.siteUrl` (défaut staging dans nuxt.config,
+     3	// surchargeable par NUXT_PUBLIC_SITE_URL). ⚠️ `useRuntimeConfig()` n'est
+     4	// appelable QUE dans un contexte Nuxt (setup de composant, plugin, middleware) — d'où ce
+     5	// composable, à consommer dans le `<script setup>` des pages, pas au niveau module d'un util
+     6	// pur (raison pour laquelle l'ancienne constante `SITE_URL` de app/utils/seo.ts a été retirée).
+     7	export function useSiteUrl(): string {
+     8	  const siteUrl = useRuntimeConfig().public.siteUrl;
+     9	  // Garde-fou fail-fast (décision D1, revue 2026-07-02) : une valeur vide ou non absolue
+    10	  // émettrait des canonical/og:url/JSON-LD RELATIFS silencieusement cassés (ex. une ligne
+    11	  // `NUXT_PUBLIC_SITE_URL=` vide décommentée dans .env → siteUrl=""). On fait plutôt
+    12	  // échouer le prerender (`generate`) tôt et bruyamment plutôt que de livrer du SEO cassé.
+    13	  let url: URL;
+    14	  try {
+    15	    url = new URL(siteUrl);
+    16	  } catch {
+    17	    throw new Error(
+    18	      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une URL absolue (http[s]://), ` +
+    19	        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+    20	    );
+    21	  }
+    22	
+    23	  const isHttpProtocol = url.protocol === "http:" || url.protocol === "https:";
+    24	  const isOriginOnly = url.pathname === "/" && url.search === "" && url.hash === "";
+    25	  if (!isHttpProtocol || !url.hostname || !isOriginOnly) {
+    26	    throw new Error(
+    27	      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une origin http(s) sans chemin, query ni hash, ` +
+    28	        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+    29	    );
+    30	  }
+    31	
+    32	  // Retourne l'origin normalisée pour une concaténation sûre (`${siteUrl}/about`),
+    33	  // y compris si l'override est saisi avec un slash final.
+    34	  return url.origin;
+    35	}
+     1	// Helpers SEO partagés (auto-importés depuis app/utils/).
+     2	//
+     3	// L'URL de production du site n'est plus une constante ici : elle est lue depuis
+     4	// `runtimeConfig.public.siteUrl` via le composable `useSiteUrl()`
+     5	// (app/composables/useSiteUrl.ts) — swappable staging/prod sans domaine en dur.
+     6	// `useRuntimeConfig()` étant un composable (contexte Nuxt requis), elle ne peut pas
+     7	// vivre dans ce module pur.
+     8	
+     9	// Construit l'entrée <script type="application/ld+json"> pour useHead, en échappant
+    10	// « < » → « < ». Garantit qu'aucune séquence "</script>" éventuellement présente
+    11	// dans les données (titres, descriptions d'articles…) ne ferme la balise prématurément.
+    12	export function jsonLdScript(data: Record<string, unknown>) {
+    13	  return {
+    14	    type: "application/ld+json",
+    15	    innerHTML: JSON.stringify(data).replace(/</g, "\\u003c"),
+    16	  };
+    17	}
+     1	import { computed, toValue, type MaybeRefOrGetter } from "vue";
+     2	import { useSiteUrl } from "./useSiteUrl";
+     3	
+     4	export interface PageSeoOptions {
+     5	  /** Titre de la page (utilisé pour <title>, og:title, twitter:title). */
+     6	  title: string;
+     7	  /** Description de la page (utilisée pour <meta name="description">, og:description, twitter:description). */
+     8	  description: string;
+     9	  /** Chemin relatif de la page (ex. "/" ou "/services" ou "/blog/slug"). Si omis, résolu sur siteUrl. */
+    10	  path?: string;
+    11	  /** Chemin relatif ou absolu de l'image OG/Twitter (ex. "/images/portrait.jpeg"). Résolue en URL absolue. */
+    12	  image?: string;
+    13	  /** Type Open Graph : "website" (défaut), "article" ou "profile". */
+    14	  type?: "website" | "article" | "profile";
+    15	  /** Format Twitter Card : si omis, "summary_large_image" si type article avec image, sinon "summary". */
+    16	  twitterCard?: "summary" | "summary_large_image";
+    17	  /** Données JSON-LD (objet Schema.org ou tableau d'objets) injectées via jsonLdScript. */
+    18	  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+    19	}
+    20	
+    21	/**
+    22	 * Composable centralisant la déclaration des métadonnées SEO par page :
+    23	 * <title>, canonical, description, Open Graph (type, title, desc, url, image)
+    24	 * et Twitter Card (card, title, desc, image) + JSON-LD échappé.
+    25	 *
+    26	 * Résout automatiquement les URLs absolues à partir de `useSiteUrl()` (runtimeConfig).
+    27	 */
+    28	export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined | null>): void {
+    29	  const siteUrl = useSiteUrl();
+    30	
+    31	  const seo = computed(() => {
+    32	    const opts = toValue(options);
+    33	    if (!opts) {
+    34	      return null;
+    35	    }
+    36	
+    37	    const rawPath = opts.path ?? "";
+    38	    const cleanPath = rawPath === "" || rawPath === "/" ? "" : rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
+    39	    const canonicalUrl = cleanPath ? `${siteUrl}${cleanPath}` : siteUrl;
+    40	
+    41	    let imageUrl: string | undefined;
+    42	    if (opts.image) {
+    43	      imageUrl =
+    44	        opts.image.startsWith("http://") || opts.image.startsWith("https://")
+    45	          ? opts.image
+    46	          : `${siteUrl}${opts.image.startsWith("/") ? opts.image : `/${opts.image}`}`;
+    47	    }
+    48	
+    49	    const type = opts.type ?? "website";
+    50	    const twitterCard =
+    51	      opts.twitterCard ??
+    52	      (imageUrl && (type === "article" || opts.twitterCard === "summary_large_image")
+    53	        ? "summary_large_image"
+    54	        : "summary");
+    55	
+    56	    return {
+    57	      title: opts.title,
+    58	      description: opts.description,
+    59	      canonicalUrl,
+    60	      imageUrl,
+    61	      type,
+    62	      twitterCard,
+    63	      jsonLd: opts.jsonLd,
+    64	    };
+    65	  });
+    66	
+    67	  useHead(() => {
+    68	    if (!seo.value) {
+    69	      return {};
+    70	    }
+    71	
+    72	    const scripts: Array<{ type: string; innerHTML: string }> = [];
+    73	    if (seo.value.jsonLd) {
+    74	      if (Array.isArray(seo.value.jsonLd)) {
+    75	        for (const item of seo.value.jsonLd) {
+    76	          scripts.push(jsonLdScript(item));
+    77	        }
+    78	      } else {
+    79	        scripts.push(jsonLdScript(seo.value.jsonLd));
+    80	      }
+    81	    }
+    82	
+    83	    return {
+    84	      title: seo.value.title,
+    85	      link: [{ rel: "canonical", href: seo.value.canonicalUrl }],
+    86	      script: scripts,
+    87	    };
+    88	  });
+    89	
+    90	  useSeoMeta({
+    91	    title: () => seo.value?.title,
+    92	    description: () => seo.value?.description,
+    93	    ogTitle: () => seo.value?.title,
+    94	    ogDescription: () => seo.value?.description,
+    95	    ogUrl: () => seo.value?.canonicalUrl,
+    96	    ogType: () => seo.value?.type,
+    97	    ogImage: () => seo.value?.imageUrl,
+    98	    twitterCard: () => seo.value?.twitterCard,
+    99	    twitterTitle: () => seo.value?.title,
+   100	    twitterDescription: () => seo.value?.description,
+   101	    twitterImage: () => seo.value?.imageUrl,
+   102	  });
+   103	}
+
+exec
+/bin/zsh -lc "nl -ba app/pages/blog/\\[...slug\\].vue | sed -n '100,155p'; nl -ba app/pages/blog/index.vue | sed -n '90,145p'; nl -ba app/data/site.ts | sed -n '1,100p'; nl -ba nuxt.config.ts | sed -n '1,100p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   100	if (import.meta.client) {
+   101	  watch([page, error], () => {
+   102	    const clientError = resolveContentError();
+   103	    if (clientError) {
+   104	      showError(clientError);
+   105	    } else {
+   106	      clearError();
+   107	    }
+   108	  });
+   109	}
+   110	
+   111	// SEO par article (centralisé via usePageSeo, parité /about, /blog).
+   112	// usePageSeo résout siteUrl, canonical, og:*, twitter:* et le JSON-LD échappé.
+   113	const siteUrl = useSiteUrl();
+   114	usePageSeo(() => {
+   115	  const article = page.value;
+   116	  if (!article) {
+   117	    return null;
+   118	  }
+   119	  const url = `${siteUrl}${article.path}`;
+   120	  const image = article.image ? `${siteUrl}${article.image.src}` : undefined;
+   121	  const jsonLd = {
+   122	    "@context": "https://schema.org",
+   123	    "@type": "BlogPosting",
+   124	    headline: article.title,
+   125	    description: article.description,
+   126	    datePublished: article.date,
+   127	    author: { "@type": "Person", name: "Simon Jouan" },
+   128	    url,
+   129	    ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
+   130	    ...(image ? { image } : {}),
+   131	  };
+   132	
+   133	  return {
+   134	    title: `${article.title} — jouan.ovh`,
+   135	    description: article.description,
+   136	    path: article.path,
+   137	    image: article.image?.src,
+   138	    type: "article",
+   139	    jsonLd,
+   140	  };
+   141	});
+   142	</script>
+   143	
+   144	<style lang="scss" scoped>
+   145	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis kit.css / Blog.jsx */
+   146	// .section / .container / .prose / .hero__tags / .post__meta sont des primitives de
+   147	// layout globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+   148	.blog-article {
+   149	  display: block;
+   150	}
+   151	
+   152	// ---- Conteneur article (porté de kit.css : .article) ----
+   153	.article {
+   154	  max-width: 760px;
+   155	  margin: 0 auto;
+    90	// Articles triés par date décroissante. La requête de contenu est résolue côté
+    91	// build/SSR → rendu prerender-safe. `error` distingue un échec de chargement d'un
+    92	// véritable empty-state (liste vide).
+    93	const { data: articles, error } = await useAsyncData("blog-list", () =>
+    94	  queryCollection("blog").order("date", "DESC").all(),
+    95	);
+    96	
+    97	// `formatDate` (date ISO → français) est un util auto-importé partagé (app/utils/).
+    98	
+    99	// Métadonnées de la page. URL de prod lue depuis runtimeConfig via useSiteUrl()
+   100	// (swappable staging/prod, sans domaine en dur). Inchangée en staging.
+   101	const siteUrl = useSiteUrl();
+   102	const pageTitle = "Blog — jouan.ovh";
+   103	const pageDescription =
+   104	  "Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web.";
+   105	const pageUrl = `${siteUrl}/blog`;
+   106	
+   107	// JSON-LD : flux d'articles (Blog → BlogPosting) pour les moteurs / agrégateurs.
+   108	// Construit à partir de la liste résolue (snapshot au build, page prerendue).
+   109	const blogJsonLd = {
+   110	  "@context": "https://schema.org",
+   111	  "@type": "Blog",
+   112	  name: "Notes de dev",
+   113	  description: pageDescription,
+   114	  url: pageUrl,
+   115	  blogPost: (articles.value ?? []).map((article) => ({
+   116	    "@type": "BlogPosting",
+   117	    headline: article.title,
+   118	    description: article.description,
+   119	    datePublished: article.date,
+   120	    url: `${siteUrl}${article.path}`,
+   121	    ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
+   122	    ...(article.image ? { image: `${siteUrl}${article.image.src}` } : {}),
+   123	  })),
+   124	};
+   125	
+   126	usePageSeo({
+   127	  title: pageTitle,
+   128	  description: pageDescription,
+   129	  path: "/blog",
+   130	  type: "website",
+   131	  jsonLd: blogJsonLd,
+   132	});
+   133	</script>
+   134	
+   135	<style lang="scss" scoped>
+   136	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis kit.css / Blog.jsx */
+   137	// .section / .container / .eyebrow / .prose / .hero__tags / .post__meta sont des
+   138	// primitives de layout globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+   139	.blog {
+   140	  display: block;
+   141	}
+   142	
+   143	// ---- En-tête (porté de Blog.jsx L9-13) ----
+   144	.blog__title {
+   145	  margin-bottom: var(--space-2);
+     1	// Source de vérité unique du CONTENU partagé du site (DRY / SRP : les données vivent ici,
+     2	// les composants/programmes ne font que les présenter). Forme portée de
+     3	// `docs/design_system/ui_kits/jouan-site/data.js` (référence du UI kit).
+     4	//
+     5	// Consommé par : pages (`index.vue`, `about.vue`, `contact.vue`), `FooterComponent.vue`,
+     6	// et les programmes terminal (`programs/Skills|Projets|Contact|About.ts`).
+     7	//
+     8	// NB : `experiences` / `degrees` ne sont PAS centralisés ici — leurs formes et leur niveau
+     9	// de détail divergent volontairement entre le CV terminal (`About.ts`, détaillé) et la page
+    10	// `/about` (condensée). Leur réconciliation est une décision de contenu, suivie dans
+    11	// `deferred-work.md`, pas un simple refactor.
+    12	
+    13	export interface IProfile {
+    14	  name: string;
+    15	  role: string;
+    16	  email: string;
+    17	  city: string;
+    18	  available: boolean;
+    19	}
+    20	
+    21	export interface IProject {
+    22	  name: string;
+    23	  role: string;
+    24	  desc: string;
+    25	  url: string;
+    26	  tags: string[];
+    27	}
+    28	
+    29	const profile: IProfile = {
+    30	  name: "Simon Jouan",
+    31	  role: "Développeur web freelance",
+    32	  email: "simon@jouan.ovh",
+    33	  city: "Valognes, France",
+    34	  available: true,
+    35	};
+    36	
+    37	// Stack technique — ordre conservé (tags hero de la home = sous-ensemble curé, non dérivé d'ici).
+    38	const skills: string[] = [
+    39	  "php",
+    40	  "symfony",
+    41	  "wordpress",
+    42	  "node.js",
+    43	  "nest.js",
+    44	  "nuxt.js",
+    45	  "vue",
+    46	  "typescript",
+    47	  "docker",
+    48	  "tailwind",
+    49	  "n8n",
+    50	  "mysql",
+    51	];
+    52	
+    53	const projects: IProject[] = [
+    54	  {
+    55	    name: "keova.app",
+    56	    role: "Fondateur · SaaS",
+    57	    desc: "Plateforme SaaS que je conçois et opère de bout en bout.",
+    58	    url: "https://keova.app",
+    59	    tags: ["nest.js", "nuxt", "saas"],
+    60	  },
+    61	  {
+    62	    name: "patio-conseil.fr",
+    63	    role: "Client",
+    64	    desc: "Site et outils pour un cabinet de conseil.",
+    65	    url: "https://patio-conseil.fr",
+    66	    tags: ["wordpress", "conseil"],
+    67	  },
+    68	];
+    69	
+    70	export const SITE = { profile, skills, projects } as const;
+     1	// https://nuxt.com/docs/api/configuration/nuxt-config
+     2	export default defineNuxtConfig({
+     3	  app: {
+     4	    head: {
+     5	      title: "..::<sj />::..",
+     6	      htmlAttrs: {
+     7	        lang: "fr",
+     8	      },
+     9	      charset: "utf-8",
+    10	      viewport: "width=device-width, initial-scale=1",
+    11	      link: [
+    12	        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+    13	        // Ubuntu sans (corps long) — Google Fonts via <link> (pas d'@import SCSS, cf. règle projet).
+    14	        // Ubuntu Mono reste self-hosted (abstract/_fonts.scss).
+    15	        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+    16	        { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
+    17	        {
+    18	          rel: "stylesheet",
+    19	          href: "https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,400;1,700&display=swap",
+    20	        },
+    21	      ],
+    22	      meta: [
+    23	        {
+    24	          name: "description",
+    25	          content:
+    26	            "Développeur Fullstack et Testeur/QA freelance passionné par la création de solutions web performantes." +
+    27	            " Discutons de votre projet.",
+    28	        },
+    29	      ],
+    30	    },
+    31	  },
+    32	  css: ["@/assets/scss/main.scss"],
+    33	  modules: ["@nuxt/content", "@nuxt/image", "@nuxt/eslint"],
+    34	  // @nuxt/content : coloration syntaxique Shiki désactivée. Le DS rend le code en
+    35	  // palette terminale UNIFORME (mono off-white sur fond aubergine, vert pour l'inline,
+    36	  // cf. kit.css .article .prose pre/code) — pas de multicolore par token, qui injecterait
+    37	  // des styles inline écrasant les tokens. Les blocs rendent en <pre><code> nu, stylés en SCSS.
+    38	  content: {
+    39	    build: {
+    40	      markdown: {
+    41	        highlight: false,
+    42	      },
+    43	    },
+    44	  },
+    45	  // Primitives DS dans components/ui/ auto-importées sans préfixe de dossier
+    46	  // (<ZButton> et non <UiZButton>). Le reste de components/ garde le scan par défaut.
+    47	  components: [{ path: "~/components/ui", pathPrefix: false }, "~/components"],
+    48	  ssr: true,
+    49	  // Config exposée au client. La clé d'accès Web3Forms (envoi du formulaire /contact)
+    50	  // n'est JAMAIS en dur : fournie par l'env NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY (cf.
+    51	  // .env.example). Vide par défaut → le formulaire bascule sur son état d'erreur.
+    52	  runtimeConfig: {
+    53	    public: {
+    54	      web3formsAccessKey: "",
+    55	      // URL de production du site (canonical / og:url / JSON-LD). Défaut = staging
+    56	      // (dev.jouan.ovh, cf. public/CNAME) ; surchargeable en prod SANS domaine en dur via
+    57	      // l'env NUXT_PUBLIC_SITE_URL=https://jouan.ovh (cf. .env.example). Consommée par le
+    58	      // composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
+    59	      siteUrl: "https://dev.jouan.ovh",
+    60	    },
+    61	  },
+    62	  // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
+    63	  experimental: {
+    64	    payloadExtraction: false,
+    65	  },
+    66	  // Flat config gérée par @nuxt/eslint ; on laisse Prettier formater (stylistic off).
+    67	  eslint: {
+    68	    config: {
+    69	      stylistic: false,
+    70	    },
+    71	  },
+    72	});
+
+exec
+/bin/zsh -lc "nl -ba app/pages/services.vue | sed -n '95,165p'; nl -ba app/pages/index.vue | sed -n '1,230p'; nl -ba app/pages/contact.vue | sed -n '235,295p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    95	    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
+    96	    points: ["Thème sur-mesure (press-wind / Tailwind)", "Plugins & blocs Gutenberg", "Performance & SEO technique"],
+    97	    price: "à partir de 1 500 €",
+    98	    featured: false,
+    99	  },
+   100	  {
+   101	    id: "apps",
+   102	    icon: "code",
+   103	    title: "Applications web",
+   104	    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
+   105	    points: ["API REST / GraphQL (Symfony · Nest.js)", "Front Vue / Nuxt", "Tests & CI/CD, qualité QA"],
+   106	    price: "sur devis",
+   107	    featured: true,
+   108	  },
+   109	  {
+   110	    id: "ia",
+   111	    icon: "spark",
+   112	    title: "IA & automatisation",
+   113	    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
+   114	    points: ["Agents & workflows (n8n)", "Intégration d'API LLM", "Automatisation de contenu"],
+   115	    price: "sur devis",
+   116	    featured: false,
+   117	  },
+   118	];
+   119	
+   120	// Étapes du process — texte repris à l'identique de Services.jsx (tableau `steps`,
+   121	// pas dans data.js). L'ordre du tableau garantit l'affichage 01 → 04 (AC #1).
+   122	// `n` (numéro affiché) sert aussi de clé v-for stable et unique.
+   123	const steps = [
+   124	  { n: "01", title: "Échange", desc: "On cadre le besoin, le périmètre et le budget — sans jargon inutile." },
+   125	  { n: "02", title: "Conception", desc: "Architecture, maquette, et plan de livraison clair." },
+   126	  { n: "03", title: "Développement", desc: "Code propre, testé, livré par itérations visibles." },
+   127	  { n: "04", title: "Livraison & suivi", desc: "Mise en ligne, documentation, et accompagnement." },
+   128	];
+   129	
+   130	const siteUrl = useSiteUrl();
+   131	
+   132	const servicesJsonLd = {
+   133	  "@context": "https://schema.org",
+   134	  "@type": "WebPage",
+   135	  name: "Services — jouan.ovh",
+   136	  description:
+   137	    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
+   138	  url: `${siteUrl}/services`,
+   139	  mainEntity: {
+   140	    "@type": "ItemList",
+   141	    itemListElement: offers.map((offer, index) => ({
+   142	      "@type": "Offer",
+   143	      position: index + 1,
+   144	      name: offer.title,
+   145	      description: offer.desc,
+   146	      price: offer.price,
+   147	    })),
+   148	  },
+   149	};
+   150	
+   151	usePageSeo({
+   152	  title: "Services — jouan.ovh",
+   153	  description:
+   154	    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
+   155	  path: "/services",
+   156	  image: "/images/portrait.jpeg",
+   157	  type: "website",
+   158	  jsonLd: servicesJsonLd,
+   159	});
+   160	</script>
+   161	
+   162	<style lang="scss" scoped>
+   163	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis kit.css / Services.jsx */
+   164	.services {
+   165	  display: block;
+     1	<template>
+     2	  <main class="home">
+     3	    <section class="hero hero__grad">
+     4	      <div class="hero__in container">
+     5	        <div class="hero__grid">
+     6	          <!-- Colonne gauche : accroche, CTA, tags -->
+     7	          <div class="anim hero__text">
+     8	            <p class="eyebrow"><span aria-hidden="true">// </span>développeur web freelance</p>
+     9	            <h1 class="hero__title">Du code <em>sur-mesure</em>,<br />de l'IA <em>utile</em>.</h1>
+    10	            <p class="hero__sub">{{ tagline }}</p>
+    11	            <div class="hero__cta">
+    12	              <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+    13	                Démarrer un projet
+    14	                <template #iconRight><ZIcon name="arrow" /></template>
+    15	              </ZButton>
+    16	              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir les services </ZButton>
+    17	            </div>
+    18	            <ul class="hero__tags">
+    19	              <li v-for="tag in tags" :key="tag">
+    20	                <ZTag>{{ tag }}</ZTag>
+    21	              </li>
+    22	            </ul>
+    23	          </div>
+    24	
+    25	          <!-- Colonne droite : fenêtre terminal décorative (statique) -->
+    26	          <div class="anim hero__term-col">
+    27	            <div class="hero-term">
+    28	              <div class="hero-term__bar">
+    29	                <span class="hero-term__dots" aria-hidden="true">
+    30	                  <span class="hero-term__dot hero-term__dot--close" />
+    31	                  <span class="hero-term__dot hero-term__dot--min" />
+    32	                  <span class="hero-term__dot hero-term__dot--max" />
+    33	                </span>
+    34	                <span class="hero-term__title">anon.@jouan.ovh: ~</span>
+    35	              </div>
+    36	
+    37	              <div class="hero-term__body">
+    38	                <template v-for="row in terminalRows" :key="row.id">
+    39	                  <p class="hero-term__line" aria-hidden="true">
+    40	                    <span class="prm"
+    41	                      ><span class="prm__user">anon.@jouan.ovh</span><span class="prm__sep">:</span
+    42	                      ><span class="prm__dir">~</span><span class="prm__sep">$ </span
+    43	                      ><span class="prm__cmd">{{ row.cmd }}</span></span
+    44	                    >
+    45	                  </p>
+    46	                  <p class="hero-term__out" :class="`hero-term__out--${row.tone}`">{{ row.out }}</p>
+    47	                </template>
+    48	
+    49	                <button
+    50	                  type="button"
+    51	                  class="hero-term__open"
+    52	                  aria-label="Ouvrir le terminal interactif"
+    53	                  aria-haspopup="dialog"
+    54	                  @click="openTerminal"
+    55	                >
+    56	                  <span class="prm"
+    57	                    ><span class="prm__user">anon.@jouan.ovh</span><span class="prm__sep">:</span
+    58	                    ><span class="prm__dir">~</span><span class="prm__sep">$ </span><span class="prm__cmd">help</span
+    59	                    ><span class="prm__caret" aria-hidden="true"
+    60	                  /></span>
+    61	                </button>
+    62	              </div>
+    63	            </div>
+    64	          </div>
+    65	        </div>
+    66	      </div>
+    67	    </section>
+    68	
+    69	    <!-- Aperçu services (porté de ServicesPreview, Home.jsx) -->
+    70	    <section class="section">
+    71	      <div class="container">
+    72	        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je fais</p>
+    73	        <h2 class="section__title">Trois façons de travailler ensemble</h2>
+    74	        <ul class="grid-3">
+    75	          <li v-for="service in services" :key="service.id">
+    76	            <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+    77	              <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+    78	              <h3 class="offer__title">{{ service.title }}</h3>
+    79	              <p class="offer__desc">{{ service.desc }}</p>
+    80	              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+    81	                En savoir plus →
+    82	              </NuxtLink>
+    83	            </ZCard>
+    84	          </li>
+    85	        </ul>
+    86	      </div>
+    87	    </section>
+    88	
+    89	    <!-- Stats + projets sélectionnés — section en creux partagée (stories 3.2 / 3.3) -->
+    90	    <section class="section section--sunken">
+    91	      <div class="container">
+    92	        <div class="statrow">
+    93	          <div v-for="stat in stats" :key="stat.id" class="stat">
+    94	            <b>{{ stat.value }}</b>
+    95	            <span>{{ stat.label }}</span>
+    96	          </div>
+    97	        </div>
+    98	
+    99	        <h2 class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</h2>
+   100	        <ul class="grid-2 projects">
+   101	          <li v-for="project in projects" :key="project.url">
+   102	            <ZCard class="project" interactive :as="ZExternalLink" :href="project.url" rel="noopener noreferrer">
+   103	              <div class="project__head">
+   104	                <h3 class="project__name">{{ project.name }}</h3>
+   105	                <span class="project__role">{{ project.role }}</span>
+   106	              </div>
+   107	              <p class="prose project__desc">{{ project.desc }}</p>
+   108	              <ul class="hero__tags">
+   109	                <li v-for="tag in project.tags" :key="tag">
+   110	                  <ZTag>{{ tag }}</ZTag>
+   111	                </li>
+   112	              </ul>
+   113	            </ZCard>
+   114	          </li>
+   115	        </ul>
+   116	      </div>
+   117	    </section>
+   118	  </main>
+   119	</template>
+   120	
+   121	<script setup lang="ts">
+   122	// Page d'accueil — hero Terminal (A) + aperçu services + stats. Porté de Home.jsx
+   123	// (HeroTerminal / ServicesPreview / StatsProjects) du UI kit : recréation Vue 3 +
+   124	// tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2, 3.3)
+   125	import { NuxtLink, ZExternalLink } from "#components";
+   126	import { useTerminal } from "~/composables/useTerminal";
+   127	import { SITE } from "~/data/site";
+   128	
+   129	// Contenu repris de data.js (window.SITE) — 1re personne, vouvoiement, pas d'emoji.
+   130	const tagline = "Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils.";
+   131	const tags = ["php", "symfony", "wordpress", "nest.js", "nuxt.js"];
+   132	
+   133	// Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
+   134	// (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
+   135	// `id` = clé v-for stable (indépendante du contenu affiché), cohérent avec terminalRows.
+   136	const services = [
+   137	  {
+   138	    id: "wordpress",
+   139	    icon: "wp",
+   140	    title: "WordPress sur-mesure",
+   141	    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
+   142	    featured: false,
+   143	  },
+   144	  {
+   145	    id: "apps",
+   146	    icon: "code",
+   147	    title: "Applications web",
+   148	    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
+   149	    featured: true,
+   150	  },
+   151	  {
+   152	    id: "ia",
+   153	    icon: "spark",
+   154	    title: "IA & automatisation",
+   155	    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
+   156	    featured: false,
+   157	  },
+   158	];
+   159	
+   160	// Chiffres clés (data.js `stats`) — texte exact (séparateur ·), pas d'emoji.
+   161	const stats = [
+   162	  { id: "stat-1", value: "8+", label: "ans dans la tech" },
+   163	  { id: "stat-2", value: "3", label: "stacks maîtrisés" },
+   164	  { id: "stat-3", value: "1", label: "SaaS fondé · keova.app" },
+   165	];
+   166	
+   167	// Projets sélectionnés — source unique `app/data/site.ts`. Cartes rendues en liens externes.
+   168	const projects = SITE.projects;
+   169	
+   170	// Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
+   171	// côté template (pas de chiffres/projets inventés : stats & projets = stories 3.2 / 3.3).
+   172	// `id` = clé v-for stable (indépendante du contenu affiché), garantie unique.
+   173	const terminalRows = [
+   174	  { id: "line-1", cmd: "whoami", out: "Simon Jouan — Développeur web freelance", tone: "ink" },
+   175	  { id: "line-2", cmd: "cat stack.txt", out: "PHP/Symfony · WordPress · Node/Nest · Nuxt", tone: "blue" },
+   176	  { id: "line-3", cmd: "ls ~/projets", out: "keova.app/   patio-conseil.fr/", tone: "green" },
+   177	];
+   178	
+   179	// Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le
+   180	// header). No-op tant qu'aucun terminal n'est disponible (prerender). La
+   181	// restylisation du terminal lui-même relève d'Epic 8.
+   182	const { open: openTerminal } = useTerminal();
+   183	
+   184	const siteUrl = useSiteUrl();
+   185	const homeJsonLd = [
+   186	  {
+   187	    "@context": "https://schema.org",
+   188	    "@type": "WebSite",
+   189	    name: "Simon Jouan — Développeur web freelance",
+   190	    url: siteUrl,
+   191	    description: tagline,
+   192	  },
+   193	  {
+   194	    "@context": "https://schema.org",
+   195	    "@type": "Person",
+   196	    name: SITE.profile.name,
+   197	    jobTitle: SITE.profile.role,
+   198	    url: siteUrl,
+   199	    image: `${siteUrl}/images/portrait.jpeg`,
+   200	    email: SITE.profile.email,
+   201	    address: {
+   202	      "@type": "PostalAddress",
+   203	      addressLocality: SITE.profile.city,
+   204	    },
+   205	  },
+   206	];
+   207	
+   208	usePageSeo({
+   209	  title: "Simon Jouan — Développeur web freelance & IA",
+   210	  description:
+   211	    "Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA.",
+   212	  path: "/",
+   213	  image: "/images/portrait.jpeg",
+   214	  type: "website",
+   215	  jsonLd: homeJsonLd,
+   216	});
+   217	</script>
+   218	
+   219	<style lang="scss" scoped>
+   220	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis kit.css / Home.jsx */
+   221	.home {
+   222	  display: block;
+   223	}
+   224	
+   225	// Entrée one-shot (pas une boucle) — keyframe globale fade-rise (_root.scss).
+   226	.anim {
+   227	  animation: fade-rise var(--dur-slow) var(--ease-out) both;
+   228	}
+   229	
+   230	.hero__term-col {
+   235	        subject: form.subject.trim() || "Nouveau message depuis jouan.ovh",
+   236	        message: form.message.trim(),
+   237	        botcheck: "",
+   238	      },
+   239	    });
+   240	    if (res.success) {
+   241	      sent.value = true;
+   242	      await focusSentCard();
+   243	    } else {
+   244	      submitError.value = ERROR_MESSAGE;
+   245	    }
+   246	  } catch {
+   247	    submitError.value = ERROR_MESSAGE;
+   248	  } finally {
+   249	    sending.value = false;
+   250	  }
+   251	}
+   252	
+   253	const siteUrl = useSiteUrl();
+   254	
+   255	const contactJsonLd = {
+   256	  "@context": "https://schema.org",
+   257	  "@type": "ContactPage",
+   258	  name: "Contact — jouan.ovh",
+   259	  description:
+   260	    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+   261	  url: `${siteUrl}/contact`,
+   262	  mainEntity: {
+   263	    "@type": "Person",
+   264	    name: SITE.profile.name,
+   265	    email: SITE.profile.email,
+   266	    address: {
+   267	      "@type": "PostalAddress",
+   268	      addressLocality: SITE.profile.city,
+   269	    },
+   270	  },
+   271	};
+   272	
+   273	usePageSeo({
+   274	  title: "Contact — jouan.ovh",
+   275	  description:
+   276	    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+   277	  path: "/contact",
+   278	  image: "/images/portrait.jpeg",
+   279	  type: "website",
+   280	  jsonLd: contactJsonLd,
+   281	});
+   282	</script>
+   283	
+   284	<style lang="scss" scoped>
+   285	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis kit.css / Contact.jsx */
+   286	// .section / .container / .eyebrow / .prose sont des primitives de layout globales
+   287	// (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+   288	.contact {
+   289	  display: block;
+   290	}
+   291	
+   292	// ---- Grille (porté de kit.css : .contact__grid 1fr / 0.8fr) ----
+   293	.contact__grid {
+   294	  display: grid;
+   295	  grid-template-columns: 1fr 0.8fr;
+
+exec
+/bin/zsh -lc "nl -ba docs/implementation-artifacts/code-reviews/10-5/full.diff | sed -n '1,330p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     1	diff --git a/app/app.vue b/app/app.vue
+     2	index 84b23a4..6016dd4 100644
+     3	--- a/app/app.vue
+     4	+++ b/app/app.vue
+     5	@@ -4,4 +4,29 @@
+     6	   </NuxtLayout>
+     7	 </template>
+     8	 
+     9	+<script setup lang="ts">
+    10	+import { SITE } from "~/data/site";
+    11	+
+    12	+// Métadonnées Schema.org globales (Organization / publisher du site).
+    13	+// Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).
+    14	+const siteUrl = useSiteUrl();
+    15	+
+    16	+const organizationJsonLd = {
+    17	+  "@context": "https://schema.org",
+    18	+  "@type": "Organization",
+    19	+  name: SITE.profile.name,
+    20	+  url: siteUrl,
+    21	+  logo: `${siteUrl}/images/logo.png`,
+    22	+  email: SITE.profile.email,
+    23	+  address: {
+    24	+    "@type": "PostalAddress",
+    25	+    addressLocality: SITE.profile.city,
+    26	+  },
+    27	+};
+    28	+
+    29	+useHead({
+    30	+  script: [jsonLdScript(organizationJsonLd)],
+    31	+});
+    32	+</script>
+    33	+
+    34	 <style lang="scss" scoped></style>
+    35	diff --git a/app/composables/usePageSeo.ts b/app/composables/usePageSeo.ts
+    36	new file mode 100644
+    37	index 0000000..6a238eb
+    38	--- /dev/null
+    39	+++ b/app/composables/usePageSeo.ts
+    40	@@ -0,0 +1,103 @@
+    41	+import { computed, toValue, type MaybeRefOrGetter } from "vue";
+    42	+import { useSiteUrl } from "./useSiteUrl";
+    43	+
+    44	+export interface PageSeoOptions {
+    45	+  /** Titre de la page (utilisé pour <title>, og:title, twitter:title). */
+    46	+  title: string;
+    47	+  /** Description de la page (utilisée pour <meta name="description">, og:description, twitter:description). */
+    48	+  description: string;
+    49	+  /** Chemin relatif de la page (ex. "/" ou "/services" ou "/blog/slug"). Si omis, résolu sur siteUrl. */
+    50	+  path?: string;
+    51	+  /** Chemin relatif ou absolu de l'image OG/Twitter (ex. "/images/portrait.jpeg"). Résolue en URL absolue. */
+    52	+  image?: string;
+    53	+  /** Type Open Graph : "website" (défaut), "article" ou "profile". */
+    54	+  type?: "website" | "article" | "profile";
+    55	+  /** Format Twitter Card : si omis, "summary_large_image" si type article avec image, sinon "summary". */
+    56	+  twitterCard?: "summary" | "summary_large_image";
+    57	+  /** Données JSON-LD (objet Schema.org ou tableau d'objets) injectées via jsonLdScript. */
+    58	+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+    59	+}
+    60	+
+    61	+/**
+    62	+ * Composable centralisant la déclaration des métadonnées SEO par page :
+    63	+ * <title>, canonical, description, Open Graph (type, title, desc, url, image)
+    64	+ * et Twitter Card (card, title, desc, image) + JSON-LD échappé.
+    65	+ *
+    66	+ * Résout automatiquement les URLs absolues à partir de `useSiteUrl()` (runtimeConfig).
+    67	+ */
+    68	+export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined | null>): void {
+    69	+  const siteUrl = useSiteUrl();
+    70	+
+    71	+  const seo = computed(() => {
+    72	+    const opts = toValue(options);
+    73	+    if (!opts) {
+    74	+      return null;
+    75	+    }
+    76	+
+    77	+    const rawPath = opts.path ?? "";
+    78	+    const cleanPath = rawPath === "" || rawPath === "/" ? "" : rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
+    79	+    const canonicalUrl = cleanPath ? `${siteUrl}${cleanPath}` : siteUrl;
+    80	+
+    81	+    let imageUrl: string | undefined;
+    82	+    if (opts.image) {
+    83	+      imageUrl =
+    84	+        opts.image.startsWith("http://") || opts.image.startsWith("https://")
+    85	+          ? opts.image
+    86	+          : `${siteUrl}${opts.image.startsWith("/") ? opts.image : `/${opts.image}`}`;
+    87	+    }
+    88	+
+    89	+    const type = opts.type ?? "website";
+    90	+    const twitterCard =
+    91	+      opts.twitterCard ??
+    92	+      (imageUrl && (type === "article" || opts.twitterCard === "summary_large_image")
+    93	+        ? "summary_large_image"
+    94	+        : "summary");
+    95	+
+    96	+    return {
+    97	+      title: opts.title,
+    98	+      description: opts.description,
+    99	+      canonicalUrl,
+   100	+      imageUrl,
+   101	+      type,
+   102	+      twitterCard,
+   103	+      jsonLd: opts.jsonLd,
+   104	+    };
+   105	+  });
+   106	+
+   107	+  useHead(() => {
+   108	+    if (!seo.value) {
+   109	+      return {};
+   110	+    }
+   111	+
+   112	+    const scripts: Array<{ type: string; innerHTML: string }> = [];
+   113	+    if (seo.value.jsonLd) {
+   114	+      if (Array.isArray(seo.value.jsonLd)) {
+   115	+        for (const item of seo.value.jsonLd) {
+   116	+          scripts.push(jsonLdScript(item));
+   117	+        }
+   118	+      } else {
+   119	+        scripts.push(jsonLdScript(seo.value.jsonLd));
+   120	+      }
+   121	+    }
+   122	+
+   123	+    return {
+   124	+      title: seo.value.title,
+   125	+      link: [{ rel: "canonical", href: seo.value.canonicalUrl }],
+   126	+      script: scripts,
+   127	+    };
+   128	+  });
+   129	+
+   130	+  useSeoMeta({
+   131	+    title: () => seo.value?.title,
+   132	+    description: () => seo.value?.description,
+   133	+    ogTitle: () => seo.value?.title,
+   134	+    ogDescription: () => seo.value?.description,
+   135	+    ogUrl: () => seo.value?.canonicalUrl,
+   136	+    ogType: () => seo.value?.type,
+   137	+    ogImage: () => seo.value?.imageUrl,
+   138	+    twitterCard: () => seo.value?.twitterCard,
+   139	+    twitterTitle: () => seo.value?.title,
+   140	+    twitterDescription: () => seo.value?.description,
+   141	+    twitterImage: () => seo.value?.imageUrl,
+   142	+  });
+   143	+}
+   144	diff --git a/app/pages/about.vue b/app/pages/about.vue
+   145	index 997bc7f..3266cce 100644
+   146	--- a/app/pages/about.vue
+   147	+++ b/app/pages/about.vue
+   148	@@ -133,29 +133,30 @@ const degrees = [
+   149	 const pageTitle = "À propos — jouan.ovh";
+   150	 const pageDescription =
+   151	   "Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours.";
+   152	-// URL de prod lue depuis runtimeConfig via useSiteUrl() (swappable staging/prod, sans
+   153	-// domaine en dur). Inchangée en staging → canonical/og restent sur le domaine staging.
+   154	+
+   155	 const siteUrl = useSiteUrl();
+   156	-const pageUrl = `${siteUrl}/about`;
+   157	-const pageImage = `${siteUrl}/images/portrait.jpeg`;
+   158	+const aboutJsonLd = {
+   159	+  "@context": "https://schema.org",
+   160	+  "@type": "ProfilePage",
+   161	+  name: pageTitle,
+   162	+  url: `${siteUrl}/about`,
+   163	+  mainEntity: {
+   164	+    "@type": "Person",
+   165	+    name: "Simon Jouan",
+   166	+    jobTitle: "Développeur web freelance",
+   167	+    url: siteUrl,
+   168	+    image: `${siteUrl}/images/portrait.jpeg`,
+   169	+  },
+   170	+};
+   171	 
+   172	-useHead({
+   173	+usePageSeo({
+   174	   title: pageTitle,
+   175	-  link: [{ rel: "canonical", href: pageUrl }],
+   176	-  meta: [
+   177	-    { name: "description", content: pageDescription },
+   178	-    // Open Graph (partage Facebook/LinkedIn…).
+   179	-    { property: "og:type", content: "profile" },
+   180	-    { property: "og:title", content: pageTitle },
+   181	-    { property: "og:description", content: pageDescription },
+   182	-    { property: "og:url", content: pageUrl },
+   183	-    { property: "og:image", content: pageImage },
+   184	-    // Twitter Card.
+   185	-    { name: "twitter:card", content: "summary" },
+   186	-    { name: "twitter:title", content: pageTitle },
+   187	-    { name: "twitter:description", content: pageDescription },
+   188	-    { name: "twitter:image", content: pageImage },
+   189	-  ],
+   190	+  description: pageDescription,
+   191	+  path: "/about",
+   192	+  image: "/images/portrait.jpeg",
+   193	+  type: "profile",
+   194	+  twitterCard: "summary",
+   195	+  jsonLd: aboutJsonLd,
+   196	 });
+   197	 </script>
+   198	 
+   199	diff --git a/app/pages/blog/[...slug].vue b/app/pages/blog/[...slug].vue
+   200	index 155153b..0cda25f 100644
+   201	--- a/app/pages/blog/[...slug].vue
+   202	+++ b/app/pages/blog/[...slug].vue
+   203	@@ -108,14 +108,13 @@ if (import.meta.client) {
+   204	   });
+   205	 }
+   206	 
+   207	-// SEO par article (parité avec /about et /blog). URL de prod via useSiteUrl()
+   208	-// (runtimeConfig, swappable staging/prod) ; capturée dans le setup, hors du getter useHead
+   209	-// (un composable ne s'appelle pas dans un callback).
+   210	+// SEO par article (centralisé via usePageSeo, parité /about, /blog).
+   211	+// usePageSeo résout siteUrl, canonical, og:*, twitter:* et le JSON-LD échappé.
+   212	 const siteUrl = useSiteUrl();
+   213	-useHead(() => {
+   214	+usePageSeo(() => {
+   215	   const article = page.value;
+   216	   if (!article) {
+   217	-    return {};
+   218	+    return null;
+   219	   }
+   220	   const url = `${siteUrl}${article.path}`;
+   221	   const image = article.image ? `${siteUrl}${article.image.src}` : undefined;
+   222	@@ -130,22 +129,14 @@ useHead(() => {
+   223	     ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
+   224	     ...(image ? { image } : {}),
+   225	   };
+   226	+
+   227	   return {
+   228	     title: `${article.title} — jouan.ovh`,
+   229	-    link: [{ rel: "canonical", href: url }],
+   230	-    meta: [
+   231	-      { name: "description", content: article.description },
+   232	-      { property: "og:type", content: "article" },
+   233	-      { property: "og:title", content: article.title },
+   234	-      { property: "og:description", content: article.description },
+   235	-      { property: "og:url", content: url },
+   236	-      ...(image ? [{ property: "og:image", content: image }] : []),
+   237	-      { name: "twitter:card", content: image ? "summary_large_image" : "summary" },
+   238	-      { name: "twitter:title", content: article.title },
+   239	-      { name: "twitter:description", content: article.description },
+   240	-      ...(image ? [{ name: "twitter:image", content: image }] : []),
+   241	-    ],
+   242	-    script: [jsonLdScript(jsonLd)],
+   243	+    description: article.description,
+   244	+    path: article.path,
+   245	+    image: article.image?.src,
+   246	+    type: "article",
+   247	+    jsonLd,
+   248	   };
+   249	 });
+   250	 </script>
+   251	diff --git a/app/pages/blog/index.vue b/app/pages/blog/index.vue
+   252	index a4fcc16..73aca76 100644
+   253	--- a/app/pages/blog/index.vue
+   254	+++ b/app/pages/blog/index.vue
+   255	@@ -123,22 +123,12 @@ const blogJsonLd = {
+   256	   })),
+   257	 };
+   258	 
+   259	-useHead({
+   260	+usePageSeo({
+   261	   title: pageTitle,
+   262	-  link: [{ rel: "canonical", href: pageUrl }],
+   263	-  meta: [
+   264	-    { name: "description", content: pageDescription },
+   265	-    // Open Graph (partage Facebook/LinkedIn…).
+   266	-    { property: "og:type", content: "website" },
+   267	-    { property: "og:title", content: pageTitle },
+   268	-    { property: "og:description", content: pageDescription },
+   269	-    { property: "og:url", content: pageUrl },
+   270	-    // Twitter Card.
+   271	-    { name: "twitter:card", content: "summary" },
+   272	-    { name: "twitter:title", content: pageTitle },
+   273	-    { name: "twitter:description", content: pageDescription },
+   274	-  ],
+   275	-  script: [jsonLdScript(blogJsonLd)],
+   276	+  description: pageDescription,
+   277	+  path: "/blog",
+   278	+  type: "website",
+   279	+  jsonLd: blogJsonLd,
+   280	 });
+   281	 </script>
+   282	 
+   283	diff --git a/app/pages/contact.vue b/app/pages/contact.vue
+   284	index 0680a12..ce95b45 100644
+   285	--- a/app/pages/contact.vue
+   286	+++ b/app/pages/contact.vue
+   287	@@ -250,15 +250,34 @@ async function onSubmit(): Promise<void> {
+   288	   }
+   289	 }
+   290	 
+   291	-useHead({
+   292	-  title: "Contact — jouan.ovh",
+   293	-  meta: [
+   294	-    {
+   295	-      name: "description",
+   296	-      content:
+   297	-        "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+   298	+const siteUrl = useSiteUrl();
+   299	+
+   300	+const contactJsonLd = {
+   301	+  "@context": "https://schema.org",
+   302	+  "@type": "ContactPage",
+   303	+  name: "Contact — jouan.ovh",
+   304	+  description:
+   305	+    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+   306	+  url: `${siteUrl}/contact`,
+   307	+  mainEntity: {
+   308	+    "@type": "Person",
+   309	+    name: SITE.profile.name,
+   310	+    email: SITE.profile.email,
+   311	+    address: {
+   312	+      "@type": "PostalAddress",
+   313	+      addressLocality: SITE.profile.city,
+   314	     },
+   315	-  ],
+   316	+  },
+   317	+};
+   318	+
+   319	+usePageSeo({
+   320	+  title: "Contact — jouan.ovh",
+   321	+  description:
+   322	+    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+   323	+  path: "/contact",
+   324	+  image: "/images/portrait.jpeg",
+   325	+  type: "website",
+   326	+  jsonLd: contactJsonLd,
+   327	 });
+   328	 </script>
+   329	 
+   330	diff --git a/app/pages/index.vue b/app/pages/index.vue
+
+exec
+/bin/zsh -lc "rg -n \"path:|image:|datePublished|blog\" content app -g '*.md' -g '*.ts' -g '*.vue' | head -160; rg -n \"queryCollection|defineCollection|schema\" content app nuxt.config.ts | head -120" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+app/pages/about.vue:148:    image: `${siteUrl}/images/portrait.jpeg`,
+app/pages/about.vue:155:  path: "/about",
+app/pages/about.vue:156:  image: "/images/portrait.jpeg",
+app/utils/formatDate.ts:3:// d'un jour à l'hydration. Auto-importé (app/utils/) — partagé par l'index blog et la
+app/pages/blog/[...slug].vue:2:  <main class="blog-article">
+app/pages/blog/[...slug].vue:6:          <!-- Lien retour (porté de Blog.jsx : hdr__link « ← Retour au blog »).
+app/pages/blog/[...slug].vue:7:               Le glyphe ← est décoratif (aria-hidden) : le lecteur d'écran lit « Retour au blog ». -->
+app/pages/blog/[...slug].vue:8:          <NuxtLink to="/blog" class="article__back"><span aria-hidden="true">←</span> Retour au blog</NuxtLink>
+app/pages/blog/[...slug].vue:60:// Vue article du blog (story 6.2) — porté de Blog.jsx (fonction Article) : structure
+app/pages/blog/[...slug].vue:69:// sur une URL du type "/blog/mon-article/".
+app/pages/blog/[...slug].vue:74:  () => `blog-${path.value}`,
+app/pages/blog/[...slug].vue:75:  () => queryCollection("blog").path(path.value).first(),
+app/pages/blog/[...slug].vue:111:// SEO par article (centralisé via usePageSeo, parité /about, /blog).
+app/pages/blog/[...slug].vue:126:    datePublished: article.date,
+app/pages/blog/[...slug].vue:136:    path: article.path,
+app/pages/blog/[...slug].vue:137:    image: article.image?.src,
+app/pages/blog/[...slug].vue:148:.blog-article {
+app/pages/blog/index.vue:2:  <main class="blog">
+app/pages/blog/index.vue:6:        <p class="eyebrow">// ~/blog</p>
+app/pages/blog/index.vue:7:        <h1 class="blog__title">Notes de dev</h1>
+app/pages/blog/index.vue:8:        <p class="prose blog__subtitle">
+app/pages/blog/index.vue:13:        <ul v-if="articles && articles.length" class="blog__list">
+app/pages/blog/index.vue:14:          <li v-for="article in articles" :key="article.path" class="blog__item">
+app/pages/blog/index.vue:48:        <ZCard v-else-if="error" class="blog__notice" padded>
+app/pages/blog/index.vue:50:            class="blog__notice-img"
+app/pages/blog/index.vue:56:          <h2 class="blog__notice-title">Le chargement des articles a échoué.</h2>
+app/pages/blog/index.vue:57:          <p class="prose blog__notice-text">
+app/pages/blog/index.vue:64:        <ZCard v-else class="blog__notice" padded>
+app/pages/blog/index.vue:66:            class="blog__notice-img"
+app/pages/blog/index.vue:72:          <h2 class="blog__notice-title">Pas encore d'articles.</h2>
+app/pages/blog/index.vue:73:          <p class="prose blog__notice-text">
+app/pages/blog/index.vue:84:// Index du blog (story 6.1) — porté de Blog.jsx : en-tête + liste d'articles en
+app/pages/blog/index.vue:87:// au build par useAsyncData). La vue article (/blog/[...slug]) est la story 6.2.
+app/pages/blog/index.vue:93:const { data: articles, error } = await useAsyncData("blog-list", () =>
+app/pages/blog/index.vue:94:  queryCollection("blog").order("date", "DESC").all(),
+app/pages/blog/index.vue:105:const pageUrl = `${siteUrl}/blog`;
+app/pages/blog/index.vue:109:const blogJsonLd = {
+app/pages/blog/index.vue:115:  blogPost: (articles.value ?? []).map((article) => ({
+app/pages/blog/index.vue:119:    datePublished: article.date,
+app/pages/blog/index.vue:122:    ...(article.image ? { image: `${siteUrl}${article.image.src}` } : {}),
+app/pages/blog/index.vue:129:  path: "/blog",
+app/pages/blog/index.vue:131:  jsonLd: blogJsonLd,
+app/pages/blog/index.vue:139:.blog {
+app/pages/blog/index.vue:144:.blog__title {
+app/pages/blog/index.vue:153:.blog__subtitle {
+app/pages/blog/index.vue:161:.blog__list {
+app/pages/blog/index.vue:211:.blog__notice {
+app/pages/blog/index.vue:217:.blog__notice-img {
+app/pages/blog/index.vue:223:.blog__notice-title {
+app/pages/blog/index.vue:231:.blog__notice-text {
+app/composables/usePageSeo.ts:9:  /** Chemin relatif de la page (ex. "/" ou "/services" ou "/blog/slug"). Si omis, résolu sur siteUrl. */
+app/pages/services.vue:155:  path: "/services",
+app/pages/services.vue:156:  image: "/images/portrait.jpeg",
+app/pages/contact.vue:277:  path: "/contact",
+app/pages/contact.vue:278:  image: "/images/portrait.jpeg",
+app/pages/index.vue:199:    image: `${siteUrl}/images/portrait.jpeg`,
+app/pages/index.vue:212:  path: "/",
+app/pages/index.vue:213:  image: "/images/portrait.jpeg",
+app/components/HeaderComponent.vue:90:  { to: "/blog", label: "Blog" },
+app/components/HeaderComponent.vue:94:// Lien actif : exact pour l'accueil, préfixe pour les autres (couvre /blog/[...slug]).
+app/components/FooterComponent.vue:52:  { to: "/blog", label: "Blog" },
+app/components/HexagonLinkComponent.vue:29:  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+app/components/HexagonLinkComponent.vue:55:  clip-path: inset(50%);
+app/components/WindowWrapperComponent.vue:329:      background-image: linear-gradient(to bottom right, var(--wwc-color-red), var(--wwc-color-red-dark));
+app/components/terminal/TerminalComponent.vue:369:      background-image: linear-gradient(to bottom right, var(--term-red), hsl(0deg 100% 27%));
+app/pages/about.vue:139:  "@context": "https://schema.org",
+app/pages/blog/[...slug].vue:63:// @nuxt/content v3 (queryCollection + ContentRenderer). Prerender-safe (useAsyncData).
+app/pages/blog/[...slug].vue:75:  () => queryCollection("blog").path(path.value).first(),
+app/pages/blog/[...slug].vue:122:    "@context": "https://schema.org",
+app/pages/blog/index.vue:86:// v3 (queryCollection). Dark-first, tokens uniquement, prerender-safe (requête résolue
+app/pages/blog/index.vue:94:  queryCollection("blog").order("date", "DESC").all(),
+app/pages/blog/index.vue:110:  "@context": "https://schema.org",
+app/app.vue:15:  "@context": "https://schema.org",
+app/pages/services.vue:133:  "@context": "https://schema.org",
+app/pages/contact.vue:256:  "@context": "https://schema.org",
+app/pages/index.vue:187:    "@context": "https://schema.org",
+app/pages/index.vue:194:    "@context": "https://schema.org",
+
+exec
+/bin/zsh -lc "rg --files content | sort | xargs -r -n1 sh -c 'echo --- \""'$0"; sed -n "1,80p" "$0"'"' " in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+exec
+/bin/zsh -lc "rg --files | rg '("'^|/)(content|blog|.*'"\\.md"'$)'"' | head -100; find . -maxdepth 4 -type f | head -100" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+CLAUDE.md
+README.md
+docs/animations_jouan.ovh/_ds/jouan-ovh-design-system-c7aa284a-3ed2-49dc-937c-3be39595a71d/README.md
+docs/implementation-artifacts/2-4-primitive-zcard.md
+docs/implementation-artifacts/9-1-etats-interactifs-coherents.md
+docs/implementation-artifacts/2-6-primitives-zinput-et-zavatar.md
+docs/implementation-artifacts/6-1-index-du-blog-et-empty-state.md
+docs/implementation-artifacts/10-4-validation-a11y-emulee-et-unification-forced-colors.md
+docs/implementation-artifacts/epic-1-retro-2026-06-19.md
+docs/implementation-artifacts/3-2-apercu-services-et-stats.md
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md
+docs/implementation-artifacts/4-2-section-process.md
+docs/implementation-artifacts/1-4-valider-build-statique-et-deploiement-gh-pages.md
+docs/implementation-artifacts/8-3-migrer-composants-terminal-script-setup.md
+docs/implementation-artifacts/9-2-motion-reduit-contraste-et-clavier.md
+docs/implementation-artifacts/8-1-style-terminalwindow-et-prompt.md
+docs/implementation-artifacts/epic-4-retro-2026-06-23.md
+docs/implementation-artifacts/epic-3-retro-2026-06-22.md
+docs/implementation-artifacts/10-2-a11y-semantique-residuelle.md
+docs/implementation-artifacts/2-7-iconographie.md
+docs/implementation-artifacts/epic-2-retro-2026-06-22.md
+docs/implementation-artifacts/epic-5-retro-2026-06-23.md
+docs/implementation-artifacts/3-3-projets-selectionnes.md
+docs/implementation-artifacts/10-1-decision-hebergement-prod-et-derisquage-deploiement.md
+docs/implementation-artifacts/epic-8-retro-2026-06-29.md
+docs/implementation-artifacts/5-1-portrait-et-bio.md
+docs/implementation-artifacts/epic-9-retro-2026-06-29.md
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md
+docs/implementation-artifacts/2-2-polices-et-base-dark-first.md
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md
+docs/implementation-artifacts/3-1-hero-terminal-a.md
+docs/implementation-artifacts/2-3-primitive-zbutton.md
+docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md
+docs/implementation-artifacts/epic-6-retro-2026-06-25.md
+docs/implementation-artifacts/4-1-route-services-et-cartes-doffre.md
+docs/implementation-artifacts/1-1-migrer-le-coeur-vers-nuxt-4.md
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md
+docs/implementation-artifacts/6-2-vue-article-prose-et-code.md
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md
+docs/implementation-artifacts/10-5-seo-centralise-site-wide.md
+docs/implementation-artifacts/5-2-timeline-formation-et-stack.md
+docs/implementation-artifacts/1-2-mettre-a-jour-les-modules-et-dependances.md
+docs/implementation-artifacts/2-5-primitives-zbadge-et-ztag.md
+docs/implementation-artifacts/10-7-mise-en-production-reelle.md
+docs/implementation-artifacts/deferred-work.md
+docs/implementation-artifacts/8-2-preserver-les-commandes-et-louverture.md
+docs/implementation-artifacts/code-reviews/10-5/raw-acceptance-auditor.md
+docs/implementation-artifacts/code-reviews/10-5/prompt-acceptance-auditor.md
+docs/implementation-artifacts/code-reviews/10-5/prompt-blind-hunter.md
+docs/implementation-artifacts/code-reviews/10-5/prompt-edge-case-hunter.md
+docs/implementation-artifacts/code-reviews/10-5/raw-blind-hunter.md
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md
+docs/implementation-artifacts/code-reviews/10-2/prompt-acceptance-auditor.md
+docs/implementation-artifacts/code-reviews/10-2/prompt-blind-hunter.md
+docs/implementation-artifacts/code-reviews/10-2/prompt-edge-case-hunter.md
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md
+docs/implementation-artifacts/code-reviews/10-3/prompt-acceptance-auditor.md
+docs/implementation-artifacts/code-reviews/10-3/prompt-blind-hunter.md
+docs/implementation-artifacts/code-reviews/10-3/prompt-edge-case-hunter.md
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md
+docs/implementation-artifacts/code-reviews/10-4/raw-acceptance-auditor.md
+docs/implementation-artifacts/code-reviews/10-4/prompt-acceptance-auditor.md
+docs/implementation-artifacts/code-reviews/10-4/prompt-blind-hunter.md
+docs/implementation-artifacts/code-reviews/10-4/prompt-edge-case-hunter.md
+docs/implementation-artifacts/code-reviews/10-4/raw-blind-hunter.md
+docs/implementation-artifacts/7-1-route-contact-et-formulaire.md
+docs/design_system/SKILL.md
+content.config.ts
+docs/design_system/README.md
+docs/project-context.md
+docs/design_system/components/terminal/Prompt.prompt.md
+docs/design_system/components/terminal/TerminalWindow.prompt.md
+docs/planning-artifacts/epics.md
+app/pages/blog/[...slug].vue
+app/pages/blog/index.vue
+docs/design_system/ui_kits/jouan-site/README.md
+docs/specs/spec-design-system-revamp/primitives.md
+docs/specs/spec-design-system-revamp/SPEC.md
+docs/specs/spec-design-system-revamp/pages.md
+docs/design_system/components/core/Button.prompt.md
+docs/design_system/components/core/Input.prompt.md
+docs/design_system/components/core/Avatar.prompt.md
+docs/design_system/components/core/Tag.prompt.md
+docs/design_system/components/core/Badge.prompt.md
+docs/design_system/components/core/Card.prompt.md
+_bmad/wds/data/wds-glossary.md
+_bmad/wds/data/agent-contracts.md
+_bmad/wds/data/shared-activation.md
+_bmad/wds/data/design-system/validation-patterns.md
+_bmad/wds/data/design-system/component-boundaries.md
+_bmad/wds/data/design-system/naming-conventions.md
+_bmad/wds/data/design-system/state-management.md
+_bmad/wds/data/design-system/token-architecture.md
+_bmad/wds/data/design-system/figma-component-structure.md
+_bmad/wds/skills/handoff.md
+_bmad/wds/skills/start.md
+_bmad/wds/skills/saga.activation.md
+./pnpm-lock.yaml
+./design-artifacts/.DS_Store
+./screenshots/Screenshot 2026-06-22 at 17-48-15 jouan.ovh Design System.png
+./.DS_Store
+./app/app.vue
+./app/composables/useTerminal.ts
+./app/composables/usePageSeo.ts
+./app/composables/useSiteUrl.ts
+./app/utils/formatDate.ts
+./app/utils/seo.ts
+./app/utils/functions.ts
+./app/terminal.config.ts
+./app/components/ui/ZTag.vue
+./app/components/ui/ZCard.vue
+./app/components/ui/ZIcon.vue
+./app/components/ui/ZExternalLink.vue
+./app/components/ui/ZInput.vue
+./app/components/ui/ZAvatar.vue
+./app/components/ui/ZBadge.vue
+./app/components/ui/ZButton.vue
+./app/components/.DS_Store
+./app/components/card/ZCardHeader.vue
+./app/components/card/ZCardBody.vue
+./app/components/card/ZCardFooter.vue
+./app/components/WindowWrapperComponent.vue
+./app/components/terminal/TerminalManagerComponent.vue
+./app/components/terminal/TerminalComponent.vue
+./app/components/HexagonLinkComponent.vue
+./app/components/FooterComponent.vue
+./app/components/MainComponent.vue
+./app/components/CurrentTime.vue
+./app/components/LinkListComponent.vue
+./app/components/HeaderComponent.vue
+./app/layouts/default.vue
+./app/data/site.ts
+./app/assets/.DS_Store
+./app/assets/scss/main.scss
+./app/assets/scss/.gitignore
+./app/pages/index.vue
+./app/pages/contact.vue
+./app/pages/services.vue
+./app/pages/blog/index.vue
+./app/pages/blog/[...slug].vue
+./app/pages/about.vue
+./.pnpm-store/v11/index.db
+./content.config.ts
+./.output/nitro.json
+./.output/public/contact/index.html
+./.output/public/favicon.ico
+./.output/public/index.html
+./.output/public/CNAME
+./.output/public/images/portrait_512x512_drip_art_3.webp
+./.output/public/images/logo - 256x256.png
+./.output/public/images/portrait_512x512_drip_art_3.png
+./.output/public/images/portrait_512x512_drip_art_2.png
+./.output/public/images/portrait_512x512_drip_art_1.png
+./.output/public/images/favicon.ico
+./.output/public/images/portrait-512x709.webp
+./.output/public/images/portrait_512x512_drip_art_5.png
+./.output/public/images/portrait_512x512_drip_art_4.png
+./.output/public/images/portrait_512x512_drip_art_6.png
+./.output/public/images/portrait_512x512_drip_art_7.png
+./.output/public/images/portrait-512x512.webp
+./.output/public/images/undraw_programming_re_kg9v.svg
+./.output/public/images/portrait_512x512_drip_art_2.webp
+./.output/public/images/portrait_512x512_drip_art_9.webp
+./.output/public/images/portrait_512x512_drip_art_5.webp
+./.output/public/images/portrait-256x256.webp
+./.output/public/images/logo_black_512x512.png
+./.output/public/images/logo_white_256x256.png
+./.output/public/images/logo.xcf
+./.output/public/images/portrait_512x512_drip_art_4.webp
+./.output/public/images/portrait_512x512_drip_art_8.webp
+./.output/public/images/logo_black_1024x1024.png
+./.output/public/images/portrait-512x709.jpeg
+./.output/public/images/portrait-512x512.jpeg
+./.output/public/images/logo.png
+./.output/public/images/portrait_512x512_drip_art_7.webp
+./.output/public/images/portrait_512x512_drip_art_6.webp
+./.output/public/images/logo_white.png
+./.output/public/images/logo - 512x512.png
+./.output/public/images/undraw_code_thinking_re_gka2.svg
+./.output/public/images/logo_white_512x512.png
+./.output/public/images/logo_white_32x32.png
+./.output/public/images/portrait_512x512_drip_art_1.webp
+./.output/public/images/portrait_512x512_drip_art_9.png
+./.output/public/images/portrait_512x512_drip_art_8.png
+./.output/public/images/logo - 128x128.png
+./.output/public/images/portrait-256x256.jpeg
+./.output/public/images/logo_black_256x256.png
+./.output/public/images/portrait.jpeg
+./.output/public/404.html
+./.output/public/about/index.html
+./.output/public/_headers
+./.output/public/blog/index.html
+./.output/public/200.html
+./.output/public/_nuxt/entry.QaoIl47T.css
+./.output/public/_nuxt/services.C9Fgnb_o.css
+./.output/public/_nuxt/LinkListComponent.BRYW5MSq.css
+./.output/public/_nuxt/Cxb3J1cf.js
+
+exec
+/bin/zsh -lc 'for f in .output/public/index.html .output/public/services/index.html .output/public/contact/index.html .output/public/about/index.html .output/public/blog/index.html; do echo "--- $f"; rg -o '"'<title>["'^<]*|<meta[''^>]+(?:description|og:|twitter:)[''^>]*|<link[''^>]+canonical[''^>]*|<script type="application/ld'"\\+json\">["'^<]*'"' \""'$f" | head -40; done' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+--- .output/public/index.html
+<title>Simon Jouan — Développeur web freelance &amp; IA
+<meta name="description" content="Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA."
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Simon Jouan","url":"https://dev.jouan.ovh","logo":"https://dev.jouan.ovh/images/logo.png","email":"simon@jouan.ovh","address":{"@type":"PostalAddress","addressLocality":"Valognes, France"}}
+<link rel="canonical" href="https://dev.jouan.ovh"
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Simon Jouan — Développeur web freelance","url":"https://dev.jouan.ovh","description":"Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils."}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Simon Jouan","jobTitle":"Développeur web freelance","url":"https://dev.jouan.ovh","image":"https://dev.jouan.ovh/images/portrait.jpeg","email":"simon@jouan.ovh","address":{"@type":"PostalAddress","addressLocality":"Valognes, France"}}
+<meta property="og:title" content="Simon Jouan — Développeur web freelance & IA"
+<meta property="og:description" content="Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA."
+<meta property="og:url" content="https://dev.jouan.ovh"
+<meta property="og:type" content="website"
+<meta property="og:image" content="https://dev.jouan.ovh/images/portrait.jpeg"
+<meta name="twitter:card" content="summary"
+<meta name="twitter:title" content="Simon Jouan — Développeur web freelance & IA"
+<meta name="twitter:description" content="Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA."
+<meta name="twitter:image" content="https://dev.jouan.ovh/images/portrait.jpeg"
+--- .output/public/services/index.html
+<title>Services — jouan.ovh
+<meta name="description" content="Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation."
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Simon Jouan","url":"https://dev.jouan.ovh","logo":"https://dev.jouan.ovh/images/logo.png","email":"simon@jouan.ovh","address":{"@type":"PostalAddress","addressLocality":"Valognes, France"}}
+<link rel="canonical" href="https://dev.jouan.ovh/services"
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Services — jouan.ovh","description":"Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.","url":"https://dev.jouan.ovh/services","mainEntity":{"@type":"ItemList","itemListElement":[{"@type":"Offer","position":1,"name":"WordPress sur-mesure","description":"Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.","price":"à partir de 1 500 €"},{"@type":"Offer","position":2,"name":"Applications web","description":"Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.","price":"sur devis"},{"@type":"Offer","position":3,"name":"IA & automatisation","description":"L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.","price":"sur devis"}]}}
+<meta property="og:title" content="Services — jouan.ovh"
+<meta property="og:description" content="Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation."
+<meta property="og:url" content="https://dev.jouan.ovh/services"
+<meta property="og:type" content="website"
+<meta property="og:image" content="https://dev.jouan.ovh/images/portrait.jpeg"
+<meta name="twitter:card" content="summary"
+<meta name="twitter:title" content="Services — jouan.ovh"
+<meta name="twitter:description" content="Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation."
+<meta name="twitter:image" content="https://dev.jouan.ovh/images/portrait.jpeg"
+--- .output/public/contact/index.html
+<title>Contact — jouan.ovh
+<meta name="description" content="Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h."
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Simon Jouan","url":"https://dev.jouan.ovh","logo":"https://dev.jouan.ovh/images/logo.png","email":"simon@jouan.ovh","address":{"@type":"PostalAddress","addressLocality":"Valognes, France"}}
+<link rel="canonical" href="https://dev.jouan.ovh/contact"
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"ContactPage","name":"Contact — jouan.ovh","description":"Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.","url":"https://dev.jouan.ovh/contact","mainEntity":{"@type":"Person","name":"Simon Jouan","email":"simon@jouan.ovh","address":{"@type":"PostalAddress","addressLocality":"Valognes, France"}}}
+<meta property="og:title" content="Contact — jouan.ovh"
+<meta property="og:description" content="Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h."
+<meta property="og:url" content="https://dev.jouan.ovh/contact"
+<meta property="og:type" content="website"
+<meta property="og:image" content="https://dev.jouan.ovh/images/portrait.jpeg"
+<meta name="twitter:card" content="summary"
+<meta name="twitter:title" content="Contact — jouan.ovh"
+<meta name="twitter:description" content="Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h."
+<meta name="twitter:image" content="https://dev.jouan.ovh/images/portrait.jpeg"
+--- .output/public/about/index.html
+<title>À propos — jouan.ovh
+<meta name="description" content="Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours."
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Simon Jouan","url":"https://dev.jouan.ovh","logo":"https://dev.jouan.ovh/images/logo.png","email":"simon@jouan.ovh","address":{"@type":"PostalAddress","addressLocality":"Valognes, France"}}
+<link rel="canonical" href="https://dev.jouan.ovh/about"
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfilePage","name":"À propos — jouan.ovh","url":"https://dev.jouan.ovh/about","mainEntity":{"@type":"Person","name":"Simon Jouan","jobTitle":"Développeur web freelance","url":"https://dev.jouan.ovh","image":"https://dev.jouan.ovh/images/portrait.jpeg"}}
+<meta property="og:title" content="À propos — jouan.ovh"
+<meta property="og:description" content="Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours."
+<meta property="og:url" content="https://dev.jouan.ovh/about"
+<meta property="og:type" content="profile"
+<meta property="og:image" content="https://dev.jouan.ovh/images/portrait.jpeg"
+<meta name="twitter:card" content="summary"
+<meta name="twitter:title" content="À propos — jouan.ovh"
+<meta name="twitter:description" content="Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours."
+<meta name="twitter:image" content="https://dev.jouan.ovh/images/portrait.jpeg"
+--- .output/public/blog/index.html
+<title>Blog — jouan.ovh
+<meta name="description" content="Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web."
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Simon Jouan","url":"https://dev.jouan.ovh","logo":"https://dev.jouan.ovh/images/logo.png","email":"simon@jouan.ovh","address":{"@type":"PostalAddress","addressLocality":"Valognes, France"}}
+<link rel="canonical" href="https://dev.jouan.ovh/blog"
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","name":"Notes de dev","description":"Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web.","url":"https://dev.jouan.ovh/blog","blogPost":[]}
+<meta property="og:title" content="Blog — jouan.ovh"
+<meta property="og:description" content="Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web."
+<meta property="og:url" content="https://dev.jouan.ovh/blog"
+<meta property="og:type" content="website"
+<meta name="twitter:card" content="summary"
+<meta name="twitter:title" content="Blog — jouan.ovh"
+<meta name="twitter:description" content="Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web."
+
+exec
+/bin/zsh -lc "nl -ba content.config.ts; rg -n \"interface.*Article|article\\.\" app/pages/blog/\\[...slug\\].vue app/pages/blog/index.vue" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     1	import { defineContentConfig, defineCollection, z } from "@nuxt/content";
+     2	
+     3	// @nuxt/content v3 — déclaration explicite des collections (remplace l'auto-scan v2).
+     4	// La collection blog reste vide tant qu'aucun article n'est ajouté sous content/blog/.
+     5	export default defineContentConfig({
+     6	  collections: {
+     7	    blog: defineCollection({
+     8	      type: "page",
+     9	      source: "blog/**",
+    10	      // type "page" fournit déjà title/description/path/body ; on type ici les champs
+    11	      // additionnels consommés par la liste du blog (tri par date, tags, temps de lecture).
+    12	      schema: z.object({
+    13	        // Date ISO (YYYY-MM-DD) : tri lexicographique = tri chronologique, formatée en
+    14	        // français à l'affichage. Sert au `.order("date", "DESC")`. Le `regex` fait
+    15	        // échouer le build sur un format dévié (plutôt qu'un « Invalid Date » à l'écran
+    16	        // et un tri faux).
+    17	        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date doit être au format ISO YYYY-MM-DD"),
+    18	        // Tags (technos / sujets) rendus en ZTag.
+    19	        tags: z.array(z.string()).default([]),
+    20	        // Temps de lecture affiché dans la méta (ex. "8 min").
+    21	        read: z.string().optional(),
+    22	        // Vignette d'article (facultative).
+    23	        image: z
+    24	          .object({
+    25	            src: z.string(),
+    26	            alt: z.string(),
+    27	          })
+    28	          .optional(),
+    29	      }),
+    30	    }),
+    31	  },
+    32	});
+app/pages/blog/[...slug].vue:119:  const url = `${siteUrl}${article.path}`;
+app/pages/blog/[...slug].vue:120:  const image = article.image ? `${siteUrl}${article.image.src}` : undefined;
+app/pages/blog/[...slug].vue:124:    headline: article.title,
+app/pages/blog/[...slug].vue:125:    description: article.description,
+app/pages/blog/[...slug].vue:126:    datePublished: article.date,
+app/pages/blog/[...slug].vue:129:    ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
+app/pages/blog/[...slug].vue:134:    title: `${article.title} — jouan.ovh`,
+app/pages/blog/[...slug].vue:135:    description: article.description,
+app/pages/blog/[...slug].vue:136:    path: article.path,
+app/pages/blog/[...slug].vue:137:    image: article.image?.src,
+app/pages/blog/index.vue:14:          <li v-for="article in articles" :key="article.path" class="blog__item">
+app/pages/blog/index.vue:15:            <ZCard :as="NuxtLink" :to="article.path" interactive class="post">
+app/pages/blog/index.vue:17:                v-if="article.image"
+app/pages/blog/index.vue:19:                :src="article.image.src"
+app/pages/blog/index.vue:20:                :alt="article.image.alt"
+app/pages/blog/index.vue:27:                <ul v-if="article.tags?.length" class="hero__tags post__tags">
+app/pages/blog/index.vue:28:                  <li v-for="tag in article.tags" :key="tag">
+app/pages/blog/index.vue:32:                <h2 class="post__title">{{ article.title }}</h2>
+app/pages/blog/index.vue:33:                <p class="post__desc">{{ article.description }}</p>
+app/pages/blog/index.vue:35:                  <time :datetime="article.date">{{ formatDate(article.date) }}</time>
+app/pages/blog/index.vue:37:                  <template v-if="article.read">
+app/pages/blog/index.vue:39:                    <span>{{ article.read }} de lecture</span>
+app/pages/blog/index.vue:117:    headline: article.title,
+app/pages/blog/index.vue:118:    description: article.description,
+app/pages/blog/index.vue:119:    datePublished: article.date,
+app/pages/blog/index.vue:120:    url: `${siteUrl}${article.path}`,
+app/pages/blog/index.vue:121:    ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
+app/pages/blog/index.vue:122:    ...(article.image ? { image: `${siteUrl}${article.image.src}` } : {}),
+app/pages/blog/index.vue:208:// .post__meta : primitive globale (base/_layout.scss), partagée avec la vue article.
+
+exec
+/bin/zsh -lc "nl -ba app/pages/blog/\\[...slug\\].vue | sed -n '55,90p'; git diff --check -- docs/implementation-artifacts/code-reviews/10-5/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    55	    </section>
+    56	  </main>
+    57	</template>
+    58	
+    59	<script setup lang="ts">
+    60	// Vue article du blog (story 6.2) — porté de Blog.jsx (fonction Article) : structure
+    61	// .article (760px), en-tête tags/titre/méta/héro, prose Ubuntu sans, blocs de code en
+    62	// palette terminale (Shiki désactivé, cf. nuxt.config), CTA de fin. Contenu via
+    63	// @nuxt/content v3 (queryCollection + ContentRenderer). Prerender-safe (useAsyncData).
+    64	import { NuxtLink } from "#components";
+    65	
+    66	const route = useRoute();
+    67	
+    68	// Normalise le chemin (retire le(s) slash(es) final/aux) pour éviter un faux 404
+    69	// sur une URL du type "/blog/mon-article/".
+    70	const path = computed(() => route.path.replace(/\/+$/, "") || "/");
+    71	
+    72	const { data: page, error } = await useAsyncData(
+    73	  // Clé reproductible côté SSR + refetch automatique lors d'une navigation client entre slugs.
+    74	  () => `blog-${path.value}`,
+    75	  () => queryCollection("blog").path(path.value).first(),
+    76	  { watch: [path] },
+    77	);
+    78	
+    79	// Erreur adaptée à l'état courant : 500 si la requête de contenu échoue (on ne masque
+    80	// pas une vraie erreur derrière un 404), 404 uniquement quand l'article n'existe pas.
+    81	const resolveContentError = () => {
+    82	  if (error.value) {
+    83	    return createError({ statusCode: 500, statusMessage: "Erreur lors du chargement de l'article" });
+    84	  }
+    85	  if (!page.value) {
+    86	    return createError({ statusCode: 404, statusMessage: "Article introuvable" });
+    87	  }
+    88	  return null;
+    89	};
+    90	
+
+2026-09-13T08:38:46.244223Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "rg --files public | rg '/logo\\.png"'$|portrait'"\\.jpeg"'$'"' || true; rg --files . | rg '("'^|/)public/images/(logo'"\\.png|portrait\\.jpeg)"'$'"' || true" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+public/images/portrait.jpeg
+public/images/logo.png
+./public/images/portrait.jpeg
+./public/images/logo.png
+
+exec
+/bin/zsh -lc 'rg -n "function useSeoMeta|const useSeoMeta|useSeoMeta" node_modules/.pnpm/@unhead* node_modules/.pnpm/nuxt* 2>/dev/null | head -40' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+2026-09-13T08:39:40.419913Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+codex
+[
+  {
+    "location": "app/composables/usePageSeo.ts:96-99",
+    "trigger_condition": "A page option provides an empty or non-string title or description.",
+    "guard_snippet": "if (typeof opts.title !== 'string' || !opts.title.trim() || typeof opts.description !== 'string' || !opts.description.trim()) return null;",
+    "potential_consequence": "Blank or missing metadata weakens search indexing and social previews."
+  },
+  {
+    "location": "app/composables/usePageSeo.ts:82-86",
+    "trigger_condition": "Image is protocol-relative, uppercase-scheme, unsupported, or malformed.",
+    "guard_snippet": "try { const u = new URL(opts.image, siteUrl); imageUrl = /^https?:$/.test(u.protocol) ? u.href : undefined; } catch { imageUrl = undefined; }",
+    "potential_consequence": "OG and Twitter tags can point to malformed or unusable image URLs."
+  }
+]
+tokens used
+98 041
+[
+  {
+    "location": "app/composables/usePageSeo.ts:96-99",
+    "trigger_condition": "A page option provides an empty or non-string title or description.",
+    "guard_snippet": "if (typeof opts.title !== 'string' || !opts.title.trim() || typeof opts.description !== 'string' || !opts.description.trim()) return null;",
+    "potential_consequence": "Blank or missing metadata weakens search indexing and social previews."
+  },
+  {
+    "location": "app/composables/usePageSeo.ts:82-86",
+    "trigger_condition": "Image is protocol-relative, uppercase-scheme, unsupported, or malformed.",
+    "guard_snippet": "try { const u = new URL(opts.image, siteUrl); imageUrl = /^https?:$/.test(u.protocol) ? u.href : undefined; } catch { imageUrl = undefined; }",
+    "potential_consequence": "OG and Twitter tags can point to malformed or unusable image URLs."
+  }
+]

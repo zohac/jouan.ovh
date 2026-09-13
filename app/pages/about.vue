@@ -133,29 +133,30 @@ const degrees = [
 const pageTitle = "À propos — jouan.ovh";
 const pageDescription =
   "Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours.";
-// URL de prod lue depuis runtimeConfig via useSiteUrl() (swappable staging/prod, sans
-// domaine en dur). Inchangée en staging → canonical/og restent sur le domaine staging.
-const siteUrl = useSiteUrl();
-const pageUrl = `${siteUrl}/about`;
-const pageImage = `${siteUrl}/images/portrait.jpeg`;
 
-useHead({
+const siteUrl = useSiteUrl();
+const aboutJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  name: pageTitle,
+  url: `${siteUrl}/about`,
+  mainEntity: {
+    "@type": "Person",
+    name: SITE.profile.name,
+    jobTitle: SITE.profile.role,
+    url: siteUrl,
+    image: `${siteUrl}/images/portrait.jpeg`,
+  },
+};
+
+usePageSeo({
   title: pageTitle,
-  link: [{ rel: "canonical", href: pageUrl }],
-  meta: [
-    { name: "description", content: pageDescription },
-    // Open Graph (partage Facebook/LinkedIn…).
-    { property: "og:type", content: "profile" },
-    { property: "og:title", content: pageTitle },
-    { property: "og:description", content: pageDescription },
-    { property: "og:url", content: pageUrl },
-    { property: "og:image", content: pageImage },
-    // Twitter Card.
-    { name: "twitter:card", content: "summary" },
-    { name: "twitter:title", content: pageTitle },
-    { name: "twitter:description", content: pageDescription },
-    { name: "twitter:image", content: pageImage },
-  ],
+  description: pageDescription,
+  path: "/about",
+  image: "/images/portrait.jpeg",
+  type: "profile",
+  twitterCard: "summary",
+  jsonLd: aboutJsonLd,
 });
 </script>
 

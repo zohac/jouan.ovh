@@ -180,6 +180,41 @@ const terminalRows = [
 // header). No-op tant qu'aucun terminal n'est disponible (prerender). La
 // restylisation du terminal lui-même relève d'Epic 8.
 const { open: openTerminal } = useTerminal();
+
+const siteUrl = useSiteUrl();
+const homeJsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Simon Jouan — Développeur web freelance",
+    url: siteUrl,
+    description: tagline,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: SITE.profile.name,
+    jobTitle: SITE.profile.role,
+    url: siteUrl,
+    image: `${siteUrl}/images/portrait.jpeg`,
+    email: SITE.profile.email,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: SITE.profile.city,
+      addressCountry: "FR",
+    },
+  },
+];
+
+usePageSeo({
+  title: "Simon Jouan — Développeur web freelance & IA",
+  description:
+    "Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA.",
+  path: "/",
+  image: "/images/portrait.jpeg",
+  type: "website",
+  jsonLd: homeJsonLd,
+});
 </script>
 
 <style lang="scss" scoped>

@@ -250,15 +250,35 @@ async function onSubmit(): Promise<void> {
   }
 }
 
-useHead({
-  title: "Contact — jouan.ovh",
-  meta: [
-    {
-      name: "description",
-      content:
-        "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+const siteUrl = useSiteUrl();
+
+const contactJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  name: "Contact — jouan.ovh",
+  description:
+    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+  url: `${siteUrl}/contact`,
+  mainEntity: {
+    "@type": "Person",
+    name: SITE.profile.name,
+    email: SITE.profile.email,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: SITE.profile.city,
+      addressCountry: "FR",
     },
-  ],
+  },
+};
+
+usePageSeo({
+  title: "Contact — jouan.ovh",
+  description:
+    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+  path: "/contact",
+  image: "/images/portrait.jpeg",
+  type: "website",
+  jsonLd: contactJsonLd,
 });
 </script>
 

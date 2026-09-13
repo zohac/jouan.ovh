@@ -86,6 +86,7 @@
 // v3 (queryCollection). Dark-first, tokens uniquement, prerender-safe (requête résolue
 // au build par useAsyncData). La vue article (/blog/[...slug]) est la story 6.2.
 import { NuxtLink } from "#components";
+import { SITE } from "~/data/site";
 
 // Articles triés par date décroissante. La requête de contenu est résolue côté
 // build/SSR → rendu prerender-safe. `error` distingue un échec de chargement d'un
@@ -117,28 +118,36 @@ const blogJsonLd = {
     headline: article.title,
     description: article.description,
     datePublished: article.date,
+    author: {
+      "@type": "Person",
+      name: SITE.profile.name,
+      url: siteUrl,
+    },
+    publisher: {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: SITE.profile.name,
+      url: siteUrl,
+      logo: `${siteUrl}/images/logo.png`,
+    },
     url: `${siteUrl}${article.path}`,
     ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
-    ...(article.image ? { image: `${siteUrl}${article.image.src}` } : {}),
+    ...(article.image
+      ? {
+          image: article.image.src.startsWith("/")
+            ? `${siteUrl}${article.image.src}`
+            : `${siteUrl}/${article.image.src}`,
+        }
+      : {}),
   })),
 };
 
-useHead({
+usePageSeo({
   title: pageTitle,
-  link: [{ rel: "canonical", href: pageUrl }],
-  meta: [
-    { name: "description", content: pageDescription },
-    // Open Graph (partage Facebook/LinkedIn…).
-    { property: "og:type", content: "website" },
-    { property: "og:title", content: pageTitle },
-    { property: "og:description", content: pageDescription },
-    { property: "og:url", content: pageUrl },
-    // Twitter Card.
-    { name: "twitter:card", content: "summary" },
-    { name: "twitter:title", content: pageTitle },
-    { name: "twitter:description", content: pageDescription },
-  ],
-  script: [jsonLdScript(blogJsonLd)],
+  description: pageDescription,
+  path: "/blog",
+  type: "website",
+  jsonLd: blogJsonLd,
 });
 </script>
 
