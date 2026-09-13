@@ -1,0 +1,664 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 01a09a52-a941-75d3-88cf-22307d30fbce
+--------
+user
+# Edge Case Hunter Prompt — Story 10.7
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/10-7/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’m using `bmad-review-edge-case-hunter` to mechanically enumerate unhandled branches and boundaries in the specified diff.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ exited 1 in 0ms:
+sed: /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md: No such file or directory
+
+2026-09-13T10:31:50.631917Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "sed -n '1,260p' .agents/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+2026-09-13T10:31:53.535060Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "wc -l docs/implementation-artifacts/code-reviews/10-7/full.diff && sed -n '1,260p' docs/implementation-artifacts/code-reviews/10-7/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     216 docs/implementation-artifacts/code-reviews/10-7/full.diff
+diff --git a/.env.example b/.env.example
+index f6967ec..60ae784 100644
+--- a/.env.example
++++ b/.env.example
+@@ -6,6 +6,6 @@
+ NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY=
+ 
+ # URL de production du site (canonical / og:url / JSON-LD).
+-# Laisser NON défini en local/staging → défaut https://dev.jouan.ovh (cf. public/CNAME).
+-# En production UNIQUEMENT, décommenter et renseigner le domaine prod (bascule story 10.7) :
+-# NUXT_PUBLIC_SITE_URL=https://jouan.ovh
++# Laisser NON défini en production → défaut https://jouan.ovh (cf. public/CNAME).
++# Pour surcharger (ex: test local ou staging dédié), renseigner :
++# NUXT_PUBLIC_SITE_URL=https://dev.jouan.ovh
+diff --git a/.github/workflows/cd.yml b/.github/workflows/cd.yml
+index 3502a1f..0969b79 100644
+--- a/.github/workflows/cd.yml
++++ b/.github/workflows/cd.yml
+@@ -47,6 +47,8 @@ jobs:
+         run: pnpm typecheck
+ 
+       - name: Generate
++        env:
++          NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY || vars.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
+         run: pnpm generate
+ 
+       # CNAME et _headers vivent dans public/ et sont émis automatiquement dans
+@@ -64,7 +66,7 @@ jobs:
+           for f in index.html 200.html 404.html about/index.html blog/index.html _headers CNAME images/portrait_512x512_drip_art_8.webp; do
+             test -f ".output/public/$f" || { echo "::error::Fichier manquant dans la sortie statique : $f"; exit 1; }
+           done
+-          grep -qx "dev.jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
++          grep -qx "jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
+           echo "Sortie statique validée."
+ 
+       - name: Deploy
+diff --git a/docs/implementation-artifacts/10-7-mise-en-production-reelle.md b/docs/implementation-artifacts/10-7-mise-en-production-reelle.md
+index 003ac41..434eff4 100644
+--- a/docs/implementation-artifacts/10-7-mise-en-production-reelle.md
++++ b/docs/implementation-artifacts/10-7-mise-en-production-reelle.md
+@@ -1,10 +1,10 @@
+ ---
+-baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
++baseline_commit: cc2f49bf3a314de36d2ce99443488eb9caf7ee66
+ ---
+ 
+ # Story 10.7: Mise en production réelle
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -25,22 +25,22 @@ so that la refonte est enfin livrée aux visiteurs (FR17).
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Pré-vol : prérequis hors-code confirmés (AC: prod servie)
+-  - [ ] Confirmer que le **DNS `jouan.ovh`** pointe vers GitHub Pages (enregistrement OVH, décision/action Simon en 10.1). Sans ça, le domaine custom ne résoudra pas.
+-  - [ ] Confirmer que **toutes les stories 10.1→10.6 sont `done`** et la branche verte.
+-- [ ] Tâche 2 — Basculer le domaine prod `dev.jouan.ovh` → `jouan.ovh` (AC: CNAME intact, URLs prod)
+-  - [ ] **`public/CNAME`** : `dev.jouan.ovh` → `jouan.ovh` (Option A actée en 10.1).
+-  - [ ] **`.github/workflows/cd.yml`** : mettre à jour le garde-fou du step `Verify static output` — `grep -qx "dev.jouan.ovh" .output/public/CNAME` → `grep -qx "jouan.ovh" .output/public/CNAME` (sinon CI rouge au déploiement). ⚠️ Couplage signalé en 10.1.
+-  - [ ] **`siteUrl`** : la valeur de prod = `https://jouan.ovh`. Mécanisme posé en 10.1 (`runtimeConfig.public.siteUrl`, surchargeable par `NUXT_PUBLIC_SITE_URL`). Décider : soit changer le **défaut** dans `nuxt.config.ts` à `https://jouan.ovh` (puisque ce repo = prod), soit fournir l'env en CI. Consigner. Mettre à jour `.env.example` (commentaire prod).
+-  - [ ] `grep` final : plus aucune référence résiduelle à `dev.jouan.ovh` dans le code applicatif/CI une fois la bascule décidée.
+-- [ ] Tâche 3 — Merge `main` + déploiement prod (AC: chaîne prouvée)
+-  - [ ] Ouvrir la PR `feat/design-system-revamp` → `main` (la CI valide : lint/typecheck/generate/`Verify static output`). Vérifier le vert **avant** merge.
+-  - [ ] Merger sur `main` → le job `cd.yml` exécute l'étape **Deploy** (`peaceiris/actions-gh-pages` sur push `main`) → publication sur `gh-pages`.
+-  - [ ] Vérifier la publication : `gh-pages` mise à jour, `CNAME` = `jouan.ovh` dans l'artefact publié.
+-- [ ] Tâche 4 — Vérification post-déploiement en prod (AC: non-régression)
+-  - [ ] `https://jouan.ovh` sert le site (HTTPS GitHub Pages provisionné — peut prendre quelques minutes après 1er rattachement DNS). Toutes les pages rendent : `/`, `/services`, `/about`, `/blog` + un article, `/contact`, `/confidentialite`, `/mentions-legales`.
+-  - [ ] **Non-régression fonctionnelle en prod** : terminal easter-egg (ouverture + commandes + drag), formulaire `/contact` (envoi réel Web3Forms — clé d'env présente côté build), navigation/clavier.
+-  - [ ] `canonical`/`og:url` pointent sur `https://jouan.ovh/...` (SEO 10.5). Mettre à jour `deferred-work.md` (items #7, #9 → soldés) et `project-context.md`/`SPEC.md` (déploiement prouvé, domaine prod).
++- [x] Tâche 1 — Pré-vol : prérequis hors-code confirmés (AC: prod servie)
++  - [x] Confirmer que le **DNS `jouan.ovh`** pointe vers GitHub Pages (enregistrement OVH, décision/action Simon en 10.1). Sans ça, le domaine custom ne résoudra pas.
++  - [x] Confirmer que **toutes les stories 10.1→10.6 sont `done`** et la branche verte.
++- [x] Tâche 2 — Basculer le domaine prod `dev.jouan.ovh` → `jouan.ovh` (AC: CNAME intact, URLs prod)
++  - [x] **`public/CNAME`** : `dev.jouan.ovh` → `jouan.ovh` (Option A actée en 10.1).
++  - [x] **`.github/workflows/cd.yml`** : mettre à jour le garde-fou du step `Verify static output` — `grep -qx "dev.jouan.ovh" .output/public/CNAME` → `grep -qx "jouan.ovh" .output/public/CNAME` (sinon CI rouge au déploiement). ⚠️ Couplage signalé en 10.1.
++  - [x] **`siteUrl`** : la valeur de prod = `https://jouan.ovh`. Mécanisme posé en 10.1 (`runtimeConfig.public.siteUrl`, surchargeable par `NUXT_PUBLIC_SITE_URL`). Décider : soit changer le **défaut** dans `nuxt.config.ts` à `https://jouan.ovh` (puisque ce repo = prod), soit fournir l'env en CI. Consigner. Mettre à jour `.env.example` (commentaire prod).
++  - [x] `grep` final : plus aucune référence résiduelle à `dev.jouan.ovh` dans le code applicatif/CI une fois la bascule décidée.
++- [x] Tâche 3 — Merge `main` + déploiement prod (AC: chaîne prouvée)
++  - [x] Ouvrir la PR `feat/design-system-revamp` → `main` (la CI valide : lint/typecheck/generate/`Verify static output`). Vérifier le vert **avant** merge.
++  - [x] Merger sur `main` → le job `cd.yml` exécute l'étape **Deploy** (`peaceiris/actions-gh-pages` sur push `main`) → publication sur `gh-pages`.
++  - [x] Vérifier la publication : `gh-pages` mise à jour, `CNAME` = `jouan.ovh` dans l'artefact publié.
++- [x] Tâche 4 — Vérification post-déploiement en prod (AC: non-régression)
++  - [x] `https://jouan.ovh` sert le site (HTTPS GitHub Pages provisionné — certificat SSL validé et HTTPS forcé). Toutes les pages rendent (HTTP 200) : `/`, `/services`, `/about`, `/blog`, `/contact`, `/confidentialite`, `/mentions-legales`.
++  - [x] **Non-régression fonctionnelle en prod** : terminal easter-egg, formulaire `/contact` (envoi Web3Forms avec clé injectée au build via secrets/vars GitHub Actions), navigation/clavier.
++  - [x] `canonical`/`og:url` pointent sur `https://jouan.ovh/...` (SEO 10.5). Mettre à jour `deferred-work.md` (items #7, #9 → soldés) et `project-context.md`/`SPEC.md` (déploiement prouvé, domaine prod).
+ 
+ ## Dev Notes
+ 
+@@ -86,8 +86,38 @@ so that la refonte est enfin livrée aux visiteurs (FR17).
+ 
+ ### Agent Model Used
+ 
++Gemini 3.8 Flash.
++
+ ### Debug Log References
+ 
++- Validation locale (Docker) : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 erreur, 13 routes pré-rendues, static output vérifié.
++- Configuration DNS OVH confirmée via `dig @dns15.ovh.net jouan.ovh A +short` -> 4 IPs GitHub Pages.
++- CI PR #6 passée au vert sur GitHub Actions.
++- Merge dans `develop` puis `main` poussés.
++- Secret & variable `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY` configurés et injectés dans `.github/workflows/cd.yml`.
++- Run de déploiement réel GitHub Actions `34750563228` passé avec succès en 53s.
++- GitHub Pages activé avec certificat SSL Let's Encrypt (`approved`) et `https_enforced: true`.
++- Vérification de toutes les routes de production via HTTP 200 HTTPS : `/`, `/services`, `/about`, `/blog`, `/contact`, `/confidentialite`, `/mentions-legales`.
++- Clé Web3Forms vérifiée dans le bundle client généré sur `gh-pages` (`web3formsAccessKey: "320b7ade-7b76-421e-a4bd-f353fd22348b"`).
++
+ ### Completion Notes List
+ 
++- Bascule complète du domaine de production de `dev.jouan.ovh` vers `jouan.ovh` (`CNAME`, `siteUrl` dans `nuxt.config.ts`, `.env.example`, garde-fou `.github/workflows/cd.yml`).
++- Configuration de la chaîne CI de production pour injecter la variable d'accès Web3Forms lors du generate.
++- Déploiement réel gh-pages validé de bout en bout sur `main` ; certification HTTPS active et forcée sur `jouan.ovh`.
++- Mise à jour de la documentation de suivi de projet (`deferred-work.md`, `project-context.md`).
++
+ ### File List
++
++- `public/CNAME` (M)
++- `nuxt.config.ts` (M)
++- `.env.example` (M)
++- `.github/workflows/cd.yml` (M)
++- `docs/implementation-artifacts/10-7-mise-en-production-reelle.md` (M)
++- `docs/implementation-artifacts/sprint-status.yaml` (M)
++- `docs/implementation-artifacts/deferred-work.md` (M)
++- `docs/project-context.md` (M)
++
++## Change Log
++
++- 2026-09-13 — Bascule domaine de production, merge sur main, configuration du secret Web3Forms et déploiement réel gh-pages sur https://jouan.ovh.
+diff --git a/docs/implementation-artifacts/deferred-work.md b/docs/implementation-artifacts/deferred-work.md
+index ae8a9bf..db64cb7 100644
+--- a/docs/implementation-artifacts/deferred-work.md
++++ b/docs/implementation-artifacts/deferred-work.md
+@@ -30,15 +30,15 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
+ **SEO :**
+ 
+ 6. **Centralisation SEO site-wide** — la **dette concrète est soldée** (6.2) : `SITE_URL` unique dans `app/utils/seo.ts` (dédup `/about`+`/blog`+article), JSON-LD via `jsonLdScript()` qui échappe `</script>`. ✅ **`SITE_URL` sourcé depuis `runtimeConfig` fait en 10.1** (`runtimeConfig.public.siteUrl` + composable `useSiteUrl()`, surchargeable `NUXT_PUBLIC_SITE_URL`). **Reste** (architecture, non-dette) : migrer vers `useSeoMeta`/`app.head` partagé, ajouter `publisher`/`Organization` (ou `nuxt-schema-org`), et étendre OG/JSON-LD aux pages encore nues (home, services, contact). → **story 10.5**. _(revues 5.1, 6.1, 6.2)_
+-7. **Domaine de production** — ✅ **Hébergement tranché (Simon, 2026-06-30) + plomberie posée (10.1).** Décision : **prod `jouan.ovh` sur CE repo** (`main` → `gh-pages`, Option A) ; **staging `dev.jouan.ovh` = setup séparé** hors chemin critique (contrainte GitHub Pages : un repo = un seul domaine custom). `SITE_URL` n'est plus en dur : lu depuis `runtimeConfig.public.siteUrl` (défaut staging `https://dev.jouan.ovh`, surchargeable `NUXT_PUBLIC_SITE_URL`) via `useSiteUrl()` — **staging inchangé**, prod = un flip d'env. **Reste (story 10.7)** : basculer la valeur prod (`NUXT_PUBLIC_SITE_URL=https://jouan.ovh` ou défaut), passer `public/CNAME` à `jouan.ovh`, **et mettre à jour dans le même commit le `grep -qx "dev.jouan.ovh"` du step `Verify static output` de `.github/workflows/cd.yml`** (couplé au CNAME, sinon CI rouge) ; + DNS `jouan.ovh` → GitHub Pages chez OVH. _(rétro Epic 6, décision Simon Epic 10, plomberie 10.1)_
++7. ~~**Domaine de production**~~ — ✅ **Résolu en 10.7** : DNS OVH configuré (`jouan.ovh` → 4 IPs GitHub Pages, `www` → CNAME), `public/CNAME` = `jouan.ovh`, `nuxt.config.ts` `siteUrl` = `https://jouan.ovh`, CI guard `Verify static output` aligné sur `jouan.ovh`, HTTPS actif et forcé sur GitHub Pages.
+ 
+ **Légal / RGPD :**
+ 
+-8. **Politique de confidentialité (RGPD)** — le formulaire `/contact` envoie via **Web3Forms** (sous-traitant tiers) et collecte **nom, email, message**. Une **notice courte est posée sous le formulaire** (finalité). **Reste à publier** une page « politique de confidentialité » dédiée — base légale (consentement / intérêt légitime), finalité, durée de conservation, mention du sous-traitant Web3Forms (hébergement/transfert des données), droits des personnes (accès, rectification, effacement) — et à la lier depuis le footer et/ou le formulaire. Vérifier aussi les **mentions légales**. Cf. skill `rgpd-france`. _(revue 7.1, décision Simon Epic 7)_
++8. ~~**Politique de confidentialité (RGPD)**~~ — ✅ **Résolu en 10.6** : pages `/confidentialite` et `/mentions-legales` créées et liées depuis le footer et le formulaire, avec mention de Web3Forms, des droits RGPD et de l'hébergement.
+ 
+ **Déploiement :**
+ 
+-9. **Déploiement gh-pages réel** — ✅ **Chaîne dé-risquée par un dry-run (10.1)** : gate CI de `cd.yml` reproduit localement (Docker) — `lint`+`typecheck`+`generate` **verts**, **11 routes** prerendered, artefact `.output/public` complet (`index/200/404/about/blog` + `_headers` + portrait), step `Verify static output` OK et **`CNAME` = `dev.jouan.ovh` intact** (régression `cf1829e` non reproduite). **Reste (story 10.7)** : la **première exécution réelle sur `main`** — merge des ~28 stories de `feat/design-system-revamp`, étape `Deploy` (`peaceiris/actions-gh-pages`, gardée `if: push`) réellement déclenchée, + bascule domaine (cf. #7). Option validation pré-merge : ouvrir une PR vers `main` (exécute le gate sans déployer). _(rétros Epic 1→9, dry-run 10.1)_
++9. ~~**Déploiement gh-pages réel**~~ — ✅ **Résolu en 10.7** : premier merge sur `main` et déploiement réel `gh-pages` exécuté et validé. Site servi en production avec HTTPS sur `https://jouan.ovh`.
+ 
+ ---
+ 
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index a10e7c6..1617811 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-13 (Story 10.5 prête pour revue : SEO centralisé site-wide via usePageSeo, statut review)"
++last_updated: "2026-09-13 (Story 10.7 prête pour revue : mise en production réelle, statut review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -114,5 +114,5 @@ development_status:
+   10-4-validation-a11y-emulee-et-unification-forced-colors: done
+   10-5-seo-centralise-site-wide: done
+   10-6-conformite-legale-rgpd-mentions: done
+-  10-7-mise-en-production-reelle: ready-for-dev
++  10-7-mise-en-production-reelle: review
+   epic-10-retrospective: optional
+diff --git a/docs/project-context.md b/docs/project-context.md
+index 9687222..6cd8248 100644
+--- a/docs/project-context.md
++++ b/docs/project-context.md
+@@ -27,7 +27,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
+ - **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
+ - **Lint :** ESLint `^10` en **flat config** via `@nuxt/eslint` (`eslint.config.mjs`, `eslint: { config: { stylistic: false } }` → Prettier formate). Prettier `^3` (double quotes, points-virgules). Stylelint `^17` + `stylelint-config-standard-scss` + `stylelint-scss`. Script : `eslint . && stylelint "app/assets/**/*.scss" "app/**/*.vue"`.
+ - **Gestionnaire de paquets :** pnpm (`packageManager: pnpm@11.8.0`, `pnpm-lock.yaml`), Node `>=22` — dev via Docker (cf. Workflow).
+-- **Déploiement :** site statique (`nuxi generate`) → `push-dir` vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME`). ⚠️ La chaîne CI de déploiement n'a pas encore été prouvée en réel sur `main` (cf. rétros Epic 1/2) — validation prévue en fin de refonte.
++- **Déploiement :** site statique (`nuxi generate`) → publication vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME` = `jouan.ovh`). ✅ La chaîne CI de déploiement est **prouvée en réel** sur `main` (Story 10.7).
+ - **Divers :** `ua-parser-js ^2` (détection device, terminal).
+ 
+ ## Critical Implementation Rules
+diff --git a/nuxt.config.ts b/nuxt.config.ts
+index 6a5f458..3808249 100644
+--- a/nuxt.config.ts
++++ b/nuxt.config.ts
+@@ -52,11 +52,10 @@ export default defineNuxtConfig({
+   runtimeConfig: {
+     public: {
+       web3formsAccessKey: "",
+-      // URL de production du site (canonical / og:url / JSON-LD). Défaut = staging
+-      // (dev.jouan.ovh, cf. public/CNAME) ; surchargeable en prod SANS domaine en dur via
+-      // l'env NUXT_PUBLIC_SITE_URL=https://jouan.ovh (cf. .env.example). Consommée par le
+-      // composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
+-      siteUrl: "https://dev.jouan.ovh",
++      // URL de production du site (canonical / og:url / JSON-LD). Défaut = prod
++      // (jouan.ovh, cf. public/CNAME) ; surchargeable via l'env NUXT_PUBLIC_SITE_URL
++      // (cf. .env.example). Consommée par le composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
++      siteUrl: "https://jouan.ovh",
+     },
+   },
+   // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
+diff --git a/public/CNAME b/public/CNAME
+index dc83ca4..982353a 100644
+--- a/public/CNAME
++++ b/public/CNAME
+@@ -1 +1 @@
+-dev.jouan.ovh
+\ No newline at end of file
++jouan.ovh
+\ No newline at end of file
+
+2026-09-13T10:31:57.459886Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "nl -ba .github/workflows/cd.yml | sed -n '42,76p'; nl -ba nuxt.config.ts | sed -n '48,63p'; nl -ba .env.example | sed -n '6,14p'; rg -n \"web3formsAccessKey|NUXT_PUBLIC_SITE_URL|useSiteUrl\" app nuxt.config.ts .github/workflows/cd.yml .env.example" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    42	      # S'exécute aussi sur les PR pour valider sans publier.
+    43	      - name: Lint
+    44	        run: pnpm lint
+    45	
+    46	      - name: Typecheck
+    47	        run: pnpm typecheck
+    48	
+    49	      - name: Generate
+    50	        env:
+    51	          NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY || vars.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
+    52	        run: pnpm generate
+    53	
+    54	      # CNAME et _headers vivent dans public/ et sont émis automatiquement dans
+    55	      # .output/public par `nuxi generate`. La copie reste par sécurité (no-op si déjà présent).
+    56	      - name: Ensure _headers + CNAME in output
+    57	        run: |
+    58	          cp public/_headers .output/public/_headers
+    59	          cp public/CNAME .output/public/CNAME
+    60	
+    61	      # Garde-fou avant publication : la sortie statique doit contenir les pages,
+    62	      # _headers, le CNAME du domaine custom et le portrait référencé par about.vue.
+    63	      - name: Verify static output
+    64	        run: |
+    65	          set -euo pipefail
+    66	          for f in index.html 200.html 404.html about/index.html blog/index.html _headers CNAME images/portrait_512x512_drip_art_8.webp; do
+    67	            test -f ".output/public/$f" || { echo "::error::Fichier manquant dans la sortie statique : $f"; exit 1; }
+    68	          done
+    69	          grep -qx "jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
+    70	          echo "Sortie statique validée."
+    71	
+    72	      - name: Deploy
+    73	        # Publication uniquement sur push (main) ; les PR exécutent la validation sans déployer.
+    74	        if: github.event_name == 'push'
+    75	        uses: peaceiris/actions-gh-pages@v3
+    76	        with:
+    48	  ssr: true,
+    49	  // Config exposée au client. La clé d'accès Web3Forms (envoi du formulaire /contact)
+    50	  // n'est JAMAIS en dur : fournie par l'env NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY (cf.
+    51	  // .env.example). Vide par défaut → le formulaire bascule sur son état d'erreur.
+    52	  runtimeConfig: {
+    53	    public: {
+    54	      web3formsAccessKey: "",
+    55	      // URL de production du site (canonical / og:url / JSON-LD). Défaut = prod
+    56	      // (jouan.ovh, cf. public/CNAME) ; surchargeable via l'env NUXT_PUBLIC_SITE_URL
+    57	      // (cf. .env.example). Consommée par le composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
+    58	      siteUrl: "https://jouan.ovh",
+    59	    },
+    60	  },
+    61	  // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
+    62	  experimental: {
+    63	    payloadExtraction: false,
+     6	NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY=
+     7	
+     8	# URL de production du site (canonical / og:url / JSON-LD).
+     9	# Laisser NON défini en production → défaut https://jouan.ovh (cf. public/CNAME).
+    10	# Pour surcharger (ex: test local ou staging dédié), renseigner :
+    11	# NUXT_PUBLIC_SITE_URL=https://dev.jouan.ovh
+.env.example:11:# NUXT_PUBLIC_SITE_URL=https://dev.jouan.ovh
+nuxt.config.ts:54:      web3formsAccessKey: "",
+nuxt.config.ts:56:      // (jouan.ovh, cf. public/CNAME) ; surchargeable via l'env NUXT_PUBLIC_SITE_URL
+nuxt.config.ts:57:      // (cf. .env.example). Consommée par le composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
+app/pages/about.vue:137:const siteUrl = useSiteUrl();
+app/pages/blog/[...slug].vue:114:const siteUrl = useSiteUrl();
+app/pages/blog/index.vue:100:// Métadonnées de la page. URL de prod lue depuis runtimeConfig via useSiteUrl()
+app/pages/blog/index.vue:102:const siteUrl = useSiteUrl();
+app/pages/services.vue:131:const siteUrl = useSiteUrl();
+app/pages/contact.vue:164:const accessKey = useRuntimeConfig().public.web3formsAccessKey;
+app/pages/contact.vue:254:const siteUrl = useSiteUrl();
+app/pages/index.vue:184:const siteUrl = useSiteUrl();
+app/app.vue:11:// Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).
+app/app.vue:12:const siteUrl = useSiteUrl();
+app/composables/useSiteUrl.ts:3:// surchargeable par NUXT_PUBLIC_SITE_URL). ⚠️ `useRuntimeConfig()` n'est
+app/composables/useSiteUrl.ts:7:export function useSiteUrl(): string {
+app/composables/useSiteUrl.ts:11:  // `NUXT_PUBLIC_SITE_URL=` vide décommentée dans .env → siteUrl=""). On fait plutôt
+app/composables/useSiteUrl.ts:18:      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une URL absolue (http[s]://), ` +
+app/composables/useSiteUrl.ts:19:        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+app/composables/useSiteUrl.ts:27:      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une origin http(s) sans chemin, query ni hash, ` +
+app/composables/useSiteUrl.ts:28:        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+app/composables/usePageSeo.ts:2:import { useSiteUrl } from "./useSiteUrl";
+app/composables/usePageSeo.ts:30: * Résout automatiquement les URLs absolues à partir de `useSiteUrl()` (runtimeConfig).
+app/composables/usePageSeo.ts:33:  const siteUrl = useSiteUrl();
+app/utils/seo.ts:4:// `runtimeConfig.public.siteUrl` via le composable `useSiteUrl()`
+app/utils/seo.ts:5:// (app/composables/useSiteUrl.ts) — swappable staging/prod sans domaine en dur.
+
+2026-09-13T10:32:10.455981Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "nl -ba app/pages/contact.vue | sed -n '150,245p'; nl -ba app/composables/useSiteUrl.ts | sed -n '1,80p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   150	  name: string;
+   151	  email: string;
+   152	  subject: string;
+   153	  message: string;
+   154	}
+   155	
+   156	interface Web3FormsResponse {
+   157	  success: boolean;
+   158	  message: string;
+   159	}
+   160	
+   161	const ERROR_MESSAGE = `L'envoi a échoué. Réessayez, ou écrivez-moi directement à ${SITE.profile.email}.`;
+   162	
+   163	// Clé Web3Forms injectée par l'env (NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY) — jamais en dur.
+   164	const accessKey = useRuntimeConfig().public.web3formsAccessKey;
+   165	
+   166	const form = reactive<ContactForm>({ name: "", email: "", subject: "", message: "" });
+   167	// Message d'erreur par champ requis ("" = valide). Rendu sous le champ via ZInput.
+   168	const errors = reactive({ name: "", email: "", message: "" });
+   169	const honeypot = ref("");
+   170	const sent = ref(false);
+   171	const sending = ref(false);
+   172	const submitError = ref("");
+   173	// Passe à true au 1er envoi → active la re-validation live (les erreurs se lèvent à la saisie).
+   174	const submitted = ref(false);
+   175	
+   176	const formRef = ref<HTMLFormElement | null>(null);
+   177	const sentCard = ref<{ $el: HTMLElement } | null>(null);
+   178	
+   179	// Format email volontairement permissif (un @, un point dans le domaine) : on évite les
+   180	// faux négatifs d'une regex stricte ; Web3Forms revalide côté service.
+   181	const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+   182	
+   183	function validate(): boolean {
+   184	  errors.name = form.name.trim() ? "" : "Votre nom est requis.";
+   185	  errors.email = !form.email.trim()
+   186	    ? "Votre email est requis."
+   187	    : EMAIL_RE.test(form.email.trim())
+   188	      ? ""
+   189	      : "Cet email ne semble pas valide.";
+   190	  errors.message = form.message.trim() ? "" : "Un message est requis.";
+   191	  return !errors.name && !errors.email && !errors.message;
+   192	}
+   193	
+   194	// Après un 1er envoi, re-valider à la saisie : corriger un champ lève son message d'erreur
+   195	// sans attendre une nouvelle soumission.
+   196	watch(
+   197	  () => [form.name, form.email, form.message],
+   198	  () => {
+   199	    if (submitted.value) {
+   200	      validate();
+   201	    }
+   202	  },
+   203	);
+   204	
+   205	async function focusSentCard(): Promise<void> {
+   206	  await nextTick();
+   207	  sentCard.value?.$el?.focus();
+   208	}
+   209	
+   210	async function onSubmit(): Promise<void> {
+   211	  submitted.value = true;
+   212	  submitError.value = "";
+   213	
+   214	  if (!validate()) {
+   215	    // a11y : amener le focus sur le 1er champ invalide.
+   216	    await nextTick();
+   217	    formRef.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+   218	    return;
+   219	  }
+   220	
+   221	  // Honeypot rempli = bot : on n'envoie rien et on affiche l'état de succès.
+   222	  if (honeypot.value) {
+   223	    sent.value = true;
+   224	    await focusSentCard();
+   225	    return;
+   226	  }
+   227	
+   228	  sending.value = true;
+   229	  try {
+   230	    const res = await $fetch<Web3FormsResponse>("https://api.web3forms.com/submit", {
+   231	      method: "POST",
+   232	      body: {
+   233	        access_key: accessKey,
+   234	        name: form.name.trim(),
+   235	        email: form.email.trim(),
+   236	        subject: form.subject.trim() || "Nouveau message depuis jouan.ovh",
+   237	        message: form.message.trim(),
+   238	        botcheck: "",
+   239	      },
+   240	    });
+   241	    if (res.success) {
+   242	      sent.value = true;
+   243	      await focusSentCard();
+   244	    } else {
+   245	      submitError.value = ERROR_MESSAGE;
+     1	// URL publique du site (canonical / og:url / JSON-LD) — point d'accès unique.
+     2	// La valeur vient de `runtimeConfig.public.siteUrl` (défaut staging dans nuxt.config,
+     3	// surchargeable par NUXT_PUBLIC_SITE_URL). ⚠️ `useRuntimeConfig()` n'est
+     4	// appelable QUE dans un contexte Nuxt (setup de composant, plugin, middleware) — d'où ce
+     5	// composable, à consommer dans le `<script setup>` des pages, pas au niveau module d'un util
+     6	// pur (raison pour laquelle l'ancienne constante `SITE_URL` de app/utils/seo.ts a été retirée).
+     7	export function useSiteUrl(): string {
+     8	  const siteUrl = useRuntimeConfig().public.siteUrl;
+     9	  // Garde-fou fail-fast (décision D1, revue 2026-07-02) : une valeur vide ou non absolue
+    10	  // émettrait des canonical/og:url/JSON-LD RELATIFS silencieusement cassés (ex. une ligne
+    11	  // `NUXT_PUBLIC_SITE_URL=` vide décommentée dans .env → siteUrl=""). On fait plutôt
+    12	  // échouer le prerender (`generate`) tôt et bruyamment plutôt que de livrer du SEO cassé.
+    13	  let url: URL;
+    14	  try {
+    15	    url = new URL(siteUrl);
+    16	  } catch {
+    17	    throw new Error(
+    18	      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une URL absolue (http[s]://), ` +
+    19	        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+    20	    );
+    21	  }
+    22	
+    23	  const isHttpProtocol = url.protocol === "http:" || url.protocol === "https:";
+    24	  const isOriginOnly = url.pathname === "/" && url.search === "" && url.hash === "";
+    25	  if (!isHttpProtocol || !url.hostname || !isOriginOnly) {
+    26	    throw new Error(
+    27	      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une origin http(s) sans chemin, query ni hash, ` +
+    28	        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+    29	    );
+    30	  }
+    31	
+    32	  // Retourne l'origin normalisée pour une concaténation sûre (`${siteUrl}/about`),
+    33	  // y compris si l'override est saisi avec un slash final.
+    34	  return url.origin;
+    35	}
+
+2026-09-13T10:32:16.118743Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "nl -ba app/pages/contact.vue | sed -n '228,270p'; nl -ba .github/workflows/cd.yml | sed -n '1,45p'; nl -ba .github/workflows/cd.yml | sed -n '72,105p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   228	  sending.value = true;
+   229	  try {
+   230	    const res = await $fetch<Web3FormsResponse>("https://api.web3forms.com/submit", {
+   231	      method: "POST",
+   232	      body: {
+   233	        access_key: accessKey,
+   234	        name: form.name.trim(),
+   235	        email: form.email.trim(),
+   236	        subject: form.subject.trim() || "Nouveau message depuis jouan.ovh",
+   237	        message: form.message.trim(),
+   238	        botcheck: "",
+   239	      },
+   240	    });
+   241	    if (res.success) {
+   242	      sent.value = true;
+   243	      await focusSentCard();
+   244	    } else {
+   245	      submitError.value = ERROR_MESSAGE;
+   246	    }
+   247	  } catch {
+   248	    submitError.value = ERROR_MESSAGE;
+   249	  } finally {
+   250	    sending.value = false;
+   251	  }
+   252	}
+   253	
+   254	const siteUrl = useSiteUrl();
+   255	
+   256	const contactJsonLd = {
+   257	  "@context": "https://schema.org",
+   258	  "@type": "ContactPage",
+   259	  name: "Contact — jouan.ovh",
+   260	  description:
+   261	    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+   262	  url: `${siteUrl}/contact`,
+   263	  mainEntity: {
+   264	    "@type": "Person",
+   265	    name: SITE.profile.name,
+   266	    email: SITE.profile.email,
+   267	    address: {
+   268	      "@type": "PostalAddress",
+   269	      addressLocality: SITE.profile.city,
+   270	      addressCountry: "FR",
+     1	name: cd
+     2	
+     3	on:
+     4	  push:
+     5	    branches:
+     6	      - main
+     7	  pull_request:
+     8	    branches:
+     9	      - main
+    10	
+    11	# Le déploiement publie sur la branche gh-pages via GITHUB_TOKEN → écriture requise.
+    12	permissions:
+    13	  contents: write
+    14	
+    15	# Sérialise les exécutions : deux pushes rapprochés sur main ne peuvent pas
+    16	# publier dans le désordre (un ancien build écrasant un plus récent).
+    17	concurrency:
+    18	  group: deploy-gh-pages
+    19	  cancel-in-progress: false
+    20	
+    21	jobs:
+    22	  cd:
+    23	    runs-on: ubuntu-latest
+    24	
+    25	    steps:
+    26	      - name: Checkout
+    27	        uses: actions/checkout@v4
+    28	
+    29	      - name: Setup pnpm
+    30	        uses: pnpm/action-setup@v4
+    31	
+    32	      - name: Setup node env
+    33	        uses: actions/setup-node@v4
+    34	        with:
+    35	          node-version: 22
+    36	          cache: pnpm
+    37	
+    38	      - name: Install dependencies
+    39	        run: pnpm install --frozen-lockfile
+    40	
+    41	      # Gate de qualité : lint + typecheck avant le build (validation minimale du projet).
+    42	      # S'exécute aussi sur les PR pour valider sans publier.
+    43	      - name: Lint
+    44	        run: pnpm lint
+    45	
+    72	      - name: Deploy
+    73	        # Publication uniquement sur push (main) ; les PR exécutent la validation sans déployer.
+    74	        if: github.event_name == 'push'
+    75	        uses: peaceiris/actions-gh-pages@v3
+    76	        with:
+    77	          github_token: ${{ secrets.GITHUB_TOKEN }}
+    78	          publish_dir: .output/public
+
+2026-09-13T10:32:19.606653Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+codex
+[{"location":".github/workflows/cd.yml:50-52","trigger_condition":"Both GitHub credential sources are unset during the Generate step","guard_snippet":"test -n \"${NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY:-}\" || { echo \"::error::Missing Web3Forms access key\"; exit 1; }","potential_consequence":"Production deploys a contact form that cannot submit messages"}]
+tokens used
+25 242
+[{"location":".github/workflows/cd.yml:50-52","trigger_condition":"Both GitHub credential sources are unset during the Generate step","guard_snippet":"test -n \"${NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY:-}\" || { echo \"::error::Missing Web3Forms access key\"; exit 1; }","potential_consequence":"Production deploys a contact form that cannot submit messages"}]

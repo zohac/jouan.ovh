@@ -73,8 +73,8 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   reste statique), clé via `runtimeConfig.public.web3formsAccessKey` (env
   `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY`, cf. `.env.example`). ⚠️ **Sans la clé, l'envoi échoue** —
   la provisionner en env. `$fetch` **client-only** (prerender-safe) + honeypot anti-spam ;
-  validation/feedback front. Notice RGPD sous le form (page politique de confidentialité à
-  finaliser — cf. `deferred-work.md`).
+  validation/feedback front. Notice RGPD sous le form + page politique de confidentialité dédiée
+  (`/confidentialite`, livrée en story 10.6).
 
 **SCSS (règle critique)**
 
@@ -172,7 +172,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Validation : `pnpm lint` (eslint + stylelint) + `pnpm typecheck` (`nuxi typecheck`
   / vue-tsc) + build `pnpm generate` — tout doit passer (cf. section Tests).
 - Build statique : `pnpm generate` → sortie `.output/public`.
-- Déploiement : `pnpm deploy` (`push-dir` vers la branche `gh-pages`).
+- Déploiement : automatisé par GitHub Actions (`.github/workflows/cd.yml` via `peaceiris/actions-gh-pages` sur push `main`). Sortie statique avec `CNAME` vérifié.
 - ⚠️ Le domaine custom dépend du fichier `CNAME` — ne pas le perdre lors du
   déploiement gh-pages (régression déjà survenue, cf. commit `cf1829e`).
 

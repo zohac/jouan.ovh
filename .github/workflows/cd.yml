@@ -58,15 +58,20 @@ jobs:
           cp public/_headers .output/public/_headers
           cp public/CNAME .output/public/CNAME
 
-      # Garde-fou avant publication : la sortie statique doit contenir les pages,
-      # _headers, le CNAME du domaine custom et le portrait référencé par about.vue.
+      # Garde-fou avant publication : la sortie statique doit contenir toutes les pages,
+      # _headers, le CNAME du domaine custom, le portrait et la clé Web3Forms sur push main.
       - name: Verify static output
+        env:
+          NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY || vars.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
         run: |
           set -euo pipefail
-          for f in index.html 200.html 404.html about/index.html blog/index.html _headers CNAME images/portrait_512x512_drip_art_8.webp; do
+          for f in index.html 200.html 404.html services/index.html about/index.html blog/index.html contact/index.html confidentialite/index.html mentions-legales/index.html _headers CNAME images/portrait_512x512_drip_art_8.webp; do
             test -f ".output/public/$f" || { echo "::error::Fichier manquant dans la sortie statique : $f"; exit 1; }
           done
           grep -qx "jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
+          if [ "${{ github.event_name }}" = "push" ]; then
+            test -n "${NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY:-}" || { echo "::error::NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY manquant pour le déploiement de production"; exit 1; }
+          fi
           echo "Sortie statique validée."
 
       - name: Deploy

@@ -1,5 +1,5 @@
 // URL publique du site (canonical / og:url / JSON-LD) — point d'accès unique.
-// La valeur vient de `runtimeConfig.public.siteUrl` (défaut staging dans nuxt.config,
+// La valeur vient de `runtimeConfig.public.siteUrl` (défaut prod https://jouan.ovh dans nuxt.config,
 // surchargeable par NUXT_PUBLIC_SITE_URL). ⚠️ `useRuntimeConfig()` n'est
 // appelable QUE dans un contexte Nuxt (setup de composant, plugin, middleware) — d'où ce
 // composable, à consommer dans le `<script setup>` des pages, pas au niveau module d'un util

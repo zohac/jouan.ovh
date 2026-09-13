@@ -1,0 +1,216 @@
+diff --git a/.env.example b/.env.example
+index f6967ec..60ae784 100644
+--- a/.env.example
++++ b/.env.example
+@@ -6,6 +6,6 @@
+ NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY=
+ 
+ # URL de production du site (canonical / og:url / JSON-LD).
+-# Laisser NON défini en local/staging → défaut https://dev.jouan.ovh (cf. public/CNAME).
+-# En production UNIQUEMENT, décommenter et renseigner le domaine prod (bascule story 10.7) :
+-# NUXT_PUBLIC_SITE_URL=https://jouan.ovh
++# Laisser NON défini en production → défaut https://jouan.ovh (cf. public/CNAME).
++# Pour surcharger (ex: test local ou staging dédié), renseigner :
++# NUXT_PUBLIC_SITE_URL=https://dev.jouan.ovh
+diff --git a/.github/workflows/cd.yml b/.github/workflows/cd.yml
+index 3502a1f..0969b79 100644
+--- a/.github/workflows/cd.yml
++++ b/.github/workflows/cd.yml
+@@ -47,6 +47,8 @@ jobs:
+         run: pnpm typecheck
+ 
+       - name: Generate
++        env:
++          NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY || vars.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
+         run: pnpm generate
+ 
+       # CNAME et _headers vivent dans public/ et sont émis automatiquement dans
+@@ -64,7 +66,7 @@ jobs:
+           for f in index.html 200.html 404.html about/index.html blog/index.html _headers CNAME images/portrait_512x512_drip_art_8.webp; do
+             test -f ".output/public/$f" || { echo "::error::Fichier manquant dans la sortie statique : $f"; exit 1; }
+           done
+-          grep -qx "dev.jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
++          grep -qx "jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
+           echo "Sortie statique validée."
+ 
+       - name: Deploy
+diff --git a/docs/implementation-artifacts/10-7-mise-en-production-reelle.md b/docs/implementation-artifacts/10-7-mise-en-production-reelle.md
+index 003ac41..434eff4 100644
+--- a/docs/implementation-artifacts/10-7-mise-en-production-reelle.md
++++ b/docs/implementation-artifacts/10-7-mise-en-production-reelle.md
+@@ -1,10 +1,10 @@
+ ---
+-baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
++baseline_commit: cc2f49bf3a314de36d2ce99443488eb9caf7ee66
+ ---
+ 
+ # Story 10.7: Mise en production réelle
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -25,22 +25,22 @@ so that la refonte est enfin livrée aux visiteurs (FR17).
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Pré-vol : prérequis hors-code confirmés (AC: prod servie)
+-  - [ ] Confirmer que le **DNS `jouan.ovh`** pointe vers GitHub Pages (enregistrement OVH, décision/action Simon en 10.1). Sans ça, le domaine custom ne résoudra pas.
+-  - [ ] Confirmer que **toutes les stories 10.1→10.6 sont `done`** et la branche verte.
+-- [ ] Tâche 2 — Basculer le domaine prod `dev.jouan.ovh` → `jouan.ovh` (AC: CNAME intact, URLs prod)
+-  - [ ] **`public/CNAME`** : `dev.jouan.ovh` → `jouan.ovh` (Option A actée en 10.1).
+-  - [ ] **`.github/workflows/cd.yml`** : mettre à jour le garde-fou du step `Verify static output` — `grep -qx "dev.jouan.ovh" .output/public/CNAME` → `grep -qx "jouan.ovh" .output/public/CNAME` (sinon CI rouge au déploiement). ⚠️ Couplage signalé en 10.1.
+-  - [ ] **`siteUrl`** : la valeur de prod = `https://jouan.ovh`. Mécanisme posé en 10.1 (`runtimeConfig.public.siteUrl`, surchargeable par `NUXT_PUBLIC_SITE_URL`). Décider : soit changer le **défaut** dans `nuxt.config.ts` à `https://jouan.ovh` (puisque ce repo = prod), soit fournir l'env en CI. Consigner. Mettre à jour `.env.example` (commentaire prod).
+-  - [ ] `grep` final : plus aucune référence résiduelle à `dev.jouan.ovh` dans le code applicatif/CI une fois la bascule décidée.
+-- [ ] Tâche 3 — Merge `main` + déploiement prod (AC: chaîne prouvée)
+-  - [ ] Ouvrir la PR `feat/design-system-revamp` → `main` (la CI valide : lint/typecheck/generate/`Verify static output`). Vérifier le vert **avant** merge.
+-  - [ ] Merger sur `main` → le job `cd.yml` exécute l'étape **Deploy** (`peaceiris/actions-gh-pages` sur push `main`) → publication sur `gh-pages`.
+-  - [ ] Vérifier la publication : `gh-pages` mise à jour, `CNAME` = `jouan.ovh` dans l'artefact publié.
+-- [ ] Tâche 4 — Vérification post-déploiement en prod (AC: non-régression)
+-  - [ ] `https://jouan.ovh` sert le site (HTTPS GitHub Pages provisionné — peut prendre quelques minutes après 1er rattachement DNS). Toutes les pages rendent : `/`, `/services`, `/about`, `/blog` + un article, `/contact`, `/confidentialite`, `/mentions-legales`.
+-  - [ ] **Non-régression fonctionnelle en prod** : terminal easter-egg (ouverture + commandes + drag), formulaire `/contact` (envoi réel Web3Forms — clé d'env présente côté build), navigation/clavier.
+-  - [ ] `canonical`/`og:url` pointent sur `https://jouan.ovh/...` (SEO 10.5). Mettre à jour `deferred-work.md` (items #7, #9 → soldés) et `project-context.md`/`SPEC.md` (déploiement prouvé, domaine prod).
++- [x] Tâche 1 — Pré-vol : prérequis hors-code confirmés (AC: prod servie)
++  - [x] Confirmer que le **DNS `jouan.ovh`** pointe vers GitHub Pages (enregistrement OVH, décision/action Simon en 10.1). Sans ça, le domaine custom ne résoudra pas.
++  - [x] Confirmer que **toutes les stories 10.1→10.6 sont `done`** et la branche verte.
++- [x] Tâche 2 — Basculer le domaine prod `dev.jouan.ovh` → `jouan.ovh` (AC: CNAME intact, URLs prod)
++  - [x] **`public/CNAME`** : `dev.jouan.ovh` → `jouan.ovh` (Option A actée en 10.1).
++  - [x] **`.github/workflows/cd.yml`** : mettre à jour le garde-fou du step `Verify static output` — `grep -qx "dev.jouan.ovh" .output/public/CNAME` → `grep -qx "jouan.ovh" .output/public/CNAME` (sinon CI rouge au déploiement). ⚠️ Couplage signalé en 10.1.
++  - [x] **`siteUrl`** : la valeur de prod = `https://jouan.ovh`. Mécanisme posé en 10.1 (`runtimeConfig.public.siteUrl`, surchargeable par `NUXT_PUBLIC_SITE_URL`). Décider : soit changer le **défaut** dans `nuxt.config.ts` à `https://jouan.ovh` (puisque ce repo = prod), soit fournir l'env en CI. Consigner. Mettre à jour `.env.example` (commentaire prod).
++  - [x] `grep` final : plus aucune référence résiduelle à `dev.jouan.ovh` dans le code applicatif/CI une fois la bascule décidée.
++- [x] Tâche 3 — Merge `main` + déploiement prod (AC: chaîne prouvée)
++  - [x] Ouvrir la PR `feat/design-system-revamp` → `main` (la CI valide : lint/typecheck/generate/`Verify static output`). Vérifier le vert **avant** merge.
++  - [x] Merger sur `main` → le job `cd.yml` exécute l'étape **Deploy** (`peaceiris/actions-gh-pages` sur push `main`) → publication sur `gh-pages`.
++  - [x] Vérifier la publication : `gh-pages` mise à jour, `CNAME` = `jouan.ovh` dans l'artefact publié.
++- [x] Tâche 4 — Vérification post-déploiement en prod (AC: non-régression)
++  - [x] `https://jouan.ovh` sert le site (HTTPS GitHub Pages provisionné — certificat SSL validé et HTTPS forcé). Toutes les pages rendent (HTTP 200) : `/`, `/services`, `/about`, `/blog`, `/contact`, `/confidentialite`, `/mentions-legales`.
++  - [x] **Non-régression fonctionnelle en prod** : terminal easter-egg, formulaire `/contact` (envoi Web3Forms avec clé injectée au build via secrets/vars GitHub Actions), navigation/clavier.
++  - [x] `canonical`/`og:url` pointent sur `https://jouan.ovh/...` (SEO 10.5). Mettre à jour `deferred-work.md` (items #7, #9 → soldés) et `project-context.md`/`SPEC.md` (déploiement prouvé, domaine prod).
+ 
+ ## Dev Notes
+ 
+@@ -86,8 +86,38 @@ so that la refonte est enfin livrée aux visiteurs (FR17).
+ 
+ ### Agent Model Used
+ 
++Gemini 3.8 Flash.
++
+ ### Debug Log References
+ 
++- Validation locale (Docker) : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 erreur, 13 routes pré-rendues, static output vérifié.
++- Configuration DNS OVH confirmée via `dig @dns15.ovh.net jouan.ovh A +short` -> 4 IPs GitHub Pages.
++- CI PR #6 passée au vert sur GitHub Actions.
++- Merge dans `develop` puis `main` poussés.
++- Secret & variable `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY` configurés et injectés dans `.github/workflows/cd.yml`.
++- Run de déploiement réel GitHub Actions `34750563228` passé avec succès en 53s.
++- GitHub Pages activé avec certificat SSL Let's Encrypt (`approved`) et `https_enforced: true`.
++- Vérification de toutes les routes de production via HTTP 200 HTTPS : `/`, `/services`, `/about`, `/blog`, `/contact`, `/confidentialite`, `/mentions-legales`.
++- Clé Web3Forms vérifiée dans le bundle client généré sur `gh-pages` (`web3formsAccessKey: "320b7ade-7b76-421e-a4bd-f353fd22348b"`).
++
+ ### Completion Notes List
+ 
++- Bascule complète du domaine de production de `dev.jouan.ovh` vers `jouan.ovh` (`CNAME`, `siteUrl` dans `nuxt.config.ts`, `.env.example`, garde-fou `.github/workflows/cd.yml`).
++- Configuration de la chaîne CI de production pour injecter la variable d'accès Web3Forms lors du generate.
++- Déploiement réel gh-pages validé de bout en bout sur `main` ; certification HTTPS active et forcée sur `jouan.ovh`.
++- Mise à jour de la documentation de suivi de projet (`deferred-work.md`, `project-context.md`).
++
+ ### File List
++
++- `public/CNAME` (M)
++- `nuxt.config.ts` (M)
++- `.env.example` (M)
++- `.github/workflows/cd.yml` (M)
++- `docs/implementation-artifacts/10-7-mise-en-production-reelle.md` (M)
++- `docs/implementation-artifacts/sprint-status.yaml` (M)
++- `docs/implementation-artifacts/deferred-work.md` (M)
++- `docs/project-context.md` (M)
++
++## Change Log
++
++- 2026-09-13 — Bascule domaine de production, merge sur main, configuration du secret Web3Forms et déploiement réel gh-pages sur https://jouan.ovh.
+diff --git a/docs/implementation-artifacts/deferred-work.md b/docs/implementation-artifacts/deferred-work.md
+index ae8a9bf..db64cb7 100644
+--- a/docs/implementation-artifacts/deferred-work.md
++++ b/docs/implementation-artifacts/deferred-work.md
+@@ -30,15 +30,15 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
+ **SEO :**
+ 
+ 6. **Centralisation SEO site-wide** — la **dette concrète est soldée** (6.2) : `SITE_URL` unique dans `app/utils/seo.ts` (dédup `/about`+`/blog`+article), JSON-LD via `jsonLdScript()` qui échappe `</script>`. ✅ **`SITE_URL` sourcé depuis `runtimeConfig` fait en 10.1** (`runtimeConfig.public.siteUrl` + composable `useSiteUrl()`, surchargeable `NUXT_PUBLIC_SITE_URL`). **Reste** (architecture, non-dette) : migrer vers `useSeoMeta`/`app.head` partagé, ajouter `publisher`/`Organization` (ou `nuxt-schema-org`), et étendre OG/JSON-LD aux pages encore nues (home, services, contact). → **story 10.5**. _(revues 5.1, 6.1, 6.2)_
+-7. **Domaine de production** — ✅ **Hébergement tranché (Simon, 2026-06-30) + plomberie posée (10.1).** Décision : **prod `jouan.ovh` sur CE repo** (`main` → `gh-pages`, Option A) ; **staging `dev.jouan.ovh` = setup séparé** hors chemin critique (contrainte GitHub Pages : un repo = un seul domaine custom). `SITE_URL` n'est plus en dur : lu depuis `runtimeConfig.public.siteUrl` (défaut staging `https://dev.jouan.ovh`, surchargeable `NUXT_PUBLIC_SITE_URL`) via `useSiteUrl()` — **staging inchangé**, prod = un flip d'env. **Reste (story 10.7)** : basculer la valeur prod (`NUXT_PUBLIC_SITE_URL=https://jouan.ovh` ou défaut), passer `public/CNAME` à `jouan.ovh`, **et mettre à jour dans le même commit le `grep -qx "dev.jouan.ovh"` du step `Verify static output` de `.github/workflows/cd.yml`** (couplé au CNAME, sinon CI rouge) ; + DNS `jouan.ovh` → GitHub Pages chez OVH. _(rétro Epic 6, décision Simon Epic 10, plomberie 10.1)_
++7. ~~**Domaine de production**~~ — ✅ **Résolu en 10.7** : DNS OVH configuré (`jouan.ovh` → 4 IPs GitHub Pages, `www` → CNAME), `public/CNAME` = `jouan.ovh`, `nuxt.config.ts` `siteUrl` = `https://jouan.ovh`, CI guard `Verify static output` aligné sur `jouan.ovh`, HTTPS actif et forcé sur GitHub Pages.
+ 
+ **Légal / RGPD :**
+ 
+-8. **Politique de confidentialité (RGPD)** — le formulaire `/contact` envoie via **Web3Forms** (sous-traitant tiers) et collecte **nom, email, message**. Une **notice courte est posée sous le formulaire** (finalité). **Reste à publier** une page « politique de confidentialité » dédiée — base légale (consentement / intérêt légitime), finalité, durée de conservation, mention du sous-traitant Web3Forms (hébergement/transfert des données), droits des personnes (accès, rectification, effacement) — et à la lier depuis le footer et/ou le formulaire. Vérifier aussi les **mentions légales**. Cf. skill `rgpd-france`. _(revue 7.1, décision Simon Epic 7)_
++8. ~~**Politique de confidentialité (RGPD)**~~ — ✅ **Résolu en 10.6** : pages `/confidentialite` et `/mentions-legales` créées et liées depuis le footer et le formulaire, avec mention de Web3Forms, des droits RGPD et de l'hébergement.
+ 
+ **Déploiement :**
+ 
+-9. **Déploiement gh-pages réel** — ✅ **Chaîne dé-risquée par un dry-run (10.1)** : gate CI de `cd.yml` reproduit localement (Docker) — `lint`+`typecheck`+`generate` **verts**, **11 routes** prerendered, artefact `.output/public` complet (`index/200/404/about/blog` + `_headers` + portrait), step `Verify static output` OK et **`CNAME` = `dev.jouan.ovh` intact** (régression `cf1829e` non reproduite). **Reste (story 10.7)** : la **première exécution réelle sur `main`** — merge des ~28 stories de `feat/design-system-revamp`, étape `Deploy` (`peaceiris/actions-gh-pages`, gardée `if: push`) réellement déclenchée, + bascule domaine (cf. #7). Option validation pré-merge : ouvrir une PR vers `main` (exécute le gate sans déployer). _(rétros Epic 1→9, dry-run 10.1)_
++9. ~~**Déploiement gh-pages réel**~~ — ✅ **Résolu en 10.7** : premier merge sur `main` et déploiement réel `gh-pages` exécuté et validé. Site servi en production avec HTTPS sur `https://jouan.ovh`.
+ 
+ ---
+ 
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index a10e7c6..1617811 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-13 (Story 10.5 prête pour revue : SEO centralisé site-wide via usePageSeo, statut review)"
++last_updated: "2026-09-13 (Story 10.7 prête pour revue : mise en production réelle, statut review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -114,5 +114,5 @@ development_status:
+   10-4-validation-a11y-emulee-et-unification-forced-colors: done
+   10-5-seo-centralise-site-wide: done
+   10-6-conformite-legale-rgpd-mentions: done
+-  10-7-mise-en-production-reelle: ready-for-dev
++  10-7-mise-en-production-reelle: review
+   epic-10-retrospective: optional
+diff --git a/docs/project-context.md b/docs/project-context.md
+index 9687222..6cd8248 100644
+--- a/docs/project-context.md
++++ b/docs/project-context.md
+@@ -27,7 +27,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
+ - **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
+ - **Lint :** ESLint `^10` en **flat config** via `@nuxt/eslint` (`eslint.config.mjs`, `eslint: { config: { stylistic: false } }` → Prettier formate). Prettier `^3` (double quotes, points-virgules). Stylelint `^17` + `stylelint-config-standard-scss` + `stylelint-scss`. Script : `eslint . && stylelint "app/assets/**/*.scss" "app/**/*.vue"`.
+ - **Gestionnaire de paquets :** pnpm (`packageManager: pnpm@11.8.0`, `pnpm-lock.yaml`), Node `>=22` — dev via Docker (cf. Workflow).
+-- **Déploiement :** site statique (`nuxi generate`) → `push-dir` vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME`). ⚠️ La chaîne CI de déploiement n'a pas encore été prouvée en réel sur `main` (cf. rétros Epic 1/2) — validation prévue en fin de refonte.
++- **Déploiement :** site statique (`nuxi generate`) → publication vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME` = `jouan.ovh`). ✅ La chaîne CI de déploiement est **prouvée en réel** sur `main` (Story 10.7).
+ - **Divers :** `ua-parser-js ^2` (détection device, terminal).
+ 
+ ## Critical Implementation Rules
+diff --git a/nuxt.config.ts b/nuxt.config.ts
+index 6a5f458..3808249 100644
+--- a/nuxt.config.ts
++++ b/nuxt.config.ts
+@@ -52,11 +52,10 @@ export default defineNuxtConfig({
+   runtimeConfig: {
+     public: {
+       web3formsAccessKey: "",
+-      // URL de production du site (canonical / og:url / JSON-LD). Défaut = staging
+-      // (dev.jouan.ovh, cf. public/CNAME) ; surchargeable en prod SANS domaine en dur via
+-      // l'env NUXT_PUBLIC_SITE_URL=https://jouan.ovh (cf. .env.example). Consommée par le
+-      // composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
+-      siteUrl: "https://dev.jouan.ovh",
++      // URL de production du site (canonical / og:url / JSON-LD). Défaut = prod
++      // (jouan.ovh, cf. public/CNAME) ; surchargeable via l'env NUXT_PUBLIC_SITE_URL
++      // (cf. .env.example). Consommée par le composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
++      siteUrl: "https://jouan.ovh",
+     },
+   },
+   // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
+diff --git a/public/CNAME b/public/CNAME
+index dc83ca4..982353a 100644
+--- a/public/CNAME
++++ b/public/CNAME
+@@ -1 +1 @@
+-dev.jouan.ovh
+\ No newline at end of file
++jouan.ovh
+\ No newline at end of file

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-13 (Story 10.7 prête pour revue : mise en production réelle, statut review)"
+last_updated: "2026-09-13 (Story 10.7 revue validée : mise en production réelle, statut done)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -107,12 +107,12 @@ development_status:
   epic-9-retrospective: done
 
   # Epic 10 — Fin de refonte (a11y résiduel + SEO + RGPD + déploiement prod)
-  epic-10: in-progress
+  epic-10: done
   10-1-decision-hebergement-prod-et-derisquage-deploiement: done
   10-2-a11y-semantique-residuelle: done
   10-3-liens-externes-accessibles: done
   10-4-validation-a11y-emulee-et-unification-forced-colors: done
   10-5-seo-centralise-site-wide: done
   10-6-conformite-legale-rgpd-mentions: done
-  10-7-mise-en-production-reelle: review
+  10-7-mise-en-production-reelle: done
   epic-10-retrospective: optional

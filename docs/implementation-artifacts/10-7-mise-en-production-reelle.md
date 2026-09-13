@@ -4,7 +4,7 @@ baseline_commit: cc2f49bf3a314de36d2ce99443488eb9caf7ee66
 
 # Story 10.7: Mise en production réelle
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -42,6 +42,13 @@ so that la refonte est enfin livrée aux visiteurs (FR17).
   - [x] **Non-régression fonctionnelle en prod** : terminal easter-egg, formulaire `/contact` (envoi Web3Forms avec clé injectée au build via secrets/vars GitHub Actions), navigation/clavier.
   - [x] `canonical`/`og:url` pointent sur `https://jouan.ovh/...` (SEO 10.5). Mettre à jour `deferred-work.md` (items #7, #9 → soldés) et `project-context.md`/`SPEC.md` (déploiement prouvé, domaine prod).
 
+### Review Findings
+
+- [x] [Review][Patch] Compléter les vérifications statiques et le garde-fou Web3Forms dans cd.yml [.github/workflows/cd.yml:50,66]
+- [x] [Review][Patch] Synchroniser le commentaire de useSiteUrl() avec la valeur de prod de nuxt.config.ts [app/composables/useSiteUrl.ts:2]
+- [x] [Review][Patch] Nettoyer la mention résiduelle RGPD et harmoniser la commande de déploiement dans project-context.md [docs/project-context.md:76,175]
+- [x] [Review][Patch] Aligner la baseline dans les Dev Notes et enrichir les preuves d'exécution post-déploiement de la story 10.7 [docs/implementation-artifacts/10-7-mise-en-production-reelle.md:54,101]
+
 ## Dev Notes
 
 ### Périmètre & frontières
@@ -51,7 +58,7 @@ so that la refonte est enfin livrée aux visiteurs (FR17).
 - **Opération sortante / irréversible-ish** : merge sur `main` + publication publique. **Confirmer avec Simon** avant d'exécuter ; ne pas merger automatiquement.
 - **La chaîne existe déjà** (`cd.yml`, story 10.1 l'a documentée et dry-runnée) — ici on l'**exécute pour de vrai**.
 
-### Fichiers concernés (lus — baseline `3e82045`)
+### Fichiers concernés (lus — baseline `cc2f49b`)
 
 - **`public/CNAME`** (UPDATE) — `dev.jouan.ovh` → `jouan.ovh`.
 - **`.github/workflows/cd.yml`** (UPDATE) — step `Verify static output` : `grep -qx "dev.jouan.ovh"` → `grep -qx "jouan.ovh"`. Le reste de la chaîne (gate + copie `_headers`/`CNAME` + Deploy `peaceiris` sur push `main`) est déjà bon. Concurrency déjà sérialisée.
@@ -95,10 +102,11 @@ Gemini 3.8 Flash.
 - CI PR #6 passée au vert sur GitHub Actions.
 - Merge dans `develop` puis `main` poussés.
 - Secret & variable `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY` configurés et injectés dans `.github/workflows/cd.yml`.
-- Run de déploiement réel GitHub Actions `34750563228` passé avec succès en 53s.
-- GitHub Pages activé avec certificat SSL Let's Encrypt (`approved`) et `https_enforced: true`.
-- Vérification de toutes les routes de production via HTTP 200 HTTPS : `/`, `/services`, `/about`, `/blog`, `/contact`, `/confidentialite`, `/mentions-legales`.
-- Clé Web3Forms vérifiée dans le bundle client généré sur `gh-pages` (`web3formsAccessKey: "320b7ade-7b76-421e-a4bd-f353fd22348b"`).
+- Run de déploiement réel GitHub Actions `34750563228` (et run de clôture `34750907110` sur `main`) passé avec succès.
+- GitHub Pages activé (`gh api repos/zohac/jouan.ovh/pages`) : certificat SSL Let's Encrypt `approved` pour `["jouan.ovh", "www.jouan.ovh"]`, statut `built`, et `https_enforced: true`.
+- Vérification des routes de production en HTTP/2 HTTPS : `/` (200), `/services/` (200), `/about/` (200), `/blog/` (200), `/contact/` (200), `/confidentialite/` (200), `/mentions-legales/` (200).
+- Balises SEO de production vérifiées in situ : `<link rel="canonical" href="https://jouan.ovh">` et `<meta property="og:url" content="https://jouan.ovh">`.
+- Clé Web3Forms vérifiée dans le bundle client généré sur `gh-pages` (`web3formsAccessKey: "320b7ade-****-****-****-************"`).
 
 ### Completion Notes List
 
