@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
 
 # Story 10.1: Décision hébergement prod et dé-risquage du déploiement gh-pages
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -35,7 +35,7 @@ so that la première mise en production de la refonte ne révèle pas de surpris
 - [x] Tâche 2 — Rendre `SITE_URL` swappable via `runtimeConfig` (AC: #2)
   - [x] Ajouter `runtimeConfig.public.siteUrl` dans `nuxt.config.ts` (à côté de `web3formsAccessKey`), **valeur par défaut `https://dev.jouan.ovh`** (staging, identique à l'actuel), surchargeable par env `NUXT_PUBLIC_SITE_URL` (ajouter au `.env.example`).
   - [x] Repointer les consommateurs de `SITE_URL` (`app/utils/seo.ts` + `app/pages/about.vue`, `app/pages/blog/index.vue`, `app/pages/blog/[...slug].vue`) pour lire la valeur depuis `useRuntimeConfig().public.siteUrl`. ⚠️ `useRuntimeConfig()` est un composable → l'appeler **dans le `setup`/contexte Nuxt**, pas au niveau module d'un util pur (cf. Dev Notes › `SITE_URL` → runtimeConfig). Conserver `jsonLdScript()` tel quel.
-  - [x] Vérifier qu'aucun `https://dev.jouan.ovh` ni `jouan.ovh` ne reste **hardcodé** dans le code applicatif (grep) ; le seul littéral admis du domaine = le défaut dans `nuxt.config.ts` et `public/CNAME`.
+  - [x] Vérifier qu'aucune **URL canonique complète** du site ne reste hardcodée dans le code applicatif ; le seul littéral admis pour l'URL de base = le défaut dans `nuxt.config.ts` et `public/CNAME`.
   - [x] Confirmer le rendu **identique** du HTML prerendu pour `/about`, `/blog`, `/blog/[...slug]` (canonical/og:url toujours en `https://dev.jouan.ovh/...` tant que l'env n'est pas surchargée).
 - [x] Tâche 3 — Dry-run de la chaîne de déploiement (AC: #3)
   - [x] Lire et comprendre la chaîne **déjà en place** : `.github/workflows/cd.yml` (gate lint+typecheck+generate → copie `_headers`/`CNAME` → `Verify static output` → `peaceiris/actions-gh-pages` **sur push `main` uniquement**, PR `main` = validation sans déploiement) ET le script local `pnpm deploy` (`push-dir` → `gh-pages`). **Ne pas réinventer** : la chaîne existe, on la **prouve**.
@@ -44,7 +44,7 @@ so that la première mise en production de la refonte ne révèle pas de surpris
   - [x] Consigner le résultat du dry-run (sortie CI / logs `generate` / liste `.output/public`) dans le Dev Agent Record.
 - [x] Tâche 4 — Validation qualité (AC: #2, #3)
   - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` **verts** (11 routes), aucune valeur hardcodée réintroduite.
-  - [x] Vérif navigateur (Chrome DevTools MCP) : `/about`, `/blog`, un article — `canonical`/`og:url` rendus, domaine résolu depuis `runtimeConfig` (inchangé en staging).
+  - [x] Vérif navigateur (Chrome DevTools MCP) : `/about` et `/blog` — `canonical`/`og:url` rendus, domaine résolu depuis `runtimeConfig` (inchangé en staging). Vue article non vérifiable en navigateur faute d'article réel (`content/blog/` vide), mais couverte par typecheck/prerender.
 
 ## Dev Notes
 
@@ -160,10 +160,10 @@ docker compose run --rm -e NUXT_PUBLIC_SITE_URL=https://jouan.ovh web sh -c "cor
 ### Completion Notes List
 
 - **AC#1 — Décision d'hébergement consignée.** La décision était déjà actée par Simon (2026-06-30, Dev Notes › Décision requise) : **prod `jouan.ovh` sur CE repo** (`main` → `gh-pages`, **Option A**) ; **staging `dev.jouan.ovh` = setup séparé** hors chemin critique (contrainte GitHub Pages : 1 repo = 1 domaine custom) ; `CNAME` reste `dev.jouan.ovh` jusqu'à 10.7. Propagée dans `deferred-work.md` (items #6 sous-point runtimeConfig ✅, #7 domaine, #9 déploiement), avec le **rappel explicite pour 10.7** : mettre à jour le `grep -qx "dev.jouan.ovh"` du step `Verify static output` **en même temps** que le `CNAME` (couplés, sinon CI rouge). Aucune bascule live ici (staging intact).
-- **AC#2 — `SITE_URL` swappable via `runtimeConfig`.** Approche **(b)** retenue (composable `useSiteUrl()` — un point d'accès unique, cohérent avec la centralisation SEO de 10.5) plutôt que la lecture inline (a). `runtimeConfig.public.siteUrl` ajouté à `nuxt.config.ts` (défaut `https://dev.jouan.ovh`, à côté de `web3formsAccessKey`), surchargeable `NUXT_PUBLIC_SITE_URL`. `SITE_URL` retiré de `app/utils/seo.ts` (ne garde que `jsonLdScript()`) ; `about.vue`, `blog/index.vue`, `blog/[...slug].vue` appellent `useSiteUrl()` **dans le setup** (dans `[...slug].vue`, capturée **hors** du getter `useHead` — un composable ne s'appelle pas dans un callback). Grep : **plus aucun `SITE_URL` ni domaine site-URL en dur** dans le code (seuls littéraux : le défaut de `nuxt.config.ts` et `public/CNAME`).
+- **AC#2 — `SITE_URL` swappable via `runtimeConfig`.** Approche **(b)** retenue (composable `useSiteUrl()` — un point d'accès unique, cohérent avec la centralisation SEO de 10.5) plutôt que la lecture inline (a). `runtimeConfig.public.siteUrl` ajouté à `nuxt.config.ts` (défaut `https://dev.jouan.ovh`, à côté de `web3formsAccessKey`), surchargeable `NUXT_PUBLIC_SITE_URL`. `SITE_URL` retiré de `app/utils/seo.ts` (ne garde que `jsonLdScript()`) ; `about.vue`, `blog/index.vue`, `blog/[...slug].vue` appellent `useSiteUrl()` **dans le setup** (dans `[...slug].vue`, capturée **hors** du getter `useHead` — un composable ne s'appelle pas dans un callback). `useSiteUrl()` parse désormais la config via `new URL()`, exige une origin http(s) sans chemin/query/hash et retourne `url.origin` normalisée. Grep : plus aucune URL canonique complète du site n'est hardcodée dans `app/` ; l'URL de base ne vit que dans `nuxt.config.ts` et `public/CNAME`.
 - **`.env.example`** : `NUXT_PUBLIC_SITE_URL` ajouté **commenté** (et non `=` nu comme la clé Web3Forms) — délibéré : une ligne `NUXT_PUBLIC_SITE_URL=` non commentée dans un `.env` écraserait le défaut par une **chaîne vide** (canonical/og cassés). Laisser non défini = défaut staging ; décommenter uniquement en prod.
 - **AC#3 — Dry-run prouvé (sans publier).** Gate de `cd.yml` reproduit localement (Docker) : `lint`+`typecheck`+`generate` verts, **11 routes**, artefact `.output/public` complet, step `Verify static output` OK, `CNAME` intact. **Ni merge `main`, ni déploiement** (étape `Deploy` gardée `if: github.event_name == 'push'` → non déclenchée en local ; 1re exécution réelle = 10.7). L'ouverture d'une PR vers `main` (gate réel sans deploy) est une action **outward-facing / git** laissée à la main de Simon — non déclenchée unilatéralement dans cette story de dé-risquage.
-- **Vérif navigateur.** Le navigateur Chrome DevTools MCP était **verrouillé par une instance Chrome déjà lancée** (profil dédié `chrome-devtools-mcp`) — attachement impossible dans cette session sans tuer le process. Vérif équivalente faite sur le **HTML SSR live du dev server** (`curl` /about, /blog), qui rend le même `<head>` que le DOM pour cet objectif SEO : canonical/og résolus depuis `runtimeConfig`, inchangés en staging. À rejouer au navigateur si souhaité lors de l'audit a11y émulé de 10.4.
+- **Vérif navigateur.** Chrome DevTools MCP a vérifié `/about` et `/blog` en navigateur (2026-09-12) : canonical/og résolus depuis `runtimeConfig`, inchangés en staging (`https://dev.jouan.ovh/about`, `https://dev.jouan.ovh/blog`) ; JSON-LD `/blog` présent avec `blogPost: []`. Aucun article réel n'existe aujourd'hui (`content/blog/` vide), donc la vue article ne peut pas être rendue au navigateur ; elle reste couverte par typecheck + prerender.
 - **Blog sans article.** `content/blog/` est vide → blog en empty-state (`blogPost:[]`), aucune sous-route `/blog/*` prerendue (cohérent avec 11 routes). La vue article partage le même `useSiteUrl()` (validé par typecheck + prerender) ; pas d'article réel à rendre en dry-run.
 
 **✅ Résolution des findings de revue (2026-07-02) :**
@@ -183,6 +183,14 @@ docker compose run --rm -e NUXT_PUBLIC_SITE_URL=https://jouan.ovh web sh -c "cor
 - `.env.example` (M) — ajout `NUXT_PUBLIC_SITE_URL` (commenté).
 - `docs/implementation-artifacts/deferred-work.md` (M) — items #6/#7/#9 mis à jour (décision + plomberie 10.1, reste 10.7).
 - `docs/implementation-artifacts/sprint-status.yaml` (M) — statut 10.1 → in-progress → review.
+- `docs/planning-artifacts/epics.md` (M) — ajout Epic 10 au planning global.
+- `docs/implementation-artifacts/epic-9-retro-2026-06-29.md` (A) — rétro Epic 9, source de la consolidation Epic 10.
+- `docs/implementation-artifacts/10-2-a11y-semantique-residuelle.md` (A) — story suivante prête pour dev.
+- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (A) — story suivante prête pour dev.
+- `docs/implementation-artifacts/10-4-validation-a11y-emulee-et-unification-forced-colors.md` (A) — story suivante prête pour dev.
+- `docs/implementation-artifacts/10-5-seo-centralise-site-wide.md` (A) — story suivante prête pour dev.
+- `docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md` (A) — story suivante prête pour dev.
+- `docs/implementation-artifacts/10-7-mise-en-production-reelle.md` (A) — story suivante prête pour dev.
 
 ### Review Findings
 
@@ -192,7 +200,25 @@ _Revue de code adversariale (`bmad-code-review`, 2026-07-02) — 3 couches paral
 - [x] [Review][Patch] `sprint-status.yaml` : `epic-9` reste `in-progress` alors que 9-1/9-2/rétro sont `done` et epic-10 ouvert → devrait passer `done` [docs/implementation-artifacts/sprint-status.yaml:104] [source: auditor]
 - [x] [Review][Defer] `article.image.src` sans slash initial → URL d'image malformée (`https://dev.jouan.ovhimages/x.webp`) [app/pages/blog/index.vue:122, app/pages/blog/[...slug].vue:121] — deferred, pre-existing (déjà vrai avec l'ancienne `SITE_URL` ; non déclenchable : `content/blog/` vide ; à traiter à la factorisation URL de 10.5)
 
+_Re-review `bmad-code-review` (2026-09-12) — 3 couches parallèles (Blind Hunter / Edge Case Hunter / Acceptance Auditor), aucune couche en échec. Findings triés :_
+
+- [x] [Review][Patch] Durcir `useSiteUrl()` avec un parsing URL origin-only — Résolu : `new URL(siteUrl)`, protocole http(s), hostname requis, origin-only (`pathname === "/"`, pas de query/hash), retour `url.origin`. [app/composables/useSiteUrl.ts:13]
+- [x] [Review][Patch] Corriger la preuve de vérification navigateur/article — Résolu : Chrome DevTools MCP a vérifié `/about` et `/blog` (canonical/og depuis le DOM) ; la story précise que la vue article n'est pas vérifiable au navigateur sans article réel et reste couverte par typecheck/prerender. [docs/implementation-artifacts/10-1-decision-hebergement-prod-et-derisquage-deploiement.md:45]
+- [x] [Review][Patch] Nettoyer les domaines littéraux dans les commentaires applicatifs — Résolu : commentaires `app/` nettoyés et AC reformulé sur l'absence d'URL canonique complète hardcodée, pour éviter de confondre URL de base et nom de marque/UI. [app/composables/useSiteUrl.ts:2]
+- [x] [Review][Patch] Mettre la File List en cohérence avec le diff réel — Résolu : File List complétée avec les stories 10.2→10.7, `epics.md` et la rétro Epic 9. [docs/implementation-artifacts/10-1-decision-hebergement-prod-et-derisquage-deploiement.md:177]
+- [x] [Review][Defer] `article.image.src` sans slash initial → URL d'image malformée [app/pages/blog/index.vue:122, app/pages/blog/[...slug].vue:121] — deferred, pre-existing ; déjà confirmé non introduit par 10.1, non déclenchable avec `content/blog/` vide, et routé vers la normalisation/factorisation SEO de 10.5.
+
 ## Change Log
 
 - 2026-07-01 — Implémentation story 10.1. AC#1 décision hébergement consignée/propagée (Option A, prod `jouan.ovh` sur ce repo, staging séparé). AC#2 `SITE_URL` déplacé vers `runtimeConfig.public.siteUrl` + composable `useSiteUrl()` (staging par défaut inchangé, surchargeable `NUXT_PUBLIC_SITE_URL`). AC#3 dry-run de la chaîne `cd.yml` prouvé en local (lint/typecheck/generate verts, 11 routes, `.output/public` valide, `CNAME` intact). Aucune bascule live, aucun merge/déploiement (réservés à 10.7).
 - 2026-07-02 — Findings de revue de code (`bmad-code-review`) soldés — 2 items [Patch] résolus : garde-fou fail-fast + strip du slash final de `useSiteUrl()` (prouvé au prerender) ; `epic-9` → `done` dans `sprint-status.yaml`. 1 item [Defer] (image `src` sans slash) confirmé pré-existant / hors périmètre 10.1 → routé 10.5. Gate lint/typecheck/generate re-vérifié vert (11 routes) ; rendu staging inchangé (canonical/og identiques).
+- 2026-09-12 — Re-review `bmad-code-review` soldée — 4 items [Patch] résolus : `useSiteUrl()` durci par parsing `URL` origin-only, preuve navigateur Chrome DevTools MCP ajoutée pour `/about` et `/blog`, contrainte grep clarifiée/nettoyée, File List alignée avec le diff réel. 1 item [Defer] reconfirmé (image `src` sans slash) → reste routé 10.5.
+
+### Re-review Verification — 2026-09-12
+
+- `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` → ✅ lint/typecheck/generate verts, 11 routes prerendered.
+- Chrome DevTools MCP `/about` → ✅ `canonical=https://dev.jouan.ovh/about`, `og:url=https://dev.jouan.ovh/about`, images SEO staging.
+- Chrome DevTools MCP `/blog` → ✅ `canonical=https://dev.jouan.ovh/blog`, `og:url=https://dev.jouan.ovh/blog`, JSON-LD Blog `url=https://dev.jouan.ovh/blog`, `blogPost=[]`.
+- `rg "https://dev\.jouan\.ovh|https://jouan\.ovh" app` → ✅ aucune URL complète hardcodée dans `app/`.
+- `git diff --check` → ✅ aucun whitespace error.
+- `NUXT_PUBLIC_SITE_URL=https://jouan.ovh/site pnpm generate` via Docker → ✅ échec attendu au prerender (`/about`, `/blog`) : le garde-fou origin-only rejette les bases avec chemin.

@@ -134,7 +134,7 @@ const pageTitle = "À propos — jouan.ovh";
 const pageDescription =
   "Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours.";
 // URL de prod lue depuis runtimeConfig via useSiteUrl() (swappable staging/prod, sans
-// domaine en dur). Inchangée en staging → canonical/og toujours en https://dev.jouan.ovh.
+// domaine en dur). Inchangée en staging → canonical/og restent sur le domaine staging.
 const siteUrl = useSiteUrl();
 const pageUrl = `${siteUrl}/about`;
 const pageImage = `${siteUrl}/images/portrait.jpeg`;
