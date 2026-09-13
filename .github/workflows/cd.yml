@@ -47,6 +47,8 @@ jobs:
         run: pnpm typecheck
 
       - name: Generate
+        env:
+          NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
         run: pnpm generate
 
       # CNAME et _headers vivent dans public/ et sont émis automatiquement dans
