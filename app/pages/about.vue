@@ -25,14 +25,16 @@
           <div class="about__bio">
             <h2 class="eyebrow">// à propos</h2>
             <p class="prose about__para">
-              Développeur web freelance, je viens d'un parcours technique (métrologie, instrumentation) avant de
-              basculer dans le code. Aujourd'hui je conçois des applications en <strong>PHP/Symfony</strong>, des sites
-              <strong>WordPress</strong> sur-mesure, et des produits en <strong>Node.js / Nest.js / Nuxt.js</strong>.
+              Développeur web freelance basé à <strong>{{ city }}</strong
+              >, je viens d'un parcours technique (métrologie, instrumentation) avant de basculer avec passion dans le
+              code. Aujourd'hui, je conçois et développe des applications web et produits SaaS modernes avec
+              <strong>Vue 3 / Nuxt 4</strong>, <strong>NestJS</strong> et <strong>PostgreSQL</strong>.
             </p>
             <p class="prose about__para">
-              Je suis aussi fondateur du SaaS
-              <ZExternalLink href="https://keova.app" rel="noopener">keova.app</ZExternalLink>, et j'aime mettre l'IA au
-              service du code — agents, automatisations, intégrations LLM.
+              Je suis également co-fondateur de la plateforme SaaS
+              <ZExternalLink :href="keovaUrl">{{ keovaHostname }}</ZExternalLink
+              >, et j'intègre l'automatisation, l'exigence QA et l'IA au service du code — tests automatisés,
+              architecture modulaire et intégrations d'APIs.
             </p>
 
             <!-- Stack technique (story 5.2) — sous la bio, conforme à About.jsx. ZTag = pill.
@@ -99,21 +101,25 @@ import { SITE } from "~/data/site";
 // Identité + stack — source unique `app/data/site.ts`.
 const profile = SITE.profile;
 const skills = SITE.skills;
+const city = profile.city.split(",")[0]?.trim() ?? profile.city;
+const keovaProject = SITE.projects.find((p) => p.url?.includes("keova"));
+const keovaUrl = keovaProject?.url ?? "https://keova.app";
+const keovaHostname = keovaUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
 
-// Expériences (data.js → S.experiences) — de la plus récente à la plus ancienne.
+// Expériences (de la plus récente à la plus ancienne).
 // `org` sert de clé v-for stable (unique).
 const experiences = [
   {
     date: "02/2021 — aujourd'hui",
-    role: "Testeur QA",
+    role: "Testeur QA & Développeur TypeScript",
     org: "Linkizz",
-    desc: "Tests automatisés — Node.js, TypeScript, TestCafé.",
+    desc: "Tests automatisés et fiabilisation applicative — Node.js, TypeScript, TestCafé.",
   },
   {
     date: "05/2020 — 12/2021",
     role: "Développeur Full Stack",
     org: "CINS",
-    desc: "PHP/MySQL, Symfony 4/5, Drupal, Prestashop, WordPress, Docker.",
+    desc: "Développement d'applications web, APIs et intégrations sur-mesure, Docker.",
   },
   {
     date: "07/2007 — 05/2019",
@@ -131,8 +137,7 @@ const degrees = [
 
 // Métadonnées de la page. Voix 1re personne cohérente (cf. contrainte Langue & voix).
 const pageTitle = "À propos — jouan.ovh";
-const pageDescription =
-  "Développeur web freelance à Valognes, je conçois des applications en PHP/Symfony, des sites WordPress sur-mesure et des produits Node.js / Nest.js / Nuxt.js — voici mon parcours.";
+const pageDescription = `Développeur web freelance à ${city}, je conçois des applications web et plateformes SaaS modernes avec Nuxt, NestJS et PostgreSQL — découvrez mon parcours.`;
 
 const siteUrl = useSiteUrl();
 const aboutJsonLd = {
@@ -146,6 +151,12 @@ const aboutJsonLd = {
     jobTitle: SITE.profile.role,
     url: siteUrl,
     image: `${siteUrl}/images/portrait.jpeg`,
+    email: SITE.profile.email,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: SITE.profile.city,
+      addressCountry: "FR",
+    },
   },
 };
 

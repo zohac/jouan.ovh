@@ -142,10 +142,10 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 
 ## Deferred from: code review of 11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique (2026-09-13)
 
-- **Alignement de la copie commerciale, terminal JouanOS et tags hero de la page d'accueil** (`app/pages/index.vue`) — L'en-tête hero de `index.vue` conserve temporairement l'ancienne accroche et les tags PHP/WordPress jusqu'à son remplacement par JouanOS. → Prévu dans la **Story 11.2** (Séquence de boot interactive JouanOS et hero commercial cinétique).
-- **Marquee de stack moderne ordonnée et mise en avant des 3 services** (`app/pages/index.vue`) — La section des compétences et des services n'affiche pas encore le marquee ni les 3 offres commerciales. → Prévu dans la **Story 11.3** (Marquee de stack moderne et vitrine des 3 services cibles).
-- **Preuves statistiques SaaS (100k+, 85%), journal technique et bouton CTA vers profil Malt** (`app/pages/index.vue`) — Les indicateurs chiffrés, le journal et le lien de conversion Malt ne sont pas encore intégrés sur la home. → Prévu dans la **Story 11.4** (Preuves concrètes SaaS, journal technique et CTA final de conversion).
-- **Audit SEO transverse et mise à jour des métadonnées secondaires** (`app/pages/about.vue`) — Révision globale du SEO de `about.vue` et des pages secondaires pour refléter la nouvelle position commerciale Full Stack TS. → Prévu dans la **Story 11.5** (Validation transverse a11y multi-pages, SSG Nitro et gate Docker).
+- ~~**Alignement de la copie commerciale, terminal JouanOS et tags hero de la page d'accueil**~~ — ✅ **Résolu en 11.2** (`HomeBootOverlay.vue`, `HomeHeroTerminal.vue`, `index.vue`).
+- ~~**Marquee de stack moderne ordonnée et mise en avant des 3 services**~~ — ✅ **Résolu en 11.3** (`HomeStackMarquee.vue`, `index.vue`).
+- ~~**Preuves statistiques SaaS (100k+, 85%), journal technique et bouton CTA vers profil Malt**~~ — ✅ **Résolu en 11.4** (projets SaaS, stats clés, journal, cta final dans `index.vue`).
+- ~~**Audit SEO transverse et mise à jour des métadonnées secondaires** (`app/pages/about.vue`)~~ — ✅ **Résolu en 11.5** (`about.vue` : bio, rôle Full Stack TS, localisation Rouen, expériences et JSON-LD synchronisés).
 
 ## Deferred from: code review of 11-3-marquee-de-stack-moderne-et-vitrine-des-3-services-cibles (2026-09-13)
 
@@ -156,5 +156,6 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 
 - **Différenciation éditoriale d'une carte vedette dans le journal (CAP-7)** (`app/pages/index.vue:150`) — La spécification CAP-7 envisageait une carte vedette et des vignettes secondaires. L'AC3 de la story 11.4 a implémenté une grille uniforme élégante à 3 cartes conforme à la maquette `Home - Awwwards.html`. La hiérarchisation avancée (première carte mise en avant) pourra être reprise lors de l'enrichissement éditorial du blog.
 
+## Deferred from: code review of 11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker (2026-09-13)
 
-
+- **Nettoyage résiduel des mentions « WordPress » sur les autres pages secondaires** (`app/pages/contact.vue`, `app/pages/blog/index.vue`) — Si la page `about.vue` a été harmonisée en Story 11.5 et `/services` fait l'objet d'un suivi différé dédié, `contact.vue` (placeholder de formulaire et description SEO) et `blog/index.vue` (sous-titre et meta description) conservent des mentions WordPress historiques à réaligner lors d'un futur rafraîchissement éditorial transversal.
