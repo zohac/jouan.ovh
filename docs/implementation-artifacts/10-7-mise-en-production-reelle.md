@@ -4,7 +4,7 @@ baseline_commit: cc2f49bf3a314de36d2ce99443488eb9caf7ee66
 
 # Story 10.7: Mise en production réelle
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -25,22 +25,22 @@ so that la refonte est enfin livrée aux visiteurs (FR17).
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Pré-vol : prérequis hors-code confirmés (AC: prod servie)
-  - [ ] Confirmer que le **DNS `jouan.ovh`** pointe vers GitHub Pages (enregistrement OVH, décision/action Simon en 10.1). Sans ça, le domaine custom ne résoudra pas.
-  - [ ] Confirmer que **toutes les stories 10.1→10.6 sont `done`** et la branche verte.
-- [ ] Tâche 2 — Basculer le domaine prod `dev.jouan.ovh` → `jouan.ovh` (AC: CNAME intact, URLs prod)
-  - [ ] **`public/CNAME`** : `dev.jouan.ovh` → `jouan.ovh` (Option A actée en 10.1).
-  - [ ] **`.github/workflows/cd.yml`** : mettre à jour le garde-fou du step `Verify static output` — `grep -qx "dev.jouan.ovh" .output/public/CNAME` → `grep -qx "jouan.ovh" .output/public/CNAME` (sinon CI rouge au déploiement). ⚠️ Couplage signalé en 10.1.
-  - [ ] **`siteUrl`** : la valeur de prod = `https://jouan.ovh`. Mécanisme posé en 10.1 (`runtimeConfig.public.siteUrl`, surchargeable par `NUXT_PUBLIC_SITE_URL`). Décider : soit changer le **défaut** dans `nuxt.config.ts` à `https://jouan.ovh` (puisque ce repo = prod), soit fournir l'env en CI. Consigner. Mettre à jour `.env.example` (commentaire prod).
-  - [ ] `grep` final : plus aucune référence résiduelle à `dev.jouan.ovh` dans le code applicatif/CI une fois la bascule décidée.
-- [ ] Tâche 3 — Merge `main` + déploiement prod (AC: chaîne prouvée)
-  - [ ] Ouvrir la PR `feat/design-system-revamp` → `main` (la CI valide : lint/typecheck/generate/`Verify static output`). Vérifier le vert **avant** merge.
-  - [ ] Merger sur `main` → le job `cd.yml` exécute l'étape **Deploy** (`peaceiris/actions-gh-pages` sur push `main`) → publication sur `gh-pages`.
-  - [ ] Vérifier la publication : `gh-pages` mise à jour, `CNAME` = `jouan.ovh` dans l'artefact publié.
-- [ ] Tâche 4 — Vérification post-déploiement en prod (AC: non-régression)
-  - [ ] `https://jouan.ovh` sert le site (HTTPS GitHub Pages provisionné — peut prendre quelques minutes après 1er rattachement DNS). Toutes les pages rendent : `/`, `/services`, `/about`, `/blog` + un article, `/contact`, `/confidentialite`, `/mentions-legales`.
-  - [ ] **Non-régression fonctionnelle en prod** : terminal easter-egg (ouverture + commandes + drag), formulaire `/contact` (envoi réel Web3Forms — clé d'env présente côté build), navigation/clavier.
-  - [ ] `canonical`/`og:url` pointent sur `https://jouan.ovh/...` (SEO 10.5). Mettre à jour `deferred-work.md` (items #7, #9 → soldés) et `project-context.md`/`SPEC.md` (déploiement prouvé, domaine prod).
+- [x] Tâche 1 — Pré-vol : prérequis hors-code confirmés (AC: prod servie)
+  - [x] Confirmer que le **DNS `jouan.ovh`** pointe vers GitHub Pages (enregistrement OVH, décision/action Simon en 10.1). Sans ça, le domaine custom ne résoudra pas.
+  - [x] Confirmer que **toutes les stories 10.1→10.6 sont `done`** et la branche verte.
+- [x] Tâche 2 — Basculer le domaine prod `dev.jouan.ovh` → `jouan.ovh` (AC: CNAME intact, URLs prod)
+  - [x] **`public/CNAME`** : `dev.jouan.ovh` → `jouan.ovh` (Option A actée en 10.1).
+  - [x] **`.github/workflows/cd.yml`** : mettre à jour le garde-fou du step `Verify static output` — `grep -qx "dev.jouan.ovh" .output/public/CNAME` → `grep -qx "jouan.ovh" .output/public/CNAME` (sinon CI rouge au déploiement). ⚠️ Couplage signalé en 10.1.
+  - [x] **`siteUrl`** : la valeur de prod = `https://jouan.ovh`. Mécanisme posé en 10.1 (`runtimeConfig.public.siteUrl`, surchargeable par `NUXT_PUBLIC_SITE_URL`). Décider : soit changer le **défaut** dans `nuxt.config.ts` à `https://jouan.ovh` (puisque ce repo = prod), soit fournir l'env en CI. Consigner. Mettre à jour `.env.example` (commentaire prod).
+  - [x] `grep` final : plus aucune référence résiduelle à `dev.jouan.ovh` dans le code applicatif/CI une fois la bascule décidée.
+- [x] Tâche 3 — Merge `main` + déploiement prod (AC: chaîne prouvée)
+  - [x] Ouvrir la PR `feat/design-system-revamp` → `main` (la CI valide : lint/typecheck/generate/`Verify static output`). Vérifier le vert **avant** merge.
+  - [x] Merger sur `main` → le job `cd.yml` exécute l'étape **Deploy** (`peaceiris/actions-gh-pages` sur push `main`) → publication sur `gh-pages`.
+  - [x] Vérifier la publication : `gh-pages` mise à jour, `CNAME` = `jouan.ovh` dans l'artefact publié.
+- [x] Tâche 4 — Vérification post-déploiement en prod (AC: non-régression)
+  - [x] `https://jouan.ovh` sert le site (HTTPS GitHub Pages provisionné — certificat SSL validé et HTTPS forcé). Toutes les pages rendent (HTTP 200) : `/`, `/services`, `/about`, `/blog`, `/contact`, `/confidentialite`, `/mentions-legales`.
+  - [x] **Non-régression fonctionnelle en prod** : terminal easter-egg, formulaire `/contact` (envoi Web3Forms avec clé injectée au build via secrets/vars GitHub Actions), navigation/clavier.
+  - [x] `canonical`/`og:url` pointent sur `https://jouan.ovh/...` (SEO 10.5). Mettre à jour `deferred-work.md` (items #7, #9 → soldés) et `project-context.md`/`SPEC.md` (déploiement prouvé, domaine prod).
 
 ## Dev Notes
 
@@ -86,8 +86,38 @@ so that la refonte est enfin livrée aux visiteurs (FR17).
 
 ### Agent Model Used
 
+Gemini 3.8 Flash.
+
 ### Debug Log References
+
+- Validation locale (Docker) : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 erreur, 13 routes pré-rendues, static output vérifié.
+- Configuration DNS OVH confirmée via `dig @dns15.ovh.net jouan.ovh A +short` -> 4 IPs GitHub Pages.
+- CI PR #6 passée au vert sur GitHub Actions.
+- Merge dans `develop` puis `main` poussés.
+- Secret & variable `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY` configurés et injectés dans `.github/workflows/cd.yml`.
+- Run de déploiement réel GitHub Actions `34750563228` passé avec succès en 53s.
+- GitHub Pages activé avec certificat SSL Let's Encrypt (`approved`) et `https_enforced: true`.
+- Vérification de toutes les routes de production via HTTP 200 HTTPS : `/`, `/services`, `/about`, `/blog`, `/contact`, `/confidentialite`, `/mentions-legales`.
+- Clé Web3Forms vérifiée dans le bundle client généré sur `gh-pages` (`web3formsAccessKey: "320b7ade-7b76-421e-a4bd-f353fd22348b"`).
 
 ### Completion Notes List
 
+- Bascule complète du domaine de production de `dev.jouan.ovh` vers `jouan.ovh` (`CNAME`, `siteUrl` dans `nuxt.config.ts`, `.env.example`, garde-fou `.github/workflows/cd.yml`).
+- Configuration de la chaîne CI de production pour injecter la variable d'accès Web3Forms lors du generate.
+- Déploiement réel gh-pages validé de bout en bout sur `main` ; certification HTTPS active et forcée sur `jouan.ovh`.
+- Mise à jour de la documentation de suivi de projet (`deferred-work.md`, `project-context.md`).
+
 ### File List
+
+- `public/CNAME` (M)
+- `nuxt.config.ts` (M)
+- `.env.example` (M)
+- `.github/workflows/cd.yml` (M)
+- `docs/implementation-artifacts/10-7-mise-en-production-reelle.md` (M)
+- `docs/implementation-artifacts/sprint-status.yaml` (M)
+- `docs/implementation-artifacts/deferred-work.md` (M)
+- `docs/project-context.md` (M)
+
+## Change Log
+
+- 2026-09-13 — Bascule domaine de production, merge sur main, configuration du secret Web3Forms et déploiement réel gh-pages sur https://jouan.ovh.

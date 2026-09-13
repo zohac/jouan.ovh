@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-13 (Story 10.7 en cours : mise en production réelle)"
+last_updated: "2026-09-13 (Story 10.7 prête pour revue : mise en production réelle, statut review)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -114,5 +114,5 @@ development_status:
   10-4-validation-a11y-emulee-et-unification-forced-colors: done
   10-5-seo-centralise-site-wide: done
   10-6-conformite-legale-rgpd-mentions: done
-  10-7-mise-en-production-reelle: in-progress
+  10-7-mise-en-production-reelle: review
   epic-10-retrospective: optional
