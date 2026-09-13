@@ -1,5 +1,5 @@
 # generated: 2026-06-18
-# last_updated: 2026-09-13 (story 10.6 done)
+# last_updated: 2026-09-13 (Epic 11 ajouté : Refonte d'accueil Awwwards & Repositionnement Commercial)
 # project: jouan.ovh
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-13 (Story 10.7 revue validée : mise en production réelle, statut done)"
+last_updated: "2026-09-13 (Story 11.1 ready-for-dev : Préparation de branche, site.ts & Atmosphère)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -115,4 +115,13 @@ development_status:
   10-5-seo-centralise-site-wide: done
   10-6-conformite-legale-rgpd-mentions: done
   10-7-mise-en-production-reelle: done
-  epic-10-retrospective: optional
+  epic-10-retrospective: done
+
+  # Epic 11 — Refonte d'accueil Awwwards & Repositionnement Commercial Full Stack TS
+  epic-11: in-progress
+  11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique: ready-for-dev
+  11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique: backlog
+  11-3-marquee-de-stack-moderne-et-vitrine-des-3-services-cibles: backlog
+  11-4-preuves-concretes-saas-journal-technique-et-cta-final-de-conversion: backlog
+  11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker: backlog
+  epic-11-retrospective: optional

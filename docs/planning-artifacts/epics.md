@@ -1,5 +1,5 @@
 ---
-stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories']
+stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation']
 inputDocuments:
   - docs/specs/spec-design-system-revamp/SPEC.md
   - docs/specs/spec-design-system-revamp/pages.md
@@ -7,6 +7,12 @@ inputDocuments:
   - docs/project-context.md
   - docs/implementation-artifacts/deferred-work.md
   - docs/implementation-artifacts/epic-9-retro-2026-06-29.md
+  - docs/specs/spec-home-awwwards/SPEC.md
+  - docs/specs/spec-home-awwwards/sections-mapping.md
+  - docs/specs/spec-home-awwwards/.decision-log.md
+  - docs/contexte_malt.md
+  - docs/direction_strategique_site.md
+  - AGENTS.md
 ---
 
 # jouan.ovh - Epic Breakdown
@@ -40,6 +46,18 @@ FR15: Centraliser le SEO site-wide (`useSeoMeta`/`app.head` partagé, `SITE_URL`
 FR16: Publier la conformité légale — page politique de confidentialité (RGPD, sous-traitant Web3Forms) + mentions légales, liées depuis footer/formulaire. _(deferred-work RGPD #8)_
 FR17: Mettre en production — trancher l'hébergement prod, basculer `SITE_URL` + `CNAME` `dev.jouan.ovh` → `jouan.ovh`, et prouver la chaîne de déploiement gh-pages (premier merge `main`, CI + `CNAME` intacts). _(deferred-work domaine #7 + déploiement #9)_
 
+#### Epic 11 — Refonte d'accueil Awwwards & Repositionnement Commercial (SPEC-home-awwwards)
+FR18: Arrière-plan atmosphérique immersif en pur CSS (auroras animées aubergine/orange/rouge, scanlines CRT, grille de points) avec neutralisation totale sous `prefers-reduced-motion: reduce`. _(CAP-1)_
+FR19: Séquence de boot interactive stylisée `jouan.os` affichant la montée en charge système, avec fermeture automatique (1-1.5s) ou manuelle (clic / touche Escape), mémorisée en session et contournée sous reduced-motion. _(CAP-2)_
+FR20: Hero commercial cinétique affichant le titre officiel « Développeur Full Stack TypeScript — Nuxt / NestJS », le pitch SaaS/web apps, le badge de statut vérifié Malt (`<ZExternalLink>`), les CTAs vers `/contact` et `/about`, et la fenêtre terminal hero simulant la frappe de commandes clés avec caret natif. _(CAP-3)_
+FR21: Marquee infini de la stack technique moderne prioritaire alimenté par `SITE.skills`, défilant en continu avec pause au survol et arrêt sans débordement horizontal sous reduced-motion. _(CAP-4)_
+FR22: Section vitrine des 3 offres de services ciblées sous forme de cartes structurées invitant à approfondir et redirigeant vers `/services`. _(CAP-5)_
+FR23: Section de preuves concrètes exposant Keova (lien live `<ZExternalLink>`), TryOn (étude de cas technique MVP livré sans lien externe mort), Nodium (lab R&D en cours), et les 3 compteurs statistiques clés de parcours. _(CAP-6)_
+FR24: Section journal présentant les derniers articles du blog avec lien d'approfondissement vers `/blog`. _(CAP-7)_
+FR25: Bloc CTA final de conversion orienté mission (« Discuter de votre projet » vers `/contact`, bouton vers profil Malt, lien vers `/about`). _(CAP-8)_
+FR26: Maintien strict de l'architecture multi-pages : tous les liens de navigation et de renvoi ciblent les routes Nuxt indépendantes sans repli vers des ancres intra-page `#`. _(CAP-9)_
+FR27: Micro-curseur interactif progressif pour navigateurs de bureau avec souris (`data-hot`), désactivé sur tactile et sous reduced-motion. _(CAP-10)_
+
 ### NonFunctional Requirements
 
 NFR1: Dark-first uniquement — aucun thème clair ; orange Ubuntu = unique accent héros.
@@ -51,16 +69,20 @@ NFR6: Langue & voix — français, 1re personne « je », vouvoiement, pas d'emo
 NFR7: Typo signature — Ubuntu Mono (titres/labels/code), Ubuntu sans (corps long).
 NFR8: Séquencement — la migration (FR1) doit être livrée et verte avant FR2+.
 NFR9: Easter-egg terminal préservé — aucune commande existante cassée.
+NFR10: Isolement Git — le développement de l'Epic 11 s'exécute sur une branche dédiée issue de `develop` (ex. `feat/home-awwwards`), préservant la branche `main` de production.
+NFR11: Alignement commercial & Malt strict — aucun élément de WordPress, PHP legacy ou QA manuelle en offre de premier niveau sur la home ; harmonisation intégrale avec `docs/contexte_malt.md` et `docs/direction_strategique_site.md`.
+NFR12: Fiabilité des liens et accessibilité — zéro lien externe mort (TryOn sans lien 404), balisage systématique de tout lien externe via `<ZExternalLink>`, et respect des standards a11y (titres, listes, contrastes, motion réduit).
 
 ### Additional Requirements
 
-- Gestionnaire de paquets **Yarn** ; build `yarn generate` → `.output/public` ; déploiement `yarn deploy` (push-dir `gh-pages`).
+- Gestionnaire de paquets **pnpm** (corepack enable) sous Docker ; build statique `pnpm generate` → `.output/public` ; déploiement automatique GitHub Pages via `.github/workflows/cd.yml`.
 - SCSS structuré (`abstract/` `base/` `components/` `pages/`), entrée `assets/scss/main.scss`, système `@use`.
 - Nuxt : auto-import des composants, `pages/`, layout `layouts/default.vue`, images via `<nuxt-img>`/`<nuxt-picture>`.
-- Blog via `@nuxt/content` markdown — dossier `content/` à créer.
-- Pas de framework de test ; barre de qualité = lint (`eslint`, `stylelint`) + build vert.
-- Code legacy Options API + `vue-property-decorator` : migrer/supprimer, ne pas étendre.
-- Lint : ESLint + Prettier (double quotes, `;`, `max-len 120`) + `stylelint-scss`.
+- Blog via `@nuxt/content` markdown — dossier `content/`.
+- Barre de qualité stricte = Docker-only gate (`pnpm lint && pnpm typecheck && pnpm generate`) avec 0 erreur et 13 routes pré-rendues.
+- Lint : ESLint 10 (`@nuxt/eslint`), Prettier 3, Stylelint 17 (`stylelint-scss`).
+- **Epic 11 — Données centralisées dans `app/data/site.ts`** : mise à jour de `SITE.profile` (titre Full Stack TS, localisation Rouen/remote), `SITE.skills` (TypeScript, Nuxt, NestJS, etc.) et `SITE.projects` (Keova, TryOn, Nodium), consommées sans duplication locale.
+- **Epic 11 — Compatibilité statique SSG (Nitro)** : tout accès direct à `window`, `document`, `sessionStorage` strictement encapsulé dans `onMounted()` ou sous `import.meta.client`.
 
 ### UX Design Requirements
 
@@ -81,6 +103,14 @@ UX-DR14: About — portrait + bio + timeline + formation + stack (réf. `About.j
 UX-DR15: Blog — index avec empty-state soigné + vue article prose/code stylés (réf. `Blog.jsx`).
 UX-DR16: Contact — formulaire (validation front, pas de backend) + carte infos + CTA terminal + socials (réf. `Contact.jsx`).
 UX-DR17: Accessibilité & motion — `prefers-reduced-motion` (seule boucle = caret), états focus/hover/press visibles, contraste lisible, navigation clavier.
+UX-DR18: Pile atmosphérique `.atmos` avec 3 calques auroras floutés (`.aurora--auberg`, `.aurora--orange`, `.aurora--red`), scanlines CRT et grille de points.
+UX-DR19: Composant `BootOverlay` avec montée en charge progressive stylisée `jouan.os`, affichage des étapes, fermeture Escape/clic et mémorisation en session.
+UX-DR20: Hero cinétique avec révélation progressive de texte, badge de disponibilité avec puce pulsée et lien Malt, et composant terminal simulant la frappe avec caret natif.
+UX-DR21: Composant `StackMarquee` avec doublement des éléments pour défilement infini CSS fluide et pause sur `:hover`.
+UX-DR22: Grille des 3 cartes de service avec numérotation terminale, promesse de valeur et tags technologiques (redirection `/services`).
+UX-DR23: Section projets avec cartes en relief, badges de statut (`● En production`, `○ Étude de cas`, `◐ R&D`), intégration propre de TryOn sans lien mort 404, et 3 blocs compteurs statistiques.
+UX-DR24: Bloc CTA de conversion avec fond aubergine contrasté, typographie Ubuntu et boutons d'action (contact + lien Malt via `<ZExternalLink>`).
+UX-DR25: Micro-curseur interactif custom (`dot` + `ring`) réactif aux zones interactives (`data-hot`), actif uniquement sur desktop avec souris (`@media (hover: hover)`).
 
 ### FR Coverage Map
 
@@ -101,6 +131,16 @@ FR14: Epic 10 — Validation a11y émulée + unification forced-colors
 FR15: Epic 10 — SEO centralisé site-wide
 FR16: Epic 10 — Conformité légale (RGPD + mentions légales)
 FR17: Epic 10 — Mise en production (domaine prod + déploiement gh-pages prouvé)
+FR18: Epic 11 — Arrière-plan atmosphérique immersif en pur CSS
+FR19: Epic 11 — Séquence de boot interactive stylisée jouan.os
+FR20: Epic 11 — Hero commercial cinétique & terminal vitrine
+FR21: Epic 11 — Marquee infini de la stack moderne ciblée
+FR22: Epic 11 — Vitrine des 3 offres de services ciblées
+FR23: Epic 11 — Preuves concrètes & Projets phares (Keova, TryOn, Nodium)
+FR24: Epic 11 — Vitrine des articles récents du blog
+FR25: Epic 11 — Bloc CTA de conversion orienté mission & profil Malt
+FR26: Epic 11 — Préservation de l'architecture multi-pages
+FR27: Epic 11 — Micro-curseur interactif progressif desktop
 
 ## Epic List
 
@@ -143,6 +183,10 @@ Passe transverse finale : états focus/hover/press, `prefers-reduced-motion`, co
 ### Epic 10: Fin de refonte
 La refonte est réellement livrée : a11y résiduelle bouclée et validée, SEO centralisé, conformité légale publiée, et le site déployé en production sur `jouan.ovh` (gh-pages prouvé, `CNAME` intact). _(Ajouté après la rétro Epic 9 — décision Simon : consolider la pile `deferred-work.md` « fin de refonte » en un épic.)_
 **FRs covered:** FR12, FR13, FR14, FR15, FR16, FR17 _(NFR5)_
+
+### Epic 11: Refonte d'accueil Awwwards & Repositionnement Commercial Full Stack TS
+Le visiteur arrivant sur la page d'accueil de `jouan.ovh` découvre une vitrine immersive haute performance (« Awwwards level ») et comprend instantanément le positionnement de Simon Jouan comme Développeur Full Stack TypeScript (Nuxt / NestJS / PostgreSQL) pour applications web et SaaS, appuyé par des preuves concrètes de réalisations (Keova en production, TryOn en étude de cas, Nodium en lab R&D), une réassurance chiffrée (11 ans d'expérience, culture qualité logicielle), et des points de contact directs (formulaire et profil Malt) sans altérer l'architecture multi-pages existante.
+**FRs covered:** FR18, FR19, FR20, FR21, FR22, FR23, FR24, FR25, FR26, FR27 _(NFR10, NFR11, NFR12, UX-DR18 à UX-DR25)_
 
 ---
 
@@ -656,3 +700,90 @@ So that la refonte est enfin livrée aux visiteurs (FR17).
 **When** on bascule `SITE_URL` + `CNAME` de `dev.jouan.ovh` vers `jouan.ovh`, on merge sur `main` et on exécute le déploiement gh-pages de production
 **Then** le site est servi en production sur `https://jouan.ovh` (`CNAME` intact), toutes les pages rendent, et la chaîne CI gh-pages est **prouvée en réel** (lève le report assumé depuis l'Epic 1)
 **And** non-régression post-déploiement (pages + terminal + formulaire) vérifiée ; `canonical`/`og:url` pointent sur `jouan.ovh`
+
+---
+
+## Epic 11: Refonte d'accueil Awwwards & Repositionnement Commercial Full Stack TS
+
+Le visiteur arrivant sur la page d'accueil de `jouan.ovh` découvre une vitrine immersive haute performance (« Awwwards level ») et comprend instantanément le positionnement de Simon Jouan comme Développeur Full Stack TypeScript (Nuxt / NestJS / PostgreSQL) pour applications web et SaaS, appuyé par des preuves concrètes de réalisations (Keova en production, TryOn en étude de cas, Nodium en lab R&D), une réassurance chiffrée (11 ans d'expérience, culture qualité logicielle), et des points de contact directs (formulaire et profil Malt) sans altérer l'architecture multi-pages existante.
+
+### Story 11.1: Préparation de branche, mise à jour des données `site.ts` & Atmosphère cinétique
+
+As a visiteur découvrant la page d'accueil,
+I want percevoir un arrière-plan immersif atmosphérique (auroras, grille, scanlines) et un micro-curseur interactif sur ordinateur de bureau,
+So that j'entre immédiatement dans l'univers technique haut de gamme du site sans gêne de performance ou de lisibilité (FR18, FR27, NFR10, NFR11, UX-DR18, UX-DR25).
+
+**Acceptance Criteria:**
+
+**Given** le projet en production sur `main` et la nécessité de développer de manière isolée sans régresser la prod
+**When** on crée et checkout la branche dédiée `feat/home-awwwards` issue de `develop`, qu'on met à jour `app/data/site.ts` avec le profil Malt (`SITE.profile` rôle « Développeur Full Stack TypeScript — Nuxt / NestJS », ville « Rouen, France » ; `SITE.skills` stack moderne ciblée ; `SITE.projects` avec Keova, TryOn et Nodium), et qu'on intègre le conteneur atmosphérique `.atmos` et le micro-curseur desktop progressif
+**Then** l'arrière-plan anime 3 auroras floutées (aubergine, orange, rouge) avec texture scanlines CRT et grille de points en pur CSS fluide, neutralisées sous `prefers-reduced-motion: reduce`
+**And** le micro-curseur personnalisé (`dot` + `ring`) réagit aux éléments interactifs (`data-hot`), est masqué sous `@media (hover: none)` et sous reduced motion, sans altérer le curseur natif en cas d'erreur JS
+**And** gate Docker verte (`pnpm lint`, `pnpm typecheck`, `pnpm generate`)
+
+### Story 11.2: Séquence de Boot interactive (`jouan.os`) & Hero commercial cinétique
+
+As a prospect technique ou client potentiel,
+I want assister au démarrage stylisé du terminal et visualiser immédiatement le titre officiel « Développeur Full Stack TypeScript — Nuxt / NestJS »,
+So that je comprends instantanément le métier de Simon, sa disponibilité et ses technologies phares en moins de 5 secondes (FR19, FR20, UX-DR19, UX-DR20).
+
+**Acceptance Criteria:**
+
+**Given** la page d'accueil avec son atmosphère en place
+**When** on charge la page, l'overlay `BootOverlay` (`jouan.os`) simule la montée en charge système, s'efface automatiquement après 1 à 1.5s ou immédiatement sur clic / touche Escape (mémorisé en `sessionStorage` et zappé sous reduced-motion)
+**Then** à la fin du boot, la séquence de frappe du composant terminal hero se déclenche avec caret natif clignotant (commandes `$ whoami`, `$ cat focus.txt`, `$ ls ~/projets`)
+**And** le Hero commercial affiche en typographie Ubuntu :
+  - Sur-titre `// DÉVELOPPEUR FREELANCE · NUXT & NESTJS`
+  - Titre principal `Développeur Full Stack TypeScript`
+  - Sous-titre orienté création et évolution d'applications web et SaaS (Nuxt, NestJS, PostgreSQL)
+  - Badge de statut de disponibilité vérifié avec puce pulsée et lien externe vers le profil Malt (`<ZExternalLink>`)
+  - CTA primaire `<ZButton to="/contact">Discuter de votre projet</ZButton>` et CTA secondaire `<ZButton variant="secondary" to="/about">Voir le parcours & CV</ZButton>`
+**And** gate Docker verte (`pnpm lint`, `pnpm typecheck`, `pnpm generate`)
+
+### Story 11.3: Marquee de stack moderne & Vitrine des 3 services ciblés
+
+As a visiteur explorant la page d'accueil,
+I want observer le défilé continu de la stack moderne maîtrisée et découvrir les 3 cartes d'offres de services,
+So that j'identifie clairement les compétences techniques et accède au détail des prestations sur la page dédiée `/services` (FR21, FR22, FR26, UX-DR21, UX-DR22).
+
+**Acceptance Criteria:**
+
+**Given** la stack moderne définie dans `SITE.skills` (TypeScript, Nuxt 4, Vue.js, NestJS, Node.js, PostgreSQL, TypeORM, Stripe Connect, Cypress, Docker, REST API, Vitest)
+**When** on intègre le composant `StackMarquee` et la section des 3 services phares
+**Then** le bandeau défile de manière fluide et infinie en CSS pur, se met en pause au survol (`:hover`) et s'arrête complètement sans débordement horizontal sous `prefers-reduced-motion: reduce`
+**And** la vitrine expose 3 cartes structurées `ZCard` (1. Création d'applications web & SaaS, 2. Développement Full Stack TypeScript, 3. Évolution & architecture applicative) avec numérotation terminale, proposition de valeur claire et tags technologiques
+**And** chaque carte oriente directement vers la route `/services` (aucune ancre intra-page `#`)
+**And** gate Docker verte (`pnpm lint`, `pnpm typecheck`, `pnpm generate`)
+
+### Story 11.4: Preuves concrètes SaaS, Journal technique & CTA final de conversion
+
+As a prospect cherchant des garanties avant prise de contact,
+I want consulter les réalisations SaaS phares (Keova, TryOn, Nodium), les statistiques clés et les derniers articles du journal,
+So that je suis convaincu par des preuves concrètes de conception applicative et engagé à initier une collaboration via le formulaire ou Malt (FR23, FR24, FR25, NFR12, UX-DR23, UX-DR24).
+
+**Acceptance Criteria:**
+
+**Given** les projets définis dans `SITE.projects`, les articles du blog et le profil Malt
+**When** on intègre la section des projets sélectionnés, les statistiques, le journal technique et le bloc CTA final
+**Then** les projets affichent :
+  - **Keova App** avec statut `● En production`, rôle Co-fondateur & Full Stack, stack (Nuxt 4 / NestJS / PostgreSQL / Stripe Connect) et lien direct accessible via `<ZExternalLink href="https://keova.app">`
+  - **TryOn** avec statut `○ Étude de cas (MVP livré)` valorisant l'ingénierie SaaS & IA générative, **sans lien externe mort 404** (renvoi vers description détaillée/Malt)
+  - **Nodium** avec statut `◐ R&D / En cours` valorisant le laboratoire d'agents IA desktop
+**And** les 3 compteurs statistiques clés sont affichés (11 ans d'expérience, SaaS opérés, culture qualité & automatisation)
+**And** la section journal présente les articles récents du blog avec lien vers `/blog`
+**And** le bloc CTA final de conversion propose un bouton primaire vers `/contact` (« Discuter de votre projet »), un bouton externe direct vers le profil Malt (`<ZExternalLink href="https://www.malt.fr/profile/simonjouan">`) et un lien vers `/about`
+**And** gate Docker verte (`pnpm lint`, `pnpm typecheck`, `pnpm generate`)
+
+### Story 11.5: Validation transverse a11y, multi-pages, SSG Nitro & Gate Docker
+
+As a mainteneur du site et garant de la qualité logicielle,
+I want valider l'accessibilité globale, l'absence de régression multi-pages et la conformité du build statique,
+So that la refonte de la home est irréprochable et prête pour la production (CAP-1 à CAP-10, NFR10, NFR11, NFR12).
+
+**Acceptance Criteria:**
+
+**Given** la home refondue intégrant l'ensemble des composants des stories 11.1 à 11.4
+**When** on exécute l'audit complet d'accessibilité (contraste forcé `forced-colors: active`, `prefers-reduced-motion: reduce`, navigation clavier, `<ZExternalLink>` audités)
+**Then** aucun focus trap n'existe, les éléments interactifs sont accessibles au clavier avec focus visible, les animations sont neutralisées sous reduced-motion (seul le caret clignote), et aucun lien avec ancre intra-page `#` n'est présent (les routes `/services`, `/about`, `/blog`, `/contact` restent des pages indépendantes)
+**And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) est exécutée avec succès (0 erreur ESLint/Stylelint, 0 erreur TypeScript, 13 routes pré-rendues)
+

@@ -1,7 +1,7 @@
 ---
 project_name: "jouan.ovh"
 user_name: "Simon"
-date: "2026-06-22"
+date: "2026-09-13"
 sections_completed: ["technology_stack", "language_framework", "code_quality", "workflow_testing", "critical_rules"]
 status: "complete"
 optimized_for_llm: true
@@ -27,7 +27,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
 - **Lint :** ESLint `^10` en **flat config** via `@nuxt/eslint` (`eslint.config.mjs`, `eslint: { config: { stylistic: false } }` → Prettier formate). Prettier `^3` (double quotes, points-virgules). Stylelint `^17` + `stylelint-config-standard-scss` + `stylelint-scss`. Script : `eslint . && stylelint "app/assets/**/*.scss" "app/**/*.vue"`.
 - **Gestionnaire de paquets :** pnpm (`packageManager: pnpm@11.8.0`, `pnpm-lock.yaml`), Node `>=22` — dev via Docker (cf. Workflow).
-- **Déploiement :** site statique (`nuxi generate`) → publication vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME` = `jouan.ovh`). ✅ La chaîne CI de déploiement est **prouvée en réel** sur `main` (Story 10.7).
+- **Déploiement :** site statique (`nuxi generate`) → publication vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME` = `jouan.ovh`). ✅ La chaîne CI de déploiement est **prouvée en réel** sur `main` (Story 10.7), avec 13 routes pré-rendues, HTTPS Let's Encrypt forcé et DNS OVH opérationnel.
 - **Divers :** `ua-parser-js ^2` (détection device, terminal).
 
 ## Critical Implementation Rules
@@ -110,7 +110,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 **Conventions de nommage**
 
 - **Primitives du design system : préfixe `Z`, sous `app/components/ui/`**
-  (`ZButton`, `ZCard`, `ZBadge`, `ZTag`, `ZInput`, `ZAvatar`, `ZIcon`) — `<script setup>`,
+  (`ZButton`, `ZCard`, `ZBadge`, `ZTag`, `ZInput`, `ZAvatar`, `ZIcon`, `ZExternalLink`) — `<script setup>`,
   auto-importées sans préfixe de dossier.
 - Sous-blocs de carte : `app/components/card/` (`ZCardHeader`, `ZCardBody`,
   `ZCardFooter`), restylés via tokens et composés avec `<ZCard>`. (L'ancien
@@ -130,13 +130,10 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   `components/`, `pages/`. Point d'entrée global `assets/scss/main.scss`.
 - Copier les SVG/PNG du design system depuis `docs/design_system/assets/` vers
   `public/images/` ou `assets/` lors de l'implémentation.
-- **Contenu partagé : source unique `app/data/site.ts`** (`SITE.profile` /
-  `SITE.skills` / `SITE.projects`, typés `IProfile`/`IProject`) — consommée par les
-  programmes terminal (`skills`/`projets`/`contact`/`about`), `index.vue`,
-  `about.vue`, `contact.vue` et `FooterComponent`. **Ne pas re-hardcoder**
-  profil/skills/projets/email/ville ailleurs (DRY, consolidé en 8.2). _(Les
-  `experiences`/`degrees` divergent volontairement entre le CV terminal détaillé et
-  `/about` condensé — non unifiés, suivi dans `deferred-work.md`.)_
+- **Contenu partagé, URLs & SEO :**
+  - Source unique de contenu : `app/data/site.ts` (`SITE.profile` / `SITE.skills` / `SITE.projects`, typés `IProfile`/`IProject`) — consommée par les programmes terminal (`skills`/`projets`/`contact`/`about`), `index.vue`, `about.vue`, `contact.vue` et `FooterComponent`. **Ne pas re-hardcoder** profil/skills/projets/email/ville ailleurs (DRY, consolidé en 8.2).
+  - Source unique d'URL de base : `app/composables/useSiteUrl.ts` (lit `runtimeConfig.public.siteUrl`, surchargeable via `NUXT_PUBLIC_SITE_URL`). **Ne jamais hardcoder l'URL de domaine** dans le code applicatif.
+  - Helper SEO centralisé : `app/composables/usePageSeo.ts` — pose `useSeoMeta`, liens canonicals et JSON-LD Schema.org échappé via `jsonLdScript()`. _(Les `experiences`/`degrees` divergent volontairement entre le CV terminal détaillé et `/about` condensé — non unifiés, suivi dans `deferred-work.md`.)_
 
 **Langue**
 
@@ -213,20 +210,13 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   **dès la story**, ils étaient sinon systématiquement rattrapés en revue.
 - Leçon rétro Epic 2 : ces points étaient systématiquement rattrapés en revue —
   les traiter en amont (checklist pré-revue dans la consigne de story).
-- **Epic 9 = passe a11y/motion finale (dernier épic du roadmap).** Décision rétro
-  Epic 8 : embarquer la checklist a11y **dès la consigne** de chaque story (9.1/9.2),
-  pas seulement en revue —
-  - repli **`@media (forced-colors: active)`** sur les rings de focus en `box-shadow`,
-    appliqué **une seule fois au niveau des primitives DS** (`ZButton`/`ZTag`/`ZCard`/
-    `ZInput`/liens), pas page par page ;
-  - **navigation clavier** (focus visible, ordre logique, retour de focus après overlay) ;
-  - **contraste** texte/fond lisible ;
-  - généralisation eyebrow→`<h2>` + listes `<ol>`/`<ul>` à **home** et **services**
-    (+ séquence process `<ol>` de 4.2) ; audit site-wide des `target="_blank"`.
-  - Inventaire détaillé et destinations : `deferred-work.md`. ⚠️ **« Epic 9 done »
-    ≠ « refonte livrée »** : restent après Epic 9 (fin de refonte) la story SEO dédiée
-    (+ bascule `SITE_URL` `dev.jouan.ovh` → `jouan.ovh`), la page RGPD/mentions
-    légales, et le **premier merge `main` + déploiement gh-pages prouvé**.
+- **Acquis d'accessibilité consolidés (Epics 9 & 10) :**
+  - **Forced colors unifié** : repli inline standard `outline: 2px solid transparent; outline-offset: 2px;` sur `:focus-visible` au niveau des primitives (`ZButton`/`ZCard`/`ZTag`/`ZInput`) et liens du châssis. Plus aucun bloc `@media (forced-colors)` page-level dispersé.
+  - **Liens externes** : TOUJOURS via la primitive `<ZExternalLink>` pour tout `target="_blank"` (`rel="noopener"` forcé + mention sr-only « (ouvre dans un nouvel onglet) » via `.screen-reader-text`).
+  - **Sémantique titres, listes et régions** : eyebrow ouvrant une section en `<h2 class="eyebrow">` avec préfixes `// ` décoratifs en `<span aria-hidden="true">// </span>` ; séquences répétées en listes `<ol>`/`<ul>` + `<li>` (avec `> li { display: flex }` si cartes flex) ; paires label/valeur en `<dl>/<dt>/<dd>` ; déclencheurs d'overlay terminal en `aria-haspopup="dialog"`.
+  - **Motion réduit global** : `base/_motion.scss` ramène animations/transitions à l'instantané (`0.01ms`) sous `prefers-reduced-motion: reduce`. Seule animation en boucle autorisée : le caret natif de frappe du terminal (CAP-11). Les carets décoratifs sont figés visibles.
+  - **Clavier** : `Échap` ferme le terminal avec retour de focus au déclencheur. Navigation Tab logique sur tout le site.
+  - **Contraste** : `--text-muted` minimum pour les textes informatifs réels (pas de `--text-faint` sur du contenu signifiant).
 
 **À préserver pendant la refonte**
 
@@ -270,9 +260,8 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   - Routine appliquée sans faille sur Epics 4-8 (desktop + mobile) → zéro régression de
     rendu ; elle a corrigé un défaut de la maquette (centrage timeline `kit.css`, 5.2),
     attrapé un bug d'ancres de titres `@nuxt/content` (6.2) et validé la refonte terminal
-    (diff visuel **et comportemental** avant/après, Epic 8). **Epic 9 est transverse**
-    (a11y/motion, pas de page neuve) → privilégier le diff **comportemental** clavier/motion/
-    contraste plutôt que le pixel.
+    (diff visuel **et comportemental** avant/après, Epic 8). Sur les passes transverses a11y/motion (Epics 9 & 10) :
+    vérification du comportement clavier/motion/contraste sous émulation `forced-colors: active` et `prefers-reduced-motion: reduce`.
 
 ---
 
@@ -290,4 +279,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-06-29 (post-Epic 8 : refonte terminal **livrée** — `components/terminal/` intégralement en `<script setup>`, commandes `skills`/`projets`/`contact`/`clear` ajoutées, dernier résidu Options API = `WindowWrapperComponent`/`CurrentTime` côté header ; source de contenu partagé unique `app/data/site.ts` (DRY) ; checklist a11y forced-colors/clavier/contraste à embarquer en amont des consignes Epic 9 — dernier épic, puis fin de refonte SEO + RGPD + déploiement gh-pages ; post-Epic 7 : décision Epic 8 = refonte complète du terminal — migration `components/terminal/` vers `<script setup>` + restyle DS, vérif commande-par-commande ; Web3Forms acté côté SPEC pour le formulaire `/contact` ; post-Epic 6 : pipeline `@nuxt/content` v3 — collections typées `content.config.ts`, Shiki désactivé, gotchas Docker/SQLite + `:deep()` ancres de titres ; post-Epic 5 : primitives de layout globales `base/_layout.scss` + convention a11y titres/listes — eyebrow-as-`h2`, séquences en `<ol>`/`<ul>` ; post-Epic 4 : réfs visuelles par page précisées pour la routine de diff avant revue ; post-Epic 3 : pièges `padding` shorthand multi-classes + vérif visuelle Chrome DevTools avant revue pour les stories de page ; post-Epic 2 : stack réelle Nuxt 4 / TS 6 / ESLint 10 flat / @nuxt/content 3, primitives DS `ui/`, tokens CSS globaux, règles a11y)
+Dernière mise à jour : 2026-09-13 (post-Epic 10 : refonte complète livrée en production sur https://jouan.ovh — epics 1→10 done ; 13 routes statiques pré-rendues ; validation runtime a11y émulée ; primitive ZExternalLink ; SEO centralisé usePageSeo/useSiteUrl ; conformité légale RGPD /confidentialite et /mentions-legales ; déploiement réel gh-pages prouvé sur main avec HTTPS forcé et DNS OVH opérationnel).
