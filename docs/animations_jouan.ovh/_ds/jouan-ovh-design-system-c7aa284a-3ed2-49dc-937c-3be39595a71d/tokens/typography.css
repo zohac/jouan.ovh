@@ -1,0 +1,44 @@
+/* ============================================================
+   Typography
+   - Ubuntu Mono = signature voice: headlines, eyebrows, labels,
+     buttons, stats, code, terminal.
+   - Ubuntu (sans) = readable voice: body paragraphs, long-form.
+   Scale (px): 12 14 16 18 20 24 28 32 40 48 56
+   ============================================================ */
+
+:root {
+  --font-mono: "Ubuntu Mono", "SF Mono", ui-monospace, monospace;
+  --font-sans: "Ubuntu", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-mono);
+
+  /* Font sizes */
+  --fs-xs: 0.75rem;     /* 12 */
+  --fs-sm: 0.875rem;    /* 14 */
+  --fs-base: 1rem;      /* 16 */
+  --fs-md: 1.125rem;    /* 18 */
+  --fs-lg: 1.25rem;     /* 20 */
+  --fs-xl: 1.5rem;      /* 24 */
+  --fs-2xl: 1.75rem;    /* 28 */
+  --fs-3xl: 2rem;       /* 32 */
+  --fs-4xl: 2.5rem;     /* 40 */
+  --fs-5xl: 3rem;       /* 48 */
+  --fs-6xl: 3.5rem;     /* 56 */
+
+  /* Weights (Ubuntu Mono: 400/700 — Ubuntu sans adds 300/500) */
+  --fw-light: 300;       /* @kind font */
+  --fw-regular: 400;     /* @kind font */
+  --fw-medium: 500;      /* @kind font */
+  --fw-bold: 700;        /* @kind font */
+
+  /* Line heights */
+  --lh-tight: 1.1;       /* @kind font */
+  --lh-snug: 1.3;        /* @kind font */
+  --lh-normal: 1.5;      /* @kind font */
+  --lh-relaxed: 1.65;    /* @kind font */
+
+  /* Letter spacing — mono eyebrows/labels get tracked-out caps */
+  --ls-tight: -0.02em;   /* @kind font */
+  --ls-normal: 0;        /* @kind font */
+  --ls-wide: 0.04em;     /* @kind font */
+  --ls-wider: 0.14em;    /* @kind font */
+}

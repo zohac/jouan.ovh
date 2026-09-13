@@ -1,0 +1,32 @@
+<!-- @dsCard group="Colors" viewport="700x200" name="Terminal / Syntax palette" subtitle="Prompt green, directory blue, and friends — for code & status" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-terminal); color: var(--text-body);
+    font-family: var(--font-mono); padding: var(--space-6); }
+  .row { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); }
+  .sw { flex: 1 1 0; text-align: center; }
+  .dot { height: 40px; border-radius: var(--radius-sm); margin-bottom: var(--space-2); }
+  .sw b { font-size: var(--fs-xs); color: var(--text-strong); display: block; }
+  .term { font-size: var(--fs-sm); }
+  .g { color: var(--term-green); font-weight: var(--fw-bold); }
+  .b { color: var(--term-blue); font-weight: var(--fw-bold); }
+  .w { color: var(--ink-1); }
+  .y { color: var(--term-yellow); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="dot" style="background:var(--term-green)"></div><b>green</b></div>
+    <div class="sw"><div class="dot" style="background:var(--term-blue)"></div><b>blue</b></div>
+    <div class="sw"><div class="dot" style="background:var(--term-cyan)"></div><b>cyan</b></div>
+    <div class="sw"><div class="dot" style="background:var(--term-red)"></div><b>red</b></div>
+    <div class="sw"><div class="dot" style="background:var(--term-yellow)"></div><b>yellow</b></div>
+    <div class="sw"><div class="dot" style="background:var(--term-purple)"></div><b>purple</b></div>
+  </div>
+  <div class="term"><span class="g">anon.@jouan.ovh</span><span class="w">:</span><span class="b">~</span><span class="w">$</span> <span class="y">help</span></div>
+</body>
+</html>

@@ -1,0 +1,1714 @@
+Reading prompt from stdin...
+2026-09-13T09:01:45.167500Z ERROR codex_models_manager::cache: failed to load models cache: missing field `base_instructions` at line 133 column 5
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 01a09a00-4abf-7f10-bce1-732023ec2853
+--------
+user
+# Edge Case Hunter Prompt — Story 10.6
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/10-6/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’m using `bmad-review-edge-case-hunter` to mechanically enumerate unhandled branches in the specified diff.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md && printf '\\n---DIFF---\\n' && sed -n '1,260p' docs/implementation-artifacts/code-reviews/10-6/full.diff" in /Users/simon/dev/jouan.ovh
+ exited 1 in 0ms:
+sed: /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md: No such file or directory
+
+codex
+The skill is project-local rather than under the global skills path; I’m resolving the listed project path and continuing with its instructions.
+exec
+/bin/zsh -lc "sed -n '1,260p' .agents/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+exec
+/bin/zsh -lc 'wc -l docs/implementation-artifacts/code-reviews/10-6/full.diff' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     547 docs/implementation-artifacts/code-reviews/10-6/full.diff
+
+exec
+/bin/zsh -lc "sed -n '1,190p' docs/implementation-artifacts/code-reviews/10-6/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+diff --git a/app/components/FooterComponent.vue b/app/components/FooterComponent.vue
+index 418772b..febe415 100644
+--- a/app/components/FooterComponent.vue
++++ b/app/components/FooterComponent.vue
+@@ -51,6 +51,8 @@ const navItems = [
+   { to: "/about", label: "À propos" },
+   { to: "/blog", label: "Blog" },
+   { to: "/contact", label: "Contact" },
++  { to: "/confidentialite", label: "Confidentialité" },
++  { to: "/mentions-legales", label: "Mentions légales" },
+ ];
+ 
+ // Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).
+diff --git a/app/pages/confidentialite.vue b/app/pages/confidentialite.vue
+new file mode 100644
+index 0000000..c389dd3
+--- /dev/null
++++ b/app/pages/confidentialite.vue
+@@ -0,0 +1,231 @@
++<template>
++  <main class="legal">
++    <section class="section">
++      <div class="container container--legal">
++        <p class="eyebrow"><span aria-hidden="true">// </span>confidentialité</p>
++        <h1 class="legal__title">Politique de confidentialité</h1>
++        <p class="prose legal__lead">
++          Cette politique détaille la façon dont vos données personnelles sont traitées lors de votre navigation sur
++          <strong>jouan.ovh</strong> et lors de l'utilisation du formulaire de contact.
++        </p>
++
++        <div class="prose legal__content">
++          <section class="legal__section">
++            <h2 class="legal__heading">1. Responsable du traitement</h2>
++            <p>
++              Le responsable du traitement des données personnelles collectées sur ce site est :<br />
++              <strong>Simon Jouan</strong><br />
++              Développeur web freelance — Valognes (50700), France.<br />
++              Contact électronique :
++              <a class="legal__link" :href="`mailto:${profile.email}`">{{ profile.email }}</a>
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">2. Données collectées et finalités</h2>
++            <p>Le site <strong>jouan.ovh</strong> limite la collecte des données personnelles au strict nécessaire :</p>
++            <ul>
++              <li>
++                <strong>Formulaire de contact :</strong> lorsque vous envoyez un message via la page
++                <NuxtLink to="/contact" class="legal__link">Contact</NuxtLink>, nous collectons votre
++                <strong>nom</strong>, votre <strong>adresse email</strong>, ainsi que le <strong>sujet</strong> et le
++                <strong>contenu de votre message</strong>.
++              </li>
++              <li>
++                <strong>Finalité :</strong> ces informations sont utilisées exclusivement pour traiter votre demande, y
++                répondre et assurer le suivi de nos échanges professionnels.
++              </li>
++              <li>
++                <strong>Base légale (RGPD art. 6.1.a &amp; 6.1.f) :</strong> le traitement repose sur votre consentement
++                lors de l'envoi du formulaire et sur notre intérêt légitime à répondre aux sollicitations reçues.
++              </li>
++            </ul>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">3. Sous-traitance et transfert de données</h2>
++            <p>
++              Le formulaire de contact s'appuie sur le service tiers <strong>Web3Forms</strong> pour acheminer les
++              messages vers notre boîte de messagerie électronique :
++            </p>
++            <ul>
++              <li>
++                <strong>Sous-traitant :</strong> Web3Forms (<ZExternalLink href="https://web3forms.com" rel="noopener"
++                  >web3forms.com</ZExternalLink
++                >).
++              </li>
++              <li>
++                <strong>Rôle :</strong> transmission sécurisée des données de formulaire sans stockage persistant sur un
++                serveur applicatif dédié propre au site.
++              </li>
++              <li><strong>Mesures de sécurité :</strong> les flux sont chiffrés en transit (HTTPS / TLS).</li>
++            </ul>
++            <p>
++              Aucune donnée personnelle n'est vendue, louée ou cédée à des tiers à des fins commerciales ou
++              publicitaires.
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">4. Durée de conservation</h2>
++            <p>
++              Les données transmises par le formulaire de contact sont conservées pendant le temps nécessaire au
++              traitement de votre demande et aux échanges commerciaux qui en découlent, dans la limite maximale de
++              <strong>3 ans</strong> après le dernier contact émanant de votre part, sauf obligation légale ou
++              réglementaire contraire.
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">5. Vos droits (RGPD)</h2>
++            <p>
++              Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et
++              Libertés, vous disposez des droits suivants concernant vos données à caractère personnel :
++            </p>
++            <ul>
++              <li>
++                <strong>Droit d'accès :</strong> obtenir la confirmation que des données vous concernant sont traitées
++                et en obtenir une copie.
++              </li>
++              <li>
++                <strong>Droit de rectification :</strong> demander la modification de vos données inexactes ou
++                incomplètes.
++              </li>
++              <li>
++                <strong>Droit à l'effacement :</strong> demander la suppression de vos données personnelles (« droit à
++                l'oubli »).
++              </li>
++              <li>
++                <strong>Droit à la limitation du traitement :</strong> demander le gel temporaire du traitement de
++                certaines données.
++              </li>
++              <li>
++                <strong>Droit d'opposition :</strong> vous opposer à tout moment au traitement de vos données pour
++                motifs légitimes.
++              </li>
++              <li>
++                <strong>Droit à la portabilité :</strong> recevoir vos données dans un format structuré, couramment
++                utilisé et lisible par machine.
++              </li>
++            </ul>
++            <p>
++              Pour exercer ces droits, vous pouvez me contacter directement par email à :
++              <a class="legal__link" :href="`mailto:${profile.email}`">{{ profile.email }}</a
++              >.
++            </p>
++            <p>
++              Si vous estimez, après m'avoir contacté, que vos droits ne sont pas respectés, vous disposez du droit
++              d'introduire une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et
++              des Libertés — <ZExternalLink href="https://www.cnil.fr" rel="noopener">cnil.fr</ZExternalLink>).
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">6. Cookies et traceurs</h2>
++            <p>
++              Le site <strong>jouan.ovh</strong> est un site statique hébergé sur GitHub Pages. Il
++              <strong>n'utilise aucun cookie traceur, publicitaire ou d'analyse d'audience tiers</strong> nécessitant un
++              consentement préalable au sens des recommandations de la CNIL.
++            </p>
++          </section>
++        </div>
++      </div>
++    </section>
++  </main>
++</template>
++
++<script setup lang="ts">
++import { SITE } from "~/data/site";
++import { usePageSeo } from "~/composables/usePageSeo";
++
++const profile = SITE.profile;
++
++usePageSeo({
++  title: "Politique de confidentialité — jouan.ovh",
++  description:
++    "Politique de confidentialité et protection des données personnelles (RGPD) du site jouan.ovh — Simon Jouan.",
++  path: "/confidentialite",
++  type: "website",
++});
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern -- convention BEM DS */
++.legal {
++  display: block;
++}
++
++.container--legal {
++  max-width: var(--container-lg);
++}
++
++.legal__title {
++  margin-bottom: var(--space-4);
++  font-family: var(--font-mono);
++  font-size: var(--fs-4xl);
++  font-weight: var(--fw-light);
++  line-height: var(--lh-tight);
++  color: var(--text-strong);
++}
++
++.legal__lead {
+
+exec
+/bin/zsh -lc "sed -n '191,380p' docs/implementation-artifacts/code-reviews/10-6/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
++  max-width: 65ch;
++  margin-bottom: var(--space-10);
++  font-size: var(--fs-lg);
++  color: var(--text-muted);
++}
++
++.legal__content {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-8);
++}
++
++.legal__section {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-3);
++
++  p {
++    margin: 0;
++  }
++
++  ul {
++    display: flex;
++    flex-direction: column;
++    gap: var(--space-2);
++    padding-left: var(--space-5);
++    margin: 0;
++  }
++}
++
++.legal__heading {
++  margin: 0;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xl);
++  font-weight: var(--fw-medium);
++  color: var(--text-strong);
++}
++
++.legal__link {
++  color: var(--term-blue);
++  text-decoration: none;
++
++  &:hover {
++    text-decoration: underline;
++  }
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    border-radius: var(--radius-xs);
++    box-shadow: var(--ring-accent);
++  }
++}
++
++@media (width <= 640px) {
++  .legal__title {
++    font-size: var(--fs-3xl);
++  }
++}
++</style>
+diff --git a/app/pages/contact.vue b/app/pages/contact.vue
+index 6b5e7f3..c34138d 100644
+--- a/app/pages/contact.vue
++++ b/app/pages/contact.vue
+@@ -80,7 +80,8 @@
+ 
+               <p class="contact__rgpd">
+                 En envoyant ce formulaire, vos nom, email et message sont transmis via Web3Forms à seule fin de traiter
+-                votre demande.
++                votre demande. Consultez notre
++                <NuxtLink to="/confidentialite" class="contact__rgpd-link">politique de confidentialité</NuxtLink>.
+               </p>
+             </form>
+           </div>
+@@ -358,6 +359,22 @@ usePageSeo({
+   color: var(--text-muted);
+ }
+ 
++.contact__rgpd-link {
++  color: var(--term-blue);
++  text-decoration: underline;
++
++  &:hover {
++    color: var(--accent);
++  }
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    border-radius: var(--radius-xs);
++    box-shadow: var(--ring-accent);
++  }
++}
++
+ // Carte « envoyé » focalisée par programme (tabindex -1) : pas de contour UA résiduel.
+ .contact__sent:focus {
+   outline: none;
+diff --git a/app/pages/mentions-legales.vue b/app/pages/mentions-legales.vue
+new file mode 100644
+index 0000000..3fee8a0
+--- /dev/null
++++ b/app/pages/mentions-legales.vue
+@@ -0,0 +1,171 @@
++<template>
++  <main class="legal">
++    <section class="section">
++      <div class="container container--legal">
++        <p class="eyebrow"><span aria-hidden="true">// </span>mentions</p>
++        <h1 class="legal__title">Mentions légales</h1>
++        <p class="prose legal__lead">
++          Informations légales et mentions obligatoires relatives à l'édition et à l'hébergement du site
++          <strong>jouan.ovh</strong> (conformément à la loi n° 2004-575 du 21 juin 2004 pour la confiance dans
++          l'économie numérique).
++        </p>
++
++        <div class="prose legal__content">
++          <section class="legal__section">
++            <h2 class="legal__heading">1. Éditeur du site</h2>
++            <p>
++              Le site <strong>jouan.ovh</strong> est édité par :<br />
++              <strong>Simon Jouan</strong><br />
++              Activité : Développeur web indépendant (freelance)<br />
++              Localisation : Valognes (50700), Normandie, France<br />
++              Courrier électronique :
++              <a class="legal__link" :href="`mailto:${profile.email}`">{{ profile.email }}</a>
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">2. Directeur de la publication</h2>
++            <p>Le directeur de la publication et responsable de la rédaction est <strong>Simon Jouan</strong>.</p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">3. Hébergement du site</h2>
++            <p>
++              Le site est hébergé sous forme statique par :<br />
++              <strong>GitHub, Inc.</strong> (via le service GitHub Pages)<br />
++              Adresse : 88 Colin P Kelly Jr St, San Francisco, CA 94107, États-Unis<br />
++              Site web :
++              <ZExternalLink href="https://pages.github.com" rel="noopener">pages.github.com</ZExternalLink>
++            </p>
++            <p>
++              Le nom de domaine <strong>jouan.ovh</strong> est enregistré auprès de :<br />
++              <strong>OVHcloud SAS</strong><br />
++              Adresse : 2 rue Kellermann, 59100 Roubaix, France<br />
++              Site web :
++              <ZExternalLink href="https://www.ovhcloud.com" rel="noopener">ovhcloud.com</ZExternalLink>
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">4. Propriété intellectuelle</h2>
++            <p>
++              L'ensemble des contenus présents sur ce site (textes, articles, visuels, charte graphique, codes sources
++              du design system) relèvent des législations françaises et internationales sur le droit d'auteur et la
++              propriété intellectuelle.
++            </p>
++            <p>
++              Tous les droits de reproduction sont réservés. Toute reproduction, représentation, modification ou
++              diffusion intégrale ou partielle de ces éléments, sans l'accord exprès et écrit de l'auteur, est interdite
++              et constituerait une contrefaçon sanctionnée par le Code de la propriété intellectuelle.
++            </p>
++          </section>
++
++          <section class="legal__section">
++            <h2 class="legal__heading">5. Données personnelles</h2>
++            <p>
++              Pour toute information relative à la collecte, au traitement et à la protection de vos données
++              personnelles (notamment via le formulaire de contact), ainsi qu'aux modalités d'exercice de vos droits
++              (accès, rectification, effacement), veuillez consulter notre
++              <NuxtLink to="/confidentialite" class="legal__link">Politique de confidentialité</NuxtLink>.
++            </p>
++          </section>
++        </div>
++      </div>
++    </section>
++  </main>
++</template>
++
++<script setup lang="ts">
++import { SITE } from "~/data/site";
++import { usePageSeo } from "~/composables/usePageSeo";
++
++const profile = SITE.profile;
++
++usePageSeo({
++  title: "Mentions légales — jouan.ovh",
++  description: "Mentions légales, informations éditeur et hébergement du site jouan.ovh — Simon Jouan.",
++  path: "/mentions-legales",
+
+exec
+/bin/zsh -lc "sed -n '381,547p' docs/implementation-artifacts/code-reviews/10-6/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
++  type: "website",
++});
++</script>
++
++<style lang="scss" scoped>
++/* stylelint-disable selector-class-pattern -- convention BEM DS */
++.legal {
++  display: block;
++}
++
++.container--legal {
++  max-width: var(--container-lg);
++}
++
++.legal__title {
++  margin-bottom: var(--space-4);
++  font-family: var(--font-mono);
++  font-size: var(--fs-4xl);
++  font-weight: var(--fw-light);
++  line-height: var(--lh-tight);
++  color: var(--text-strong);
++}
++
++.legal__lead {
++  max-width: 65ch;
++  margin-bottom: var(--space-10);
++  font-size: var(--fs-lg);
++  color: var(--text-muted);
++}
++
++.legal__content {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-8);
++}
++
++.legal__section {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-3);
++
++  p {
++    margin: 0;
++  }
++
++  ul {
++    display: flex;
++    flex-direction: column;
++    gap: var(--space-2);
++    padding-left: var(--space-5);
++    margin: 0;
++  }
++}
++
++.legal__heading {
++  margin: 0;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xl);
++  font-weight: var(--fw-medium);
++  color: var(--text-strong);
++}
++
++.legal__link {
++  color: var(--term-blue);
++  text-decoration: none;
++
++  &:hover {
++    text-decoration: underline;
++  }
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    border-radius: var(--radius-xs);
++    box-shadow: var(--ring-accent);
++  }
++}
++
++@media (width <= 640px) {
++  .legal__title {
++    font-size: var(--fs-3xl);
++  }
++}
++</style>
+diff --git a/docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md b/docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md
+index fb05201..aa7c83a 100644
+--- a/docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md
++++ b/docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md
+@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
+ 
+ # Story 10.6: Conformité légale (RGPD + mentions légales)
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -23,18 +23,18 @@ so that je sais comment mes données (formulaire `/contact` → Web3Forms) sont
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Cadrer le contenu légal (AC: contenu)
+-  - [ ] Invoquer le skill **`rgpd-france`** pour structurer le contenu : **politique de confidentialité** (responsable de traitement = Simon Jouan ; finalité = répondre aux demandes de contact ; base légale = consentement / intérêt légitime ; données = nom, email, message ; **sous-traitant = Web3Forms** — hébergement/transfert ; durée de conservation ; droits : accès, rectification, effacement, opposition, portabilité + modalité d'exercice + réclamation CNIL) et **mentions légales** (éditeur, directeur de publication, hébergeur du site = GitHub Pages, contact). ⚠️ Vérifier avec Simon les infos d'identité/hébergeur à publier (input réel).
+-- [ ] Tâche 2 — Créer les pages (AC: pages existent, prerender, DS)
+-  - [ ] Créer `app/pages/confidentialite.vue` (politique de confidentialité) et `app/pages/mentions-legales.vue` (routes `/confidentialite`, `/mentions-legales`) — ou un sous-dossier `app/pages/legal/`. Décider et consigner les slugs.
+-  - [ ] Composer avec les **primitives de layout globales** (`.section`/`.container`/`.prose`/`.eyebrow` de `base/_layout.scss`) — **ne pas redéclarer** scoped. Titres en `<h1>`/`<h2 class="eyebrow">` (convention 5.2), corps en `.prose`. Dark-first, tokens uniquement.
+-  - [ ] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+-- [ ] Tâche 3 — Lier les pages (AC: liées)
+-  - [ ] Lier **depuis le footer** (`app/components/FooterComponent.vue`) : ajouter « Politique de confidentialité » et « Mentions légales » dans la zone liens.
+-  - [ ] Lier **depuis la notice RGPD** du formulaire `/contact` (`app/pages/contact.vue`, notice l.322+) vers `/confidentialite`.
+-- [ ] Tâche 4 — Validation (AC: tout)
+-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (routes légales prerendered).
+-  - [ ] Vérif navigateur (Chrome DevTools MCP) : pages rendues au DS, liens footer + notice contact fonctionnels, a11y (titres/clavier/focus), FR/vouvoiement/sans emoji.
++- [x] Tâche 1 — Cadrer le contenu légal (AC: contenu)
++  - [x] Invoquer le skill **`rgpd-france`** pour structurer le contenu : **politique de confidentialité** (responsable de traitement = Simon Jouan ; finalité = répondre aux demandes de contact ; base légale = consentement / intérêt légitime ; données = nom, email, message ; **sous-traitant = Web3Forms** — hébergement/transfert ; durée de conservation ; droits : accès, rectification, effacement, opposition, portabilité + modalité d'exercice + réclamation CNIL) et **mentions légales** (éditeur, directeur de publication, hébergeur du site = GitHub Pages, contact). ⚠️ Vérifier avec Simon les infos d'identité/hébergeur à publier (input réel).
++- [x] Tâche 2 — Créer les pages (AC: pages existent, prerender, DS)
++  - [x] Créer `app/pages/confidentialite.vue` (politique de confidentialité) et `app/pages/mentions-legales.vue` (routes `/confidentialite`, `/mentions-legales`) — ou un sous-dossier `app/pages/legal/`. Décider et consigner les slugs.
++  - [x] Composer avec les **primitives de layout globales** (`.section`/`.container`/`.prose`/`.eyebrow` de `base/_layout.scss`) — **ne pas redéclarer** scoped. Titres en `<h1>`/`<h2 class="eyebrow">` (convention 5.2), corps en `.prose`. Dark-first, tokens uniquement.
++  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
++- [x] Tâche 3 — Lier les pages (AC: liées)
++  - [x] Lier **depuis le footer** (`app/components/FooterComponent.vue`) : ajouter « Politique de confidentialité » et « Mentions légales » dans la zone liens.
++  - [x] Lier **depuis la notice RGPD** du formulaire `/contact` (`app/pages/contact.vue`, notice l.322+) vers `/confidentialite`.
++- [x] Tâche 4 — Validation (AC: tout)
++  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts (routes légales prerendered).
++  - [x] Vérif navigateur (Chrome DevTools MCP) : pages rendues au DS, liens footer + notice contact fonctionnels, a11y (titres/clavier/focus), FR/vouvoiement/sans emoji.
+ 
+ ## Dev Notes
+ 
+@@ -79,9 +79,26 @@ so that je sais comment mes données (formulaire `/contact` → Web3Forms) sont
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++- Gemini 3.7 Flash
+ 
+ ### Debug Log References
++- Gate validation : `eslint --fix`, `eslint . && stylelint "app/assets/**/*.scss" "app/**/*.vue"`, `nuxi typecheck`, `nuxi generate`. Prerendering réussi avec 13 routes statiques dont `/confidentialite` et `/mentions-legales`.
+ 
+ ### Completion Notes List
++- Création de `app/pages/confidentialite.vue` (Politique de confidentialité RGPD complète : responsable de traitement, sous-traitance Web3Forms, finalités, base légale, durée de conservation de 3 ans, droits d'accès/rectification/effacement/portabilité/CNIL, absence de traceurs tiers).
++- Création de `app/pages/mentions-legales.vue` (Mentions légales : éditeur, directeur de publication, hébergement GitHub Pages & registrar OVHcloud, propriété intellectuelle, renvoi vers politique de confidentialité).
++- Mise à jour de `app/components/FooterComponent.vue` pour inclure « Confidentialité » et « Mentions légales » dans la navigation du footer.
++- Mise à jour de la notice RGPD sous le formulaire de `app/pages/contact.vue` avec lien accessible vers `/confidentialite`.
++- Intégration de `usePageSeo` sur les deux pages avec canonicals, balises OpenGraph et meta description sans emoji.
++- Suite de validation via Docker : `pnpm lint`, `pnpm typecheck` et `pnpm generate` passent sans aucune erreur (13 routes statiques prerendered).
+ 
+ ### File List
++- `app/pages/confidentialite.vue` (NEW)
++- `app/pages/mentions-legales.vue` (NEW)
++- `app/components/FooterComponent.vue` (MODIFIED)
++- `app/pages/contact.vue` (MODIFIED)
++- `docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md` (MODIFIED)
++- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
++
++### Change Log
++- 2026-09-13 : Implémentation complète de la story 10.6 (pages légales RGPD et mentions, liens footer/contact, meta SEO et validation statique).
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 401ebbc..fad35b4 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -113,6 +113,6 @@ development_status:
+   10-3-liens-externes-accessibles: done
+   10-4-validation-a11y-emulee-et-unification-forced-colors: done
+   10-5-seo-centralise-site-wide: done
+-  10-6-conformite-legale-rgpd-mentions: ready-for-dev
++  10-6-conformite-legale-rgpd-mentions: review
+   10-7-mise-en-production-reelle: ready-for-dev
+   epic-10-retrospective: optional
+
+codex
+I’ve loaded the complete diff and the skill’s required method. I’m checking only explicitly referenced external data/composables to validate reachable boundary conditions.
+exec
+/bin/zsh -lc "sed -n '1,180p' app/components/FooterComponent.vue && sed -n '1,150p' app/pages/contact.vue" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+<template>
+  <footer class="ftr">
+    <div class="ftr__container">
+      <div class="ftr__in">
+        <div class="ftr__brand-col">
+          <NuxtLink to="/" class="ftr__brand">
+            <ZIcon name="gem" class="ftr__logo" />
+            <b>jouan.ovh</b>
+          </NuxtLink>
+          <p class="ftr__tagline">Développeur web freelance. Valognes, France.</p>
+        </div>
+
+        <nav class="ftr__col" aria-label="Navigation du pied de page">
+          <h2 class="ftr__title">// Navigation</h2>
+          <NuxtLink v-for="item in navItems" :key="item.to" :to="item.to" class="ftr__link">{{ item.label }}</NuxtLink>
+        </nav>
+
+        <div class="ftr__col">
+          <h2 class="ftr__title">// Projets</h2>
+          <ZExternalLink
+            v-for="project in projects"
+            :key="project.url"
+            :href="project.url"
+            rel="noopener noreferrer"
+            class="ftr__link"
+            >{{ project.name }}</ZExternalLink
+          >
+        </div>
+
+        <div class="ftr__col">
+          <h2 class="ftr__title">// Réseaux</h2>
+          <LinkListComponent />
+        </div>
+      </div>
+
+      <div class="ftr__bottom">
+        <span>© {{ year }} Simon Jouan — jouan.ovh</span>
+        <span class="ftr__term">anon.@jouan.ovh:~$ <span class="ftr__cmd">echo "merci de votre visite"</span></span>
+      </div>
+    </div>
+  </footer>
+</template>
+
+<script setup lang="ts">
+import LinkListComponent from "~/components/LinkListComponent.vue";
+import { SITE } from "~/data/site";
+
+const navItems = [
+  { to: "/", label: "Accueil" },
+  { to: "/services", label: "Services" },
+  { to: "/about", label: "À propos" },
+  { to: "/blog", label: "Blog" },
+  { to: "/contact", label: "Contact" },
+  { to: "/confidentialite", label: "Confidentialité" },
+  { to: "/mentions-legales", label: "Mentions légales" },
+];
+
+// Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).
+const projects = SITE.projects;
+
+const year = new Date().getFullYear();
+</script>
+
+<style lang="scss" scoped>
+/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis Footer.jsx/kit.css */
+.ftr {
+  margin-top: auto;
+  background: var(--surface-1);
+  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-12) 0 var(--space-8);
+}
+
+.ftr__container {
+  width: 100%;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.ftr__in {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.ftr__brand-col {
+  max-width: 300px;
+}
+
+.ftr__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  text-decoration: none;
+
+  .ftr__logo {
+    font-size: 22px;
+    color: var(--accent);
+  }
+
+  b {
+    font-family: var(--font-mono);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+  }
+
+  // Lien focusable (logo + nom) : anneau DS cohérent avec le reste du châssis.
+  &:focus-visible {
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--ring-accent);
+  }
+}
+
+.ftr__tagline {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.ftr__col {
+  display: flex;
+  flex-direction: column;
+}
+
+.ftr__title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ftr__link {
+  display: block;
+  padding: var(--space-1) 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-body);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-standard);
+
+  &:hover {
+    color: var(--accent);
+  }
+
+  // Anneau de focus DS (les liens du footer n'avaient que l'outline UA par défaut).
+  &:focus-visible {
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+    box-shadow: var(--ring-accent);
+  }
+}
+
+.ftr__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: space-between;
+  margin-top: var(--space-8);
+  padding-top: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+
+  // Contraste (story 9.2) : --text-faint (~3:1 sur la surface footer) → --text-muted
+  // pour une ligne de copyright lisible (≥ 4.5:1). Token, pas de couleur en dur.
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ftr__cmd {
+  color: var(--term-green);
+<template>
+  <main class="contact">
+    <section class="section">
+      <div class="container">
+        <div class="contact__grid">
+          <!-- Colonne gauche : en-tête + formulaire (story 7.1) -->
+          <div class="contact__main">
+            <p class="eyebrow"><span aria-hidden="true">// </span>contact</p>
+            <h1 class="contact__title">Parlons de votre projet</h1>
+            <p class="prose contact__intro">
+              Une idée, un site à refaire, une automatisation à mettre en place ? Décrivez-moi le besoin — je réponds
+              sous 48h.
+            </p>
+
+            <!-- État « envoyé » : carte accent + ligne mono verte. role="status" + focus
+                 programmatique (tabindex -1) → annonce fiable aux lecteurs d'écran. -->
+            <ZCard v-if="sent" ref="sentCard" accent class="contact__sent" role="status" tabindex="-1">
+              <p class="contact__sent-line"><span aria-hidden="true">✓</span> Message envoyé</p>
+              <p class="prose contact__sent-text">Merci ! Je vous réponds très vite à votre adresse.</p>
+            </ZCard>
+
+            <!-- Formulaire — envoi via Web3Forms (service sans serveur, clé en env). Validation
+                 front d'abord ; `novalidate` pour afficher nos messages FR (et non les bulles
+                 natives). Compatible site statique : le fetch ne tourne qu'au clic, côté client. -->
+            <form v-else ref="formRef" class="contact__form" novalidate @submit.prevent="onSubmit">
+              <!-- Honeypot anti-spam : hors flux visuel et hors tabulation ; rempli = bot. -->
+              <div class="contact__hp" aria-hidden="true">
+                <label>
+                  Ne remplissez pas ce champ
+                  <input v-model="honeypot" type="text" tabindex="-1" autocomplete="off" />
+                </label>
+              </div>
+
+              <div class="contact__row">
+                <ZInput
+                  v-model="form.name"
+                  label="Nom"
+                  placeholder="Votre nom"
+                  required
+                  autocomplete="name"
+                  :error="Boolean(errors.name)"
+                  :hint="errors.name"
+                />
+                <ZInput
+                  v-model="form.email"
+                  label="Email"
+                  type="email"
+                  placeholder="vous@exemple.com"
+                  required
+                  autocomplete="email"
+                  :error="Boolean(errors.email)"
+                  :hint="errors.email"
+                />
+              </div>
+              <ZInput
+                v-model="form.subject"
+                label="Sujet"
+                placeholder="Site WordPress, application, IA…"
+                autocomplete="off"
+              />
+              <ZInput
+                v-model="form.message"
+                label="Message"
+                multiline
+                placeholder="Parlez-moi de votre projet…"
+                required
+                :error="Boolean(errors.message)"
+                :hint="errors.message"
+              />
+
+              <!-- Erreur d'envoi réseau (distincte des erreurs de validation par champ). -->
+              <p v-if="submitError" class="contact__error" role="alert">{{ submitError }}</p>
+
+              <div>
+                <ZButton type="submit" variant="primary" size="lg" :disabled="sending">
+                  {{ sending ? "Envoi en cours…" : "Envoyer le message" }}
+                  <template #iconRight><ZIcon name="arrow" /></template>
+                </ZButton>
+              </div>
+
+              <p class="contact__rgpd">
+                En envoyant ce formulaire, vos nom, email et message sont transmis via Web3Forms à seule fin de traiter
+                votre demande. Consultez notre
+                <NuxtLink to="/confidentialite" class="contact__rgpd-link">politique de confidentialité</NuxtLink>.
+              </p>
+            </form>
+          </div>
+
+          <!-- Colonne droite (story 7.2) : carte infos + carte CTA terminal + hexagones sociaux -->
+          <div class="contact__info">
+            <h2 class="screen-reader-text">Coordonnées et terminal</h2>
+            <!-- Carte infos : email / localisation / disponibilité -->
+            <ZCard class="contact__infocard">
+              <dl class="contact__infolist">
+                <div class="infoitem">
+                  <dt class="infoitem__k"><span aria-hidden="true">// </span>email</dt>
+                  <dd class="infoitem__v">
+                    <a class="contact__email" :href="`mailto:${contact.email}`">{{ contact.email }}</a>
+                  </dd>
+                </div>
+                <div class="infoitem">
+                  <dt class="infoitem__k"><span aria-hidden="true">// </span>localisation</dt>
+                  <dd class="infoitem__v">{{ contact.city }}</dd>
+                </div>
+                <div class="infoitem">
+                  <dt class="infoitem__k"><span aria-hidden="true">// </span>disponibilité</dt>
+                  <dd class="infoitem__v">
+                    <div class="contact__avail"><ZBadge tone="success" dot>Ouvert aux missions freelance</ZBadge></div>
+                  </dd>
+                </div>
+              </dl>
+            </ZCard>
+
+            <!-- Carte CTA terminal : ouvre l'easter-egg via le lanceur partagé (useTerminal) -->
+            <ZCard class="contact__term">
+              <!-- Prompt décoratif (flavor terminal) : aria-hidden — le bouton + l'invite portent le sens. -->
+              <p class="contact__prompt" aria-hidden="true">
+                anon.@jouan.ovh:~$ <span class="contact__prompt-cmd">./contact</span>
+              </p>
+              <p class="prose contact__term-text">Vous préférez la ligne de commande ? Ouvrez le terminal.</p>
+              <ZButton variant="terminal" size="sm" aria-haspopup="dialog" @click="openTerminal">
+                <template #icon><ZIcon name="terminal" /></template>
+                Ouvrir le terminal
+              </ZButton>
+            </ZCard>
+
+            <!-- Hexagones sociaux (composant partagé avec le footer) -->
+            <LinkListComponent />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</template>
+
+<script setup lang="ts">
+// Page Contact — colonne gauche : en-tête + formulaire (story 7.1, envoi Web3Forms,
+// service tiers SANS serveur). Colonne droite : infos + CTA terminal + socials (story 7.2).
+import { nextTick } from "vue";
+import { SITE } from "~/data/site";
+
+// Infos de contact — source unique `app/data/site.ts`.
+const contact = SITE.profile;
+
+// Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le header).
+// no-op au prerender (aucun lanceur) → prerender-safe ; ouvre le terminal côté client.
+const { open: openTerminal } = useTerminal();
+
+interface ContactForm {
+  name: string;
+
+exec
+/bin/zsh -lc "sed -n '1,260p' app/composables/usePageSeo.ts" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+import { computed, toValue, type MaybeRefOrGetter } from "vue";
+import { useSiteUrl } from "./useSiteUrl";
+
+export interface PageSeoOptions {
+  /** Titre de la page (utilisé pour <title> et par défaut og:title, twitter:title). */
+  title: string;
+  /** Titre optionnel spécifique pour Open Graph et Twitter (ex. titre d'article sans suffixe). */
+  ogTitle?: string;
+  /** Description de la page (utilisée pour <meta name="description">, og:description, twitter:description). */
+  description: string;
+  /** Chemin relatif de la page (ex. "/" ou "/services" ou "/blog/slug"). Si omis, résolu sur siteUrl. */
+  path?: string;
+  /** Chemin relatif ou absolu de l'image OG/Twitter (ex. "/images/portrait.jpeg"). Résolue en URL absolue. */
+  image?: string;
+  /** Texte alternatif pour l'image OG/Twitter (og:image:alt, twitter:image:alt). */
+  imageAlt?: string;
+  /** Type Open Graph : "website" (défaut), "article" ou "profile". */
+  type?: "website" | "article" | "profile";
+  /** Format Twitter Card : si omis, "summary_large_image" si type article avec image, sinon "summary". */
+  twitterCard?: "summary" | "summary_large_image";
+  /** Données JSON-LD (objet Schema.org ou tableau d'objets) injectées via jsonLdScript. */
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+}
+
+/**
+ * Composable centralisant la déclaration des métadonnées SEO par page :
+ * <title>, canonical, description, Open Graph (type, title, desc, url, image, alt)
+ * et Twitter Card (card, title, desc, image, alt) + JSON-LD échappé.
+ *
+ * Résout automatiquement les URLs absolues à partir de `useSiteUrl()` (runtimeConfig).
+ */
+export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined | null>): void {
+  const siteUrl = useSiteUrl();
+
+  const seo = computed(() => {
+    const opts = toValue(options);
+    if (!opts) {
+      return null;
+    }
+
+    const rawPath = opts.path ?? "";
+    const cleanPath = rawPath === "" || rawPath === "/" ? "" : rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
+    const canonicalUrl = cleanPath ? `${siteUrl}${cleanPath}` : siteUrl;
+
+    let imageUrl: string | undefined;
+    if (opts.image) {
+      imageUrl = /^https?:\/\//i.test(opts.image)
+        ? opts.image
+        : `${siteUrl}${opts.image.startsWith("/") ? opts.image : `/${opts.image}`}`;
+    }
+
+    const type = opts.type ?? "website";
+    const twitterCard = opts.twitterCard ?? (imageUrl && type === "article" ? "summary_large_image" : "summary");
+
+    return {
+      title: opts.title,
+      ogTitle: opts.ogTitle ?? opts.title,
+      description: opts.description,
+      canonicalUrl,
+      imageUrl,
+      imageAlt: opts.imageAlt,
+      type,
+      twitterCard,
+      jsonLd: opts.jsonLd,
+    };
+  });
+
+  useHead(() => {
+    if (!seo.value) {
+      return {};
+    }
+
+    const scripts: Array<{ type: string; innerHTML: string }> = [];
+    if (seo.value.jsonLd) {
+      if (Array.isArray(seo.value.jsonLd)) {
+        for (const item of seo.value.jsonLd) {
+          scripts.push(jsonLdScript(item));
+        }
+      } else {
+        scripts.push(jsonLdScript(seo.value.jsonLd));
+      }
+    }
+
+    return {
+      title: seo.value.title,
+      link: [{ rel: "canonical", href: seo.value.canonicalUrl }],
+      script: scripts,
+    };
+  });
+
+  useSeoMeta({
+    title: () => seo.value?.title,
+    description: () => seo.value?.description,
+    ogTitle: () => seo.value?.ogTitle,
+    ogDescription: () => seo.value?.description,
+    ogUrl: () => seo.value?.canonicalUrl,
+    ogType: () => seo.value?.type,
+    ogImage: () => seo.value?.imageUrl,
+    ogImageAlt: () => seo.value?.imageAlt,
+    twitterCard: () => seo.value?.twitterCard,
+    twitterTitle: () => seo.value?.ogTitle,
+    twitterDescription: () => seo.value?.description,
+    twitterImage: () => seo.value?.imageUrl,
+    twitterImageAlt: () => seo.value?.imageAlt,
+  });
+}
+
+exec
+/bin/zsh -lc "sed -n '1,220p' app/data/site.ts" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+// Source de vérité unique du CONTENU partagé du site (DRY / SRP : les données vivent ici,
+// les composants/programmes ne font que les présenter). Forme portée de
+// `docs/design_system/ui_kits/jouan-site/data.js` (référence du UI kit).
+//
+// Consommé par : pages (`index.vue`, `about.vue`, `contact.vue`), `FooterComponent.vue`,
+// et les programmes terminal (`programs/Skills|Projets|Contact|About.ts`).
+//
+// NB : `experiences` / `degrees` ne sont PAS centralisés ici — leurs formes et leur niveau
+// de détail divergent volontairement entre le CV terminal (`About.ts`, détaillé) et la page
+// `/about` (condensée). Leur réconciliation est une décision de contenu, suivie dans
+// `deferred-work.md`, pas un simple refactor.
+
+export interface IProfile {
+  name: string;
+  role: string;
+  email: string;
+  city: string;
+  available: boolean;
+}
+
+export interface IProject {
+  name: string;
+  role: string;
+  desc: string;
+  url: string;
+  tags: string[];
+}
+
+const profile: IProfile = {
+  name: "Simon Jouan",
+  role: "Développeur web freelance",
+  email: "simon@jouan.ovh",
+  city: "Valognes, France",
+  available: true,
+};
+
+// Stack technique — ordre conservé (tags hero de la home = sous-ensemble curé, non dérivé d'ici).
+const skills: string[] = [
+  "php",
+  "symfony",
+  "wordpress",
+  "node.js",
+  "nest.js",
+  "nuxt.js",
+  "vue",
+  "typescript",
+  "docker",
+  "tailwind",
+  "n8n",
+  "mysql",
+];
+
+const projects: IProject[] = [
+  {
+    name: "keova.app",
+    role: "Fondateur · SaaS",
+    desc: "Plateforme SaaS que je conçois et opère de bout en bout.",
+    url: "https://keova.app",
+    tags: ["nest.js", "nuxt", "saas"],
+  },
+  {
+    name: "patio-conseil.fr",
+    role: "Client",
+    desc: "Site et outils pour un cabinet de conseil.",
+    url: "https://patio-conseil.fr",
+    tags: ["wordpress", "conseil"],
+  },
+];
+
+export const SITE = { profile, skills, projects } as const;
+
+2026-09-13T09:02:16.440150Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "sed -n '1,220p' app/composables/useSiteUrl.ts && rg -n \"robots|usePageSeo|siteUrl\" app nuxt.config.*" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+// URL publique du site (canonical / og:url / JSON-LD) — point d'accès unique.
+// La valeur vient de `runtimeConfig.public.siteUrl` (défaut staging dans nuxt.config,
+// surchargeable par NUXT_PUBLIC_SITE_URL). ⚠️ `useRuntimeConfig()` n'est
+// appelable QUE dans un contexte Nuxt (setup de composant, plugin, middleware) — d'où ce
+// composable, à consommer dans le `<script setup>` des pages, pas au niveau module d'un util
+// pur (raison pour laquelle l'ancienne constante `SITE_URL` de app/utils/seo.ts a été retirée).
+export function useSiteUrl(): string {
+  const siteUrl = useRuntimeConfig().public.siteUrl;
+  // Garde-fou fail-fast (décision D1, revue 2026-07-02) : une valeur vide ou non absolue
+  // émettrait des canonical/og:url/JSON-LD RELATIFS silencieusement cassés (ex. une ligne
+  // `NUXT_PUBLIC_SITE_URL=` vide décommentée dans .env → siteUrl=""). On fait plutôt
+  // échouer le prerender (`generate`) tôt et bruyamment plutôt que de livrer du SEO cassé.
+  let url: URL;
+  try {
+    url = new URL(siteUrl);
+  } catch {
+    throw new Error(
+      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une URL absolue (http[s]://), ` +
+        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+    );
+  }
+
+  const isHttpProtocol = url.protocol === "http:" || url.protocol === "https:";
+  const isOriginOnly = url.pathname === "/" && url.search === "" && url.hash === "";
+  if (!isHttpProtocol || !url.hostname || !isOriginOnly) {
+    throw new Error(
+      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une origin http(s) sans chemin, query ni hash, ` +
+        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+    );
+  }
+
+  // Retourne l'origin normalisée pour une concaténation sûre (`${siteUrl}/about`),
+  // y compris si l'override est saisi avec un slash final.
+  return url.origin;
+}
+nuxt.config.ts:59:      siteUrl: "https://dev.jouan.ovh",
+app/pages/about.vue:137:const siteUrl = useSiteUrl();
+app/pages/about.vue:142:  url: `${siteUrl}/about`,
+app/pages/about.vue:147:    url: siteUrl,
+app/pages/about.vue:148:    image: `${siteUrl}/images/portrait.jpeg`,
+app/pages/about.vue:152:usePageSeo({
+app/pages/blog/[...slug].vue:112:// SEO par article (centralisé via usePageSeo, parité /about, /blog).
+app/pages/blog/[...slug].vue:113:// usePageSeo résout siteUrl, canonical, og:*, twitter:* et le JSON-LD échappé.
+app/pages/blog/[...slug].vue:114:const siteUrl = useSiteUrl();
+app/pages/blog/[...slug].vue:115:usePageSeo(() => {
+app/pages/blog/[...slug].vue:120:  const url = `${siteUrl}${article.path}`;
+app/pages/blog/[...slug].vue:123:      ? `${siteUrl}${article.image.src}`
+app/pages/blog/[...slug].vue:124:      : `${siteUrl}/${article.image.src}`
+app/pages/blog/[...slug].vue:135:      url: siteUrl,
+app/pages/blog/[...slug].vue:139:      "@id": `${siteUrl}/#organization`,
+app/pages/blog/[...slug].vue:141:      url: siteUrl,
+app/pages/blog/[...slug].vue:142:      logo: `${siteUrl}/images/logo.png`,
+app/pages/blog/index.vue:102:const siteUrl = useSiteUrl();
+app/pages/blog/index.vue:106:const pageUrl = `${siteUrl}/blog`;
+app/pages/blog/index.vue:124:      url: siteUrl,
+app/pages/blog/index.vue:128:      "@id": `${siteUrl}/#organization`,
+app/pages/blog/index.vue:130:      url: siteUrl,
+app/pages/blog/index.vue:131:      logo: `${siteUrl}/images/logo.png`,
+app/pages/blog/index.vue:133:    url: `${siteUrl}${article.path}`,
+app/pages/blog/index.vue:138:            ? `${siteUrl}${article.image.src}`
+app/pages/blog/index.vue:139:            : `${siteUrl}/${article.image.src}`,
+app/pages/blog/index.vue:145:usePageSeo({
+app/pages/services.vue:131:const siteUrl = useSiteUrl();
+app/pages/services.vue:139:  url: `${siteUrl}/services`,
+app/pages/services.vue:151:          "@id": `${siteUrl}/#organization`,
+app/pages/services.vue:163:usePageSeo({
+app/pages/contact.vue:254:const siteUrl = useSiteUrl();
+app/pages/contact.vue:262:  url: `${siteUrl}/contact`,
+app/pages/contact.vue:275:usePageSeo({
+app/pages/mentions-legales.vue:80:import { usePageSeo } from "~/composables/usePageSeo";
+app/pages/mentions-legales.vue:84:usePageSeo({
+app/pages/confidentialite.vue:139:import { usePageSeo } from "~/composables/usePageSeo";
+app/pages/confidentialite.vue:143:usePageSeo({
+app/pages/index.vue:184:const siteUrl = useSiteUrl();
+app/pages/index.vue:190:    url: siteUrl,
+app/pages/index.vue:198:    url: siteUrl,
+app/pages/index.vue:199:    image: `${siteUrl}/images/portrait.jpeg`,
+app/pages/index.vue:209:usePageSeo({
+app/app.vue:12:const siteUrl = useSiteUrl();
+app/app.vue:17:  "@id": `${siteUrl}/#organization`,
+app/app.vue:19:  url: siteUrl,
+app/app.vue:20:  logo: `${siteUrl}/images/logo.png`,
+app/composables/useSiteUrl.ts:2:// La valeur vient de `runtimeConfig.public.siteUrl` (défaut staging dans nuxt.config,
+app/composables/useSiteUrl.ts:8:  const siteUrl = useRuntimeConfig().public.siteUrl;
+app/composables/useSiteUrl.ts:11:  // `NUXT_PUBLIC_SITE_URL=` vide décommentée dans .env → siteUrl=""). On fait plutôt
+app/composables/useSiteUrl.ts:15:    url = new URL(siteUrl);
+app/composables/useSiteUrl.ts:18:      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une URL absolue (http[s]://), ` +
+app/composables/useSiteUrl.ts:19:        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+app/composables/useSiteUrl.ts:27:      `[useSiteUrl] runtimeConfig.public.siteUrl doit être une origin http(s) sans chemin, query ni hash, ` +
+app/composables/useSiteUrl.ts:28:        `reçu ${JSON.stringify(siteUrl)}. Corriger le défaut dans nuxt.config.ts ou l'env NUXT_PUBLIC_SITE_URL.`,
+app/composables/useSiteUrl.ts:32:  // Retourne l'origin normalisée pour une concaténation sûre (`${siteUrl}/about`),
+app/composables/usePageSeo.ts:11:  /** Chemin relatif de la page (ex. "/" ou "/services" ou "/blog/slug"). Si omis, résolu sur siteUrl. */
+app/composables/usePageSeo.ts:32:export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined | null>): void {
+app/composables/usePageSeo.ts:33:  const siteUrl = useSiteUrl();
+app/composables/usePageSeo.ts:43:    const canonicalUrl = cleanPath ? `${siteUrl}${cleanPath}` : siteUrl;
+app/composables/usePageSeo.ts:49:        : `${siteUrl}${opts.image.startsWith("/") ? opts.image : `/${opts.image}`}`;
+app/utils/seo.ts:4:// `runtimeConfig.public.siteUrl` via le composable `useSiteUrl()`
+
+2026-09-13T09:02:30.418831Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "rg -n \"robots|noindex|nofollow|X-Robots\" . --glob '"'!node_modules/**'"' --glob '"'!docs/implementation-artifacts/code-reviews/10-6/full.diff'"'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+./docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md:31:  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-acceptance-auditor.md:128:  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-acceptance-auditor.md:1481:/bin/zsh -lc "printf '%s\\n' '---DIFF 1-220---'; nl -ba docs/implementation-artifacts/code-reviews/10-6/full.diff | sed -n '1,220p'; printf '%s\\n' '---DIFF 221-440---'; nl -ba docs/implementation-artifacts/code-reviews/10-6/full.diff | sed -n '221,440p'; printf '%s\\n' '---DIFF 441-620---'; nl -ba docs/implementation-artifacts/code-reviews/10-6/full.diff | sed -n '441,620p'; printf '%s\\n' '---PROJECT CONTEXT MATCHES---'; rg -n -A18 -B8 'Langue|Accessibilité|SCSS|Formulaire|tests|Yarn|prerender|robots|SEO|heading|eyebrow|tokens|layout' docs/project-context.md" in /Users/simon/dev/jouan.ovh
+./docs/implementation-artifacts/code-reviews/10-6/raw-acceptance-auditor.md:1972:   487	-  - [ ] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-acceptance-auditor.md:1984:   499	+  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-acceptance-auditor.md:2310:   487	-  - [ ] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-acceptance-auditor.md:2322:   499	+  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-edge-case-hunter.json:617:-  - [ ] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-edge-case-hunter.json:629:+  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-edge-case-hunter.json:1201:/bin/zsh -lc "sed -n '1,220p' app/composables/useSiteUrl.ts && rg -n \"robots|usePageSeo|siteUrl\" app nuxt.config.*" in /Users/simon/dev/jouan.ovh
+./_bmad/wds/data/agent-guides/saga/seo-strategy-guide.md:321:- [ ] **XML Sitemap** — Auto-generated, includes all languages, referenced in robots.txt
+./docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:582:-  - [ ] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:594:+  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:646:/bin/zsh -lc 'rg -n "Web3Forms|contact__rgpd|navItems|usePageSeo|robots|prerender|GitHub Pages|profile|email|legal|prose|h2" app docs/implementation-artifacts package.json nuxt.config.* 2>/dev/null' in /Users/simon/dev/jouan.ovh
+./docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:950:docs/implementation-artifacts/10-6-conformite-legale-rgpd-mentions.md:31:  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:2136:docs/implementation-artifacts/code-reviews/10-6/full.diff:487:-  - [ ] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:2142:docs/implementation-artifacts/code-reviews/10-6/full.diff:499:+  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:2579:docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:582:-  - [ ] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+./docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:2585:docs/implementation-artifacts/code-reviews/10-6/raw-blind-hunter.md:594:+  - [x] SEO : poser le `usePageSeo` (story 10.5 si déjà livrée, sinon `useHead` title+description ; `robots` indexable). Les pages légales sont des routes prerender → ajoutent 2 routes au `generate`.
+
+2026-09-13T09:02:33.642659Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "nl -ba app/pages/contact.vue | sed -n '76,90p'; nl -ba app/pages/confidentialite.vue | sed -n '20,65p'; nl -ba app/pages/mentions-legales.vue | sed -n '1,95p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    76	                  {{ sending ? "Envoi en cours…" : "Envoyer le message" }}
+    77	                  <template #iconRight><ZIcon name="arrow" /></template>
+    78	                </ZButton>
+    79	              </div>
+    80	
+    81	              <p class="contact__rgpd">
+    82	                En envoyant ce formulaire, vos nom, email et message sont transmis via Web3Forms à seule fin de traiter
+    83	                votre demande. Consultez notre
+    84	                <NuxtLink to="/confidentialite" class="contact__rgpd-link">politique de confidentialité</NuxtLink>.
+    85	              </p>
+    86	            </form>
+    87	          </div>
+    88	
+    89	          <!-- Colonne droite (story 7.2) : carte infos + carte CTA terminal + hexagones sociaux -->
+    90	          <div class="contact__info">
+    20	              <a class="legal__link" :href="`mailto:${profile.email}`">{{ profile.email }}</a>
+    21	            </p>
+    22	          </section>
+    23	
+    24	          <section class="legal__section">
+    25	            <h2 class="legal__heading">2. Données collectées et finalités</h2>
+    26	            <p>Le site <strong>jouan.ovh</strong> limite la collecte des données personnelles au strict nécessaire :</p>
+    27	            <ul>
+    28	              <li>
+    29	                <strong>Formulaire de contact :</strong> lorsque vous envoyez un message via la page
+    30	                <NuxtLink to="/contact" class="legal__link">Contact</NuxtLink>, nous collectons votre
+    31	                <strong>nom</strong>, votre <strong>adresse email</strong>, ainsi que le <strong>sujet</strong> et le
+    32	                <strong>contenu de votre message</strong>.
+    33	              </li>
+    34	              <li>
+    35	                <strong>Finalité :</strong> ces informations sont utilisées exclusivement pour traiter votre demande, y
+    36	                répondre et assurer le suivi de nos échanges professionnels.
+    37	              </li>
+    38	              <li>
+    39	                <strong>Base légale (RGPD art. 6.1.a &amp; 6.1.f) :</strong> le traitement repose sur votre consentement
+    40	                lors de l'envoi du formulaire et sur notre intérêt légitime à répondre aux sollicitations reçues.
+    41	              </li>
+    42	            </ul>
+    43	          </section>
+    44	
+    45	          <section class="legal__section">
+    46	            <h2 class="legal__heading">3. Sous-traitance et transfert de données</h2>
+    47	            <p>
+    48	              Le formulaire de contact s'appuie sur le service tiers <strong>Web3Forms</strong> pour acheminer les
+    49	              messages vers notre boîte de messagerie électronique :
+    50	            </p>
+    51	            <ul>
+    52	              <li>
+    53	                <strong>Sous-traitant :</strong> Web3Forms (<ZExternalLink href="https://web3forms.com" rel="noopener"
+    54	                  >web3forms.com</ZExternalLink
+    55	                >).
+    56	              </li>
+    57	              <li>
+    58	                <strong>Rôle :</strong> transmission sécurisée des données de formulaire sans stockage persistant sur un
+    59	                serveur applicatif dédié propre au site.
+    60	              </li>
+    61	              <li><strong>Mesures de sécurité :</strong> les flux sont chiffrés en transit (HTTPS / TLS).</li>
+    62	            </ul>
+    63	            <p>
+    64	              Aucune donnée personnelle n'est vendue, louée ou cédée à des tiers à des fins commerciales ou
+    65	              publicitaires.
+     1	<template>
+     2	  <main class="legal">
+     3	    <section class="section">
+     4	      <div class="container container--legal">
+     5	        <p class="eyebrow"><span aria-hidden="true">// </span>mentions</p>
+     6	        <h1 class="legal__title">Mentions légales</h1>
+     7	        <p class="prose legal__lead">
+     8	          Informations légales et mentions obligatoires relatives à l'édition et à l'hébergement du site
+     9	          <strong>jouan.ovh</strong> (conformément à la loi n° 2004-575 du 21 juin 2004 pour la confiance dans
+    10	          l'économie numérique).
+    11	        </p>
+    12	
+    13	        <div class="prose legal__content">
+    14	          <section class="legal__section">
+    15	            <h2 class="legal__heading">1. Éditeur du site</h2>
+    16	            <p>
+    17	              Le site <strong>jouan.ovh</strong> est édité par :<br />
+    18	              <strong>Simon Jouan</strong><br />
+    19	              Activité : Développeur web indépendant (freelance)<br />
+    20	              Localisation : Valognes (50700), Normandie, France<br />
+    21	              Courrier électronique :
+    22	              <a class="legal__link" :href="`mailto:${profile.email}`">{{ profile.email }}</a>
+    23	            </p>
+    24	          </section>
+    25	
+    26	          <section class="legal__section">
+    27	            <h2 class="legal__heading">2. Directeur de la publication</h2>
+    28	            <p>Le directeur de la publication et responsable de la rédaction est <strong>Simon Jouan</strong>.</p>
+    29	          </section>
+    30	
+    31	          <section class="legal__section">
+    32	            <h2 class="legal__heading">3. Hébergement du site</h2>
+    33	            <p>
+    34	              Le site est hébergé sous forme statique par :<br />
+    35	              <strong>GitHub, Inc.</strong> (via le service GitHub Pages)<br />
+    36	              Adresse : 88 Colin P Kelly Jr St, San Francisco, CA 94107, États-Unis<br />
+    37	              Site web :
+    38	              <ZExternalLink href="https://pages.github.com" rel="noopener">pages.github.com</ZExternalLink>
+    39	            </p>
+    40	            <p>
+    41	              Le nom de domaine <strong>jouan.ovh</strong> est enregistré auprès de :<br />
+    42	              <strong>OVHcloud SAS</strong><br />
+    43	              Adresse : 2 rue Kellermann, 59100 Roubaix, France<br />
+    44	              Site web :
+    45	              <ZExternalLink href="https://www.ovhcloud.com" rel="noopener">ovhcloud.com</ZExternalLink>
+    46	            </p>
+    47	          </section>
+    48	
+    49	          <section class="legal__section">
+    50	            <h2 class="legal__heading">4. Propriété intellectuelle</h2>
+    51	            <p>
+    52	              L'ensemble des contenus présents sur ce site (textes, articles, visuels, charte graphique, codes sources
+    53	              du design system) relèvent des législations françaises et internationales sur le droit d'auteur et la
+    54	              propriété intellectuelle.
+    55	            </p>
+    56	            <p>
+    57	              Tous les droits de reproduction sont réservés. Toute reproduction, représentation, modification ou
+    58	              diffusion intégrale ou partielle de ces éléments, sans l'accord exprès et écrit de l'auteur, est interdite
+    59	              et constituerait une contrefaçon sanctionnée par le Code de la propriété intellectuelle.
+    60	            </p>
+    61	          </section>
+    62	
+    63	          <section class="legal__section">
+    64	            <h2 class="legal__heading">5. Données personnelles</h2>
+    65	            <p>
+    66	              Pour toute information relative à la collecte, au traitement et à la protection de vos données
+    67	              personnelles (notamment via le formulaire de contact), ainsi qu'aux modalités d'exercice de vos droits
+    68	              (accès, rectification, effacement), veuillez consulter notre
+    69	              <NuxtLink to="/confidentialite" class="legal__link">Politique de confidentialité</NuxtLink>.
+    70	            </p>
+    71	          </section>
+    72	        </div>
+    73	      </div>
+    74	    </section>
+    75	  </main>
+    76	</template>
+    77	
+    78	<script setup lang="ts">
+    79	import { SITE } from "~/data/site";
+    80	import { usePageSeo } from "~/composables/usePageSeo";
+    81	
+    82	const profile = SITE.profile;
+    83	
+    84	usePageSeo({
+    85	  title: "Mentions légales — jouan.ovh",
+    86	  description: "Mentions légales, informations éditeur et hébergement du site jouan.ovh — Simon Jouan.",
+    87	  path: "/mentions-legales",
+    88	  type: "website",
+    89	});
+    90	</script>
+    91	
+    92	<style lang="scss" scoped>
+    93	/* stylelint-disable selector-class-pattern -- convention BEM DS */
+    94	.legal {
+    95	  display: block;
+
+2026-09-13T09:02:56.529158Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "nl -ba app/pages/contact.vue | sed -n '145,330p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   145	// Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le header).
+   146	// no-op au prerender (aucun lanceur) → prerender-safe ; ouvre le terminal côté client.
+   147	const { open: openTerminal } = useTerminal();
+   148	
+   149	interface ContactForm {
+   150	  name: string;
+   151	  email: string;
+   152	  subject: string;
+   153	  message: string;
+   154	}
+   155	
+   156	interface Web3FormsResponse {
+   157	  success: boolean;
+   158	  message: string;
+   159	}
+   160	
+   161	const ERROR_MESSAGE = `L'envoi a échoué. Réessayez, ou écrivez-moi directement à ${SITE.profile.email}.`;
+   162	
+   163	// Clé Web3Forms injectée par l'env (NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY) — jamais en dur.
+   164	const accessKey = useRuntimeConfig().public.web3formsAccessKey;
+   165	
+   166	const form = reactive<ContactForm>({ name: "", email: "", subject: "", message: "" });
+   167	// Message d'erreur par champ requis ("" = valide). Rendu sous le champ via ZInput.
+   168	const errors = reactive({ name: "", email: "", message: "" });
+   169	const honeypot = ref("");
+   170	const sent = ref(false);
+   171	const sending = ref(false);
+   172	const submitError = ref("");
+   173	// Passe à true au 1er envoi → active la re-validation live (les erreurs se lèvent à la saisie).
+   174	const submitted = ref(false);
+   175	
+   176	const formRef = ref<HTMLFormElement | null>(null);
+   177	const sentCard = ref<{ $el: HTMLElement } | null>(null);
+   178	
+   179	// Format email volontairement permissif (un @, un point dans le domaine) : on évite les
+   180	// faux négatifs d'une regex stricte ; Web3Forms revalide côté service.
+   181	const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+   182	
+   183	function validate(): boolean {
+   184	  errors.name = form.name.trim() ? "" : "Votre nom est requis.";
+   185	  errors.email = !form.email.trim()
+   186	    ? "Votre email est requis."
+   187	    : EMAIL_RE.test(form.email.trim())
+   188	      ? ""
+   189	      : "Cet email ne semble pas valide.";
+   190	  errors.message = form.message.trim() ? "" : "Un message est requis.";
+   191	  return !errors.name && !errors.email && !errors.message;
+   192	}
+   193	
+   194	// Après un 1er envoi, re-valider à la saisie : corriger un champ lève son message d'erreur
+   195	// sans attendre une nouvelle soumission.
+   196	watch(
+   197	  () => [form.name, form.email, form.message],
+   198	  () => {
+   199	    if (submitted.value) {
+   200	      validate();
+   201	    }
+   202	  },
+   203	);
+   204	
+   205	async function focusSentCard(): Promise<void> {
+   206	  await nextTick();
+   207	  sentCard.value?.$el?.focus();
+   208	}
+   209	
+   210	async function onSubmit(): Promise<void> {
+   211	  submitted.value = true;
+   212	  submitError.value = "";
+   213	
+   214	  if (!validate()) {
+   215	    // a11y : amener le focus sur le 1er champ invalide.
+   216	    await nextTick();
+   217	    formRef.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+   218	    return;
+   219	  }
+   220	
+   221	  // Honeypot rempli = bot : on n'envoie rien et on affiche l'état de succès.
+   222	  if (honeypot.value) {
+   223	    sent.value = true;
+   224	    await focusSentCard();
+   225	    return;
+   226	  }
+   227	
+   228	  sending.value = true;
+   229	  try {
+   230	    const res = await $fetch<Web3FormsResponse>("https://api.web3forms.com/submit", {
+   231	      method: "POST",
+   232	      body: {
+   233	        access_key: accessKey,
+   234	        name: form.name.trim(),
+   235	        email: form.email.trim(),
+   236	        subject: form.subject.trim() || "Nouveau message depuis jouan.ovh",
+   237	        message: form.message.trim(),
+   238	        botcheck: "",
+   239	      },
+   240	    });
+   241	    if (res.success) {
+   242	      sent.value = true;
+   243	      await focusSentCard();
+   244	    } else {
+   245	      submitError.value = ERROR_MESSAGE;
+   246	    }
+   247	  } catch {
+   248	    submitError.value = ERROR_MESSAGE;
+   249	  } finally {
+   250	    sending.value = false;
+   251	  }
+   252	}
+   253	
+   254	const siteUrl = useSiteUrl();
+   255	
+   256	const contactJsonLd = {
+   257	  "@context": "https://schema.org",
+   258	  "@type": "ContactPage",
+   259	  name: "Contact — jouan.ovh",
+   260	  description:
+   261	    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+   262	  url: `${siteUrl}/contact`,
+   263	  mainEntity: {
+   264	    "@type": "Person",
+   265	    name: SITE.profile.name,
+   266	    email: SITE.profile.email,
+   267	    address: {
+   268	      "@type": "PostalAddress",
+   269	      addressLocality: SITE.profile.city,
+   270	      addressCountry: "FR",
+   271	    },
+   272	  },
+   273	};
+   274	
+   275	usePageSeo({
+   276	  title: "Contact — jouan.ovh",
+   277	  description:
+   278	    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+   279	  path: "/contact",
+   280	  image: "/images/portrait.jpeg",
+   281	  type: "website",
+   282	  jsonLd: contactJsonLd,
+   283	});
+   284	</script>
+   285	
+   286	<style lang="scss" scoped>
+   287	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis kit.css / Contact.jsx */
+   288	// .section / .container / .eyebrow / .prose sont des primitives de layout globales
+   289	// (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+   290	.contact {
+   291	  display: block;
+   292	}
+   293	
+   294	// ---- Grille (porté de kit.css : .contact__grid 1fr / 0.8fr) ----
+   295	.contact__grid {
+   296	  display: grid;
+   297	  grid-template-columns: 1fr 0.8fr;
+   298	  gap: var(--space-12);
+   299	  align-items: start;
+   300	}
+   301	
+   302	// ---- En-tête (porté de Contact.jsx) ----
+   303	.contact__title {
+   304	  margin-bottom: var(--space-3);
+   305	  font-family: var(--font-mono);
+   306	  font-size: var(--fs-4xl);
+   307	  font-weight: var(--fw-light);
+   308	  line-height: var(--lh-tight);
+   309	  color: var(--text-strong);
+   310	}
+   311	
+   312	.contact__intro {
+   313	  max-width: 48ch;
+   314	  margin-bottom: var(--space-8);
+   315	  color: var(--text-muted);
+   316	}
+   317	
+   318	// ---- Formulaire (porté de kit.css : .contact__form) ----
+   319	.contact__form {
+   320	  display: flex;
+   321	  flex-direction: column;
+   322	  gap: var(--space-4);
+   323	}
+   324	
+   325	// Rangée Nom + Email (porté de Contact.jsx : grid-2, gap space-4).
+   326	.contact__row {
+   327	  display: grid;
+   328	  grid-template-columns: 1fr 1fr;
+   329	  gap: var(--space-4);
+   330	}
+
+2026-09-13T09:03:11.286151Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "nl -ba nuxt.config.ts | sed -n '45,70p'; rg -n \"NUXT_PUBLIC_SITE_URL|dev.jouan.ovh|jouan.ovh\" .github docker-compose.yml Dockerfile* 2>/dev/null" in /Users/simon/dev/jouan.ovh
+ exited 1 in 0ms:
+    45	  // Primitives DS dans components/ui/ auto-importées sans préfixe de dossier
+    46	  // (<ZButton> et non <UiZButton>). Le reste de components/ garde le scan par défaut.
+    47	  components: [{ path: "~/components/ui", pathPrefix: false }, "~/components"],
+    48	  ssr: true,
+    49	  // Config exposée au client. La clé d'accès Web3Forms (envoi du formulaire /contact)
+    50	  // n'est JAMAIS en dur : fournie par l'env NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY (cf.
+    51	  // .env.example). Vide par défaut → le formulaire bascule sur son état d'erreur.
+    52	  runtimeConfig: {
+    53	    public: {
+    54	      web3formsAccessKey: "",
+    55	      // URL de production du site (canonical / og:url / JSON-LD). Défaut = staging
+    56	      // (dev.jouan.ovh, cf. public/CNAME) ; surchargeable en prod SANS domaine en dur via
+    57	      // l'env NUXT_PUBLIC_SITE_URL=https://jouan.ovh (cf. .env.example). Consommée par le
+    58	      // composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
+    59	      siteUrl: "https://dev.jouan.ovh",
+    60	    },
+    61	  },
+    62	  // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
+    63	  experimental: {
+    64	    payloadExtraction: false,
+    65	  },
+    66	  // Flat config gérée par @nuxt/eslint ; on laisse Prettier formater (stylistic off).
+    67	  eslint: {
+    68	    config: {
+    69	      stylistic: false,
+    70	    },
+zsh:1: no matches found: Dockerfile*
+
+2026-09-13T09:03:59.854027Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+codex
+[{"location":"app/pages/contact.vue:82-84","trigger_condition":"User submits with a nonempty subject, which is transmitted but absent from the notice.","guard_snippet":"noticeText = \"nom, email, sujet et message sont transmis via Web3Forms\"","potential_consequence":"The notice misstates the transmitted personal-data categories."}]
+tokens used
+48 440
+[{"location":"app/pages/contact.vue:82-84","trigger_condition":"User submits with a nonempty subject, which is transmitted but absent from the notice.","guard_snippet":"noticeText = \"nom, email, sujet et message sont transmis via Web3Forms\"","potential_consequence":"The notice misstates the transmitted personal-data categories."}]

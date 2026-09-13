@@ -1,0 +1,45 @@
+/* ============================================================
+   Fonts
+   - Ubuntu Mono: self-hosted (signature — terminal, headlines,
+     labels, code). Shipped as .ttf from the original repo.
+   - Ubuntu (sans): loaded from Google Fonts for long-form body
+     copy & UI text. SUBSTITUTION NOTE: the source repo ships
+     ONLY Ubuntu Mono. Ubuntu sans is added here (same type
+     family, official Ubuntu webfont) to improve readability of
+     paragraphs and dense UI. Swap for self-hosted files if you
+     want zero external requests.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,400;1,700&display=swap");
+
+@font-face {
+  font-family: "Ubuntu Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/Ubuntu_Mono/UbuntuMono-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Ubuntu Mono";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/Ubuntu_Mono/UbuntuMono-Italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Ubuntu Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../assets/fonts/Ubuntu_Mono/UbuntuMono-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Ubuntu Mono";
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../assets/fonts/Ubuntu_Mono/UbuntuMono-BoldItalic.ttf") format("truetype");
+}

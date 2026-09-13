@@ -1,0 +1,366 @@
+<template>
+  <div class="window-wrapper">
+    <div ref="windowElement" class="window" @click="focus">
+      <div class="window-header visible" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
+        <div class="close-button" @click="closeWindow"></div>
+      </div>
+
+      <div
+        class="window-body"
+        :style="{
+          backgroundColor: backgroundColor,
+          color: textColor,
+          height: height,
+          width: responsiveWidth,
+          overflow: overflow,
+        }"
+        @mouseenter="handleWindowBodyMouseEnter"
+        @mouseleave="handleWindowBodyMouseLeave"
+      >
+        <div v-show="isTypingStarted" ref="slotWrapper">
+          <div ref="typewriting" class="typewriting">
+            <slot />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+
+export default defineComponent({
+  name: "WindowWrapperComponent",
+  props: {
+    backgroundColor: {
+      type: String,
+      default: "var(--wwc-color-aubergine-dark)",
+    },
+    textColor: {
+      type: String,
+      default: "var(--wwc-color-text)",
+    },
+    height: {
+      type: String,
+      default: "400px",
+    },
+    width: {
+      type: String,
+      default: "600px",
+    },
+    overflow: {
+      type: String,
+      default: "auto",
+    },
+  },
+
+  setup(props) {
+    const isHoveringWindowBody = ref<boolean>(false);
+    const commandLines = ref<{ text: string; isResponse: boolean }[]>([]);
+    const dragging = ref<boolean>(false);
+    const dragStartPosition = ref<{ x: number; y: number }>({ x: 0, y: 0 });
+    const windowElement = ref<HTMLElement | null>(null);
+    const slotWrapper = ref<HTMLElement | null>(null);
+    const typewriting = ref<HTMLElement | null>(null);
+    const isTypingStarted = ref<boolean>(false);
+    const responsiveWidth = ref(props.width);
+
+    const animateTypewriting = async (element: HTMLElement, delay = 50) => {
+      isTypingStarted.value = true;
+
+      const childElements = Array.from(element.children);
+
+      // Cacher tous les éléments enfants sans la classe 'no-typewriting'
+      for (const childElement of childElements) {
+        if (childElement.nodeType === Node.ELEMENT_NODE && !childElement.classList.contains("no-typewriting")) {
+          const htmlChildElement = childElement as HTMLElement;
+          htmlChildElement.style.visibility = "hidden";
+        }
+      }
+
+      // Effectuer le typewriting sur les éléments enfants sans la classe 'no-typewriting' les uns après les autres
+      for (const childElement of childElements) {
+        if (childElement.nodeType === Node.ELEMENT_NODE && !childElement.classList.contains("no-typewriting")) {
+          const htmlChildElement = childElement as HTMLElement;
+          const originalChildText = htmlChildElement.textContent || "";
+          htmlChildElement.textContent = "";
+          htmlChildElement.style.visibility = "visible";
+
+          const cursorElement = document.createElement("span");
+          cursorElement.className = "cursor-blink";
+          cursorElement.textContent = "|";
+          htmlChildElement.appendChild(cursorElement);
+
+          for (const char of originalChildText) {
+            cursorElement.insertAdjacentText("beforebegin", char);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+
+          cursorElement.remove();
+        }
+      }
+    };
+
+    const handleMouseUp = (): void => {
+      dragging.value = false;
+    };
+
+    const handleHeaderMouseDown = (event: MouseEvent): void => {
+      if (
+        event.target instanceof HTMLElement &&
+        event.currentTarget instanceof HTMLElement &&
+        event.currentTarget.parentElement &&
+        event.target.classList.contains("window-header")
+      ) {
+        dragging.value = true;
+        dragStartPosition.value = {
+          x: event.clientX - event.currentTarget.parentElement.offsetLeft,
+          y: event.clientY - event.currentTarget.parentElement.offsetTop,
+        };
+
+        // Ajouter les écouteurs d'événements globaux
+        window.addEventListener("mousemove", handleGlobalMouseMove);
+        window.addEventListener("mouseup", handleGlobalMouseUp);
+      }
+    };
+
+    // Créer une nouvelle fonction pour gérer les événements globaux de déplacement de la souris
+    const handleGlobalMouseMove = (event: MouseEvent): void => {
+      if (dragging.value && windowElement.value) {
+        const windowElementValue = windowElement.value;
+        // Borne haute clampée à 0 : si la fenêtre est plus large/haute que le viewport,
+        // on la garde collée au bord (0) plutôt que de la pousser hors écran (valeur négative).
+        const maxLeft = Math.max(0, window.innerWidth - windowElementValue.offsetWidth);
+        const maxTop = Math.max(0, window.innerHeight - windowElementValue.offsetHeight);
+        const newLeft = Math.min(Math.max(0, event.clientX - dragStartPosition.value.x), maxLeft);
+        const newTop = Math.min(Math.max(0, event.clientY - dragStartPosition.value.y), maxTop);
+
+        windowElementValue.style.left = `${newLeft}px`;
+        windowElementValue.style.top = `${newTop}px`;
+      }
+    };
+
+    // Créer une nouvelle fonction pour gérer les événements globaux de relâchement de la souris
+    const handleGlobalMouseUp = (_: MouseEvent): void => {
+      if (dragging.value) {
+        dragging.value = false;
+
+        // Supprimer les écouteurs d'événements globaux
+        window.removeEventListener("mousemove", handleGlobalMouseMove);
+        window.removeEventListener("mouseup", handleGlobalMouseUp);
+      }
+    };
+
+    const closeWindow = () => {
+      if (windowElement.value) {
+        windowElement.value.style.display = "none";
+      }
+    };
+
+    const handleWindowBodyMouseEnter = () => {
+      isHoveringWindowBody.value = true;
+    };
+
+    const handleWindowBodyMouseLeave = () => {
+      isHoveringWindowBody.value = false;
+    };
+
+    const fadeOut = (headerElement: HTMLElement) => {
+      setTimeout(() => {
+        if (!isHoveringWindowBody.value) {
+          headerElement.classList.remove("visible");
+        }
+      }, 3000);
+    };
+
+    const focus = () => {
+      if (windowElement.value) {
+        // Garantir que la valeur de zIndex ne dépasse pas la limite du navigateur.
+        windowElement.value.style.zIndex = (Date.now() % 2147483647).toString();
+      }
+    };
+
+    watch(isHoveringWindowBody, (newValue) => {
+      if (windowElement.value) {
+        const headerElement = windowElement.value.querySelector(".window-header") as HTMLElement;
+        if (headerElement) {
+          if (newValue && !headerElement.classList.contains("visible")) {
+            headerElement.classList.add("visible");
+          } else if (!newValue) {
+            fadeOut(headerElement);
+          }
+        }
+      }
+    });
+
+    onMounted(async () => {
+      await nextTick();
+      if (windowElement.value) {
+        const headerElement = windowElement.value.querySelector(".window-header") as HTMLElement;
+        if (headerElement) {
+          fadeOut(headerElement);
+        }
+      }
+      if (slotWrapper.value) {
+        await animateTypewriting(slotWrapper.value.querySelector(".typewriting") as HTMLElement);
+      }
+      if (typeof window !== "undefined") {
+        responsiveWidth.value = window.innerWidth < parseInt(props.width) ? "100%" : props.width;
+      }
+    });
+
+    onUnmounted(() => {
+      // Filet de sécurité : retrait des écouteurs globaux si le composant est démonté en plein drag.
+      window.removeEventListener("mousemove", handleGlobalMouseMove);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+    });
+
+    return {
+      commandLines,
+      windowElement,
+      handleMouseUp,
+      handleHeaderMouseDown,
+      closeWindow,
+      handleWindowBodyMouseEnter,
+      handleWindowBodyMouseLeave,
+      slotWrapper,
+      isTypingStarted,
+      typewriting,
+      focus,
+      responsiveWidth,
+    };
+  },
+});
+</script>
+
+<style lang="scss" scoped>
+@use "assets/scss/abstract/color" as _color;
+@use "assets/scss/abstract/variables" as _variables;
+@use "assets/scss/abstract/space" as _space;
+@use "assets/scss/abstract/function" as _function;
+@use "assets/scss/abstract/box_shadow" as _boxShadow;
+
+.window-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.window {
+  --window-space-inline: #{_space.$space-inline-16x};
+
+  // color system
+  // =============================================================================
+  --wwc-color-background: #{_color.$background};
+
+  // --wwc-color-background-hover: #{_color.$background-hover};
+  // --wwc-color-border: ;
+  // --wwc-color-border-hover: ;
+  --wwc-color-text: #{_color.$text};
+
+  // --wwc-color-text-hover: var(--color-dark-text-hover);
+  // --wwc-color-text-active: ;
+  // --wwc-color-shapes: var(--wwc-color-border-hover);
+  // --wwc-color-shapes-hover: var(--color-text);
+  // --wwc-color-shapes-active: var(--color-text-hover);
+
+  --wwc-color-dark: hsl(0deg 0% 8% / 100%);
+  --wwc-color-grey: hsl(0deg 0% 27%);
+  --wwc-color-grey-light: hsl(0deg 0% 68%);
+  --wwc-color-grey-dark: hsl(0deg 0% 20%);
+  --wwc-color-aubergine: hsl(319deg 33% 30% / 100%);
+  --wwc-color-aubergine-light: hsl(319deg 26% 70% / 100%);
+  --wwc-color-aubergine-dark: hsl(319deg 100% 9% / 100%);
+  --wwc-color-red: hsl(0deg 100% 43% / 100%);
+  --wwc-color-red-light: hsl(0deg 72% 72% / 100%);
+  --wwc-color-red-dark: hsl(0deg 100% 27% / 100%);
+  --wh-height: 24px;
+
+  @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+    /* stylelint-disable-next-line property-no-vendor-prefix -- Safari: autoprefixer non activé, préfixe manuel requis */
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+  }
+
+  width: 100%;
+  color: var(--wwc-color-text);
+  font-size: 1rem;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  z-index: 100;
+  box-shadow: #{_boxShadow.$box-shadow-2};
+
+  @media (min-width: _function.breakpoint("lg")) {
+    width: auto;
+    position: absolute;
+  }
+
+  &-header {
+    z-index: 1;
+    height: var(--wh-height);
+    padding: 0.25rem;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+    text-align: center;
+    background-color: var(--wwc-color-grey-dark);
+    position: absolute;
+    width: 100%;
+    cursor: move;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+
+    &.visible {
+      opacity: 1;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: pointer;
+      border-radius: 9999px;
+      width: 1rem;
+      height: 1rem;
+      margin: 0.25rem;
+      background-image: linear-gradient(to bottom right, var(--wwc-color-red), var(--wwc-color-red-dark));
+      box-shadow:
+        #{_boxShadow.$box-shadow-2},
+        #{_boxShadow.$box-shadow-1};
+
+      &:hover {
+        filter: brightness(1.2);
+      }
+    }
+  }
+
+  &-body {
+    margin: 0;
+    padding: 0;
+    height: calc(100% - var(--wh-height));
+    overflow: auto;
+    background-color: var(--wwc-color-aubergine-dark);
+    opacity: 0.85;
+  }
+}
+
+.cursor-blink {
+  display: inline-block;
+  animation: blink 1s steps(1, start) infinite;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  50.1%,
+  100% {
+    opacity: 0;
+  }
+}
+</style>

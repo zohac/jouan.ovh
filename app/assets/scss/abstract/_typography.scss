@@ -1,0 +1,108 @@
+@use "function";
+@use "variables";
+@use "mixin";
+@use "space";
+
+body,
+button,
+input,
+select,
+optgroup,
+textarea {
+  --font-size: #{variables.$font-size-base};
+
+  // Corps long : Ubuntu sans (token DS). Les titres/labels/code passent en mono ci-dessous.
+  font-family: var(--font-sans);
+  font-size: var(--font-size);
+  font-weight: #{variables.$font-weight-regular};
+  line-height: #{function.line-height(var(--font-size))};
+
+  @include mixin.font-style-normal;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  clear: both;
+
+  // Ubuntu Mono = voix signature pour les titres (token DS).
+  font-family: var(--font-mono);
+}
+
+h1 {
+  font-weight: #{variables.$font-weight-regular};
+  font-size: #{variables.$font-size-3x-large};
+  line-height: #{function.line-height(variables.$font-size-3x-large)};
+}
+
+h2 {
+  font-weight: #{variables.$font-weight-thin};
+  font-size: #{variables.$font-size-2x-large};
+  line-height: #{function.line-height(variables.$font-size-2x-large)};
+}
+
+label,
+legend {
+  // Labels : Ubuntu Mono = voix signature pour les micro-libelles.
+  font-family: var(--font-mono);
+}
+
+p {
+  font-size: #{variables.$font-size-medium};
+
+  // Long-form lisible : interligne détendu (token DS).
+  line-height: var(--lh-relaxed);
+  margin-bottom: #{space.$space-stack-24x};
+}
+
+dfn,
+cite,
+em,
+i {
+  font-style: italic;
+}
+
+blockquote {
+  margin: 0 #{space.$space-stack-16x};
+}
+
+address {
+  margin: 0 0 #{space.$space-stack-16x};
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: #{variables.$font-size-base};
+  line-height: #{function.line-height(variables.$font-size-base)};
+  overflow: auto;
+  padding: #{space.$space-inset-16x};
+  margin-bottom: #{space.$space-stack-16x};
+  max-width: 100%;
+}
+
+code,
+kbd,
+tt,
+var {
+  font-family: var(--font-mono);
+}
+
+abbr,
+acronym {
+  border: 1px dotted;
+  cursor: help;
+}
+
+mark,
+ins {
+  background: var(--mark-color-background);
+  text-decoration: none;
+}
+
+big {
+  font-size: #{variables.$font-size-large};
+  line-height: #{function.line-height(variables.$font-size-large)};
+}

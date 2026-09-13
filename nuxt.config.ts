@@ -1,5 +1,3 @@
-// import { defineNuxtConfig } from "@nuxt/bridge";
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
@@ -10,7 +8,17 @@ export default defineNuxtConfig({
       },
       charset: "utf-8",
       viewport: "width=device-width, initial-scale=1",
-      link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+      link: [
+        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+        // Ubuntu sans (corps long) — Google Fonts via <link> (pas d'@import SCSS, cf. règle projet).
+        // Ubuntu Mono reste self-hosted (abstract/_fonts.scss).
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,400;1,700&display=swap",
+        },
+      ],
       meta: [
         {
           name: "description",
@@ -22,12 +30,42 @@ export default defineNuxtConfig({
     },
   },
   css: ["@/assets/scss/main.scss"],
-  modules: ["@nuxt/content", "@nuxt/image-edge"],
+  modules: ["@nuxt/content", "@nuxt/image", "@nuxt/eslint"],
+  // @nuxt/content : coloration syntaxique Shiki désactivée. Le DS rend le code en
+  // palette terminale UNIFORME (mono off-white sur fond aubergine, vert pour l'inline,
+  // cf. kit.css .article .prose pre/code) — pas de multicolore par token, qui injecterait
+  // des styles inline écrasant les tokens. Les blocs rendent en <pre><code> nu, stylés en SCSS.
+  content: {
+    build: {
+      markdown: {
+        highlight: false,
+      },
+    },
+  },
+  // Primitives DS dans components/ui/ auto-importées sans préfixe de dossier
+  // (<ZButton> et non <UiZButton>). Le reste de components/ garde le scan par défaut.
+  components: [{ path: "~/components/ui", pathPrefix: false }, "~/components"],
   ssr: true,
+  // Config exposée au client. La clé d'accès Web3Forms (envoi du formulaire /contact)
+  // n'est JAMAIS en dur : fournie par l'env NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY (cf.
+  // .env.example). Vide par défaut → le formulaire bascule sur son état d'erreur.
+  runtimeConfig: {
+    public: {
+      web3formsAccessKey: "",
+      // URL de production du site (canonical / og:url / JSON-LD). Défaut = prod
+      // (jouan.ovh, cf. public/CNAME) ; surchargeable via l'env NUXT_PUBLIC_SITE_URL
+      // (cf. .env.example). Consommée par le composable useSiteUrl(). Valeur inlinée au prerender (`nuxi generate`).
+      siteUrl: "https://jouan.ovh",
+    },
+  },
+  // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
   experimental: {
     payloadExtraction: false,
   },
-  webpack: {
-    extractCSS: true,
+  // Flat config gérée par @nuxt/eslint ; on laisse Prettier formater (stylistic off).
+  eslint: {
+    config: {
+      stylistic: false,
+    },
   },
 });

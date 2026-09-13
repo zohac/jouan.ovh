@@ -1,0 +1,83 @@
+// ============================================================
+//  Primitives de layout du design system — GLOBALES
+//
+//  .section / .section--sunken / .container / .eyebrow / .prose
+//  Portées de docs/design_system/ui_kits/jouan-site/kit.css.
+//  Mutualisées ici (chargées par main.scss) plutôt que redéclarées
+//  à l'identique en <style scoped> dans chaque page (index, services,
+//  about, …). Tokens uniquement — aucune valeur en dur (CAP-2).
+// ============================================================
+
+/* stylelint-disable selector-class-pattern -- convention DS BEM (.section--sunken) portée depuis kit.css */
+
+// Bloc de section vertical. padding-block uniquement : le gutter
+// horizontal vient de .container (enfant) — évite le conflit de
+// shorthand padding multi-axes (cf. project-context, piège story 3.1).
+.section {
+  padding-block: var(--space-16);
+}
+
+// Section en creux : fond teinté + filets haut/bas.
+.section--sunken {
+  background: var(--bg-sunken);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+// Conteneur centré à largeur max ; gutter horizontal en longhand.
+.container {
+  width: 100%;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding-inline: var(--space-6);
+}
+
+// Sur-titre mono en capitales espacées, accent orange.
+// font-weight et line-height neutralisés pour un rendu identique sur <h2 class="eyebrow"> et <p class="eyebrow">.
+.eyebrow {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-relaxed);
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+// Variante discrète (sur-titre secondaire, ex. « // stack »).
+.eyebrow--muted {
+  color: var(--text-muted);
+}
+
+// Texte long-forme : Ubuntu sans, interligne détendu.
+.prose {
+  font-family: var(--font-sans);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+// Rangée de tags (chips) qui passent à la ligne — hero, stack /about, etc.
+// Reset de liste inclus pour un rendu propre en <ul>/<li> (no-op sur un <div>).
+.hero__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Ligne de méta mono discrète, items séparés par « · » (porté de kit.css .post__meta).
+// Réutilisée par le feed blog (/blog) et l'en-tête d'article (/blog/[...slug]).
+.post__meta {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+
+  // Contraste (story 9.2) : méta d'article (date · lecture) = info réelle → palier
+  // au-dessus (--text-faint échouait ~2.95:1 sur carte ; --text-muted ≥ 4.5:1).
+  color: var(--text-muted);
+}

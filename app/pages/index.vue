@@ -1,0 +1,656 @@
+<template>
+  <main class="home">
+    <section class="hero hero__grad">
+      <div class="hero__in container">
+        <div class="hero__grid">
+          <!-- Colonne gauche : accroche, CTA, tags -->
+          <div class="anim hero__text">
+            <p class="eyebrow"><span aria-hidden="true">// </span>développeur web freelance</p>
+            <h1 class="hero__title">Du code <em>sur-mesure</em>,<br />de l'IA <em>utile</em>.</h1>
+            <p class="hero__sub">{{ tagline }}</p>
+            <div class="hero__cta">
+              <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+                Démarrer un projet
+                <template #iconRight><ZIcon name="arrow" /></template>
+              </ZButton>
+              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir les services </ZButton>
+            </div>
+            <ul class="hero__tags">
+              <li v-for="tag in tags" :key="tag">
+                <ZTag>{{ tag }}</ZTag>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Colonne droite : fenêtre terminal décorative (statique) -->
+          <div class="anim hero__term-col">
+            <div class="hero-term">
+              <div class="hero-term__bar">
+                <span class="hero-term__dots" aria-hidden="true">
+                  <span class="hero-term__dot hero-term__dot--close" />
+                  <span class="hero-term__dot hero-term__dot--min" />
+                  <span class="hero-term__dot hero-term__dot--max" />
+                </span>
+                <span class="hero-term__title">anon.@jouan.ovh: ~</span>
+              </div>
+
+              <div class="hero-term__body">
+                <template v-for="row in terminalRows" :key="row.id">
+                  <p class="hero-term__line" aria-hidden="true">
+                    <span class="prm"
+                      ><span class="prm__user">anon.@jouan.ovh</span><span class="prm__sep">:</span
+                      ><span class="prm__dir">~</span><span class="prm__sep">$ </span
+                      ><span class="prm__cmd">{{ row.cmd }}</span></span
+                    >
+                  </p>
+                  <p class="hero-term__out" :class="`hero-term__out--${row.tone}`">{{ row.out }}</p>
+                </template>
+
+                <button
+                  type="button"
+                  class="hero-term__open"
+                  aria-label="Ouvrir le terminal interactif"
+                  aria-haspopup="dialog"
+                  @click="openTerminal"
+                >
+                  <span class="prm"
+                    ><span class="prm__user">anon.@jouan.ovh</span><span class="prm__sep">:</span
+                    ><span class="prm__dir">~</span><span class="prm__sep">$ </span><span class="prm__cmd">help</span
+                    ><span class="prm__caret" aria-hidden="true"
+                  /></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Aperçu services (porté de ServicesPreview, Home.jsx) -->
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je fais</p>
+        <h2 class="section__title">Trois façons de travailler ensemble</h2>
+        <ul class="grid-3">
+          <li v-for="service in services" :key="service.id">
+            <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+              <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+              <h3 class="offer__title">{{ service.title }}</h3>
+              <p class="offer__desc">{{ service.desc }}</p>
+              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+                En savoir plus →
+              </NuxtLink>
+            </ZCard>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Stats + projets sélectionnés — section en creux partagée (stories 3.2 / 3.3) -->
+    <section class="section section--sunken">
+      <div class="container">
+        <div class="statrow">
+          <div v-for="stat in stats" :key="stat.id" class="stat">
+            <b>{{ stat.value }}</b>
+            <span>{{ stat.label }}</span>
+          </div>
+        </div>
+
+        <h2 class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</h2>
+        <ul class="grid-2 projects">
+          <li v-for="project in projects" :key="project.url">
+            <ZCard class="project" interactive :as="ZExternalLink" :href="project.url" rel="noopener noreferrer">
+              <div class="project__head">
+                <h3 class="project__name">{{ project.name }}</h3>
+                <span class="project__role">{{ project.role }}</span>
+              </div>
+              <p class="prose project__desc">{{ project.desc }}</p>
+              <ul class="hero__tags">
+                <li v-for="tag in project.tags" :key="tag">
+                  <ZTag>{{ tag }}</ZTag>
+                </li>
+              </ul>
+            </ZCard>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</template>
+
+<script setup lang="ts">
+// Page d'accueil — hero Terminal (A) + aperçu services + stats. Porté de Home.jsx
+// (HeroTerminal / ServicesPreview / StatsProjects) du UI kit : recréation Vue 3 +
+// tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2, 3.3)
+import { NuxtLink, ZExternalLink } from "#components";
+import { useTerminal } from "~/composables/useTerminal";
+import { SITE } from "~/data/site";
+
+// Contenu repris de data.js (window.SITE) — 1re personne, vouvoiement, pas d'emoji.
+const tagline = "Je conçois des applications sur-mesure, des sites WordPress, et j'intègre l'IA dans vos outils.";
+const tags = ["php", "symfony", "wordpress", "nest.js", "nuxt.js"];
+
+// Aperçu des 3 offres (data.js `services`). `featured` → carte mise en avant
+// (accent + glow). Icônes mappées sur le set ZIcon (wp / code / spark, story 2.7).
+// `id` = clé v-for stable (indépendante du contenu affiché), cohérent avec terminalRows.
+const services = [
+  {
+    id: "wordpress",
+    icon: "wp",
+    title: "WordPress sur-mesure",
+    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
+    featured: false,
+  },
+  {
+    id: "apps",
+    icon: "code",
+    title: "Applications web",
+    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
+    featured: true,
+  },
+  {
+    id: "ia",
+    icon: "spark",
+    title: "IA & automatisation",
+    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
+    featured: false,
+  },
+];
+
+// Chiffres clés (data.js `stats`) — texte exact (séparateur ·), pas d'emoji.
+const stats = [
+  { id: "stat-1", value: "8+", label: "ans dans la tech" },
+  { id: "stat-2", value: "3", label: "stacks maîtrisés" },
+  { id: "stat-3", value: "1", label: "SaaS fondé · keova.app" },
+];
+
+// Projets sélectionnés — source unique `app/data/site.ts`. Cartes rendues en liens externes.
+const projects = SITE.projects;
+
+// Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
+// côté template (pas de chiffres/projets inventés : stats & projets = stories 3.2 / 3.3).
+// `id` = clé v-for stable (indépendante du contenu affiché), garantie unique.
+const terminalRows = [
+  { id: "line-1", cmd: "whoami", out: "Simon Jouan — Développeur web freelance", tone: "ink" },
+  { id: "line-2", cmd: "cat stack.txt", out: "PHP/Symfony · WordPress · Node/Nest · Nuxt", tone: "blue" },
+  { id: "line-3", cmd: "ls ~/projets", out: "keova.app/   patio-conseil.fr/", tone: "green" },
+];
+
+// Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le
+// header). No-op tant qu'aucun terminal n'est disponible (prerender). La
+// restylisation du terminal lui-même relève d'Epic 8.
+const { open: openTerminal } = useTerminal();
+
+const siteUrl = useSiteUrl();
+const homeJsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Simon Jouan — Développeur web freelance",
+    url: siteUrl,
+    description: tagline,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: SITE.profile.name,
+    jobTitle: SITE.profile.role,
+    url: siteUrl,
+    image: `${siteUrl}/images/portrait.jpeg`,
+    email: SITE.profile.email,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: SITE.profile.city,
+      addressCountry: "FR",
+    },
+  },
+];
+
+usePageSeo({
+  title: "Simon Jouan — Développeur web freelance & IA",
+  description:
+    "Développeur web freelance à Valognes (Normandie) : création de sites WordPress sur-mesure, applications web (PHP/Symfony, Nest.js, Nuxt) et intégrations d'IA.",
+  path: "/",
+  image: "/images/portrait.jpeg",
+  type: "website",
+  jsonLd: homeJsonLd,
+});
+</script>
+
+<style lang="scss" scoped>
+/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis kit.css / Home.jsx */
+.home {
+  display: block;
+}
+
+// Entrée one-shot (pas une boucle) — keyframe globale fade-rise (_root.scss).
+.anim {
+  animation: fade-rise var(--dur-slow) var(--ease-out) both;
+}
+
+.hero__term-col {
+  // Décalage d'entrée fidèle à Home.jsx (animationDelay 80ms) — pas de token motion
+  // équivalent (les --dur-* couvrent les transitions, pas les délais d'orchestration).
+  animation-delay: 80ms;
+}
+
+// ---- Hero (porté de kit.css : .hero, .hero__grad, .hero__in, .hero__grid…) ----
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__grad {
+  // Dégradés décoratifs dérivés des tokens (orange accent + aubergine saturé) via
+  // color-mix — pas de valeur HSL en dur. Base = fond de page. Fidèle à kit.css
+  // (.hero__grad : aubergine ~60 % de saturation → token --aubergine-vivid).
+  background:
+    radial-gradient(900px 500px at 78% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
+    radial-gradient(
+      700px 500px at 0% 110%,
+      color-mix(in srgb, var(--aubergine-vivid) 28%, transparent),
+      transparent 60%
+    ),
+    var(--bg-page);
+}
+
+.hero__in {
+  position: relative;
+  z-index: 1;
+
+  // padding-block uniquement : le gutter horizontal vient de .container
+  // (longhands distincts → pas de conflit de shorthand entre les deux classes).
+  padding-block: var(--space-20);
+}
+
+.hero__grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+// .section / .container / .eyebrow / .prose : primitives de layout globales
+// (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+
+// ---- Colonne texte ----
+.hero__title {
+  font-family: var(--font-mono);
+  font-size: var(--fs-6xl);
+  font-weight: var(--fw-light);
+  letter-spacing: var(--ls-tight);
+  color: var(--text-strong);
+
+  em {
+    font-style: normal;
+    color: var(--accent);
+  }
+}
+
+.hero__sub {
+  max-width: 46ch;
+  margin: var(--space-5) 0 var(--space-6);
+  font-family: var(--font-sans);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+// .hero__tags : primitive de layout globale (app/assets/scss/base/_layout.scss).
+
+// ---- Fenêtre terminal décorative (porté de TerminalWindow.jsx / Prompt.jsx) ----
+// Dérogation tokens-only assumée : les dimensions fixes du chrome (hauteur min
+// de fenêtre 300px, barre 30px, pastilles 13px / gap 7px) reproduisent à
+// l'identique la spec du composant DS et n'ont pas de token d'espacement
+// équivalent (échelle base-4). Couleurs, rayons et ombres restent en tokens.
+// `min-height` (et non `height`) : la fenêtre s'étend au contenu — pas de
+// scrollbar parasite si le rendu mono dépasse de quelques px.
+.hero-term {
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid var(--accent-2-soft);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--glow-terminal);
+}
+
+.hero-term__bar {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  height: 30px;
+  padding: 0 var(--space-3);
+  background: var(--aubergine-black);
+}
+
+.hero-term__dots {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.hero-term__dot {
+  width: 13px;
+  height: 13px;
+  border-radius: var(--radius-circle);
+}
+
+.hero-term__dot--close {
+  background: var(--term-red);
+}
+
+.hero-term__dot--min {
+  background: var(--term-yellow);
+}
+
+.hero-term__dot--max {
+  background: var(--term-green);
+}
+
+.hero-term__title {
+  position: absolute;
+  inset: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-muted);
+  text-align: center;
+  pointer-events: none;
+}
+
+.hero-term__body {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-4);
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--ink-1);
+  background: var(--bg-terminal);
+  overflow-wrap: break-word;
+}
+
+@supports (backdrop-filter: blur(5px)) {
+  .hero-term__body {
+    background: color-mix(in srgb, var(--bg-terminal) 86%, transparent);
+    backdrop-filter: blur(5px);
+  }
+}
+
+.hero-term__line {
+  margin: 0;
+}
+
+.hero-term__out {
+  margin: 0 0 var(--space-4);
+}
+
+.hero-term__out--ink {
+  color: var(--ink-1);
+}
+
+.hero-term__out--blue {
+  color: var(--term-blue);
+}
+
+.hero-term__out--green {
+  color: var(--term-green);
+}
+
+// Ligne « help » cliquable → ouvre l'easter-egg terminal (bouton natif = clavier OK).
+.hero-term__open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: var(--radius-xs);
+
+  &:focus-visible {
+    // Outline transparent : invisible en rendu normal (le ring box-shadow prend le
+    // relais), mais rendu en couleur système sous forced-colors (Windows High
+    // Contrast), où les box-shadow sont neutralisées — focus toujours visible.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--ring-accent);
+  }
+}
+
+// ---- Prompt (porté de Prompt.jsx : couleurs héritage) ----
+.prm {
+  font-family: var(--font-mono);
+}
+
+.prm__user {
+  font-weight: var(--fw-bold);
+  color: var(--prompt);
+}
+
+.prm__sep {
+  color: var(--ink-1);
+}
+
+.prm__dir {
+  font-weight: var(--fw-bold);
+  color: var(--term-blue);
+}
+
+.prm__cmd {
+  color: var(--ink-1);
+}
+
+// Caret : dimensions en em reprises telles quelles de Prompt.jsx (glyphe
+// proportionnel à la police) — pas de token équivalent pour un curseur.
+.prm__caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--prompt);
+
+  // Seule animation en boucle de l'UI (caret terminal). Keyframe globale (_root.scss).
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+.section__title {
+  margin-bottom: var(--space-8);
+  font-family: var(--font-mono);
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+// ---- Aperçu services (porté de .grid-3 / .offer*) ----
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+  }
+}
+
+.offer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.offer__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-10); // 40px
+  height: var(--space-10);
+  margin-bottom: var(--space-4);
+
+  // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+  // pas de token d'espacement à 22px (entre --space-5/20 et --space-6/24).
+  font-size: 22px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-md);
+}
+
+.offer__title {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+.offer__desc {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+.offer__more {
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--accent);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    // Outline transparent : rendu en couleur système sous forced-colors.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--ring-accent);
+    border-radius: var(--radius-xs);
+  }
+}
+
+// ---- Stats (porté de .statrow / .stat) ----
+.statrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+
+  // Espace avant le bloc projets (story 3.3), réf. Home.jsx (statrow marginBottom).
+  margin-bottom: var(--space-12);
+}
+
+.stat {
+  font-family: var(--font-mono);
+
+  b {
+    display: block;
+    font-size: var(--fs-4xl);
+    font-weight: var(--fw-light);
+    color: var(--text-strong);
+  }
+
+  span {
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+}
+
+// ---- Projets sélectionnés (porté de StatsProjects / .grid-2 / .prose) ----
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+  }
+}
+
+.projects {
+  margin-top: var(--space-5);
+}
+
+// Carte rendue en lien (`as="a"`) : neutralise le soulignement par défaut du
+// <a> (le contenu porte ses propres couleurs/typo). ZCard reste générique.
+.project {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-decoration: none;
+
+  .hero__tags {
+    margin-top: auto;
+  }
+}
+
+.project__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.project__name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+.project__role {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.project__desc {
+  margin: var(--space-3) 0 var(--space-4);
+  font-size: var(--fs-sm);
+}
+
+// ---- Responsive (cf. kit.css @media max-width: 900px) ----
+@media (width <= 900px) {
+  .hero__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__title {
+    font-size: var(--fs-4xl);
+  }
+
+  .grid-3,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim,
+  .prm__caret {
+    animation: none;
+  }
+}
+</style>

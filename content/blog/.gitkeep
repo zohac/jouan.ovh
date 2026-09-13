@@ -1,0 +1,3 @@
+# Les articles de blog (*.md) vont ici — collection "blog" (content.config.ts).
+# Dossier conservé volontairement vide : le blog affiche l'empty-state tant
+# qu'aucun article réel n'est publié (les exemples de seed ont été retirés).

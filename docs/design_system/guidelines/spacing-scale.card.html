@@ -1,0 +1,24 @@
+<!-- @dsCard group="Spacing" viewport="700x200" name="Spacing scale" subtitle="4px base — padding, gap, rhythm" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); font-family: var(--font-mono);
+    color: var(--text-muted); padding: var(--space-6); }
+  .row { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2);
+    font-size: var(--fs-xs); }
+  .bar { height: 14px; background: var(--accent); border-radius: var(--radius-xs); }
+  .row b { color: var(--text-strong); width: 78px; }
+</style>
+</head>
+<body>
+  <div class="row"><b>space-2</b><span class="bar" style="width:8px"></span>8px</div>
+  <div class="row"><b>space-4</b><span class="bar" style="width:16px"></span>16px</div>
+  <div class="row"><b>space-6</b><span class="bar" style="width:24px"></span>24px</div>
+  <div class="row"><b>space-8</b><span class="bar" style="width:32px"></span>32px</div>
+  <div class="row"><b>space-12</b><span class="bar" style="width:48px"></span>48px</div>
+  <div class="row"><b>space-16</b><span class="bar" style="width:64px"></span>64px</div>
+</body>
+</html>

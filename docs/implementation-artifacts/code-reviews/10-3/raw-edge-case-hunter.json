@@ -1,0 +1,2053 @@
+Reading additional input from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 01a099c9-7aab-7d53-8da1-b9a8bc3cbabf
+--------
+user
+# Edge Case Hunter Prompt — Story 10.3
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/10-3/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’m using `bmad-review-edge-case-hunter` to exhaustively inspect the specified diff and return only unhandled paths as JSON.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ exited 1 in 0ms:
+sed: /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md: No such file or directory
+
+codex
+The project-local skill path is unavailable at the listed alias, so I’m checking the available skill roots and will use the matching copy.
+exec
+/bin/zsh -lc 'for p in /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md /Users/simon/.codex/skills/bmad-review-edge-case-hunter/SKILL.md /Users/simon/.codex/plugins/cache/openai-bundled/bmad-review-edge-case-hunter/SKILL.md; do if test -f "$p"; then echo "FOUND $p"; sed -n '"'1,260p' \""'$p"; fi; done' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+FOUND /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+FOUND /Users/simon/.codex/skills/bmad-review-edge-case-hunter/SKILL.md
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+A brief secondary deletion check runs as Step 4 when the diff removes code.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Consider implicit branches: the diff special-cases or changes the handling of one or more members of a fixed set of values — enums, status codes, sentinels, type tags, flags, value ranges. The rest of the set is implicit branches (e.g. the diff changes the `RED` and `YELLOW` cases of a `RED`/`YELLOW`/`GREEN` enum; `GREEN` is the implicit branch)
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Deletion Check
+
+If the diff removed or replaced meaningful code (ignore pure renames and whitespace): load `references/deletion-check.md` and follow it.
+
+### Step 5: Present Findings
+
+Output all findings as a single JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when nothing is found. Deletion findings from Step 4, if any, go in the same array with the extra fields defined in `references/deletion-check.md`.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+exec
+/bin/zsh -lc "wc -l docs/implementation-artifacts/code-reviews/10-3/full.diff && sed -n '1,260p' docs/implementation-artifacts/code-reviews/10-3/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     189 docs/implementation-artifacts/code-reviews/10-3/full.diff
+diff --git a/app/components/ui/ZExternalLink.vue b/app/components/ui/ZExternalLink.vue
+new file mode 100644
+index 0000000..e13eaa5
+--- /dev/null
++++ b/app/components/ui/ZExternalLink.vue
+@@ -0,0 +1,38 @@
++<template>
++  <a :href="href" target="_blank" :rel="computedRel" :class="className">
++    <slot />
++    <span class="screen-reader-text">{{ computedSrText }}</span>
++  </a>
++</template>
++
++<script setup lang="ts">
++// Primitive lien externe accessible (DS) — force target="_blank", rel sécurisé ("noopener" ou custom),
++// et adjoint un libellé sr-only « (ouvre dans un nouvel onglet) » sans impacter le rendu visuel.
++// (Story 10.3 — WCAG G201 / FR13).
++import { computed } from "vue";
++
++interface Props {
++  /** URL externe cible. */
++  href: string;
++  /**
++   * Relation de lien. Par défaut "noopener" (sécurité window.opener).
++   * Peut être étendu à "noopener noreferrer" si nécessaire.
++   * @default "noopener"
++   */
++  rel?: string;
++  /** Classe CSS optionnelle à appliquer sur l'ancre <a>. */
++  class?: string;
++  /** Libellé accessible alternatif pour l'annonce sr-only. */
++  srText?: string;
++}
++
++const props = withDefaults(defineProps<Props>(), {
++  rel: "noopener",
++  class: undefined,
++  srText: " (ouvre dans un nouvel onglet)",
++});
++
++const className = computed(() => props.class);
++const computedRel = computed(() => props.rel || "noopener");
++const computedSrText = computed(() => props.srText);
++</script>
+diff --git a/app/components/FooterComponent.vue b/app/components/FooterComponent.vue
+index 920757b..418772b 100644
+--- a/app/components/FooterComponent.vue
++++ b/app/components/FooterComponent.vue
+@@ -17,14 +17,13 @@
+ 
+         <div class="ftr__col">
+           <h2 class="ftr__title">// Projets</h2>
+-          <a
++          <ZExternalLink
+             v-for="project in projects"
+             :key="project.url"
+             :href="project.url"
+-            target="_blank"
+             rel="noopener noreferrer"
+             class="ftr__link"
+-            >{{ project.name }}</a
++            >{{ project.name }}</ZExternalLink
+           >
+         </div>
+ 
+diff --git a/app/components/HexagonLinkComponent.vue b/app/components/HexagonLinkComponent.vue
+index 12765e5..edf089c 100644
+--- a/app/components/HexagonLinkComponent.vue
++++ b/app/components/HexagonLinkComponent.vue
+@@ -1,7 +1,9 @@
+ <template>
+   <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+     <slot name="icon" />
+-    <span class="hex__label"><slot name="title" /></span>
++    <span class="hex__label"
++      ><slot name="title" /><span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span></span
++    >
+   </a>
+ </template>
+ 
+diff --git a/app/pages/about.vue b/app/pages/about.vue
+index e9f299f..997bc7f 100644
+--- a/app/pages/about.vue
++++ b/app/pages/about.vue
+@@ -31,7 +31,7 @@
+             </p>
+             <p class="prose about__para">
+               Je suis aussi fondateur du SaaS
+-              <a href="https://keova.app" target="_blank" rel="noreferrer">keova.app</a>, et j'aime mettre l'IA au
++              <ZExternalLink href="https://keova.app" rel="noopener">keova.app</ZExternalLink>, et j'aime mettre l'IA au
+               service du code — agents, automatisations, intégrations LLM.
+             </p>
+ 
+diff --git a/docs/implementation-artifacts/10-3-liens-externes-accessibles.md b/docs/implementation-artifacts/10-3-liens-externes-accessibles.md
+index db8c8ac..eff4049 100644
+--- a/docs/implementation-artifacts/10-3-liens-externes-accessibles.md
++++ b/docs/implementation-artifacts/10-3-liens-externes-accessibles.md
+@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
+ 
+ # Story 10.3: Liens externes accessibles (helper + audit `target="_blank"`)
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -23,19 +23,19 @@ so that je ne suis pas désorienté par un changement de contexte (FR13, WCAG G2
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Factoriser le helper de lien externe (AC: #1)
+-  - [ ] Créer un mécanisme unique réutilisable : soit un **composant** `app/components/ui/ZExternalLink.vue` (ou `app/components/ExternalLinkComponent.vue` selon le nommage retenu), soit un **petit utilitaire/snippet sr-only** partagé. Décision à consigner. Le helper fournit : `rel="noopener"` (a minima ; `noopener noreferrer` selon le cas), `target="_blank"`, et un **libellé sr-only** « (ouvre dans un nouvel onglet) » réutilisant la classe existante `.screen-reader-text` (déjà utilisée `index.vue:121`). Optionnellement une icône « lien externe » (`ZIcon`) décorative `aria-hidden`.
+-  - [ ] Le helper doit composer avec les usages existants (lien texte, carte cliquable, hexagone) sans casser le style — vérifier qu'il n'impose pas de wrapper cassant la mise en page.
+-- [ ] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+-  - [ ] Inventaire `grep -rn 'target="_blank"' app/` (4 occurrences au baseline) et migration via le helper :
+-    - **`app/components/HexagonLinkComponent.vue:2`** — `target="_blank" rel="noopener noreferrer"`, **sans** libellé sr-only → ajouter l'indication « nouvel onglet » (les hexagones sociaux n'ont qu'un `aria-label` ?). Vérifier le nom accessible (réseau social) + sr-only onglet.
+-    - **`app/components/FooterComponent.vue:24`** — `target="_blank"` → vérifier `rel` + ajouter sr-only.
+-    - **`app/pages/index.vue:110`** — carte projet : **déjà** dotée du sr-only (`index.vue:121`, fix 3.3). L'aligner sur le helper pour cohérence (pas de régression).
+-    - **`app/pages/about.vue:34`** — `keova.app` `target="_blank" rel="noreferrer"` → passer `rel` à `noopener` (sécurité) + ajouter sr-only via le helper.
+-  - [ ] Vérifier qu'**aucun** `target="_blank"` ne subsiste sans helper/sr-only (`grep` final).
+-- [ ] Tâche 3 — Validation (AC: tout)
+-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts.
+-  - [ ] Vérif navigateur (Chrome DevTools MCP) : nom accessible de chaque lien externe = libellé + « (ouvre dans un nouvel onglet) » ; **rendu visuel inchangé** (sr-only hors écran) ; focus visible préservé (9.1).
++- [x] Tâche 1 — Factoriser le helper de lien externe (AC: #1)
++  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
++  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
++- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
++  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
++    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
++    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
++    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
++    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
++  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
++- [x] Tâche 3 — Validation (AC: tout)
++  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` exécuté avec succès (code 0).
++  - [x] Vérification du nom accessible et préservation du rendu visuel.
+ 
+ ## Dev Notes
+ 
+@@ -77,9 +77,25 @@ so that je ne suis pas désorienté par un changement de contexte (FR13, WCAG G2
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++Gemini 2.5 Pro
+ 
+ ### Debug Log References
++- Lint initial ajusté avec Prettier / ESLint.
++- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+ 
+ ### Completion Notes List
++- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
++- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
++- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
++- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
++- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
++- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
++- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+ 
+ ### File List
++- `app/components/ui/ZExternalLink.vue` (NEW)
++- `app/components/HexagonLinkComponent.vue` (MODIFIED)
++- `app/components/FooterComponent.vue` (MODIFIED)
++- `app/pages/about.vue` (MODIFIED)
++- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
++- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 02bb83f..89b39ec 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-12 (Story 10.1 re-review soldée : useSiteUrl origin-only, preuve Chrome DevTools /about+/blog, File List alignée ; 1 différé confirmé → 10.5. Story done)"
++last_updated: "2026-09-13 (Story 10.2 soldée par revue de code : a11y sémantique sur home/services/contact validée, 6 patches appliqués, statut done)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -109,8 +109,8 @@ development_status:
+   # Epic 10 — Fin de refonte (a11y résiduel + SEO + RGPD + déploiement prod)
+   epic-10: in-progress
+   10-1-decision-hebergement-prod-et-derisquage-deploiement: done
+-  10-2-a11y-semantique-residuelle: ready-for-dev
+-  10-3-liens-externes-accessibles: ready-for-dev
++  10-2-a11y-semantique-residuelle: done
++  10-3-liens-externes-accessibles: in-progress
+   10-4-validation-a11y-emulee-et-unification-forced-colors: ready-for-dev
+   10-5-seo-centralise-site-wide: ready-for-dev
+   10-6-conformite-legale-rgpd-mentions: ready-for-dev
+
+exec
+/bin/zsh -lc "sed -n '1,260p' /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/references/deletion-check.md" in /Users/simon/dev/jouan.ovh
+ exited 1 in 0ms:
+sed: /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/references/deletion-check.md: No such file or directory
+
+2026-09-13T08:02:13.056385Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc 'for p in /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/references/deletion-check.md /Users/simon/.codex/skills/bmad-review-edge-case-hunter/references/deletion-check.md; do if test -f "$p"; then echo "FOUND $p"; sed -n '"'1,260p' \""'$p"; fi; done
+rg --files /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter /Users/simon/.codex/skills/bmad-review-edge-case-hunter | sort' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+FOUND /Users/simon/.codex/skills/bmad-review-edge-case-hunter/references/deletion-check.md
+# Deletion Check
+
+Secondary pass for the Edge Case Hunter — runs only when the diff removed meaningful code. Subordinate to the edge-case pass; findings are usually few or none.
+
+For each chunk of removed or replaced code (ignore pure renames and whitespace), ask: did it carry behavior or a contract that the change neither re-established nor intentionally retired? Add a finding for any resulting regression, orphaned reference, or newly-dead code. Skip anything already covered by your edge-case findings.
+
+Append each finding to the same JSON array as the edge-case findings, with the four standard fields plus:
+
+- `kind`: `"deletion"`
+- `confidence`: `"high"`, `"medium"`, or `"low"` — these are inferences; rate them
+
+For a deletion finding the standard fields read as: `location` = the removed item; `trigger_condition` = the behavior or contract it enforced; `guard_snippet` = where or how to re-establish it; `potential_consequence` = the regression or orphan.
+
+Add nothing if nothing qualifies.
+/Users/simon/.codex/skills/bmad-review-edge-case-hunter/SKILL.md
+/Users/simon/.codex/skills/bmad-review-edge-case-hunter/references/deletion-check.md
+/Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md
+
+2026-09-13T08:02:17.807210Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "nl -ba app/components/HexagonLinkComponent.vue | sed -n '1,120p'
+nl -ba app/components/FooterComponent.vue | sed -n '1,100p'
+nl -ba app/pages/about.vue | sed -n '20,45p'
+nl -ba app/components/ui/ZExternalLink.vue | sed -n '1,100p'
+rg -n 'target=\"_blank\"|ZExternalLink|screen-reader-text' app" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     1	<template>
+     2	  <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+     3	    <slot name="icon" />
+     4	    <span class="hex__label"
+     5	      ><slot name="title" /><span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span></span
+     6	    >
+     7	  </a>
+     8	</template>
+     9	
+    10	<script setup lang="ts">
+    11	// Lien social en hexagone — motif patrimonial du footer/contact, restylé DS (story 2.8).
+    12	// Hexagone via clip-path (cf. kit.css .hex) ; glyphe en currentColor (ZIcon, story 2.7).
+    13	defineProps<{
+    14	  /** URL externe (réseau social). */
+    15	  link: string;
+    16	}>();
+    17	</script>
+    18	
+    19	<style lang="scss" scoped>
+    20	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) */
+    21	.hex {
+    22	  display: inline-flex;
+    23	  align-items: center;
+    24	  justify-content: center;
+    25	  width: 46px;
+    26	  height: 53px;
+    27	  font-size: 20px; // dimensionne le glyphe ZIcon (1em)
+    28	  color: var(--text-muted);
+    29	  cursor: pointer;
+    30	  background: var(--surface-2);
+    31	  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    32	  transition:
+    33	    color var(--dur-base) var(--ease-standard),
+    34	    background var(--dur-base) var(--ease-standard);
+    35	
+    36	  &:hover {
+    37	    color: var(--ink-on-accent);
+    38	    background: var(--accent);
+    39	  }
+    40	
+    41	  &:focus-visible {
+    42	    outline: 2px solid var(--accent);
+    43	    outline-offset: 2px;
+    44	  }
+    45	}
+    46	
+    47	// Libellé accessible (lecteurs d'écran) — masqué visuellement.
+    48	.hex__label {
+    49	  position: absolute;
+    50	  width: 1px;
+    51	  height: 1px;
+    52	  margin: -1px;
+    53	  padding: 0;
+    54	  overflow: hidden;
+    55	  white-space: nowrap;
+    56	  border: 0;
+    57	  clip-path: inset(50%);
+    58	}
+    59	
+    60	@media (prefers-reduced-motion: reduce) {
+    61	  .hex {
+    62	    transition: none;
+    63	  }
+    64	}
+    65	</style>
+     1	<template>
+     2	  <footer class="ftr">
+     3	    <div class="ftr__container">
+     4	      <div class="ftr__in">
+     5	        <div class="ftr__brand-col">
+     6	          <NuxtLink to="/" class="ftr__brand">
+     7	            <ZIcon name="gem" class="ftr__logo" />
+     8	            <b>jouan.ovh</b>
+     9	          </NuxtLink>
+    10	          <p class="ftr__tagline">Développeur web freelance. Valognes, France.</p>
+    11	        </div>
+    12	
+    13	        <nav class="ftr__col" aria-label="Navigation du pied de page">
+    14	          <h2 class="ftr__title">// Navigation</h2>
+    15	          <NuxtLink v-for="item in navItems" :key="item.to" :to="item.to" class="ftr__link">{{ item.label }}</NuxtLink>
+    16	        </nav>
+    17	
+    18	        <div class="ftr__col">
+    19	          <h2 class="ftr__title">// Projets</h2>
+    20	          <ZExternalLink
+    21	            v-for="project in projects"
+    22	            :key="project.url"
+    23	            :href="project.url"
+    24	            rel="noopener noreferrer"
+    25	            class="ftr__link"
+    26	            >{{ project.name }}</ZExternalLink
+    27	          >
+    28	        </div>
+    29	
+    30	        <div class="ftr__col">
+    31	          <h2 class="ftr__title">// Réseaux</h2>
+    32	          <LinkListComponent />
+    33	        </div>
+    34	      </div>
+    35	
+    36	      <div class="ftr__bottom">
+    37	        <span>© {{ year }} Simon Jouan — jouan.ovh</span>
+    38	        <span class="ftr__term">anon.@jouan.ovh:~$ <span class="ftr__cmd">echo "merci de votre visite"</span></span>
+    39	      </div>
+    40	    </div>
+    41	  </footer>
+    42	</template>
+    43	
+    44	<script setup lang="ts">
+    45	import LinkListComponent from "~/components/LinkListComponent.vue";
+    46	import { SITE } from "~/data/site";
+    47	
+    48	const navItems = [
+    49	  { to: "/", label: "Accueil" },
+    50	  { to: "/services", label: "Services" },
+    51	  { to: "/about", label: "À propos" },
+    52	  { to: "/blog", label: "Blog" },
+    53	  { to: "/contact", label: "Contact" },
+    54	];
+    55	
+    56	// Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).
+    57	const projects = SITE.projects;
+    58	
+    59	const year = new Date().getFullYear();
+    60	</script>
+    61	
+    62	<style lang="scss" scoped>
+    63	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis Footer.jsx/kit.css */
+    64	.ftr {
+    65	  margin-top: auto;
+    66	  background: var(--surface-1);
+    67	  border-top: 1px solid var(--border-subtle);
+    68	  padding: var(--space-12) 0 var(--space-8);
+    69	}
+    70	
+    71	.ftr__container {
+    72	  width: 100%;
+    73	  max-width: var(--container-xl);
+    74	  margin: 0 auto;
+    75	  padding: 0 var(--space-6);
+    76	}
+    77	
+    78	.ftr__in {
+    79	  display: flex;
+    80	  flex-wrap: wrap;
+    81	  gap: var(--space-8);
+    82	  align-items: flex-start;
+    83	  justify-content: space-between;
+    84	}
+    85	
+    86	.ftr__brand-col {
+    87	  max-width: 300px;
+    88	}
+    89	
+    90	.ftr__brand {
+    91	  display: inline-flex;
+    92	  align-items: center;
+    93	  gap: var(--space-2);
+    94	  margin-bottom: var(--space-3);
+    95	  text-decoration: none;
+    96	
+    97	  .ftr__logo {
+    98	    font-size: 22px;
+    99	    color: var(--accent);
+   100	  }
+    20	              <ZButton as="a" :href="`mailto:${profile.email}`" variant="secondary">M'écrire</ZButton>
+    21	            </div>
+    22	          </div>
+    23	
+    24	          <!-- Colonne droite : eyebrow + bio (1re personne, emphases sur les technologies) + stack -->
+    25	          <div class="about__bio">
+    26	            <h2 class="eyebrow">// à propos</h2>
+    27	            <p class="prose about__para">
+    28	              Développeur web freelance, je viens d'un parcours technique (métrologie, instrumentation) avant de
+    29	              basculer dans le code. Aujourd'hui je conçois des applications en <strong>PHP/Symfony</strong>, des sites
+    30	              <strong>WordPress</strong> sur-mesure, et des produits en <strong>Node.js / Nest.js / Nuxt.js</strong>.
+    31	            </p>
+    32	            <p class="prose about__para">
+    33	              Je suis aussi fondateur du SaaS
+    34	              <ZExternalLink href="https://keova.app" rel="noopener">keova.app</ZExternalLink>, et j'aime mettre l'IA au
+    35	              service du code — agents, automatisations, intégrations LLM.
+    36	            </p>
+    37	
+    38	            <!-- Stack technique (story 5.2) — sous la bio, conforme à About.jsx. ZTag = pill.
+    39	                 Liste sémantique (<ul>/<li>) pour annonce « liste de N éléments » aux lecteurs d'écran. -->
+    40	            <div class="about__stack">
+    41	              <h2 class="eyebrow eyebrow--muted">// stack</h2>
+    42	              <ul class="hero__tags">
+    43	                <li v-for="skill in skills" :key="skill">
+    44	                  <ZTag>{{ skill }}</ZTag>
+    45	                </li>
+     1	<template>
+     2	  <a :href="href" target="_blank" :rel="computedRel" :class="className">
+     3	    <slot />
+     4	    <span class="screen-reader-text">{{ computedSrText }}</span>
+     5	  </a>
+     6	</template>
+     7	
+     8	<script setup lang="ts">
+     9	// Primitive lien externe accessible (DS) — force target="_blank", rel sécurisé ("noopener" ou custom),
+    10	// et adjoint un libellé sr-only « (ouvre dans un nouvel onglet) » sans impacter le rendu visuel.
+    11	// (Story 10.3 — WCAG G201 / FR13).
+    12	import { computed } from "vue";
+    13	
+    14	interface Props {
+    15	  /** URL externe cible. */
+    16	  href: string;
+    17	  /**
+    18	   * Relation de lien. Par défaut "noopener" (sécurité window.opener).
+    19	   * Peut être étendu à "noopener noreferrer" si nécessaire.
+    20	   * @default "noopener"
+    21	   */
+    22	  rel?: string;
+    23	  /** Classe CSS optionnelle à appliquer sur l'ancre <a>. */
+    24	  class?: string;
+    25	  /** Libellé accessible alternatif pour l'annonce sr-only. */
+    26	  srText?: string;
+    27	}
+    28	
+    29	const props = withDefaults(defineProps<Props>(), {
+    30	  rel: "noopener",
+    31	  class: undefined,
+    32	  srText: " (ouvre dans un nouvel onglet)",
+    33	});
+    34	
+    35	const className = computed(() => props.class);
+    36	const computedRel = computed(() => props.rel || "noopener");
+    37	const computedSrText = computed(() => props.srText);
+    38	</script>
+app/pages/about.vue:34:              <ZExternalLink href="https://keova.app" rel="noopener">keova.app</ZExternalLink>, et j'aime mettre l'IA au
+app/pages/contact.vue:90:            <h2 class="screen-reader-text">Coordonnées et terminal</h2>
+app/pages/index.vue:102:            <ZCard class="project" interactive as="a" :href="project.url" target="_blank" rel="noopener noreferrer">
+app/pages/index.vue:113:              <span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span>
+app/assets/scss/base/_reset.scss:562:.screen-reader-text {
+app/assets/scss/base/_reset.scss:574:.screen-reader-text:focus {
+app/components/FooterComponent.vue:20:          <ZExternalLink
+app/components/FooterComponent.vue:26:            >{{ project.name }}</ZExternalLink
+app/components/HexagonLinkComponent.vue:2:  <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+app/components/HexagonLinkComponent.vue:5:      ><slot name="title" /><span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span></span
+app/components/ui/ZExternalLink.vue:2:  <a :href="href" target="_blank" :rel="computedRel" :class="className">
+app/components/ui/ZExternalLink.vue:4:    <span class="screen-reader-text">{{ computedSrText }}</span>
+app/components/ui/ZExternalLink.vue:9:// Primitive lien externe accessible (DS) — force target="_blank", rel sécurisé ("noopener" ou custom),
+
+2026-09-13T08:02:32.653715Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "rg -n -C 4 '<HexagonLinkComponent|HexagonLinkComponent' app docs || true
+rg -n -C 4 'SITE\\.projects|projects:' app/data app/components app/pages | head -200" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md-54-
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md-55-### Décision de portage (CSS vars globales vs SCSS $vars)
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md-56-
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md-57-- Le DS source est **100 % CSS custom properties** (`docs/design_system/tokens/*.css` déclarent tout sous `:root`). Pour rester fidèle et permettre l'usage `var(--accent)` dans les primitives 2.3–2.6 sans réécriture, **porter en CSS vars globales** dans un partiel `_root.scss` chargé globalement.
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md:58:- Les anciens tokens SCSS (`abstract/_color.scss`, `_space.scss`, `_radius.scss`, `_box_shadow.scss`, `_variables.scss`) **restent en place** (utilisés par le code legacy : `HeaderComponent.vue`, `FooterComponent.vue`, `HexagonLinkComponent.vue`, `card/*`). Ne pas les supprimer ici — leur retrait suivra la refonte composant par composant (header/footer = story 2.8 ; cartes = story 2.4).
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md-59-- Les deux systèmes coexistent : ancien SCSS `$vars` pour le legacy, nouvelles CSS `--vars` pour le nouveau code DS.
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md-60-
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md-61-### Fichiers à créer / modifier (lus — état actuel)
+docs/implementation-artifacts/2-1-porter-les-tokens-du-design-system.md-62-
+--
+app/components/LinkListComponent.vue-1-<template>
+app/components/LinkListComponent.vue-2-  <ul class="hexrow">
+app/components/LinkListComponent.vue-3-    <li v-for="social in socials" :key="social.icon">
+app/components/LinkListComponent.vue:4:      <HexagonLinkComponent :link="social.url">
+app/components/LinkListComponent.vue-5-        <template #icon><ZIcon :name="social.icon" /></template>
+app/components/LinkListComponent.vue-6-        <template #title>{{ social.label }}</template>
+app/components/LinkListComponent.vue:7:      </HexagonLinkComponent>
+app/components/LinkListComponent.vue-8-    </li>
+app/components/LinkListComponent.vue-9-  </ul>
+app/components/LinkListComponent.vue-10-</template>
+app/components/LinkListComponent.vue-11-
+--
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md-747-- Sous-blocs de carte : `app/components/card/` (`ZCardHeader`, `ZCardBody`,
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md-748-  `ZCardFooter`), restylés via tokens et composés avec `<ZCard>`. (L'ancien
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md-749-  `ZCardComponent` monolithique a été supprimé en story 2.4.)
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md-750-- Composants applicatifs legacy : PascalCase suffixé `Component`
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md:751:  (`HeaderComponent.vue`, `FooterComponent.vue`, `HexagonLinkComponent.vue`…).
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md-752-- Sous-système terminal sous `components/terminal/` : coquilles Vue
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md-753-  (`TerminalComponent`, `TerminalManagerComponent`) en **`<script setup>`** (migrées
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md-754-  Epic 8) ; `programs/` = classes TS implémentant `IProgram`, `interfaces/` =
+docs/implementation-artifacts/code-reviews/10-2/raw-acceptance-auditor.md-755-  contrats (`I*` + barrel `index.ts`).
+--
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md-138-### File List
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md-139-
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md-140-Créés : `eslint.config.mjs`, `.prettierrc.json`, `.stylelintrc.json`. Modifiés : `package.json` (deps lint + scripts `lint`/`lint:style`), `nuxt.config.ts` (module + bloc `eslint`), fichiers app (reformatage + 8 fixes). Supprimés : `.eslintrc.js`, `.eslintignore`. (Détail complet : story 1.1.)
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md-141-
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md:142:**Correctifs de revue (2026-06-19)** — Créés : `CLAUDE.md` (convention Docker). Modifiés : `.stylelintrc.json` (override `postcss-html` pour `**/*.vue`), `package.json` + `pnpm-lock.yaml` (`postcss-html` + globs `lint`/`lint:style` élargis aux `.vue`), `eslint.config.mjs` (Prettier en dernier), `app/pages/index.vue` (`.rotate-y-180` + `--fix`), `app/components/terminal/TerminalComponent.vue` & `app/components/WindowWrapperComponent.vue` (restauration `-webkit-backdrop-filter` + `--fix`), `app/components/FooterComponent.vue` & `app/components/card/ZCardComponent.vue` (dédup `animation` + `--fix`), `app/components/HeaderComponent.vue`, `app/components/HexagonLinkComponent.vue`, `app/components/card/ZCardFooter.vue`, `app/components/terminal/TerminalButton.vue`, `app/layouts/default.vue`, `app/pages/blog/index.vue` (reformatage `--fix` mécanique des `<style>`).
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md-143-
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md-144-## Change Log
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md-145-
+docs/implementation-artifacts/1-3-migrer-loutillage-lint-vers-eslint-9.md-146-| Date | Version | Description | Auteur |
+--
+docs/implementation-artifacts/2-7-iconographie.md-56-### Fichiers à créer / modifier (lus — état actuel)
+docs/implementation-artifacts/2-7-iconographie.md-57-
+docs/implementation-artifacts/2-7-iconographie.md-58-- **`components/ui/ZIcon.vue`** (CREATE, proposé) — wrapper qui rend un SVG inline du set (trait Lucide-style + glyphes de marque), `currentColor`, taille en `em`. Nom à confirmer ; auto-import Nuxt.
+docs/implementation-artifacts/2-7-iconographie.md-59-- **Réf. set source** : `docs/design_system/ui_kits/jouan-site/icons.jsx` — contient à la fois les icônes au trait (`arrow`, `terminal`, `code`, `layers`, `bot`, `spark`, `mail`, `pin`, `check`, `zap`, `wp`) et les glyphes de marque (`github`, `twitter`, `linkedin`, `wp`). Porter ces paths en Vue.
+docs/implementation-artifacts/2-7-iconographie.md:60:- **`components/LinkListComponent.vue`** (état actuel) — contient déjà les 3 glyphes sociaux SVG inline `fill="currentColor"` (GitHub viewBox 16, Twitter, LinkedIn), taille 20px, dans des `HexagonLinkComponent`. Source fiable pour centraliser les glyphes ; sera consommé/refondu par la story 2.8.
+docs/implementation-artifacts/2-7-iconographie.md-61-- **Logo** : `public/images/logo_white_32x32.png` (utilisé par `HeaderComponent.vue` aujourd'hui) ; assets de marque `docs/design_system/assets/brand/logo-white.png`, `logo-gem.png`, `logo-mark-32.png`. Pas de SVG diamant fourni → créer si besoin.
+docs/implementation-artifacts/2-7-iconographie.md-62-- **`nuxt.config.ts`** (UPDATE possible) — si chargement CDN Lucide via `<script>`/`<link>` dans `app.head` (déconseillé vs inline ; documenter si retenu).
+docs/implementation-artifacts/2-7-iconographie.md-63-
+docs/implementation-artifacts/2-7-iconographie.md-64-### Mapping depuis `icons.jsx`
+--
+docs/implementation-artifacts/2-7-iconographie.md-112-  - **Logo `gem`** (`viewBox 24`) : carré pivoté en `currentColor` + facette haute `#fff`/0.12 (lit-from-above).
+docs/implementation-artifacts/2-7-iconographie.md-113-- **Décision Lucide CDN → SVG inline** : le DS mentionne « Lucide via CDN » comme stand-in ; un script CDN qui remplace des `<i data-lucide>` au runtime laisse un trou au prerender (`nuxi generate`) et dépend du réseau (NFR4). Choix d'un set inline dans `ZIcon` → icônes présentes dans le HTML statique, zéro JS client requis. **AC #2 respecté : aucune police d'icône** (pas de Font Awesome/icon font, pas d'`@font-face`).
+docs/implementation-artifacts/2-7-iconographie.md-114-- **Rendu via `v-html`** d'un set **100 % statique interne** (aucune entrée utilisateur interpolée) → `eslint-disable vue/no-v-html` justifié (même pattern contrôlé que `TerminalComponent`). Icône inconnue → fallback svg vide (pas de crash, prerender-safe).
+docs/implementation-artifacts/2-7-iconographie.md-115-- **a11y** : décoratif par défaut (`aria-hidden="true"`) ; prop `label` → `role="img"` + `aria-label` pour les icônes porteuses de sens.
+docs/implementation-artifacts/2-7-iconographie.md:116:- **Centralisation (Tâche 2)** : les glyphes sociaux sont désormais dans `ZIcon` (source unique). `LinkListComponent`/`HexagonLinkComponent` legacy **non modifiés** — leur refonte (et le swap du logo header PNG→`<ZIcon name="gem">`) relèvent de la story 2.8 (châssis). Périmètre 2.7 = fournir le système, pas câbler les consommateurs.
+docs/implementation-artifacts/2-7-iconographie.md-117-- **Consommation prête** : `ZButton`/`ZInput` (slots `icon`) peuvent recevoir `<ZIcon name="…" />` ; aucun changement requis sur ces primitives.
+docs/implementation-artifacts/2-7-iconographie.md-118-- **Corrections de review** : alias `<ZIcon name="x">` ajouté pour le glyphe X/Twitter ; commentaire ESLint `vue/no-v-html` rendu valide en HTML, avec justification conservée côté script.
+docs/implementation-artifacts/2-7-iconographie.md-119-
+docs/implementation-artifacts/2-7-iconographie.md-120-### File List
+--
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-8-> checklist pré-revue (tokens-only + a11y) avant de passer en review.
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-9-
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-10-## Diagnostic (état au 2026-06-22)
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-11-
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md:12:- `pnpm lint` : **0 erreur, 44 warnings** Stylelint legacy (la rétro disait 43 ; +1 venu de `HexagonLinkComponent.vue`).
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-13-- Tous les partials SCSS fautifs sont **encore importés** (`_animations` par `card/ZCardBody.vue`, `_button` par `pages/index.vue`, `_mixin` via `_typography.scss`) → on **corrige**, on ne supprime pas.
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-14-- Les 2 `clip` de `_reset.scss` ont **déjà** leur `clip-path` équivalent juste en dessous → suppression sans risque a11y.
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-15-- `vue-property-decorator` : **0 usage** réel, mais `experimentalDecorators: true` traîne dans `tsconfig.json`.
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-16-
+--
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-21-| `app/assets/scss/abstract/_animations.scss` | 32 | `declaration-block-no-duplicate-properties` (transform / animation-timing-function dans keyframes) |
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-22-| `app/assets/scss/base/_reset.scss` | 6 | `font-family-no-duplicate-names` (×2), `declaration-property-value-keyword-no-deprecated` appearance:button (×2), `property-no-deprecated` clip (×2) |
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-23-| `app/assets/scss/components/_button.scss` | 2 | `declaration-block-no-duplicate-properties` user-select |
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-24-| `app/assets/scss/abstract/_mixin.scss` | 3 | `scss/no-global-function-names` (red/green/blue) |
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md:25:| `app/components/HexagonLinkComponent.vue` | 1 | `property-no-deprecated` clip |
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-26-
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-27----
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-28-
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-29-## Consigne A — Solder les 44 warnings Stylelint legacy
+--
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-47-3. **`_button.scss`** (`declaration-block-no-duplicate-properties`, 97-98) → `user-select` dupliqué : `--fix` gère (dernière valeur gagne, comportement préservé).
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-48-
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-49-4. **`_animations.scss`** (32, `declaration-block-no-duplicate-properties`) → `transform` / `animation-timing-function` dupliqués dans les keyframes. **Lancer `--fix` sur ce fichier puis relire le diff** (règle « dernière valeur gagne » → iso-comportement). ⚠️ Observation à signaler : `@keyframes bounce-in-fwd` est **défini deux fois** (lignes 195 et 255) — la 2ᵉ écrase la 1ʳᵉ. Confirmer laquelle `ZCardBody` consomme avant tout `--fix` agressif.
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-50-
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md:51:5. **`HexagonLinkComponent.vue`** (`clip` déprécié, 55) → convertir en `clip-path` (ou supprimer si un `clip-path` équivalent existe déjà). Style scoped — vérifier le rendu de l'hexagone après coup.
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-52-
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-53-**Méthode suggérée :**
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-54-```sh
+docs/implementation-artifacts/consignes-corrections-pre-epic-3.md-55-docker compose run --rm web sh -c "corepack enable && pnpm lint:style -- --fix"
+--
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-27-  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-28-  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-29-- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-30-  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md:31:    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-32-    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-33-    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-34-    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-35-  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
+--
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-46-- **Réutiliser l'existant, ne pas réinventer** : la classe `.screen-reader-text` existe déjà (`app/pages/index.vue:121`) ; le set `ZIcon` (story 2.7) a peut-être un glyphe « lien externe ». Vérifier avant d'en créer un.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-47-
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-48-### Fichiers concernés (lus — baseline `3e82045`)
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-49-
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md:50:- **`app/components/HexagonLinkComponent.vue`** (UPDATE) — `<a class="hex" :href="link" target="_blank" rel="noopener noreferrer">` (l.2). Composant réutilisé header/footer/contact pour les socials. Vérifier l'`aria-label`/nom accessible existant ; ajouter sr-only « nouvel onglet » (sans casser la grille hexagonale).
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-51-- **`app/components/FooterComponent.vue`** (UPDATE) — lien `target="_blank"` (l.24). Vérifier `rel` + sr-only.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md:52:- **`app/components/LinkListComponent.vue`** (LECTURE) — peut piloter les listes de liens (socials) ; voir s'il rend les `HexagonLinkComponent` (point de factorisation possible).
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-53-- **`app/pages/index.vue`** (UPDATE léger) — cartes projet `target="_blank"` (l.110) + sr-only existant (l.121) : aligner sur le helper, **ne pas régresser** le fix 3.3.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-54-- **`app/pages/about.vue`** (UPDATE) — lien `keova.app` (l.34) `rel="noreferrer"` → `noopener` + sr-only.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-55-- **Nouveau** : helper `ZExternalLink`/util (emplacement selon convention : primitives DS sous `app/components/ui/`, auto-import sans préfixe). [Source: project-context.md#Conventions de nommage]
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-56-
+--
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-71-
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-72-- [Source: docs/planning-artifacts/epics.md#Epic 10 — Story 10.3 (FR13)]
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-73-- [Source: docs/implementation-artifacts/deferred-work.md#→ Epic 10 (item #2 audit _blank), revue 3.3]
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-74-- [Source: docs/project-context.md#Accessibilité, #Conventions de nommage, #Nuxt (piège component :is)]
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md:75:- [Source: app/components/HexagonLinkComponent.vue, FooterComponent.vue, LinkListComponent.vue ; app/pages/index.vue, about.vue]
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-76-
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-77-## Dev Agent Record
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-78-
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-79-### Agent Model Used
+--
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-84-- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-85-
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-86-### Completion Notes List
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-87-- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md:88:- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-89-- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-90-- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-91-- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-92-- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-93-- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-94-
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-95-### File List
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-96-- `app/components/ui/ZExternalLink.vue` (NEW)
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md:97:- `app/components/HexagonLinkComponent.vue` (MODIFIED)
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-98-- `app/components/FooterComponent.vue` (MODIFIED)
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-99-- `app/pages/about.vue` (MODIFIED)
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-100-- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
+docs/implementation-artifacts/10-3-liens-externes-accessibles.md-101-- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+--
+docs/project-context.md-115-- Sous-blocs de carte : `app/components/card/` (`ZCardHeader`, `ZCardBody`,
+docs/project-context.md-116-  `ZCardFooter`), restylés via tokens et composés avec `<ZCard>`. (L'ancien
+docs/project-context.md-117-  `ZCardComponent` monolithique a été supprimé en story 2.4.)
+docs/project-context.md-118-- Composants applicatifs legacy : PascalCase suffixé `Component`
+docs/project-context.md:119:  (`HeaderComponent.vue`, `FooterComponent.vue`, `HexagonLinkComponent.vue`…).
+docs/project-context.md-120-- Sous-système terminal sous `components/terminal/` : coquilles Vue
+docs/project-context.md-121-  (`TerminalComponent`, `TerminalManagerComponent`) en **`<script setup>`** (migrées
+docs/project-context.md-122-  Epic 8) ; `programs/` = classes TS implémentant `IProgram`, `interfaces/` =
+docs/project-context.md-123-  contrats (`I*` + barrel `index.ts`).
+--
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md-641-app/pages/blog/index.vue:85:// cartes ZCard interactives, méta mono, empty-state restylé. Contenu via @nuxt/content
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md-642-app/pages/blog/index.vue:147:// .section / .container / .eyebrow / .prose / .hero__tags / .post__meta sont des
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md-643-app/pages/blog/index.vue:180:// Carte article = ZCard interactive rendue en lien : grille vignette / contenu.
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md-644-app/pages/blog/index.vue:220:// ---- Empty-state / erreur (ZCard centrée, illustration + message) ----
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md:645:app/components/HexagonLinkComponent.vue:3:    <slot name="icon" />
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md:646:app/components/HexagonLinkComponent.vue:4:    <span class="hex__label"><slot name="title" /></span>
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md:647:app/components/HexagonLinkComponent.vue:11:defineProps<{
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md-648-app/assets/scss/base/_motion.scss:6:// l'instantané. Les gardes par composant (ZCard / ZInput / ZTag / index.vue…)
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md-649-app/assets/scss/base/_layout.scss:62:.hero__tags {
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md-650-app/components/card/ZCardFooter.vue:11:  name: "ZCardFooter",
+docs/implementation-artifacts/code-reviews/10-2/raw-blind-hunter.md-651-app/components/ui/ZIcon.vue:80:const props = withDefaults(defineProps<Props>(), {
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-281-  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-282-  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-283-- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-284-  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:285:    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-286-    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-287-    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-288-    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-289-  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-300-- **Réutiliser l'existant, ne pas réinventer** : la classe `.screen-reader-text` existe déjà (`app/pages/index.vue:121`) ; le set `ZIcon` (story 2.7) a peut-être un glyphe « lien externe ». Vérifier avant d'en créer un.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-301-
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-302-### Fichiers concernés (lus — baseline `3e82045`)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-303-
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:304:- **`app/components/HexagonLinkComponent.vue`** (UPDATE) — `<a class="hex" :href="link" target="_blank" rel="noopener noreferrer">` (l.2). Composant réutilisé header/footer/contact pour les socials. Vérifier l'`aria-label`/nom accessible existant ; ajouter sr-only « nouvel onglet » (sans casser la grille hexagonale).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-305-- **`app/components/FooterComponent.vue`** (UPDATE) — lien `target="_blank"` (l.24). Vérifier `rel` + sr-only.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:306:- **`app/components/LinkListComponent.vue`** (LECTURE) — peut piloter les listes de liens (socials) ; voir s'il rend les `HexagonLinkComponent` (point de factorisation possible).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-307-- **`app/pages/index.vue`** (UPDATE léger) — cartes projet `target="_blank"` (l.110) + sr-only existant (l.121) : aligner sur le helper, **ne pas régresser** le fix 3.3.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-308-- **`app/pages/about.vue`** (UPDATE) — lien `keova.app` (l.34) `rel="noreferrer"` → `noopener` + sr-only.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-309-- **Nouveau** : helper `ZExternalLink`/util (emplacement selon convention : primitives DS sous `app/components/ui/`, auto-import sans préfixe). [Source: project-context.md#Conventions de nommage]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-310-
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-325-
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-326-- [Source: docs/planning-artifacts/epics.md#Epic 10 — Story 10.3 (FR13)]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-327-- [Source: docs/implementation-artifacts/deferred-work.md#→ Epic 10 (item #2 audit _blank), revue 3.3]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-328-- [Source: docs/project-context.md#Accessibilité, #Conventions de nommage, #Nuxt (piège component :is)]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:329:- [Source: app/components/HexagonLinkComponent.vue, FooterComponent.vue, LinkListComponent.vue ; app/pages/index.vue, about.vue]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-330-
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-331-## Dev Agent Record
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-332-
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-333-### Agent Model Used
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-338-- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-339-
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-340-### Completion Notes List
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-341-- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:342:- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-343-- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-344-- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-345-- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-346-- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-347-- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-348-
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-349-### File List
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-350-- `app/components/ui/ZExternalLink.vue` (NEW)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:351:- `app/components/HexagonLinkComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-352-- `app/components/FooterComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-353-- `app/pages/about.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-354-- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-355-- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-858-- Sous-blocs de carte : `app/components/card/` (`ZCardHeader`, `ZCardBody`,
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-859-  `ZCardFooter`), restylés via tokens et composés avec `<ZCard>`. (L'ancien
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-860-  `ZCardComponent` monolithique a été supprimé en story 2.4.)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-861-- Composants applicatifs legacy : PascalCase suffixé `Component`
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:862:  (`HeaderComponent.vue`, `FooterComponent.vue`, `HexagonLinkComponent.vue`…).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-863-- Sous-système terminal sous `components/terminal/` : coquilles Vue
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-864-  (`TerminalComponent`, `TerminalManagerComponent`) en **`<script setup>`** (migrées
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-865-  Epic 8) ; `programs/` = classes TS implémentant `IProgram`, `interfaces/` =
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-866-  contrats (`I*` + barrel `index.ts`).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1112-    62	+            >{{ project.name }}</ZExternalLink
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1113-    63	           >
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1114-    64	         </div>
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1115-    65	 
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1116:    66	diff --git a/app/components/HexagonLinkComponent.vue b/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1117-    67	index 12765e5..edf089c 100644
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1118:    68	--- a/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1119:    69	+++ b/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1120-    70	@@ -1,7 +1,9 @@
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1121-    71	 <template>
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1122-    72	   <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1123-    73	     <slot name="icon" />
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1162-   112	-  - [ ] Créer un mécanisme unique réutilisable : soit un **composant** `app/components/ui/ZExternalLink.vue` (ou `app/components/ExternalLinkComponent.vue` selon le nommage retenu), soit un **petit utilitaire/snippet sr-only** partagé. Décision à consigner. Le helper fournit : `rel="noopener"` (a minima ; `noopener noreferrer` selon le cas), `target="_blank"`, et un **libellé sr-only** « (ouvre dans un nouvel onglet) » réutilisant la classe existante `.screen-reader-text` (déjà utilisée `index.vue:121`). Optionnellement une icône « lien externe » (`ZIcon`) décorative `aria-hidden`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1163-   113	-  - [ ] Le helper doit composer avec les usages existants (lien texte, carte cliquable, hexagone) sans casser le style — vérifier qu'il n'impose pas de wrapper cassant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1164-   114	-- [ ] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1165-   115	-  - [ ] Inventaire `grep -rn 'target="_blank"' app/` (4 occurrences au baseline) et migration via le helper :
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1166:   116	-    - **`app/components/HexagonLinkComponent.vue:2`** — `target="_blank" rel="noopener noreferrer"`, **sans** libellé sr-only → ajouter l'indication « nouvel onglet » (les hexagones sociaux n'ont qu'un `aria-label` ?). Vérifier le nom accessible (réseau social) + sr-only onglet.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1167-   117	-    - **`app/components/FooterComponent.vue:24`** — `target="_blank"` → vérifier `rel` + ajouter sr-only.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1168-   118	-    - **`app/pages/index.vue:110`** — carte projet : **déjà** dotée du sr-only (`index.vue:121`, fix 3.3). L'aligner sur le helper pour cohérence (pas de régression).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1169-   119	-    - **`app/pages/about.vue:34`** — `keova.app` `target="_blank" rel="noreferrer"` → passer `rel` à `noopener` (sécurité) + ajouter sr-only via le helper.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1170-   120	-  - [ ] Vérifier qu'**aucun** `target="_blank"` ne subsiste sans helper/sr-only (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1175-   125	+  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1176-   126	+  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1177-   127	+- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1178-   128	+  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1179:   129	+    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1180-   130	+    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1181-   131	+    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1182-   132	+    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1183-   133	+  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1198-   148	+- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1199-   149	 
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1200-   150	 ### Completion Notes List
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1201-   151	+- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1202:   152	+- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1203-   153	+- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1204-   154	+- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1205-   155	+- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1206-   156	+- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1207-   157	+- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1208-   158	 
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1209-   159	 ### File List
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1210-   160	+- `app/components/ui/ZExternalLink.vue` (NEW)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1211:   161	+- `app/components/HexagonLinkComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1212-   162	+- `app/components/FooterComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1213-   163	+- `app/pages/about.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1214-   164	+- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1215-   165	+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1553-    27	  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1554-    28	  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1555-    29	- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1556-    30	  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1557:    31	    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1558-    32	    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1559-    33	    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1560-    34	    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1561-    35	  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1572-    46	- **Réutiliser l'existant, ne pas réinventer** : la classe `.screen-reader-text` existe déjà (`app/pages/index.vue:121`) ; le set `ZIcon` (story 2.7) a peut-être un glyphe « lien externe ». Vérifier avant d'en créer un.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1573-    47	
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1574-    48	### Fichiers concernés (lus — baseline `3e82045`)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1575-    49	
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1576:    50	- **`app/components/HexagonLinkComponent.vue`** (UPDATE) — `<a class="hex" :href="link" target="_blank" rel="noopener noreferrer">` (l.2). Composant réutilisé header/footer/contact pour les socials. Vérifier l'`aria-label`/nom accessible existant ; ajouter sr-only « nouvel onglet » (sans casser la grille hexagonale).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1577-    51	- **`app/components/FooterComponent.vue`** (UPDATE) — lien `target="_blank"` (l.24). Vérifier `rel` + sr-only.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1578:    52	- **`app/components/LinkListComponent.vue`** (LECTURE) — peut piloter les listes de liens (socials) ; voir s'il rend les `HexagonLinkComponent` (point de factorisation possible).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1579-    53	- **`app/pages/index.vue`** (UPDATE léger) — cartes projet `target="_blank"` (l.110) + sr-only existant (l.121) : aligner sur le helper, **ne pas régresser** le fix 3.3.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1580-    54	- **`app/pages/about.vue`** (UPDATE) — lien `keova.app` (l.34) `rel="noreferrer"` → `noopener` + sr-only.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1581-    55	- **Nouveau** : helper `ZExternalLink`/util (emplacement selon convention : primitives DS sous `app/components/ui/`, auto-import sans préfixe). [Source: project-context.md#Conventions de nommage]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1582-    56	
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1597-    71	
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1598-    72	- [Source: docs/planning-artifacts/epics.md#Epic 10 — Story 10.3 (FR13)]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1599-    73	- [Source: docs/implementation-artifacts/deferred-work.md#→ Epic 10 (item #2 audit _blank), revue 3.3]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1600-    74	- [Source: docs/project-context.md#Accessibilité, #Conventions de nommage, #Nuxt (piège component :is)]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1601:    75	- [Source: app/components/HexagonLinkComponent.vue, FooterComponent.vue, LinkListComponent.vue ; app/pages/index.vue, about.vue]
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1602-    76	
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1603-    77	## Dev Agent Record
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1604-    78	
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1605-    79	### Agent Model Used
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1610-    84	- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1611-    85	
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1612-    86	### Completion Notes List
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1613-    87	- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1614:    88	- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1615-    89	- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1616-    90	- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1617-    91	- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1618-    92	- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1619-    93	- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1620-    94	
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1621-    95	### File List
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1622-    96	- `app/components/ui/ZExternalLink.vue` (NEW)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1623:    97	- `app/components/HexagonLinkComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1624-    98	- `app/components/FooterComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1625-    99	- `app/pages/about.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1626-   100	- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1627-   101	- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1629-2026-09-13T08:02:29.736940Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1630-codex
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1631-Résumé avant l’audit détaillé :
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1632-
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md:1633:- Diff fourni : 189 lignes, couvrant `ZExternalLink.vue`, `HexagonLinkComponent.vue`, `FooterComponent.vue`, `about.vue`, la story et le sprint status.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1634-- Mode : `full`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1635-- Contexte chargé : [Story 10.3](docs/implementation-artifacts/10-3-liens-externes-accessibles.md), Story 10.3 dans `docs/planning-artifacts/epics.md`, et `docs/project-context.md`.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1636-- Le diff inclut aussi des modifications de documentation/statut, que j’évaluerai séparément des changements applicatifs.
+docs/implementation-artifacts/code-reviews/10-3/raw-acceptance-auditor.md-1637-
+--
+docs/implementation-artifacts/3-3-projets-selectionnes.md-138-
+docs/implementation-artifacts/3-3-projets-selectionnes.md-139-**Correctifs de fidélité (appliqués à l'écriture, pré-revue) :**
+docs/implementation-artifacts/3-3-projets-selectionnes.md-140-
+docs/implementation-artifacts/3-3-projets-selectionnes.md-141-- `text-decoration: none` sur `.project` : la carte rendue en `<a>` soulignait tout son contenu par défaut — neutralisé (scopé à la page, `ZCard` reste générique). Une réinitialisation `ZCard`-as-link au niveau de la primitive serait une amélioration DS (hors périmètre 3.3).
+docs/implementation-artifacts/3-3-projets-selectionnes.md:142:- `rel="noopener noreferrer"` (la fiche cite `noreferrer` seul, suffisant ; j'ajoute `noopener` par cohérence avec `HexagonLinkComponent` et sécurité).
+docs/implementation-artifacts/3-3-projets-selectionnes.md-143-
+docs/implementation-artifacts/3-3-projets-selectionnes.md-144-**a11y / clés :**
+docs/implementation-artifacts/3-3-projets-selectionnes.md-145-
+docs/implementation-artifacts/3-3-projets-selectionnes.md-146-- Clés `v-for` sur `id` stable (`keova`/`patio`) — cohérent avec le reste du fichier (terminalRows, services, stats).
+--
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-32-  - [x] Bouton `ZButton` variante `terminal`, taille `sm`, icône terminal, libellé `Ouvrir le terminal`
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-33-  - [x] Au clic, **ouvrir l'easter-egg terminal** via le mécanisme existant (cf. Dev Notes — `TerminalManagerComponent.createNewTerminal()`)
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-34-- [x] Tâche 3 — Hexagones sociaux (AC: #1)
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-35-  - [x] Ajouter la rangée d'hexagones sociaux (`hexrow`) en bas de la colonne droite, un hexagone par réseau (GitHub, Twitter/X, LinkedIn)
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md:36:  - [x] Réutiliser le composant existant `HexagonLinkComponent` (et/ou le pattern de `LinkListComponent`) avec les glyphes SVG inline et les URLs de `data.js` (`window.SITE.social`) ; liens en `target="_blank" rel="noreferrer"`, `title`/`aria-label` par réseau
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-37-- [x] Tâche 4 — Style via tokens & dark-first (AC: #1)
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-38-  - [x] Styler en SCSS scoped via tokens (aucune valeur hardcodée — NFR2) ; `@use` (jamais `@import`)
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-39-  - [x] Labels `// email`/`// localisation`/… en Ubuntu Mono ; ligne prompt en mono `var(--term-green)` ; respecter dark-first
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-40-- [x] Tâche 5 — Vérification (AC: #1, #2)
+--
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-71-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-72-- `div.contact__info` contient, dans l'ordre :
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-73-  - **Carte infos** (`<Card>`) : trois `infoitem` (`k` = label mono, `v` = valeur) — `// email` (`<a mailto:>` `var(--term-blue)`), `// localisation` (`S.city`), `// disponibilité` (`<Badge tone="success" dot>Ouvert aux missions freelance</Badge>`). → `ZCard` + `ZBadge`.
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-74-  - **Carte CTA terminal** (`<Card className="offer">`, `background: var(--bg-terminal)`, `borderColor: hsl(319 40% 30% / 0.5)`) : ligne mono `anon.@jouan.ovh:~$ ./contact`, prose d'invite, `<Button variant="terminal" size="sm" icon={terminal} onClick={openTerminal}>Ouvrir le terminal</Button>`. → `ZCard` + `ZButton` ; `onClick` → ouverture terminal.
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md:75:  - **`div.hexrow`** : `S.social.map(...)` → un `<a class="hex">` par réseau avec glyphe SVG inline. → réutiliser `HexagonLinkComponent` / pattern `LinkListComponent`.
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-76-- Données : email/ville/social repris de `data.js` (`window.SITE`) ; ne pas inventer de copy au-delà de la réf. [Source: docs/design_system/ui_kits/jouan-site/Contact.jsx ; data.js]
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-77-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-78-### Pièges / régressions à éviter
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-79-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-80-- **Ne pas casser l'ouverture du terminal** : réutiliser le mécanisme existant (`createNewTerminal`) plutôt que d'en réécrire un. Éviter deux `TerminalManager` qui se marchent dessus si un terminal global existe déjà (header).
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-81-- **Ne pas** dépendre du restyle terminal (Epic 8) : tester l'**ouverture**, pas l'apparence finale du terminal.
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-82-- **Ne pas** hardcoder couleurs/espaces (`--bg-terminal`, `--term-green`, `--term-blue`, la bordure aubergine, etc. proviennent des tokens — Epic 2).
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md:83:- Hexagones : réutiliser le composant existant `HexagonLinkComponent` (déjà tokenisé) plutôt que de redéfinir la géométrie hexagonale ; ajuster seulement le mapping de données/icônes si besoin.
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-84-- Le `✓`/glyphes ne sont pas des emoji ; pas d'emoji ajouté (NFR6).
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-85-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-86-### Project Structure Notes
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-87-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md:88:- Édite `pages/contact.vue` (créé en 7.1) ; réutilise `components/HexagonLinkComponent.vue`, `components/LinkListComponent.vue`, `components/terminal/TerminalManagerComponent.vue`. Aucune base de données / entité.
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-89-- Pas d'impact sur les autres routes ; l'entrée de nav vers `/contact` reste portée par le châssis (story 2.8).
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-90-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-91-### Testing standards
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-92-
+--
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-100-- [Source: docs/design_system/ui_kits/jouan-site/Contact.jsx — carte infos + carte CTA terminal + `hexrow`]
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-101-- [Source: docs/design_system/ui_kits/jouan-site/data.js — `window.SITE` (email, city, social)]
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-102-- [Source: docs/design_system/ui_kits/jouan-site/icons.jsx — glyphes terminal / sociaux]
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-103-- [Source: components/terminal/TerminalManagerComponent.vue ; components/HeaderComponent.vue — mécanisme d'ouverture]
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md:104:- [Source: components/HexagonLinkComponent.vue ; components/LinkListComponent.vue — hexagones sociaux]
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-105-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-106-## Dev Agent Record
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-107-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-108-### Agent Model Used
+--
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-119-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-120-- Complète la colonne droite de `app/pages/contact.vue` (placeholder 7.1 → contenu), porté de `Contact.jsx` :
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-121-  - **Carte infos** (`ZCard`) : 3 `infoitem` (label mono `// email`/`// localisation`/`// disponibilité`) — email `mailto:` en `--term-blue` (ring de focus a11y), ville, et `ZBadge tone="success" dot` « Ouvert aux missions freelance ». Données `contact = { email, city }` (data.js).
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-122-  - **Carte CTA terminal** (`ZCard` fond `--bg-terminal`, bordure `--accent-2-soft`) : ligne prompt mono `anon.@jouan.ovh:~$ ./contact` (vert + `./contact` off-white), invite, `ZButton variant="terminal" size="sm"` + `ZIcon name="terminal"`.
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md:123:  - **Hexagones sociaux** : réutilisation directe de `<LinkListComponent />` (rangée `hexrow` partagée avec le footer ; `HexagonLinkComponent` + `ZIcon`, liens `_blank rel=noopener noreferrer`, label sr-only).
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-124-- **Ouverture du terminal (AC #2)** : via le composable partagé `useTerminal().open()` — le `TerminalManagerComponent` reste monté **une seule fois** dans le header (pas de 2ᵉ gestionnaire). `open()` est un **no-op au prerender** (aucun lanceur enregistré) → prerender-safe ; côté client il déclenche `createNewTerminal()`. Aucune dépendance au restyle terminal (Epic 8).
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-125-- Tokens uniquement, `<style scoped>`, primitives globales consommées. La colonne droite hérite de la grille `contact__grid` (1fr / 0.8fr → 1 colonne sous 900px) posée en 7.1.
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-126-
+docs/implementation-artifacts/7-2-infos-cta-terminal-et-socials.md-127-### File List
+--
+docs/implementation-artifacts/code-reviews/10-3/full.diff-62-+            >{{ project.name }}</ZExternalLink
+docs/implementation-artifacts/code-reviews/10-3/full.diff-63-           >
+docs/implementation-artifacts/code-reviews/10-3/full.diff-64-         </div>
+docs/implementation-artifacts/code-reviews/10-3/full.diff-65- 
+docs/implementation-artifacts/code-reviews/10-3/full.diff:66:diff --git a/app/components/HexagonLinkComponent.vue b/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/full.diff-67-index 12765e5..edf089c 100644
+docs/implementation-artifacts/code-reviews/10-3/full.diff:68:--- a/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/full.diff:69:+++ b/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/full.diff-70-@@ -1,7 +1,9 @@
+docs/implementation-artifacts/code-reviews/10-3/full.diff-71- <template>
+docs/implementation-artifacts/code-reviews/10-3/full.diff-72-   <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/full.diff-73-     <slot name="icon" />
+--
+docs/implementation-artifacts/code-reviews/10-3/full.diff-112--  - [ ] Créer un mécanisme unique réutilisable : soit un **composant** `app/components/ui/ZExternalLink.vue` (ou `app/components/ExternalLinkComponent.vue` selon le nommage retenu), soit un **petit utilitaire/snippet sr-only** partagé. Décision à consigner. Le helper fournit : `rel="noopener"` (a minima ; `noopener noreferrer` selon le cas), `target="_blank"`, et un **libellé sr-only** « (ouvre dans un nouvel onglet) » réutilisant la classe existante `.screen-reader-text` (déjà utilisée `index.vue:121`). Optionnellement une icône « lien externe » (`ZIcon`) décorative `aria-hidden`.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-113--  - [ ] Le helper doit composer avec les usages existants (lien texte, carte cliquable, hexagone) sans casser le style — vérifier qu'il n'impose pas de wrapper cassant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-114--- [ ] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/full.diff-115--  - [ ] Inventaire `grep -rn 'target="_blank"' app/` (4 occurrences au baseline) et migration via le helper :
+docs/implementation-artifacts/code-reviews/10-3/full.diff:116:-    - **`app/components/HexagonLinkComponent.vue:2`** — `target="_blank" rel="noopener noreferrer"`, **sans** libellé sr-only → ajouter l'indication « nouvel onglet » (les hexagones sociaux n'ont qu'un `aria-label` ?). Vérifier le nom accessible (réseau social) + sr-only onglet.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-117--    - **`app/components/FooterComponent.vue:24`** — `target="_blank"` → vérifier `rel` + ajouter sr-only.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-118--    - **`app/pages/index.vue:110`** — carte projet : **déjà** dotée du sr-only (`index.vue:121`, fix 3.3). L'aligner sur le helper pour cohérence (pas de régression).
+docs/implementation-artifacts/code-reviews/10-3/full.diff-119--    - **`app/pages/about.vue:34`** — `keova.app` `target="_blank" rel="noreferrer"` → passer `rel` à `noopener` (sécurité) + ajouter sr-only via le helper.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-120--  - [ ] Vérifier qu'**aucun** `target="_blank"` ne subsiste sans helper/sr-only (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/full.diff-125-+  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-126-+  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-127-+- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/full.diff-128-+  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
+docs/implementation-artifacts/code-reviews/10-3/full.diff:129:+    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
+docs/implementation-artifacts/code-reviews/10-3/full.diff-130-+    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-131-+    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-132-+    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-133-+  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/full.diff-148-+- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-149- 
+docs/implementation-artifacts/code-reviews/10-3/full.diff-150- ### Completion Notes List
+docs/implementation-artifacts/code-reviews/10-3/full.diff-151-+- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
+docs/implementation-artifacts/code-reviews/10-3/full.diff:152:+- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-153-+- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-154-+- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-155-+- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-156-+- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
+docs/implementation-artifacts/code-reviews/10-3/full.diff-157-+- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+docs/implementation-artifacts/code-reviews/10-3/full.diff-158- 
+docs/implementation-artifacts/code-reviews/10-3/full.diff-159- ### File List
+docs/implementation-artifacts/code-reviews/10-3/full.diff-160-+- `app/components/ui/ZExternalLink.vue` (NEW)
+docs/implementation-artifacts/code-reviews/10-3/full.diff:161:+- `app/components/HexagonLinkComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/full.diff-162-+- `app/components/FooterComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/full.diff-163-+- `app/pages/about.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/full.diff-164-+- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/full.diff-165-+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+--
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-15-
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-16-**Livraison**
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-17-- Stories : **2 / 2 done (100 %)**
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-18-  - 7.1 — Route `/contact` + formulaire : `ZInput`×4 / `ZButton`, validation front + messages FR, focus a11y (1er champ invalide / carte envoyée), erreurs non collantes, **envoi réel via Web3Forms** (clé en env, honeypot), notice RGPD, état « ✓ envoyé ».
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md:19:  - 7.2 — Colonne droite : carte infos (`ZCard` + `ZBadge` dispo), **carte CTA terminal** ouvrant l'easter-egg via `useTerminal()` (composable partagé, un seul `TerminalManager`), hexagones sociaux (`LinkListComponent`/`HexagonLinkComponent` réutilisés).
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-20-- Revue : **7 findings réels, tous soldés (0 dette)** — 7.1 : 3 patch + 1 defer ; 7.2 : 1 patch + 2 defer.
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-21-- Barre qualité : `pnpm lint` / `typecheck` / `generate` **verts à chaque story**.
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-22-- **Vérif Chrome DevTools MCP** : 7.1 **comportementale** (validation à vide / email invalide / état envoyé, focus), 7.2 **fonctionnelle** (clic CTA → la fenêtre terminal s'ouvre, AC #2).
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-23-- Discipline git : `feat`→`fix`→`docs` par story (`3805bee`→`370f65d`), propre.
+--
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-30-1. **Premier amendement *délibéré* du SPEC en cours de refonte.** Le NFR4 d'origine interdisait backend **et** service tiers. Pour livrer un envoi réel sans serveur, décision Simon : **Web3Forms** (tiers serverless) — et le **SPEC a été mis à jour dans la story 7.1** (Non-goals + Decisions), l'AC #2 réécrit, `.env.example` ajouté, clé via `runtimeConfig.public`. Le contrat a évolué de façon **consciente et tracée**, pas par dérive : modèle sain de gouvernance du SPEC.
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-31-
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-32-2. **Une dimension neuve a émergé : le légal / RGPD.** Le formulaire collecte nom/email/message transmis à un tiers (Web3Forms) → **notice courte posée sous le formulaire** + obligation tracée d'une **page politique de confidentialité** (base légale, finalité, durée, sous-traitant, droits) et des mentions légales. Aucun épic précédent n'avait fait surgir d'exigence légale — bonne capture (skill `rgpd-france` référencé), routée vers une 3ᵉ destination de `deferred-work.md`.
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-33-
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md:34:3. **Réutilisation du legacy, faite proprement.** 7.2 a réutilisé **directement** `LinkListComponent`/`HexagonLinkComponent` (déjà tokenisés) pour les hexagones et le composable `useTerminal()` (un seul `TerminalManager` monté dans le header, **no-op au prerender**) pour l'ouverture. Zéro réinvention, AC #2 vérifiée au navigateur.
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-35-
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-36-4. **Vérification *comportementale*, pas que visuelle.** `ZInput` exercé pour la première fois en conditions réelles : la vérif Chrome DevTools a couvert la **logique** (validation, focus, ré-validation live, bascule d'état), pas seulement le rendu. Un piège dev transitoire attrapé (504 Vite « Outdated Optimize Dep » après `restart` → un reload purge le cache ; même famille que la base SQLite content de l'Epic 6).
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-37-
+docs/implementation-artifacts/epic-7-retro-2026-06-26.md-38-5. **« Zéro dette » réaffirmé — 6ᵉ épic d'affilée.** 7 findings, tous soldés. Les différés sont des **généralisations / obligations transverses** délibérément regroupées, pas de la dette technique laissée dans l'épic.
+--
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-40-  - [x] Footer dark-first riche : colonnes `// Navigation`, `// Projets`, `// Réseaux` (eyebrows mono uppercase `--ls-wider`) + barre basse `© {year} Simon Jouan — jouan.ovh` et ligne terminal `anon.@jouan.ovh:~$ echo "merci de votre visite"` (commande en `--term-green`).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-41-  - [x] **Hexagones sociaux** présents (via `LinkListComponent`).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-42-  - [x] **Décision hauteur** : footer **riche** du UI kit (multi-colonnes, > 56px) avec barre basse, conformément à la note de la story. Le `--footer-height` (56px) ne contraint plus le layout (passé en flex column).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-43-- [x] Tâche 5 — Hexagones sociaux (AC: #2)
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md:44:  - [x] `HexagonLinkComponent.vue` refondu au style DS : hexagone `clip-path` (kit), `--surface-2`, glyphe `currentColor` (`ZIcon`), hover `background var(--accent)` + `color var(--ink-on-accent)`, focus visible, libellé a11y masqué visuellement.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-45-  - [x] `LinkListComponent.vue` refondu : 3 liens (GitHub `zohac`, Twitter `fenrir0680`, LinkedIn `simonjouan`) via `ZIcon`, layout `.hexrow`.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-46-- [x] Tâche 6 — Vérification (AC: #1, #2)
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-47-  - [x] Rendu prouvé par build : header sticky sur toutes les pages, 5 liens nav (actif correct), bloc droite badge+boutons, burger + `#hdr-mobile-menu`, footer 3 colonnes + 3 hexagones + ligne terminal, **0 emoji ♥**. CTA primary → `<a href="/contact" class="zbtn zbtn--primary">` (navigable).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-48-  - [x] `pnpm lint` **exit 0** ; `pnpm typecheck` **exit 0** ; `pnpm generate` **exit 0** (toutes routes dont `/services` + `/contact` ; `CNAME` = `dev.jouan.ovh` intact).
+--
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-69-### Fichiers à modifier / créer (lus — état actuel)
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-70-
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-71-- **`components/HeaderComponent.vue`** (UPDATE/refonte) — état actuel : `<header>` grid, bouton burger logo `logo_white_32x32.png`, `<nav>` overlay mobile avec liens `Accueil`/`Blog`/`À propos` + `TerminalButton`, `TerminalManagerComponent`, `CurrentTime`. Styles legacy via `_color.$dark-background`, `variables.$header-height`, animations menu. À refondre : tokens DS, ajouter `Services`/`Contact`, brand diamant + nom, bloc droite (badge + 2 boutons), header **fixe**. Conserver le câblage terminal (`addNewTerminal`/`terminalManager`) et l'accessibilité menu (focus 1er item).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-72-- **`components/FooterComponent.vue`** (UPDATE/refonte) — état actuel : footer 56px, « Made with ♥ and Nuxtjs », `_color.$aubergine-dark`, animation fadeIn. À refondre : colonnes nav/projets/réseaux + barre terminal, hexagones, tokens DS. Retirer l'emoji ♥ (règle « pas d'emoji » ; le ♥ est une entité `&#9829;` — remplaçable par la ligne terminal du kit).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md:73:- **`components/HexagonLinkComponent.vue`** (UPDATE) — état actuel : hexagone paramétrable via CSS vars, couleurs `_color.$gray-*`. Restyler aux tokens DS (`--surface-2`, hover `--accent`).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md:74:- **`components/LinkListComponent.vue`** (UPDATE) — état actuel : 3 `HexagonLinkComponent` avec glyphes GitHub/Twitter/LinkedIn inline. Réutiliser les glyphes centralisés (2.7) ; garder les URLs.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-75-- **`pages/services.vue`, `pages/contact.vue`** (CREATE stub si absentes) — pour que les liens de nav ne cassent pas le prerender (les pages riches sont Epics 4/7). Vérifier l'arbo `pages/` existante.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-76-- **Réf. UI kit** : `docs/design_system/ui_kits/jouan-site/Header.jsx`, `Footer.jsx`, `kit.css` (sélecteurs `.hdr*`, `.ftr*`, `.hex*`), `data.js` (liste `social`, `projects`), `icons.jsx`.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-77-
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-78-### Mapping depuis le UI kit (Header.jsx / Footer.jsx / kit.css)
+--
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-106-- [Source: docs/planning-artifacts/epics.md#Epic 2: Fondations du design system — Story 2.8]
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-107-- [Source: docs/specs/spec-design-system-revamp/SPEC.md#Capabilities (CAP-4), #Decisions (routes /services, /contact), #Constraints]
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-108-- [Source: docs/design_system/README.md#VISUAL FOUNDATIONS — Layout rules (header/footer 56px, hexagones)]
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-109-- [Source: docs/design_system/ui_kits/jouan-site/Header.jsx, Footer.jsx, kit.css, icons.jsx, data.js]
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md:110:- [Source: components/HeaderComponent.vue, FooterComponent.vue, HexagonLinkComponent.vue, LinkListComponent.vue (état actuel)]
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-111-- [Source: docs/project-context.md#Conventions de nommage, #À préserver (terminal), #Pièges (prerender, CNAME)]
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-112-
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-113-## Dev Agent Record
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-114-
+--
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-126-
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-127-- **`HeaderComponent.vue` refondu** : sticky 56px, brand diamant, nav desktop (5 liens, actif via `route.path`), bloc droite (horloge + badge Disponible + boutons Terminal/Contact), menu burger mobile accessible (focus 1er item, Escape, overlay), `TerminalManagerComponent` conservé. 100 % tokens, BEM `stylelint-disable` inline.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-128-- **Easter-egg terminal** : `ZButton variant="terminal"` → `addNewTerminal()` → `createNewTerminal()` (logique inchangée). **`TerminalButton.vue` supprimé** (wrapper legacy remplacé par `ZButton`, devenu orphelin).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-129-- **`FooterComponent.vue` refondu** : footer riche multi-colonnes (Navigation/Projets/Réseaux) + barre basse (© + ligne terminal `--term-green`). Emoji ♥ legacy retiré (règle « pas d'emoji »). Projets repris de `data.js` (keova.app, patio-conseil.fr).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md:130:- **`HexagonLinkComponent.vue` refondu** : hexagone `clip-path` DS (remplace le hexagone legacy à pseudo-éléments complexes), `--surface-2` → hover `--accent`/`--ink-on-accent`, `<a target="_blank" rel="noopener noreferrer">`, libellé a11y visuellement masqué, focus visible.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-131-- **`LinkListComponent.vue` refondu** : glyphes via `ZIcon` (centralisés en 2.7), `.hexrow`, URLs conservées.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-132-- **`layouts/default.vue`** : grille à hauteurs fixes (qui tronquait le footer riche) → **flex column** `min-height:100vh` ; header sticky + footer `margin-top:auto`. `--header-height`/`--footer-height` viennent des tokens (2.1) ; import `_variables` inutile retiré. Dégradé de fond legacy conservé (hors périmètre).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-133-- **Stubs `pages/services.vue` + `pages/contact.vue`** : minimaux, dark-first, pour que la nav et le prerender ne cassent pas (pages riches = Epics 4/7).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-134-- **Fix primitives `as` (ZButton/ZCard)** : commentaire clarifié — `as` attend une balise native **ou une référence de composant** (ex. `NuxtLink` de `#components`), pas un nom en chaîne. Comportement `<component :is>` inchangé (le bug venait de l'usage en chaîne).
+--
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-146-### File List
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-147-
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-148-- `app/components/HeaderComponent.vue` (REFONTE) — header sticky DS + nav + menu mobile + terminal.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-149-- `app/components/FooterComponent.vue` (REFONTE) — footer riche DS + barre terminal (sans emoji).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md:150:- `app/components/HexagonLinkComponent.vue` (REFONTE) — hexagone clip-path DS, a11y.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-151-- `app/components/LinkListComponent.vue` (REFONTE) — glyphes via ZIcon, `.hexrow`.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-152-- `app/components/terminal/TerminalButton.vue` (SUPPRIMÉ) — remplacé par `ZButton variant="terminal"`.
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-153-- `app/layouts/default.vue` (MODIFIÉ) — flex column (footer riche non tronqué, header sticky).
+docs/implementation-artifacts/2-8-chassis-global-header-footer-nav-socials.md-154-- `app/pages/services.vue` (CRÉÉ) — stub (Epic 4).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-253-+            >{{ project.name }}</ZExternalLink
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-254-           >
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-255-         </div>
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-256- 
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:257:diff --git a/app/components/HexagonLinkComponent.vue b/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-258-index 12765e5..edf089c 100644
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:259:--- a/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:260:+++ b/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-261-@@ -1,7 +1,9 @@
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-262- <template>
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-263-   <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-264-     <slot name="icon" />
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-303--  - [ ] Créer un mécanisme unique réutilisable : soit un **composant** `app/components/ui/ZExternalLink.vue` (ou `app/components/ExternalLinkComponent.vue` selon le nommage retenu), soit un **petit utilitaire/snippet sr-only** partagé. Décision à consigner. Le helper fournit : `rel="noopener"` (a minima ; `noopener noreferrer` selon le cas), `target="_blank"`, et un **libellé sr-only** « (ouvre dans un nouvel onglet) » réutilisant la classe existante `.screen-reader-text` (déjà utilisée `index.vue:121`). Optionnellement une icône « lien externe » (`ZIcon`) décorative `aria-hidden`.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-304--  - [ ] Le helper doit composer avec les usages existants (lien texte, carte cliquable, hexagone) sans casser le style — vérifier qu'il n'impose pas de wrapper cassant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-305--- [ ] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-306--  - [ ] Inventaire `grep -rn 'target="_blank"' app/` (4 occurrences au baseline) et migration via le helper :
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:307:-    - **`app/components/HexagonLinkComponent.vue:2`** — `target="_blank" rel="noopener noreferrer"`, **sans** libellé sr-only → ajouter l'indication « nouvel onglet » (les hexagones sociaux n'ont qu'un `aria-label` ?). Vérifier le nom accessible (réseau social) + sr-only onglet.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-308--    - **`app/components/FooterComponent.vue:24`** — `target="_blank"` → vérifier `rel` + ajouter sr-only.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-309--    - **`app/pages/index.vue:110`** — carte projet : **déjà** dotée du sr-only (`index.vue:121`, fix 3.3). L'aligner sur le helper pour cohérence (pas de régression).
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-310--    - **`app/pages/about.vue:34`** — `keova.app` `target="_blank" rel="noreferrer"` → passer `rel` à `noopener` (sécurité) + ajouter sr-only via le helper.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-311--  - [ ] Vérifier qu'**aucun** `target="_blank"` ne subsiste sans helper/sr-only (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-316-+  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-317-+  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-318-+- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-319-+  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:320:+    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-321-+    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-322-+    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-323-+    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-324-+  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-339-+- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-340- 
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-341- ### Completion Notes List
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-342-+- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:343:+- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-344-+- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-345-+- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-346-+- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-347-+- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-348-+- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-349- 
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-350- ### File List
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-351-+- `app/components/ui/ZExternalLink.vue` (NEW)
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:352:+- `app/components/HexagonLinkComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-353-+- `app/components/FooterComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-354-+- `app/pages/about.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-355-+- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-356-+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-409-/Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-410-
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-411-2026-09-13T08:02:17.807210Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-412-exec
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:413:/bin/zsh -lc "nl -ba app/components/HexagonLinkComponent.vue | sed -n '1,120p'
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-414-nl -ba app/components/FooterComponent.vue | sed -n '1,100p'
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-415-nl -ba app/pages/about.vue | sed -n '20,45p'
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-416-nl -ba app/components/ui/ZExternalLink.vue | sed -n '1,100p'
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-417-rg -n 'target=\"_blank\"|ZExternalLink|screen-reader-text' app" in /Users/simon/dev/jouan.ovh
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-652-app/assets/scss/base/_reset.scss:562:.screen-reader-text {
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-653-app/assets/scss/base/_reset.scss:574:.screen-reader-text:focus {
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-654-app/components/FooterComponent.vue:20:          <ZExternalLink
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-655-app/components/FooterComponent.vue:26:            >{{ project.name }}</ZExternalLink
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:656:app/components/HexagonLinkComponent.vue:2:  <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json:657:app/components/HexagonLinkComponent.vue:5:      ><slot name="title" /><span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span></span
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-658-app/components/ui/ZExternalLink.vue:2:  <a :href="href" target="_blank" :rel="computedRel" :class="className">
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-659-app/components/ui/ZExternalLink.vue:4:    <span class="screen-reader-text">{{ computedSrText }}</span>
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-660-app/components/ui/ZExternalLink.vue:9:// Primitive lien externe accessible (DS) — force target="_blank", rel sécurisé ("noopener" ou custom),
+docs/implementation-artifacts/code-reviews/10-3/raw-edge-case-hunter.json-661-
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-129-+            >{{ project.name }}</ZExternalLink
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-130-           >
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-131-         </div>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-132- 
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:133:diff --git a/app/components/HexagonLinkComponent.vue b/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-134-index 12765e5..edf089c 100644
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:135:--- a/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:136:+++ b/app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-137-@@ -1,7 +1,9 @@
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-138- <template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-139-   <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-140-     <slot name="icon" />
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-179--  - [ ] Créer un mécanisme unique réutilisable : soit un **composant** `app/components/ui/ZExternalLink.vue` (ou `app/components/ExternalLinkComponent.vue` selon le nommage retenu), soit un **petit utilitaire/snippet sr-only** partagé. Décision à consigner. Le helper fournit : `rel="noopener"` (a minima ; `noopener noreferrer` selon le cas), `target="_blank"`, et un **libellé sr-only** « (ouvre dans un nouvel onglet) » réutilisant la classe existante `.screen-reader-text` (déjà utilisée `index.vue:121`). Optionnellement une icône « lien externe » (`ZIcon`) décorative `aria-hidden`.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-180--  - [ ] Le helper doit composer avec les usages existants (lien texte, carte cliquable, hexagone) sans casser le style — vérifier qu'il n'impose pas de wrapper cassant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-181--- [ ] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-182--  - [ ] Inventaire `grep -rn 'target="_blank"' app/` (4 occurrences au baseline) et migration via le helper :
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:183:-    - **`app/components/HexagonLinkComponent.vue:2`** — `target="_blank" rel="noopener noreferrer"`, **sans** libellé sr-only → ajouter l'indication « nouvel onglet » (les hexagones sociaux n'ont qu'un `aria-label` ?). Vérifier le nom accessible (réseau social) + sr-only onglet.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-184--    - **`app/components/FooterComponent.vue:24`** — `target="_blank"` → vérifier `rel` + ajouter sr-only.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-185--    - **`app/pages/index.vue:110`** — carte projet : **déjà** dotée du sr-only (`index.vue:121`, fix 3.3). L'aligner sur le helper pour cohérence (pas de régression).
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-186--    - **`app/pages/about.vue:34`** — `keova.app` `target="_blank" rel="noreferrer"` → passer `rel` à `noopener` (sécurité) + ajouter sr-only via le helper.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-187--  - [ ] Vérifier qu'**aucun** `target="_blank"` ne subsiste sans helper/sr-only (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-192-+  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-193-+  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-194-+- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-195-+  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:196:+    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-197-+    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-198-+    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-199-+    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-200-+  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-215-+- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-216- 
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-217- ### Completion Notes List
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-218-+- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:219:+- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-220-+- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-221-+- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-222-+- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-223-+- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-224-+- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-225- 
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-226- ### File List
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-227-+- `app/components/ui/ZExternalLink.vue` (NEW)
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:228:+- `app/components/HexagonLinkComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-229-+- `app/components/FooterComponent.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-230-+- `app/pages/about.vue` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-231-+- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-232-+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-259-The diff is readable. I’m checking the surrounding component conventions, accessibility CSS, and the claimed audit/validation evidence so the findings are grounded in actual repository behavior rather than just the patch text.
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-260-exec
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-261-/bin/zsh -lc "rg -n \"screen-reader-text|target=|ZExternalLink|HexagonLink|ftr__link|class=\\\"hex|srText|defineProps|withDefaults\" app tests test* package.json nuxt.config.* 2>/dev/null" in /Users/simon/dev/jouan.ovh
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-262-exec
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:263:/bin/zsh -lc "sed -n '1,220p' app/components/HexagonLinkComponent.vue; printf '\\n--- footer ---\\n'; sed -n '1,180p' app/components/FooterComponent.vue; printf '\\n--- about ---\\n'; sed -n '1,120p' app/pages/about.vue; printf '\\n--- index relevant ---\\n'; sed -n '80,145p' app/pages/index.vue" in /Users/simon/dev/jouan.ovh
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-264- exited 1 in 0ms:
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-265-zsh:1: no matches found: test*
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-266-
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-267- succeeded in 0ms:
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-770-/bin/zsh -lc 'git status --short; git diff --check; git log -1 --oneline -- docs/implementation-artifacts/code-reviews/10-3/full.diff' in /Users/simon/dev/jouan.ovh
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-771- succeeded in 0ms:
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-772- M app/assets/scss/base/_layout.scss
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-773- M app/components/FooterComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:774: M app/components/HexagonLinkComponent.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-775- M app/pages/about.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-776- M app/pages/contact.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-777- M app/pages/index.vue
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-778- M app/pages/services.vue
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-847-app/assets/scss/base/_reset.scss-576-  border-radius: 3px;
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-848-app/assets/scss/base/_reset.scss-577-  box-shadow: 0 0 2px 2px rgb(0 0 0 / 60%);
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-849-app/assets/scss/base/_reset.scss-578-  clip-path: none;
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-850---
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:851:app/components/HexagonLinkComponent.vue-1-<template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:852:app/components/HexagonLinkComponent.vue-2-  <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:853:app/components/HexagonLinkComponent.vue-3-    <slot name="icon" />
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:854:app/components/HexagonLinkComponent.vue-4-    <span class="hex__label"
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:855:app/components/HexagonLinkComponent.vue:5:      ><slot name="title" /><span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span></span
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:856:app/components/HexagonLinkComponent.vue-6-    >
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:857:app/components/HexagonLinkComponent.vue-7-  </a>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:858:app/components/HexagonLinkComponent.vue-8-</template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:859:app/components/HexagonLinkComponent.vue-9-
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-860---
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-861-app/components/ui/ZExternalLink.vue-1-<template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-862-app/components/ui/ZExternalLink.vue-2-  <a :href="href" target="_blank" :rel="computedRel" :class="className">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-863-app/components/ui/ZExternalLink.vue-3-    <slot />
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1021-app/components/ui/ZButton.vue:55:const props = withDefaults(defineProps<Props>(), {
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1022-app/components/ui/ZButton.vue:64:const attrs = useAttrs();
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1023-app/components/ui/ZBadge.vue:19:withDefaults(defineProps<Props>(), {
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1024-app/components/ui/ZAvatar.vue:31:const props = withDefaults(defineProps<Props>(), {
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1025:app/components/HexagonLinkComponent.vue:2:  <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1026:app/components/HexagonLinkComponent.vue:13:defineProps<{
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1027-app/components/ui/ZInput.vue:46:import { computed, useAttrs, useId } from "vue";
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1028-app/components/ui/ZInput.vue:49:  inheritAttrs: false,
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1029-app/components/ui/ZInput.vue:71:const props = withDefaults(defineProps<Props>(), {
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1030-app/components/ui/ZInput.vue:90:const attrs = useAttrs();
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1079-/bin/zsh -lc "sed -n '1,220p' nuxt.config.ts; printf '\\n--- package ---\\n'; sed -n '1,220p' package.json; printf '\\n--- lint ---\\n'; sed -n '1,240p' eslint.config.mjs" in /Users/simon/dev/jouan.ovh
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1080- succeeded in 0ms:
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1081-./app/components/FooterComponent.vue:24:            rel="noopener noreferrer"
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1082-./app/pages/about.vue:34:              <ZExternalLink href="https://keova.app" rel="noopener">keova.app</ZExternalLink>, et j'aime mettre l'IA au
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1083:./app/components/HexagonLinkComponent.vue:2:  <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1084-./app/pages/index.vue:102:            <ZCard class="project" interactive as="a" :href="project.url" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1085-./app/components/ui/ZExternalLink.vue:2:  <a :href="href" target="_blank" :rel="computedRel" :class="className">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1086-./app/components/ui/ZExternalLink.vue:9:// Primitive lien externe accessible (DS) — force target="_blank", rel sécurisé ("noopener" ou custom),
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1087-./app/components/ui/ZExternalLink.vue:18:   * Relation de lien. Par défaut "noopener" (sécurité window.opener).
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1244-);
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1245-
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1246-2026-09-13T08:02:19.925320Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1247-exec
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1248:/bin/zsh -lc "rg -n -C 5 \"<HexagonLinkComponent|<LinkListComponent|slot name=\\\"title\\\"|aria-label\" app/components app/pages | head -260; printf '\\n--- reset accessibility ---\\n'; sed -n '550,590p' app/assets/scss/base/_reset.scss; printf '\\n--- git diff full stat ---\\n'; git diff --stat -- docs/implementation-artifacts/code-reviews/10-3/full.diff; wc -l docs/implementation-artifacts/code-reviews/10-3/full.diff" in /Users/simon/dev/jouan.ovh
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1249- succeeded in 0ms:
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1250-app/components/HeaderComponent.vue-4-      <NuxtLink to="/" class="hdr__brand" @click="closeMenu">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1251-app/components/HeaderComponent.vue-5-        <ZIcon name="gem" class="hdr__logo" />
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1252-app/components/HeaderComponent.vue-6-        <b>jouan.ovh</b>
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1283---
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1284-app/components/LinkListComponent.vue-1-<template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1285-app/components/LinkListComponent.vue-2-  <ul class="hexrow">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1286-app/components/LinkListComponent.vue-3-    <li v-for="social in socials" :key="social.icon">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1287:app/components/LinkListComponent.vue:4:      <HexagonLinkComponent :link="social.url">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1288-app/components/LinkListComponent.vue-5-        <template #icon><ZIcon :name="social.icon" /></template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1289-app/components/LinkListComponent.vue-6-        <template #title>{{ social.label }}</template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1290:app/components/LinkListComponent.vue-7-      </HexagonLinkComponent>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1291-app/components/LinkListComponent.vue-8-    </li>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1292-app/components/LinkListComponent.vue-9-  </ul>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1293---
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1294-app/pages/services.vue-28-              <div class="offer__cta">
+--
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1338-app/pages/contact.vue-130-      </div>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1339-app/pages/contact.vue-131-    </section>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1340-app/pages/contact.vue-132-  </main>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1341---
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1342:app/components/HexagonLinkComponent.vue-1-<template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1343:app/components/HexagonLinkComponent.vue-2-  <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1344:app/components/HexagonLinkComponent.vue-3-    <slot name="icon" />
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1345:app/components/HexagonLinkComponent.vue-4-    <span class="hex__label"
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1346:app/components/HexagonLinkComponent.vue:5:      ><slot name="title" /><span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span></span
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1347:app/components/HexagonLinkComponent.vue-6-    >
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1348:app/components/HexagonLinkComponent.vue-7-  </a>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1349:app/components/HexagonLinkComponent.vue-8-</template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1350:app/components/HexagonLinkComponent.vue-9-
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md:1351:app/components/HexagonLinkComponent.vue-10-<script setup lang="ts">
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1352---
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1353-app/pages/index.vue-47-                </template>
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1354-app/pages/index.vue-48-
+docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md-1355-app/pages/index.vue-49-                <button
+app/data/site.ts-49-  "n8n",
+app/data/site.ts-50-  "mysql",
+app/data/site.ts-51-];
+app/data/site.ts-52-
+app/data/site.ts:53:const projects: IProject[] = [
+app/data/site.ts-54-  {
+app/data/site.ts-55-    name: "keova.app",
+app/data/site.ts-56-    role: "Fondateur · SaaS",
+app/data/site.ts-57-    desc: "Plateforme SaaS que je conçois et opère de bout en bout.",
+--
+app/pages/index.vue-165-  { id: "stat-3", value: "1", label: "SaaS fondé · keova.app" },
+app/pages/index.vue-166-];
+app/pages/index.vue-167-
+app/pages/index.vue-168-// Projets sélectionnés — source unique `app/data/site.ts`. Cartes rendues en liens externes.
+app/pages/index.vue:169:const projects = SITE.projects;
+app/pages/index.vue-170-
+app/pages/index.vue-171-// Lignes du terminal décoratif, fidèles à HeroTerminal (Home.jsx). Codées en dur
+app/pages/index.vue-172-// côté template (pas de chiffres/projets inventés : stats & projets = stories 3.2 / 3.3).
+app/pages/index.vue-173-// `id` = clé v-for stable (indépendante du contenu affiché), garantie unique.
+--
+app/components/FooterComponent.vue-53-  { to: "/contact", label: "Contact" },
+app/components/FooterComponent.vue-54-];
+app/components/FooterComponent.vue-55-
+app/components/FooterComponent.vue-56-// Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).
+app/components/FooterComponent.vue:57:const projects = SITE.projects;
+app/components/FooterComponent.vue-58-
+app/components/FooterComponent.vue-59-const year = new Date().getFullYear();
+app/components/FooterComponent.vue-60-</script>
+app/components/FooterComponent.vue-61-
+--
+app/components/terminal/programs/Projets.ts-6-const projets: IProgram = {
+app/components/terminal/programs/Projets.ts-7-  command: "projets",
+app/components/terminal/programs/Projets.ts-8-  description: "Mes projets.",
+app/components/terminal/programs/Projets.ts-9-  run: function (): string {
+app/components/terminal/programs/Projets.ts:10:    const items = SITE.projects.map((p) => `<li>${p.name} — ${p.role} — ${p.desc} (${p.url})</li>`).join("");
+app/components/terminal/programs/Projets.ts-11-    return `<ul>${items}</ul>`;
+app/components/terminal/programs/Projets.ts-12-  },
+app/components/terminal/programs/Projets.ts-13-};
+app/components/terminal/programs/Projets.ts-14-
+
+2026-09-13T08:02:54.932588Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "sed -n '1,140p' docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md
+sed -n '140,260p' docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+Reading additional input from stdin...
+2026-09-13T08:01:51.381199Z ERROR codex_models_manager::cache: failed to load models cache: missing field `base_instructions` at line 133 column 5
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 01a099c9-742b-7182-a94f-fc97f56ab3d4
+--------
+user
+# Blind Hunter Prompt — Story 10.3
+
+Invoke the `bmad-review-adversarial-general` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/10-3/full.diff`
+(You can read the file directly).
+
+Goal: Cynically review content and produce findings. Review with extreme skepticism — assume problems exist. Find at least ten issues to fix or improve in the provided content. Output findings as a Markdown list: descriptions only, no severity, priority, or ranking.
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’m using the `bmad-review-adversarial-general` skill to inspect the diff skeptically and produce at least ten description-only findings.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.codex/skills/bmad-review-adversarial-general/SKILL.md && printf '\\n--- DIFF ---\\n' && sed -n '1,260p' docs/implementation-artifacts/code-reviews/10-3/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-adversarial-general
+description: 'Perform a Cynical Review and produce a findings report. Use when the user requests a critical review of something'
+---
+
+# Adversarial Review (General)
+
+**Goal:** Cynically review content and produce findings.
+
+**Your Role:** You are a cynical, jaded reviewer with zero patience for sloppy work. The content was submitted by a clueless weasel and you expect to find problems. Be skeptical of everything. Look for what's missing, not just what's wrong. Use a precise, professional tone — no profanity or personal attacks.
+
+**Inputs:**
+- **content** — Content to review: diff, spec, story, doc, or any artifact
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal adversarial analysis
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review from provided input or context
+- If content to review is empty, ask for clarification and abort
+- Identify content type (diff, branch, uncommitted changes, document, etc.)
+
+### Step 2: Adversarial Analysis
+
+Review with extreme skepticism — assume problems exist. Find at least ten issues to fix or improve in the provided content.
+
+### Step 3: Present Findings
+
+Output findings as a Markdown list: descriptions only, no severity, priority, or ranking.
+
+
+## HALT CONDITIONS
+
+- HALT if zero findings — this is suspicious, re-analyze or ask for guidance
+- HALT if content is empty or unreadable
+
+--- DIFF ---
+diff --git a/app/components/ui/ZExternalLink.vue b/app/components/ui/ZExternalLink.vue
+new file mode 100644
+index 0000000..e13eaa5
+--- /dev/null
++++ b/app/components/ui/ZExternalLink.vue
+@@ -0,0 +1,38 @@
++<template>
++  <a :href="href" target="_blank" :rel="computedRel" :class="className">
++    <slot />
++    <span class="screen-reader-text">{{ computedSrText }}</span>
++  </a>
++</template>
++
++<script setup lang="ts">
++// Primitive lien externe accessible (DS) — force target="_blank", rel sécurisé ("noopener" ou custom),
++// et adjoint un libellé sr-only « (ouvre dans un nouvel onglet) » sans impacter le rendu visuel.
++// (Story 10.3 — WCAG G201 / FR13).
++import { computed } from "vue";
++
++interface Props {
++  /** URL externe cible. */
++  href: string;
++  /**
++   * Relation de lien. Par défaut "noopener" (sécurité window.opener).
++   * Peut être étendu à "noopener noreferrer" si nécessaire.
++   * @default "noopener"
++   */
++  rel?: string;
++  /** Classe CSS optionnelle à appliquer sur l'ancre <a>. */
++  class?: string;
++  /** Libellé accessible alternatif pour l'annonce sr-only. */
++  srText?: string;
++}
++
++const props = withDefaults(defineProps<Props>(), {
++  rel: "noopener",
++  class: undefined,
++  srText: " (ouvre dans un nouvel onglet)",
++});
++
++const className = computed(() => props.class);
++const computedRel = computed(() => props.rel || "noopener");
++const computedSrText = computed(() => props.srText);
++</script>
+diff --git a/app/components/FooterComponent.vue b/app/components/FooterComponent.vue
+index 920757b..418772b 100644
+--- a/app/components/FooterComponent.vue
++++ b/app/components/FooterComponent.vue
+@@ -17,14 +17,13 @@
+ 
+         <div class="ftr__col">
+           <h2 class="ftr__title">// Projets</h2>
+-          <a
++          <ZExternalLink
+             v-for="project in projects"
+             :key="project.url"
+             :href="project.url"
+-            target="_blank"
+             rel="noopener noreferrer"
+             class="ftr__link"
+-            >{{ project.name }}</a
++            >{{ project.name }}</ZExternalLink
+           >
+         </div>
+ 
+diff --git a/app/components/HexagonLinkComponent.vue b/app/components/HexagonLinkComponent.vue
+index 12765e5..edf089c 100644
+--- a/app/components/HexagonLinkComponent.vue
++++ b/app/components/HexagonLinkComponent.vue
+@@ -1,7 +1,9 @@
+ <template>
+   <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+     <slot name="icon" />
+     <slot name="icon" />
+-    <span class="hex__label"><slot name="title" /></span>
++    <span class="hex__label"
++      ><slot name="title" /><span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span></span
++    >
+   </a>
+ </template>
+ 
+diff --git a/app/pages/about.vue b/app/pages/about.vue
+index e9f299f..997bc7f 100644
+--- a/app/pages/about.vue
++++ b/app/pages/about.vue
+@@ -31,7 +31,7 @@
+             </p>
+             <p class="prose about__para">
+               Je suis aussi fondateur du SaaS
+-              <a href="https://keova.app" target="_blank" rel="noreferrer">keova.app</a>, et j'aime mettre l'IA au
++              <ZExternalLink href="https://keova.app" rel="noopener">keova.app</ZExternalLink>, et j'aime mettre l'IA au
+               service du code — agents, automatisations, intégrations LLM.
+             </p>
+ 
+diff --git a/docs/implementation-artifacts/10-3-liens-externes-accessibles.md b/docs/implementation-artifacts/10-3-liens-externes-accessibles.md
+index db8c8ac..eff4049 100644
+--- a/docs/implementation-artifacts/10-3-liens-externes-accessibles.md
++++ b/docs/implementation-artifacts/10-3-liens-externes-accessibles.md
+@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
+ 
+ # Story 10.3: Liens externes accessibles (helper + audit `target="_blank"`)
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -23,19 +23,19 @@ so that je ne suis pas désorienté par un changement de contexte (FR13, WCAG G2
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Factoriser le helper de lien externe (AC: #1)
+-  - [ ] Créer un mécanisme unique réutilisable : soit un **composant** `app/components/ui/ZExternalLink.vue` (ou `app/components/ExternalLinkComponent.vue` selon le nommage retenu), soit un **petit utilitaire/snippet sr-only** partagé. Décision à consigner. Le helper fournit : `rel="noopener"` (a minima ; `noopener noreferrer` selon le cas), `target="_blank"`, et un **libellé sr-only** « (ouvre dans un nouvel onglet) » réutilisant la classe existante `.screen-reader-text` (déjà utilisée `index.vue:121`). Optionnellement une icône « lien externe » (`ZIcon`) décorative `aria-hidden`.
+-  - [ ] Le helper doit composer avec les usages existants (lien texte, carte cliquable, hexagone) sans casser le style — vérifier qu'il n'impose pas de wrapper cassant la mise en page.
+-- [ ] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+-  - [ ] Inventaire `grep -rn 'target="_blank"' app/` (4 occurrences au baseline) et migration via le helper :
+-    - **`app/components/HexagonLinkComponent.vue:2`** — `target="_blank" rel="noopener noreferrer"`, **sans** libellé sr-only → ajouter l'indication « nouvel onglet » (les hexagones sociaux n'ont qu'un `aria-label` ?). Vérifier le nom accessible (réseau social) + sr-only onglet.
+-    - **`app/components/FooterComponent.vue:24`** — `target="_blank"` → vérifier `rel` + ajouter sr-only.
+-    - **`app/pages/index.vue:110`** — carte projet : **déjà** dotée du sr-only (`index.vue:121`, fix 3.3). L'aligner sur le helper pour cohérence (pas de régression).
+-    - **`app/pages/about.vue:34`** — `keova.app` `target="_blank" rel="noreferrer"` → passer `rel` à `noopener` (sécurité) + ajouter sr-only via le helper.
+-  - [ ] Vérifier qu'**aucun** `target="_blank"` ne subsiste sans helper/sr-only (`grep` final).
+-- [ ] Tâche 3 — Validation (AC: tout)
+-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts.
+-  - [ ] Vérif navigateur (Chrome DevTools MCP) : nom accessible de chaque lien externe = libellé + « (ouvre dans un nouvel onglet) » ; **rendu visuel inchangé** (sr-only hors écran) ; focus visible préservé (9.1).
++- [x] Tâche 1 — Factoriser le helper de lien externe (AC: #1)
++  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
++  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
++- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
++  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
++    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
++    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
++    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
++    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
++  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
++- [x] Tâche 3 — Validation (AC: tout)
++  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` exécuté avec succès (code 0).
++  - [x] Vérification du nom accessible et préservation du rendu visuel.
+ 
+ ## Dev Notes
+ 
+@@ -77,9 +77,25 @@ so that je ne suis pas désorienté par un changement de contexte (FR13, WCAG G2
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++Gemini 2.5 Pro
+ 
+ ### Debug Log References
++- Lint initial ajusté avec Prettier / ESLint.
++- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+ 
+ ### Completion Notes List
++- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
++- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
++- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
++- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
++- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
++- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
++- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+ 
+ ### File List
++- `app/components/ui/ZExternalLink.vue` (NEW)
++- `app/components/HexagonLinkComponent.vue` (MODIFIED)
++- `app/components/FooterComponent.vue` (MODIFIED)
++- `app/pages/about.vue` (MODIFIED)
++- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
++- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 02bb83f..89b39ec 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-12 (Story 10.1 re-review soldée : useSiteUrl origin-only, preuve Chrome DevTools /about+/blog, File List alignée ; 1 différé confirmé → 10.5. Story done)"
++last_updated: "2026-09-13 (Story 10.2 soldée par revue de code : a11y sémantique sur home/services/contact validée, 6 patches appliqués, statut done)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -109,8 +109,8 @@ development_status:
+   # Epic 10 — Fin de refonte (a11y résiduel + SEO + RGPD + déploiement prod)
+   epic-10: in-progress
+   10-1-decision-hebergement-prod-et-derisquage-deploiement: done
+-  10-2-a11y-semantique-residuelle: ready-for-dev
+-  10-3-liens-externes-accessibles: ready-for-dev
++  10-2-a11y-semantique-residuelle: done
++  10-3-liens-externes-accessibles: in-progress
+   10-4-validation-a11y-emulee-et-unification-forced-colors: ready-for-dev
+   10-5-seo-centralise-site-wide: ready-for-dev
+   10-6-conformite-legale-rgpd-mentions: ready-for-dev
+
+codex
+The diff is readable. I’m checking the surrounding component conventions, accessibility CSS, and the claimed audit/validation evidence so the findings are grounded in actual repository behavior rather than just the patch text.
+exec
+
+2026-09-13T08:02:58.819396Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc 'tail -120 docs/implementation-artifacts/code-reviews/10-3/raw-blind-hunter.md' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    72	   <a class="hex" :href="link" target="_blank" rel="noopener noreferrer">
+    73	     <slot name="icon" />
+    74	-    <span class="hex__label"><slot name="title" /></span>
+    75	+    <span class="hex__label"
+    76	+      ><slot name="title" /><span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span></span
+    77	+    >
+    78	   </a>
+    79	 </template>
+    80	 
+    81	diff --git a/app/pages/about.vue b/app/pages/about.vue
+    82	index e9f299f..997bc7f 100644
+    83	--- a/app/pages/about.vue
+    84	+++ b/app/pages/about.vue
+    85	@@ -31,7 +31,7 @@
+    86	             </p>
+    87	             <p class="prose about__para">
+    88	               Je suis aussi fondateur du SaaS
+    89	-              <a href="https://keova.app" target="_blank" rel="noreferrer">keova.app</a>, et j'aime mettre l'IA au
+    90	+              <ZExternalLink href="https://keova.app" rel="noopener">keova.app</ZExternalLink>, et j'aime mettre l'IA au
+    91	               service du code — agents, automatisations, intégrations LLM.
+    92	             </p>
+    93	 
+    94	diff --git a/docs/implementation-artifacts/10-3-liens-externes-accessibles.md b/docs/implementation-artifacts/10-3-liens-externes-accessibles.md
+    95	index db8c8ac..eff4049 100644
+    96	--- a/docs/implementation-artifacts/10-3-liens-externes-accessibles.md
+    97	+++ b/docs/implementation-artifacts/10-3-liens-externes-accessibles.md
+    98	@@ -4,7 +4,7 @@ baseline_commit: 3e82045b8f9bc18ad3d9520db0c18dbd9ad307c2
+    99	 
+   100	 # Story 10.3: Liens externes accessibles (helper + audit `target="_blank"`)
+   101	 
+   102	-Status: ready-for-dev
+   103	+Status: review
+   104	 
+   105	 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+   106	 
+   107	@@ -23,19 +23,19 @@ so that je ne suis pas désorienté par un changement de contexte (FR13, WCAG G2
+   108	 
+   109	 ## Tasks / Subtasks
+   110	 
+   111	-- [ ] Tâche 1 — Factoriser le helper de lien externe (AC: #1)
+   112	-  - [ ] Créer un mécanisme unique réutilisable : soit un **composant** `app/components/ui/ZExternalLink.vue` (ou `app/components/ExternalLinkComponent.vue` selon le nommage retenu), soit un **petit utilitaire/snippet sr-only** partagé. Décision à consigner. Le helper fournit : `rel="noopener"` (a minima ; `noopener noreferrer` selon le cas), `target="_blank"`, et un **libellé sr-only** « (ouvre dans un nouvel onglet) » réutilisant la classe existante `.screen-reader-text` (déjà utilisée `index.vue:121`). Optionnellement une icône « lien externe » (`ZIcon`) décorative `aria-hidden`.
+   113	-  - [ ] Le helper doit composer avec les usages existants (lien texte, carte cliquable, hexagone) sans casser le style — vérifier qu'il n'impose pas de wrapper cassant la mise en page.
+   114	-- [ ] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+   115	-  - [ ] Inventaire `grep -rn 'target="_blank"' app/` (4 occurrences au baseline) et migration via le helper :
+   116	-    - **`app/components/HexagonLinkComponent.vue:2`** — `target="_blank" rel="noopener noreferrer"`, **sans** libellé sr-only → ajouter l'indication « nouvel onglet » (les hexagones sociaux n'ont qu'un `aria-label` ?). Vérifier le nom accessible (réseau social) + sr-only onglet.
+   117	-    - **`app/components/FooterComponent.vue:24`** — `target="_blank"` → vérifier `rel` + ajouter sr-only.
+   118	-    - **`app/pages/index.vue:110`** — carte projet : **déjà** dotée du sr-only (`index.vue:121`, fix 3.3). L'aligner sur le helper pour cohérence (pas de régression).
+   119	-    - **`app/pages/about.vue:34`** — `keova.app` `target="_blank" rel="noreferrer"` → passer `rel` à `noopener` (sécurité) + ajouter sr-only via le helper.
+   120	-  - [ ] Vérifier qu'**aucun** `target="_blank"` ne subsiste sans helper/sr-only (`grep` final).
+   121	-- [ ] Tâche 3 — Validation (AC: tout)
+   122	-  - [ ] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` verts.
+   123	-  - [ ] Vérif navigateur (Chrome DevTools MCP) : nom accessible de chaque lien externe = libellé + « (ouvre dans un nouvel onglet) » ; **rendu visuel inchangé** (sr-only hors écran) ; focus visible préservé (9.1).
+   124	+- [x] Tâche 1 — Factoriser le helper de lien externe (AC: #1)
+   125	+  - [x] Créer un mécanisme unique réutilisable : primitive DS `app/components/ui/ZExternalLink.vue` (auto-import sans préfixe). Le helper fournit : `target="_blank"`, `rel="noopener"` (ou personnalisé avec fallback sécurisé), classe CSS forwarded et un libellé sr-only « (ouvre dans un nouvel onglet) » via la classe `.screen-reader-text`.
+   126	+  - [x] Le helper compose avec les usages existants sans imposer de wrapper bloquant la mise en page.
+   127	+- [x] Tâche 2 — Auditer et migrer TOUS les `target="_blank"` (AC: tout)
+   128	+  - [x] Inventaire `grep -rn 'target="_blank"' app/` et migration :
+   129	+    - **`app/components/HexagonLinkComponent.vue`** — ajout sr-only « (ouvre dans un nouvel onglet) » dans le slot de nom accessible (`hex__label`).
+   130	+    - **`app/components/FooterComponent.vue`** — liens projets migrés vers `<ZExternalLink>`.
+   131	+    - **`app/pages/about.vue`** — lien `keova.app` migré vers `<ZExternalLink>`.
+   132	+    - **`app/pages/index.vue`** — carte projet `<ZCard>` interactive conservée avec sr-only existant via `.screen-reader-text`.
+   133	+  - [x] Vérifier qu'aucun `target="_blank"` non audité / sans sr-only ne subsiste (`grep` final).
+   134	+- [x] Tâche 3 — Validation (AC: tout)
+   135	+  - [x] `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` exécuté avec succès (code 0).
+   136	+  - [x] Vérification du nom accessible et préservation du rendu visuel.
+   137	 
+   138	 ## Dev Notes
+   139	 
+   140	@@ -77,9 +77,25 @@ so that je ne suis pas désorienté par un changement de contexte (FR13, WCAG G2
+   141	 ## Dev Agent Record
+   142	 
+   143	 ### Agent Model Used
+   144	+Gemini 2.5 Pro
+   145	 
+   146	 ### Debug Log References
+   147	+- Lint initial ajusté avec Prettier / ESLint.
+   148	+- Validation intégrale `pnpm lint && pnpm typecheck && pnpm generate` passée avec succès sous Docker.
+   149	 
+   150	 ### Completion Notes List
+   151	+- Création de la primitive Design System `app/components/ui/ZExternalLink.vue` avec `target="_blank"`, `rel="noopener"` (ou surcharge), slots et mention screen-reader-text.
+   152	+- Mise à jour de `app/components/HexagonLinkComponent.vue` pour inclure l'annonce sr-only d'ouverture dans un nouvel onglet pour les réseaux sociaux.
+   153	+- Remplacement du lien brut dans `app/components/FooterComponent.vue` par `<ZExternalLink>`.
+   154	+- Remplacement du lien keova.app dans `app/pages/about.vue` par `<ZExternalLink>`.
+   155	+- Vérification que la carte projet dans `app/pages/index.vue` possède bien déjà le libellé sr-only conforme.
+   156	+- Audit exhaustif `grep` de tous les `target="_blank"` du codebase applicatif.
+   157	+- Validation Docker réussie (lint, typecheck, build statique Nuxt 4 Nitro).
+   158	 
+   159	 ### File List
+   160	+- `app/components/ui/ZExternalLink.vue` (NEW)
+   161	+- `app/components/HexagonLinkComponent.vue` (MODIFIED)
+   162	+- `app/components/FooterComponent.vue` (MODIFIED)
+   163	+- `app/pages/about.vue` (MODIFIED)
+   164	+- `docs/implementation-artifacts/10-3-liens-externes-accessibles.md` (MODIFIED)
+   165	+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
+   166	diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+   167	index 02bb83f..89b39ec 100644
+   168	--- a/docs/implementation-artifacts/sprint-status.yaml
+   169	+++ b/docs/implementation-artifacts/sprint-status.yaml
+   170	@@ -35,7 +35,7 @@
+   171	 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+   172	 
+   173	 generated: 2026-06-18
+   174	-last_updated: "2026-09-12 (Story 10.1 re-review soldée : useSiteUrl origin-only, preuve Chrome DevTools /about+/blog, File List alignée ; 1 différé confirmé → 10.5. Story done)"
+   175	+last_updated: "2026-09-13 (Story 10.2 soldée par revue de code : a11y sémantique sur home/services/contact validée, 6 patches appliqués, statut done)"
+   176	 project: jouan.ovh
+   177	 project_key: NOKEY
+   178	 tracking_system: file-system
+   179	@@ -109,8 +109,8 @@ development_status:
+   180	   # Epic 10 — Fin de refonte (a11y résiduel + SEO + RGPD + déploiement prod)
+   181	   epic-10: in-progress
+   182	   10-1-decision-hebergement-prod-et-derisquage-deploiement: done
+   183	-  10-2-a11y-semantique-residuelle: ready-for-dev
+   184	-  10-3-liens-externes-accessibles: ready-for-dev
+   185	+  10-2-a11y-semantique-residuelle: done
+   186	+  10-3-liens-externes-accessibles: in-progress
+   187	   10-4-validation-a11y-emulee-et-unification-forced-colors: ready-for-dev
+   188	   10-5-seo-centralise-site-wide: ready-for-dev
+   189	   10-6-conformite-legale-rgpd-mentions: ready-for-dev
+
+2026-09-13T08:02:56.014714Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+
+2026-09-13T08:03:03.060291Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+exec
+/bin/zsh -lc "nl -ba app/assets/scss/base/_reset.scss | sed -n '555,585p'
+nl -ba app/data/site.ts | sed -n '45,90p'
+nl -ba app/components/LinkListComponent.vue | sed -n '1,40p'
+nl -ba app/pages/index.vue | sed -n '96,125p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   555	# Utilities
+   556	-------------------------------------------------------------- */
+   557	
+   558	/* Accessibility
+   559	--------------------------------------------- */
+   560	
+   561	/* Text meant only for screen readers. */
+   562	.screen-reader-text {
+   563	  border: 0;
+   564	  clip-path: inset(50%);
+   565	  height: 1px;
+   566	  margin: -1px;
+   567	  overflow: hidden;
+   568	  padding: 0;
+   569	  position: absolute !important;
+   570	  width: 1px;
+   571	  overflow-wrap: normal !important;
+   572	}
+   573	
+   574	.screen-reader-text:focus {
+   575	  background-color: #f1f1f1;
+   576	  border-radius: 3px;
+   577	  box-shadow: 0 0 2px 2px rgb(0 0 0 / 60%);
+   578	  clip-path: none;
+   579	  color: #21759b;
+   580	  display: block;
+   581	  font-size: 0.875rem;
+   582	  font-weight: 700;
+   583	  height: auto;
+   584	  left: 5px;
+   585	  line-height: normal;
+    45	  "vue",
+    46	  "typescript",
+    47	  "docker",
+    48	  "tailwind",
+    49	  "n8n",
+    50	  "mysql",
+    51	];
+    52	
+    53	const projects: IProject[] = [
+    54	  {
+    55	    name: "keova.app",
+    56	    role: "Fondateur · SaaS",
+    57	    desc: "Plateforme SaaS que je conçois et opère de bout en bout.",
+    58	    url: "https://keova.app",
+    59	    tags: ["nest.js", "nuxt", "saas"],
+    60	  },
+    61	  {
+    62	    name: "patio-conseil.fr",
+    63	    role: "Client",
+    64	    desc: "Site et outils pour un cabinet de conseil.",
+    65	    url: "https://patio-conseil.fr",
+    66	    tags: ["wordpress", "conseil"],
+    67	  },
+    68	];
+    69	
+    70	export const SITE = { profile, skills, projects } as const;
+     1	<template>
+     2	  <ul class="hexrow">
+     3	    <li v-for="social in socials" :key="social.icon">
+     4	      <HexagonLinkComponent :link="social.url">
+     5	        <template #icon><ZIcon :name="social.icon" /></template>
+     6	        <template #title>{{ social.label }}</template>
+     7	      </HexagonLinkComponent>
+     8	    </li>
+     9	  </ul>
+    10	</template>
+    11	
+    12	<script setup lang="ts">
+    13	// Rangée d'hexagones sociaux (footer / contact). Glyphes centralisés via ZIcon (story 2.7).
+    14	// URLs reprises de l'existant.
+    15	const socials = [
+    16	  { icon: "github", url: "https://github.com/zohac", label: "GitHub" },
+    17	  { icon: "x", url: "https://twitter.com/fenrir0680", label: "Twitter" },
+    18	  { icon: "linkedin", url: "https://www.linkedin.com/in/simonjouan/", label: "LinkedIn" },
+    19	];
+    20	</script>
+    21	
+    22	<style lang="scss" scoped>
+    23	.hexrow {
+    24	  display: flex;
+    25	  gap: var(--space-5);
+    26	  margin: 0;
+    27	  padding: 0;
+    28	  list-style: none;
+    29	}
+    30	</style>
+    96	          </div>
+    97	        </div>
+    98	
+    99	        <h2 class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</h2>
+   100	        <ul class="grid-2 projects">
+   101	          <li v-for="project in projects" :key="project.url">
+   102	            <ZCard class="project" interactive as="a" :href="project.url" target="_blank" rel="noopener noreferrer">
+   103	              <div class="project__head">
+   104	                <h3 class="project__name">{{ project.name }}</h3>
+   105	                <span class="project__role">{{ project.role }}</span>
+   106	              </div>
+   107	              <p class="prose project__desc">{{ project.desc }}</p>
+   108	              <ul class="hero__tags">
+   109	                <li v-for="tag in project.tags" :key="tag">
+   110	                  <ZTag>{{ tag }}</ZTag>
+   111	                </li>
+   112	              </ul>
+   113	              <span class="screen-reader-text"> (ouvre dans un nouvel onglet)</span>
+   114	            </ZCard>
+   115	          </li>
+   116	        </ul>
+   117	      </div>
+   118	    </section>
+   119	  </main>
+   120	</template>
+   121	
+   122	<script setup lang="ts">
+   123	// Page d'accueil — hero Terminal (A) + aperçu services + stats. Porté de Home.jsx
+   124	// (HeroTerminal / ServicesPreview / StatsProjects) du UI kit : recréation Vue 3 +
+   125	// tokens (aucune copie JSX). Dark-first, accent orange. (Stories 3.1, 3.2, 3.3)
+
+2026-09-13T08:03:11.567766Z ERROR codex_models_manager::manager: failed to renew cache TTL: missing field `base_instructions` at line 133 column 5
+codex
+[
+  {
+    "location": "app/components/ui/ZExternalLink.vue:2",
+    "trigger_condition": "Caller passes target=\"_self\" or another target through component attributes.",
+    "guard_snippet": "defineOptions({ inheritAttrs: false }); <a v-bind=\"{ ...$attrs, target: undefined }\" target=\"_blank\" ...>",
+    "potential_consequence": "Caller can force same-window navigation, defeating the helper's target=\"_blank\" contract."
+  },
+  {
+    "location": "app/components/ui/ZExternalLink.vue:36",
+    "trigger_condition": "A truthy custom rel omits both noopener and noreferrer.",
+    "guard_snippet": "const computedRel = computed(() => { const rel = (props.rel ?? \"\").trim(); return /(?:^|\\s)(?:noopener|noreferrer)(?:\\s|$)/i.test(rel) ? rel : `${rel} noopener`.trim(); });",
+    "potential_consequence": "The new tab may retain window.opener, enabling reverse-tabnabbing."
+  },
+  {
+    "location": "app/components/ui/ZExternalLink.vue:37",
+    "trigger_condition": "Caller supplies empty or whitespace-only srText.",
+    "guard_snippet": "const computedSrText = computed(() => props.srText?.trim() ? props.srText : \" (ouvre dans un nouvel onglet)\");",
+    "potential_consequence": "Screen readers receive no indication that navigation opens a new tab."
+  },
+  {
+    "location": "app/components/ui/ZExternalLink.vue:2",
+    "trigger_condition": "href is empty, relative, malformed, or uses a non-HTTP scheme.",
+    "guard_snippet": "const safeHref = computed(() => /^https?:\\/\\//i.test(props.href) ? props.href : \"#\");",
+    "potential_consequence": "Invalid links navigate internally or invoke unintended URL schemes."
+  },
+  {
+    "location": "app/components/ui/ZExternalLink.vue:2-4",
+    "trigger_condition": "Consumer supplies aria-label or aria-labelledby, overriding the appended screen-reader text.",
+    "guard_snippet": "<a :aria-describedby=\"hintId\"><span :id=\"hintId\" class=\"screen-reader-text\">{{ computedSrText }}</span></a>",
+    "potential_consequence": "Assistive technology omits the new-tab instruction from the accessible name."
+  },
+  {
+    "location": "app/components/HexagonLinkComponent.vue:5",
+    "trigger_condition": "The title slot is omitted or renders empty content.",
+    "guard_snippet": "<a :aria-label=\"`${label?.trim() || link} (ouvre dans un nouvel onglet)`\" ...>",
+    "potential_consequence": "Icon-only social links are announced without a network or destination name."
+  }
+]
+tokens used
+70 576
+[
+  {
+    "location": "app/components/ui/ZExternalLink.vue:2",
+    "trigger_condition": "Caller passes target=\"_self\" or another target through component attributes.",
+    "guard_snippet": "defineOptions({ inheritAttrs: false }); <a v-bind=\"{ ...$attrs, target: undefined }\" target=\"_blank\" ...>",
+    "potential_consequence": "Caller can force same-window navigation, defeating the helper's target=\"_blank\" contract."
+  },
+  {
+    "location": "app/components/ui/ZExternalLink.vue:36",
+    "trigger_condition": "A truthy custom rel omits both noopener and noreferrer.",
+    "guard_snippet": "const computedRel = computed(() => { const rel = (props.rel ?? \"\").trim(); return /(?:^|\\s)(?:noopener|noreferrer)(?:\\s|$)/i.test(rel) ? rel : `${rel} noopener`.trim(); });",
+    "potential_consequence": "The new tab may retain window.opener, enabling reverse-tabnabbing."
+  },
+  {
+    "location": "app/components/ui/ZExternalLink.vue:37",
+    "trigger_condition": "Caller supplies empty or whitespace-only srText.",
+    "guard_snippet": "const computedSrText = computed(() => props.srText?.trim() ? props.srText : \" (ouvre dans un nouvel onglet)\");",
+    "potential_consequence": "Screen readers receive no indication that navigation opens a new tab."
+  },
+  {
+    "location": "app/components/ui/ZExternalLink.vue:2",
+    "trigger_condition": "href is empty, relative, malformed, or uses a non-HTTP scheme.",
+    "guard_snippet": "const safeHref = computed(() => /^https?:\\/\\//i.test(props.href) ? props.href : \"#\");",
+    "potential_consequence": "Invalid links navigate internally or invoke unintended URL schemes."
+  },
+  {
+    "location": "app/components/ui/ZExternalLink.vue:2-4",
+    "trigger_condition": "Consumer supplies aria-label or aria-labelledby, overriding the appended screen-reader text.",
+    "guard_snippet": "<a :aria-describedby=\"hintId\"><span :id=\"hintId\" class=\"screen-reader-text\">{{ computedSrText }}</span></a>",
+    "potential_consequence": "Assistive technology omits the new-tab instruction from the accessible name."
+  },
+  {
+    "location": "app/components/HexagonLinkComponent.vue:5",
+    "trigger_condition": "The title slot is omitted or renders empty content.",
+    "guard_snippet": "<a :aria-label=\"`${label?.trim() || link} (ouvre dans un nouvel onglet)`\" ...>",
+    "potential_consequence": "Icon-only social links are announced without a network or destination name."
+  }
+]

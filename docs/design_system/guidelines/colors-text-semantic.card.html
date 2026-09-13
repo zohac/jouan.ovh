@@ -1,0 +1,36 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Text & Semantic" subtitle="Warm ink ramp + success / warning / danger / info" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); font-family: var(--font-mono);
+    padding: var(--space-6); display: flex; gap: var(--space-8); }
+  .col { flex: 1; }
+  .ink { font-size: var(--fs-lg); margin-bottom: var(--space-1); }
+  .lbl { font-size: var(--fs-xs); color: var(--text-faint); }
+  .sem { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);
+    font-size: var(--fs-sm); color: var(--text-body); }
+  .sd { width: 12px; height: 12px; border-radius: var(--radius-circle); }
+  .eyebrow { font-size: var(--fs-xs); letter-spacing: var(--ls-wider); text-transform: uppercase;
+    color: var(--text-muted); margin: 0 0 var(--space-3); }
+</style>
+</head>
+<body>
+  <div class="col">
+    <p class="eyebrow">// Text</p>
+    <div class="ink" style="color:var(--text-strong)">Strong heading</div><div class="lbl">--text-strong</div>
+    <div class="ink" style="color:var(--text-body)">Body copy</div><div class="lbl">--text-body</div>
+    <div class="ink" style="color:var(--text-muted)">Muted caption</div><div class="lbl">--text-muted</div>
+    <div class="ink" style="color:var(--text-faint)">Faint / disabled</div><div class="lbl">--text-faint</div>
+  </div>
+  <div class="col">
+    <p class="eyebrow">// Semantic</p>
+    <div class="sem"><span class="sd" style="background:var(--success)"></span>success</div>
+    <div class="sem"><span class="sd" style="background:var(--warning)"></span>warning</div>
+    <div class="sem"><span class="sd" style="background:var(--danger)"></span>danger</div>
+    <div class="sem"><span class="sd" style="background:var(--info)"></span>info</div>
+  </div>
+</body>
+</html>

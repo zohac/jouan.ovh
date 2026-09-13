@@ -1,0 +1,53 @@
+<!-- @dsCard group="Components" viewport="700x220" name="Button" subtitle="Primary, secondary, ghost, terminal, danger — sizes & states" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); color: var(--text-body);
+    font-family: var(--font-mono); padding: var(--space-6); }
+  .sec { margin-bottom: var(--space-5); }
+  .lbl { font-size: var(--fs-xs); letter-spacing: var(--ls-wider); text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: var(--space-3); }
+  .row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+const { Button } = window.JouanOvhDesignSystem_c7aa28;
+const Sec = ({label, children}) => (
+  <div className="sec"><div className="lbl">{label}</div>{children}</div>
+);
+function Demo() {
+  return (
+    <div>
+      <Sec label="// variants">
+        <div className="row">
+          <Button variant="primary">Démarrer un projet</Button>
+          <Button variant="secondary">En savoir plus</Button>
+          <Button variant="ghost">Annuler</Button>
+          <Button variant="terminal">./run</Button>
+          <Button variant="danger">Supprimer</Button>
+          <Button variant="primary" disabled>Indisponible</Button>
+        </div>
+      </Sec>
+      <Sec label="// sizes">
+        <div className="row">
+          <Button size="sm">Small</Button>
+          <Button size="md">Medium</Button>
+          <Button size="lg">Large</Button>
+        </div>
+      </Sec>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script>
+</body>
+</html>

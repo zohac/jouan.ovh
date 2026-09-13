@@ -1,0 +1,28 @@
+{
+  "extends": "stylelint-config-standard-scss",
+  "ignoreFiles": ["node_modules/**", ".nuxt/**", ".output/**", "docs/**"],
+  "rules": {
+    "scss/dollar-variable-pattern": null,
+    "scss/comment-no-empty": null,
+    "keyframes-name-pattern": null,
+    "no-empty-source": null,
+    "declaration-block-no-duplicate-properties": [
+      true,
+      { "ignore": ["consecutive-duplicates-with-different-values"], "severity": "warning" }
+    ],
+    "scss/no-global-function-names": [true, { "severity": "warning" }],
+    "property-no-deprecated": [true, { "severity": "warning" }],
+    "declaration-property-value-keyword-no-deprecated": [true, { "severity": "warning" }],
+    "font-family-no-duplicate-names": [true, { "severity": "warning" }],
+    "selector-pseudo-class-no-unknown": [
+      true,
+      { "ignorePseudoClasses": ["deep", "slotted", "global"] }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.vue"],
+      "customSyntax": "postcss-html"
+    }
+  ]
+}
