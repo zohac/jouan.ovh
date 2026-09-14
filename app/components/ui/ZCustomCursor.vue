@@ -35,7 +35,9 @@ let mouseY = 0;
 let currentRingX = 0;
 let currentRingY = 0;
 let rafId: number | null = null;
+let hoverMediaQuery: MediaQueryList | null = null;
 let motionMediaQuery: MediaQueryList | null = null;
+let listenersAttached = false;
 
 function updateAnimationLoop() {
   const dx = mouseX - currentRingX;
@@ -85,51 +87,62 @@ function handlePointerLeave() {
   isHot.value = false;
 }
 
-function handleMotionChange(e: MediaQueryListEvent) {
-  if (e.matches) {
+function attachListeners() {
+  if (listenersAttached || !import.meta.client) return;
+  window.addEventListener("pointermove", handlePointerMove, { passive: true });
+  document.addEventListener("pointerover", handlePointerOver, { passive: true });
+  document.documentElement.addEventListener("pointerleave", handlePointerLeave);
+  listenersAttached = true;
+}
+
+function detachListeners() {
+  if (!listenersAttached || !import.meta.client) return;
+  window.removeEventListener("pointermove", handlePointerMove);
+  document.removeEventListener("pointerover", handlePointerOver);
+  document.documentElement.removeEventListener("pointerleave", handlePointerLeave);
+  listenersAttached = false;
+}
+
+function updateCursorState() {
+  const hasHover = hoverMediaQuery?.matches ?? false;
+  const isReduced = motionMediaQuery?.matches ?? false;
+
+  if (hasHover && !isReduced) {
+    isEnabled.value = true;
+    attachListeners();
+  } else {
     isEnabled.value = false;
     isVisible.value = false;
     isHot.value = false;
+    detachListeners();
     if (rafId !== null) {
       cancelAnimationFrame(rafId);
       rafId = null;
     }
-  } else {
-    const hasHover = window.matchMedia("(hover: hover)").matches;
-    if (hasHover) {
-      isEnabled.value = true;
-    }
   }
+}
+
+function handleMediaQueryChange() {
+  updateCursorState();
 }
 
 onMounted(() => {
   if (!import.meta.client) return;
 
-  const hasHover = window.matchMedia("(hover: hover)").matches;
+  hoverMediaQuery = window.matchMedia("(hover: hover)");
   motionMediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  if (!hasHover || motionMediaQuery.matches) {
-    if (motionMediaQuery) {
-      motionMediaQuery.addEventListener("change", handleMotionChange);
-    }
-    return;
-  }
+  hoverMediaQuery.addEventListener("change", handleMediaQueryChange);
+  motionMediaQuery.addEventListener("change", handleMediaQueryChange);
 
-  isEnabled.value = true;
-  window.addEventListener("pointermove", handlePointerMove, { passive: true });
-  document.addEventListener("pointerover", handlePointerOver, { passive: true });
-  document.documentElement.addEventListener("pointerleave", handlePointerLeave);
-  motionMediaQuery.addEventListener("change", handleMotionChange);
+  updateCursorState();
 });
 
 onUnmounted(() => {
   if (!import.meta.client) return;
-  window.removeEventListener("pointermove", handlePointerMove);
-  document.removeEventListener("pointerover", handlePointerOver);
-  document.documentElement.removeEventListener("pointerleave", handlePointerLeave);
-  if (motionMediaQuery) {
-    motionMediaQuery.removeEventListener("change", handleMotionChange);
-  }
+  detachListeners();
+  hoverMediaQuery?.removeEventListener("change", handleMediaQueryChange);
+  motionMediaQuery?.removeEventListener("change", handleMediaQueryChange);
   if (rafId !== null) {
     cancelAnimationFrame(rafId);
     rafId = null;

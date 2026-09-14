@@ -148,12 +148,17 @@ const buttonType = computed(() => {
   return typeof attrs.type === "string" ? (attrs.type as "button" | "submit" | "reset") : "button";
 });
 
-// Transmet tous les attributs au root polymorphe en excluant `type` pour les non-boutons.
+// Transmet tous les attributs au root polymorphe en excluant `type` pour les non-boutons
+// et en retirant `href` si l'élément non natif est désactivé.
 const passthroughAttrs = computed(() => {
   if (isNativeButton.value) {
     return attrs;
   }
   const { type: _discardedType, ...rest } = attrs;
+  if (props.disabled) {
+    const { href: _discardedHref, ...withoutHref } = rest;
+    return withoutHref;
+  }
   return rest;
 });
 
@@ -199,8 +204,10 @@ function blockDisabledActivation(event: Event) {
     box-shadow var(--dur-fast) var(--ease-standard),
     transform var(--dur-fast) var(--ease-standard);
 
-  &:hover {
-    --_ty: -1px;
+  @media (hover: hover) {
+    &:hover {
+      --_ty: -1px;
+    }
   }
 
   &:active {

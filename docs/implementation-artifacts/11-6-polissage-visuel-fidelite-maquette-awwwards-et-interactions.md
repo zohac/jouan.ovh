@@ -129,6 +129,24 @@ so that l'expérience soit véritablement au niveau d'un portfolio primé Awwwar
 - [x] [Review][Patch] Typographie Hero Title conforme à l'AC1 clamp(2.6rem, 6.4vw, 5.2rem) et line-height: 0.98 [app/pages/index.vue:478]
 - [x] [Review][Patch] Intégration du micro-tilt 3D sur les éléments de la liste des projets phares [app/pages/index.vue:245-280, 580-620]
 
+### Review Findings — Epic 11 Consolidated Review
+
+- [x] [Review][Decision] Arbitrage Shader WebGL Flow Chrome vs pur CSS — Option 1A validée (shader conservé, fallback CSS, specs alignées)
+- [x] [Review][Decision] Harmonisation de la stack : TestCafé vs Cypress — Option 2A validée (TestCafé conservé pour alignement Malt)
+- [x] [Review][Decision] Titre Hero H1 — Option 3A validée (H1 épuré conservé, surtitre spécialisé)
+- [x] [Review][Patch] Nettoyer la référence de listener resize dans `HomeAtmosComponent.vue` [app/components/home/HomeAtmosComponent.vue:287]
+- [x] [Review][Patch] Gérer la mise en veille de l'onglet via `visibilitychange` dans `HomeAtmosComponent.vue` [app/components/home/HomeAtmosComponent.vue:292]
+- [x] [Review][Patch] Gérer l'événement `webglcontextlost` et bascule fallback dans `HomeAtmosComponent.vue` [app/components/home/HomeAtmosComponent.vue:281]
+- [x] [Review][Patch] Remplacer les couleurs hexadécimales en dur du fallback par des tokens CSS [app/components/home/HomeAtmosComponent.vue:345]
+- [x] [Review][Patch] Sécuriser le cycle de vie des écouteurs hover et reduced-motion dans `ZCustomCursor.vue` [app/components/ui/ZCustomCursor.vue:105]
+- [x] [Review][Patch] Encapsuler le hover CSS de `ZButton.vue` sous `@media (hover: hover)` et sécuriser les liens désactivés [app/components/ui/ZButton.vue:202]
+- [x] [Review][Patch] Supprimer l'URL Keova hardcodée en fallback dans `about.vue` pour un DRY strict [app/pages/about.vue:105]
+- [x] [Review][Patch] Dynamiser la liste des projets dans `HomeHeroTerminal.vue` depuis `SITE.projects` et sécuriser l'échappement dans `Projets.ts` [app/components/home/HomeHeroTerminal.vue:106]
+- [x] [Review][Patch] Sécuriser le parsing de date contre les valeurs invalides dans `formatDate.ts` [app/utils/formatDate.ts:12]
+- [x] [Review][Patch] Gérer la bascule dynamique de `prefers-reduced-motion` dans `HomeBootOverlay.vue` [app/components/home/HomeBootOverlay.vue:118]
+- [x] [Review][Defer] Carte vedette asymétrique pour le premier article du blog sur la Home [app/pages/index.vue:885] — deferred, pre-existing
+- [x] [Review][Defer] Normalisation fine de l'adresse Schema.org (`addressLocality`/`addressCountry`) [app/composables/usePageSeo.ts] — deferred, pre-existing
+
 ## Dev Notes
 
 - **Atmosphère & Hero :** La maquette [`Home - Awwwards.html`](file:///Users/simon/dev/jouan.ovh/docs/design_system/ui_kits/jouan-site/Home%20-%20Awwwards.html) repose sur un conteneur d'atmosphère `.atmos` en `position: fixed; inset: 0; z-index: 0;` avec 3 auroras (`.aurora--auberg`, `.aurora--orange`, `.aurora--red`), la grille de points (`.grid-dots`), les scanlines CRT et la vignette. Le Hero est désormais **entièrement transparent** afin de flotter au-dessus de cette atmosphère sans délimitation carrée ou coupure de couleur.

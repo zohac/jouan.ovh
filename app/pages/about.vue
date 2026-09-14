@@ -102,8 +102,8 @@ import { SITE } from "~/data/site";
 const profile = SITE.profile;
 const skills = SITE.skills;
 const city = profile.city.split(",")[0]?.trim() ?? profile.city;
-const keovaProject = SITE.projects.find((p) => p.url?.includes("keova"));
-const keovaUrl = keovaProject?.url ?? "https://keova.app";
+const keovaProject = SITE.projects.find((p) => p.name.toLowerCase().includes("keova") || p.url?.includes("keova"));
+const keovaUrl = keovaProject?.url ?? "";
 const keovaHostname = keovaUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
 
 // Expériences (de la plus récente à la plus ancienne).

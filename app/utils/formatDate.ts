@@ -10,5 +10,9 @@ const frLongDate = new Intl.DateTimeFormat("fr-FR", {
 });
 
 export function formatDate(iso: string): string {
-  return frLongDate.format(new Date(iso));
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return iso;
+  }
+  return frLongDate.format(date);
 }

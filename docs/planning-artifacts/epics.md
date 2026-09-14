@@ -717,7 +717,7 @@ So that j'entre immédiatement dans l'univers technique haut de gamme du site sa
 
 **Given** le projet en production sur `main` et la nécessité de développer de manière isolée sans régresser la prod
 **When** on crée et checkout la branche dédiée `feat/home-awwwards` issue de `develop`, qu'on met à jour `app/data/site.ts` avec le profil Malt (`SITE.profile` rôle « Développeur Full Stack TypeScript — Nuxt / NestJS », ville « Rouen, France » ; `SITE.skills` stack moderne ciblée ; `SITE.projects` avec Keova, TryOn et Nodium), et qu'on intègre le conteneur atmosphérique `.atmos` et le micro-curseur desktop progressif
-**Then** l'arrière-plan anime 3 auroras floutées (aubergine, orange, rouge) avec texture scanlines CRT et grille de points en pur CSS fluide, neutralisées sous `prefers-reduced-motion: reduce`
+**Then** l'arrière-plan anime un dégradé fluide immersif (shader WebGL Flow Chrome accéléré avec déformation fbm, ou repli automatique en pur CSS) avec grille de points et vignette, neutralisé sous `prefers-reduced-motion: reduce`
 **And** le micro-curseur personnalisé (`dot` + `ring`) réagit aux éléments interactifs (`data-hot`), est masqué sous `@media (hover: none)` et sous reduced motion, sans altérer le curseur natif en cas d'erreur JS
 **And** gate Docker verte (`pnpm lint`, `pnpm typecheck`, `pnpm generate`)
 
@@ -748,7 +748,7 @@ So that j'identifie clairement les compétences techniques et accède au détail
 
 **Acceptance Criteria:**
 
-**Given** la stack moderne définie dans `SITE.skills` (TypeScript, Nuxt 4, Vue.js, NestJS, Node.js, PostgreSQL, TypeORM, Stripe Connect, Cypress, Docker, REST API, Vitest)
+**Given** la stack moderne définie dans `SITE.skills` (TypeScript, Nuxt 4, Vue.js, NestJS, Node.js, PostgreSQL, TypeORM, Stripe Connect, TestCafé, Docker, REST API, Vitest)
 **When** on intègre le composant `StackMarquee` et la section des 3 services phares
 **Then** le bandeau défile de manière fluide et infinie en CSS pur, se met en pause au survol (`:hover`) et s'arrête complètement sans débordement horizontal sous `prefers-reduced-motion: reduce`
 **And** la vitrine expose 3 cartes structurées `ZCard` (1. Création d'applications web & SaaS, 2. Développement Full Stack TypeScript, 3. Évolution & architecture applicative) avec numérotation terminale, proposition de valeur claire et tags technologiques

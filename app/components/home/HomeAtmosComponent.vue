@@ -255,8 +255,49 @@ function resizeCanvas(canvas: HTMLCanvasElement) {
   }
 }
 
+let startT = 0;
+
+function loop(now: number) {
+  if (!gl) {
+    return;
+  }
+  if (isVisible) {
+    // Vitesse très douce et vaporeuse (0.35x de la vitesse par défaut)
+    const elapsed = (now - startT) * 0.00035;
+    gl.uniform1f(uniforms.u_time ?? null, elapsed);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  if (!isReducedMotion && isVisible) {
+    animId = requestAnimationFrame(loop);
+  } else {
+    animId = null;
+  }
+}
+
+function onResize() {
+  const canvas = canvasRef.value;
+  if (canvas) {
+    resizeCanvas(canvas);
+  }
+}
+
+function onContextLost(e: Event) {
+  e.preventDefault();
+  if (animId !== null) {
+    cancelAnimationFrame(animId);
+    animId = null;
+  }
+  isFallback.value = true;
+}
+
 function onVisibilityChange() {
   isVisible = !document.hidden;
+  if (!isVisible && animId !== null) {
+    cancelAnimationFrame(animId);
+    animId = null;
+  } else if (isVisible && animId === null && !isReducedMotion && gl) {
+    animId = requestAnimationFrame(loop);
+  }
 }
 
 function onMotionChange(e: MediaQueryListEvent) {
@@ -264,6 +305,12 @@ function onMotionChange(e: MediaQueryListEvent) {
   if (isReducedMotion && animId !== null) {
     cancelAnimationFrame(animId);
     animId = null;
+    if (gl) {
+      gl.uniform1f(uniforms.u_time ?? null, 1.2);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+  } else if (!isReducedMotion && animId === null && isVisible && gl) {
+    animId = requestAnimationFrame(loop);
   }
 }
 
@@ -278,6 +325,8 @@ onMounted(() => {
   motionMq.addEventListener("change", onMotionChange);
   document.addEventListener("visibilitychange", onVisibilityChange);
 
+  canvas.addEventListener("webglcontextlost", onContextLost);
+
   const success = initWebGL(canvas);
   if (!success) {
     isFallback.value = true;
@@ -285,24 +334,9 @@ onMounted(() => {
   }
 
   resizeCanvas(canvas);
-  window.addEventListener("resize", () => resizeCanvas(canvas), { passive: true });
+  window.addEventListener("resize", onResize, { passive: true });
 
-  const startT = performance.now();
-
-  function loop(now: number) {
-    if (!gl) {
-      return;
-    }
-    if (isVisible) {
-      // Vitesse très douce et vaporeuse (0.35x de la vitesse par défaut)
-      const elapsed = (now - startT) * 0.00035;
-      gl.uniform1f(uniforms.u_time ?? null, elapsed);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    }
-    if (!isReducedMotion) {
-      animId = requestAnimationFrame(loop);
-    }
-  }
+  startT = performance.now();
 
   if (isReducedMotion) {
     // Un seul rendu statique pour les préférences d'accessibilité
@@ -322,6 +356,8 @@ onBeforeUnmount(() => {
   }
   document.removeEventListener("visibilitychange", onVisibilityChange);
   motionMq?.removeEventListener("change", onMotionChange);
+  window.removeEventListener("resize", onResize);
+  canvasRef.value?.removeEventListener("webglcontextlost", onContextLost);
   if (gl && program) {
     if (quadBuffer) {
       gl.deleteBuffer(quadBuffer);
@@ -343,9 +379,10 @@ onBeforeUnmount(() => {
 }
 
 .atmos--fallback {
-  background-color: #7a1f5d;
+  background-color: var(--surface-0);
   background-image:
-    radial-gradient(at 80% 30%, #f87116 0, transparent 62%), radial-gradient(at 21% 68%, #7a1f5d 0, transparent 62%);
+    radial-gradient(at 80% 30%, var(--accent-soft) 0, transparent 62%),
+    radial-gradient(at 21% 68%, var(--accent-2-soft) 0, transparent 62%);
 }
 
 .atmos__canvas {

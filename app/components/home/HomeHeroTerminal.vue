@@ -105,17 +105,17 @@ interface ITermRow {
 
 const projectsOutput = SITE.projects
   .map((p) => {
-    if (p.name === "keova.app" || p.name === "Keova App") return "keova.app/";
-    if (p.name === "TryOn") return "tryon-saas/";
-    if (p.name === "Nodium") return "nodium-lab/";
-    return `${p.name.toLowerCase()}/`;
+    if (p.url) {
+      return `${p.url.replace(/^https?:\/\//, "").replace(/\/.*$/, "")}/`;
+    }
+    return `${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/`;
   })
   .join("  ");
 
 const fullRows: ITermRow[] = [
   {
     cmd: "whoami",
-    out: `${SITE.profile.name} — Full Stack TS Engineer (Nuxt / NestJS)`,
+    out: `${SITE.profile.name} — ${SITE.profile.role}`,
     tone: "ink",
   },
   {
@@ -137,6 +137,7 @@ const isSequenceComplete = ref(false);
 
 let typingTimeoutId: ReturnType<typeof setTimeout> | null = null;
 let stepTimeoutId: ReturnType<typeof setTimeout> | null = null;
+let motionMq: MediaQueryList | null = null;
 let isStarted = false;
 
 function showInstantState() {
@@ -209,11 +210,27 @@ watch(
   },
 );
 
+function onMotionChange(e: MediaQueryListEvent) {
+  if (e.matches) {
+    if (typingTimeoutId !== null) {
+      clearTimeout(typingTimeoutId);
+      typingTimeoutId = null;
+    }
+    if (stepTimeoutId !== null) {
+      clearTimeout(stepTimeoutId);
+      stepTimeoutId = null;
+    }
+    showInstantState();
+  }
+}
+
 onMounted(() => {
   if (!import.meta.client) return;
 
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduceMotion) {
+  motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  motionMq.addEventListener("change", onMotionChange);
+
+  if (motionMq.matches) {
     isStarted = true;
     showInstantState();
     return;
@@ -225,6 +242,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  motionMq?.removeEventListener("change", onMotionChange);
   if (typingTimeoutId !== null) {
     clearTimeout(typingTimeoutId);
     typingTimeoutId = null;

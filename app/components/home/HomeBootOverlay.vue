@@ -115,6 +115,14 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
+let motionMq: MediaQueryList | null = null;
+
+function onMotionChange(e: MediaQueryListEvent) {
+  if (e.matches && !isDone.value) {
+    finishBoot();
+  }
+}
+
 onMounted(() => {
   if (!import.meta.client) return;
 
@@ -128,9 +136,10 @@ onMounted(() => {
     alreadyBooted = false;
   }
 
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  motionMq.addEventListener("change", onMotionChange);
 
-  if (alreadyBooted || reduceMotion) {
+  if (alreadyBooted || motionMq.matches) {
     try {
       sessionStorage.setItem("jouan_boot_done", "1");
     } catch {
@@ -148,6 +157,7 @@ onMounted(() => {
 onUnmounted(() => {
   if (!import.meta.client) return;
   window.removeEventListener("keydown", handleKeydown);
+  motionMq?.removeEventListener("change", onMotionChange);
   if (stepTimeoutId !== null) {
     clearTimeout(stepTimeoutId);
     stepTimeoutId = null;

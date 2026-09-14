@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-14 (Story 11.6 créée : Polissage visuel, fidélité maquette Awwwards & interactions dynamiques)"
+last_updated: "2026-09-14 (Revue de code contradictoire Epic 11 validée : arbitrages résolus, 9 patchs appliqués, gate Docker 100% verte)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
