@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-14 (Revue de code contradictoire Epic 11 validée : arbitrages résolus, 9 patchs appliqués, gate Docker 100% verte)"
+last_updated: "2026-09-14 (Epic 11 rétrospective clôturée, accords d'équipe formalisés, prêt pour merge prod)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -125,4 +125,4 @@ development_status:
   11-4-preuves-concretes-saas-journal-technique-et-cta-final-de-conversion: done
   11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker: done
   11-6-polissage-visuel-fidelite-maquette-awwwards-et-interactions: done
-  epic-11-retrospective: optional
+  epic-11-retrospective: done
