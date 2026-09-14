@@ -3,7 +3,7 @@
     <div class="hdr__progress" :style="{ width: `${scrollProgress}%` }" aria-hidden="true" />
     <div class="hdr__in">
       <NuxtLink to="/" class="hdr__brand" @click="onBrandClick">
-        <img src="/images/logo_white.png" alt="" class="hdr__logo" width="24" height="24" />
+        <NuxtImg src="/images/logo_white.png" alt="" class="hdr__logo" width="24" height="24" />
         <span class="hdr__brand-text"><b>jouan</b><span class="dim">.ovh</span></span>
       </NuxtLink>
 
@@ -124,7 +124,8 @@ function onScroll() {
   const top = window.scrollY || document.documentElement.scrollTop || 0;
   isScrolled.value = top > 20;
   const h = document.documentElement.scrollHeight - window.innerHeight;
-  scrollProgress.value = h > 0 ? (top / h) * 100 : 0;
+  const progress = h > 0 ? (top / h) * 100 : 0;
+  scrollProgress.value = Math.min(100, Math.max(0, progress));
 }
 
 // --- Terminal easter-egg (préservé) ---
@@ -163,9 +164,13 @@ function closeMenu() {
 
 function onBrandClick(event: MouseEvent) {
   closeMenu();
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    return;
+  }
   if (route.path === "/") {
     event.preventDefault();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const isReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: isReducedMotion ? "auto" : "smooth" });
   }
 }
 
@@ -212,6 +217,7 @@ onMounted(() => {
   desktopMq.addEventListener("change", onDesktopChange);
   registerTerminalLauncher(addNewTerminal);
   window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
   onScroll();
 });
 
@@ -220,6 +226,7 @@ onBeforeUnmount(() => {
   desktopMq?.removeEventListener("change", onDesktopChange);
   unregisterTerminalLauncher(addNewTerminal);
   window.removeEventListener("scroll", onScroll);
+  window.removeEventListener("resize", onScroll);
 });
 </script>
 
@@ -348,7 +355,7 @@ onBeforeUnmount(() => {
   padding: 4px 0;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  color: var(--text-muted);
+  color: var(--text-body);
   text-decoration: none;
   background: transparent;
   transition: color var(--dur-fast) var(--ease-standard);
@@ -518,8 +525,8 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid var(--border-subtle);
 }
 
-// Dégradé progressif pour le dock droit sur largeurs moyennes
-@media (width <= 1250px) {
+// Dégradé progressif pour le dock droit sur largeurs moyennes (évite la collision avec le CTA à 1440px)
+@media (width <= 1650px) {
   .hdr__dock-right {
     display: none;
   }
@@ -603,10 +610,12 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hdr,
+  .hdr__progress,
   .hdr__link,
   .hdr__link::after,
   .hdr__menu {
-    transition: none;
+    transition: none !important;
   }
 
   .hdr__brand .hdr__logo,

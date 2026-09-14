@@ -60,6 +60,10 @@ defineProps<{
 @media (prefers-reduced-motion: reduce) {
   .hex {
     transition: none;
+
+    &:hover {
+      transform: none;
+    }
   }
 }
 </style>

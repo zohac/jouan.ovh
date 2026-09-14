@@ -100,6 +100,8 @@
               class="work__row"
               :class="{ 'work__row--link': Boolean(project.url) }"
               :data-hot="project.url ? '' : undefined"
+              @mousemove="onProjectMouseMove"
+              @mouseleave="onProjectMouseLeave"
             >
               <span class="work__no">{{ String(index + 1).padStart(2, "0") }}</span>
               <div class="work__main">
@@ -231,14 +233,57 @@
 <script setup lang="ts">
 // Page d'accueil — refonte Hero Full Stack TS, Projets SaaS, Journal & CTA final (Story 11.4).
 // Architecture multi-pages Nuxt 4, dark-first, accent orange.
-import { ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import { NuxtLink, ZExternalLink } from "#components";
 import { SITE } from "~/data/site";
 
 const isBootFinished = ref(false);
+const isReducedMotion = ref(false);
+let motionMq: MediaQueryList | null = null;
+
+function onMotionChange(e: MediaQueryListEvent) {
+  isReducedMotion.value = e.matches;
+}
+
+onMounted(() => {
+  motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  isReducedMotion.value = motionMq.matches;
+  motionMq.addEventListener("change", onMotionChange);
+});
+
+onBeforeUnmount(() => {
+  motionMq?.removeEventListener("change", onMotionChange);
+});
 
 function onBootComplete() {
   isBootFinished.value = true;
+}
+
+function onProjectMouseMove(event: MouseEvent) {
+  if (isReducedMotion.value) {
+    return;
+  }
+  if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
+    return;
+  }
+  const target = event.currentTarget as HTMLElement | null;
+  if (!target) {
+    return;
+  }
+  const rect = target.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return;
+  }
+  const px = (event.clientX - rect.left) / rect.width - 0.5;
+  const py = (event.clientY - rect.top) / rect.height - 0.5;
+  target.style.transform = `perspective(1000px) rotateX(${-py * 3.5}deg) rotateY(${px * 4.5}deg) translateY(-2px)`;
+}
+
+function onProjectMouseLeave(event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement | null;
+  if (target) {
+    target.style.transform = "";
+  }
 }
 
 interface HomeServiceOffer {
@@ -404,11 +449,12 @@ usePageSeo({
 .hero__title {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: clamp(2.4rem, 5.2vw, 4.4rem);
+  font-size: clamp(2.6rem, 6.4vw, 5.2rem);
   font-weight: var(--fw-regular);
-  line-height: 1.05;
+  line-height: 0.98;
   letter-spacing: var(--ls-tight);
   color: var(--text-strong);
+  text-shadow: 0 2px 14px color-mix(in srgb, var(--surface-0) 80%, transparent);
 
   em {
     font-style: italic;
@@ -423,6 +469,7 @@ usePageSeo({
   font-size: var(--fs-lg);
   line-height: var(--lh-relaxed);
   color: var(--text-body);
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--surface-0) 70%, transparent);
 }
 
 .hero__cta {
@@ -440,7 +487,7 @@ usePageSeo({
   margin-bottom: var(--space-6);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  color: var(--text-muted);
+  color: var(--text-body);
 
   a {
     color: var(--accent);
@@ -643,7 +690,8 @@ usePageSeo({
   color: inherit;
   transition:
     padding-left var(--dur-slow) var(--ease-out),
-    background var(--dur-slow) var(--ease-standard);
+    background var(--dur-slow) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
 
   &::before {
     content: "";
@@ -1041,6 +1089,18 @@ li:last-child .work__row {
   .jpost__arrow,
   .seeall {
     transition: none;
+  }
+
+  .stat {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  .work__row {
+    transform: none !important;
   }
 
   .work__row--link:hover {

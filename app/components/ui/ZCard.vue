@@ -22,20 +22,20 @@
 // Primitive carte du DS — surface discrète, 3D tilt interactif optionnel.
 // Porté de docs/design_system/components/core/Card.jsx et Home - Awwwards.html.
 import type { Component, ComponentPublicInstance } from "vue";
-import { computed, onMounted, ref, useAttrs } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
 
 defineOptions({
   inheritAttrs: false,
 });
 
 interface Props {
-  /** Hover lift + bordure plus claire. @default false */
+  /** Rendre la carte interactive (hover state, clickable). @default false */
   interactive?: boolean;
-  /** Barre d'accent orange→aubergine en haut. @default false */
+  /** Filet supérieur dégradé accent (story 2.4). @default false */
   accent?: boolean;
-  /** Anneau de glow orange (offre mise en avant). @default false */
+  /** Variante mise en valeur (bordure accent, glow). @default false */
   featured?: boolean;
-  /** Padding interne `--space-6`. @default true */
+  /** Padding interne (var(--space-6)). Désactivable pour cartes média. @default true */
   padded?: boolean;
   /** Élément rendu (polymorphe). @default "div" */
   as?: string | Component;
@@ -55,13 +55,30 @@ const props = withDefaults(defineProps<Props>(), {
 const attrs = useAttrs();
 const cardRef = ref<Element | ComponentPublicInstance | null>(null);
 const isReducedMotion = ref(false);
+let motionMq: MediaQueryList | null = null;
+
+function onMotionChange(e: MediaQueryListEvent) {
+  isReducedMotion.value = e.matches;
+  if (e.matches) {
+    onMouseLeave();
+  }
+}
 
 onMounted(() => {
-  isReducedMotion.value = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  isReducedMotion.value = motionMq.matches;
+  motionMq.addEventListener("change", onMotionChange);
+});
+
+onBeforeUnmount(() => {
+  motionMq?.removeEventListener("change", onMotionChange);
 });
 
 function onMouseMove(event: MouseEvent) {
   if (!props.tilt || isReducedMotion.value || !cardRef.value) {
+    return;
+  }
+  if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
     return;
   }
   const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
@@ -69,20 +86,31 @@ function onMouseMove(event: MouseEvent) {
     return;
   }
   const rect = el.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return;
+  }
   const px = (event.clientX - rect.left) / rect.width - 0.5;
   const py = (event.clientY - rect.top) / rect.height - 0.5;
   el.style.transform = `perspective(800px) rotateX(${-py * 6}deg) rotateY(${px * 8}deg) translateY(-4px)`;
 }
 
 function onMouseLeave() {
-  if (!props.tilt || !cardRef.value) {
-    return;
-  }
-  const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
-  if (el instanceof HTMLElement) {
-    el.style.transform = "";
+  if (cardRef.value) {
+    const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
+    if (el instanceof HTMLElement) {
+      el.style.transform = "";
+    }
   }
 }
+
+watch(
+  () => props.tilt,
+  (newVal) => {
+    if (!newVal) {
+      onMouseLeave();
+    }
+  },
+);
 
 // `as` accepte une balise native ("div", "article") ou une référence de composant
 // (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.

@@ -4,7 +4,7 @@ baseline_commit: 3ac365cc1a89c92b23a9d9059f13dd45b8543fbe
 
 # Story 11.6: Polissage visuel, fidélité maquette Awwwards & interactions dynamiques
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -111,6 +111,23 @@ so that l'expérience soit véritablement au niveau d'un portfolio primé Awwwar
 - [x] Tâche 7 — Validation qualité & Gate Docker (AC: 10)
   - [x] Lancer la suite de validation Docker complète : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
   - [x] Vérifier la conformité de l'affichage sur navigateur et la non-régression multi-pages (13 routes pré-rendues statiquement).
+
+### Review Findings
+
+- [x] [Review][Decision] Alignement de la pile de tests : Cypress vs TestCafé — TestCafé officialisé comme stack réelle de Simon.
+- [x] [Review][Decision] Échelle et hauteur de ligne du Hero Title — Choix 2A validé : passage à clamp(2.6rem, 6.4vw, 5.2rem) et line-height: 0.98 (AC1). Converti en patch.
+- [x] [Review][Decision] Mapping des couleurs d'accent du Footer — Choix 3A validé : conservation du parti pris Awwwards var(--accent).
+- [x] [Review][Decision] 3D Tilt sur la liste des projets phares — Choix 4B validé : intégration de l'effet 3D tilt sur les projets. Converti en patch.
+- [x] [Review][Patch] Remplacement des balises <img> brutes par le composant <NuxtImg> [app/components/HeaderComponent.vue:275, app/components/FooterComponent.vue:105]
+- [x] [Review][Patch] Remplacement de la ville codée en dur « Valognes » par SITE.profile.city et aria-label dynamique [app/components/CurrentTime.vue:3,10]
+- [x] [Review][Patch] Suppression de l'animation en boucle blink sur le séparateur horaire [app/components/CurrentTime.vue:48-57]
+- [x] [Review][Patch] Prise en compte de (hover: none) et non-écrasement du lift hover CSS sur ZButton [app/components/ui/ZButton.vue:80-95]
+- [x] [Review][Patch] Neutralisation du 3D tilt sous (hover: none) et garde contre division par zéro / NaN [app/components/ui/ZCard.vue:63-80]
+- [x] [Review][Patch] Neutralisation complète du hover transform sous prefers-reduced-motion: reduce pour .stat et .hex [app/pages/index.vue:761-775, app/components/HexagonLinkComponent.vue:35-39]
+- [x] [Review][Patch] Correction et robustesse de la barre de progression et navigation du Header [app/components/HeaderComponent.vue:123-169]
+- [x] [Review][Patch] Rétablissement de la cohérence de statut : Story 11.6 en review dans sprint-status.yaml [docs/implementation-artifacts/sprint-status.yaml:63]
+- [x] [Review][Patch] Typographie Hero Title conforme à l'AC1 clamp(2.6rem, 6.4vw, 5.2rem) et line-height: 0.98 [app/pages/index.vue:478]
+- [x] [Review][Patch] Intégration du micro-tilt 3D sur les éléments de la liste des projets phares [app/pages/index.vue:245-280, 580-620]
 
 ## Dev Notes
 

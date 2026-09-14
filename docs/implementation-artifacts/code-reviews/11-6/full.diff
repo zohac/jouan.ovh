@@ -1,0 +1,1660 @@
+diff --git a/app/components/CurrentTime.vue b/app/components/CurrentTime.vue
+index c459483..cf9fd85 100644
+--- a/app/components/CurrentTime.vue
++++ b/app/components/CurrentTime.vue
+@@ -1,7 +1,11 @@
+ <template>
+-  <div class="current-time">
+-    {{ currentTime }}
+-  </div>
++  <time class="current-time" :datetime="currentTimeIso" aria-label="Heure locale de Valognes">
++    <span class="current-time__hours">{{ hours }}</span>
++    <span class="current-time__colon" :class="{ 'current-time__colon--hidden': !isColonVisible }" aria-hidden="true"
++      >:</span
++    >
++    <span class="current-time__minutes">{{ minutes }}</span>
++  </time>
+ </template>
+ 
+ <script lang="ts" setup>
+@@ -12,21 +16,36 @@ defineComponent({
+   name: "CurrentTime",
+ });
+ 
+-const currentTime = ref("");
++const hours = ref("--");
++const minutes = ref("--");
++const currentTimeIso = ref("");
++const isColonVisible = ref(true);
+ 
+ function updateTime() {
+   const now = new Date();
+-  currentTime.value = now.toLocaleTimeString(undefined, {
++  const parts = new Intl.DateTimeFormat("en-GB", {
+     hour: "2-digit",
+     minute: "2-digit",
+-  });
++    hour12: false,
++    timeZone: "Europe/Paris",
++  }).formatToParts(now);
++
++  const hourPart = parts.find((p) => p.type === "hour")?.value ?? "";
++  const minutePart = parts.find((p) => p.type === "minute")?.value ?? "";
++
++  hours.value = hourPart.padStart(2, "0");
++  minutes.value = minutePart.padStart(2, "0");
++  currentTimeIso.value = now.toISOString();
++
++  // Un clignotement exact par seconde (alternance à chaque seconde système)
++  isColonVisible.value = now.getSeconds() % 2 === 0;
+ }
+ 
+ const interval: Ref<ReturnType<typeof setInterval> | null> = ref(null);
+ 
+ onMounted(() => {
+   updateTime();
+-  interval.value = setInterval(updateTime, 15000);
++  interval.value = setInterval(updateTime, 1000);
+ });
+ 
+ onUnmounted(() => {
+@@ -37,7 +56,32 @@ onUnmounted(() => {
+ </script>
+ 
+ <style scoped lang="scss">
++/* stylelint-disable selector-class-pattern -- convention BEM */
+ .current-time {
+-  /* Ajoutez ici les styles pour personnaliser l'apparence de l'heure */
++  display: inline-flex;
++  align-items: center;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  font-variant-numeric: tabular-nums;
++  letter-spacing: var(--ls-wide);
++  color: var(--text-muted);
++}
++
++.current-time__colon {
++  display: inline-block;
++  margin: 0 1px;
++  transition: opacity 0.1s linear;
++
++  &--hidden {
++    opacity: 0;
++  }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .current-time__colon,
++  .current-time__colon--hidden {
++    opacity: 1;
++    transition: none;
++  }
+ }
+ </style>
+diff --git a/app/components/FooterComponent.vue b/app/components/FooterComponent.vue
+index 176765c..a75f1c5 100644
+--- a/app/components/FooterComponent.vue
++++ b/app/components/FooterComponent.vue
+@@ -4,8 +4,8 @@
+       <div class="ftr__in">
+         <div class="ftr__brand-col">
+           <NuxtLink to="/" class="ftr__brand">
+-            <ZIcon name="gem" class="ftr__logo" />
+-            <b>jouan.ovh</b>
++            <img src="/images/logo_white.png" alt="" class="ftr__logo" width="22" height="22" />
++            <span><b>jouan</b><span class="dim">.ovh</span></span>
+           </NuxtLink>
+           <p class="ftr__tagline">{{ profile.role }}. {{ profile.city }}.</p>
+         </div>
+@@ -32,8 +32,11 @@
+           <LinkListComponent />
+         </div>
+       </div>
++    </div>
+ 
+-      <div class="ftr__bottom">
++    <!-- Barre basse pleine largeur (border-top 100% de la fenêtre) -->
++    <div class="ftr__bottom-bar">
++      <div class="ftr__container ftr__bottom">
+         <span>© {{ year }} Simon Jouan — jouan.ovh</span>
+         <span class="ftr__term">anon.@jouan.ovh:~$ <span class="ftr__cmd">echo "merci de votre visite"</span></span>
+       </div>
+@@ -65,10 +68,12 @@ const year = new Date().getFullYear();
+ <style lang="scss" scoped>
+ /* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis Footer.jsx/kit.css */
+ .ftr {
++  position: relative;
++  z-index: 10;
+   margin-top: auto;
+   background: var(--surface-1);
+   border-top: 1px solid var(--border-subtle);
+-  padding: var(--space-12) 0 var(--space-8);
++  padding: var(--space-12) 0 0;
+ }
+ 
+ .ftr__container {
+@@ -93,13 +98,16 @@ const year = new Date().getFullYear();
+ .ftr__brand {
+   display: inline-flex;
+   align-items: center;
+-  gap: var(--space-2);
++  gap: var(--space-3);
+   margin-bottom: var(--space-3);
+   text-decoration: none;
+ 
+   .ftr__logo {
+-    font-size: 22px;
+-    color: var(--accent);
++    display: block;
++    width: 22px;
++    height: 22px;
++    object-fit: contain;
++    filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--surface-0) 60%, transparent));
+   }
+ 
+   b {
+@@ -109,6 +117,10 @@ const year = new Date().getFullYear();
+     color: var(--text-strong);
+   }
+ 
++  .dim {
++    color: var(--text-muted);
++  }
++
+   // Lien focusable (logo + nom) : anneau DS cohérent avec le reste du châssis.
+   &:focus-visible {
+     outline: 2px solid transparent; // forced-colors : rendu en couleur système
+@@ -121,7 +133,7 @@ const year = new Date().getFullYear();
+ .ftr__tagline {
+   margin: 0;
+   font-size: var(--fs-sm);
+-  color: var(--text-muted);
++  color: var(--text-body);
+ }
+ 
+ .ftr__col {
+@@ -133,10 +145,10 @@ const year = new Date().getFullYear();
+   margin: 0 0 var(--space-3);
+   font-family: var(--font-mono);
+   font-size: var(--fs-xs);
+-  font-weight: var(--fw-regular);
++  font-weight: var(--fw-medium);
+   letter-spacing: var(--ls-wider);
+   text-transform: uppercase;
+-  color: var(--text-muted);
++  color: var(--accent);
+ }
+ 
+ .ftr__list {
+@@ -152,12 +164,15 @@ const year = new Date().getFullYear();
+   padding: var(--space-1) 0;
+   font-family: var(--font-mono);
+   font-size: var(--fs-sm);
+-  color: var(--text-body);
++  color: var(--text-strong);
+   text-decoration: none;
+-  transition: color var(--dur-fast) var(--ease-standard);
++  transition:
++    color var(--dur-fast) var(--ease-standard),
++    transform var(--dur-fast) var(--ease-standard);
+ 
+   &:hover {
+     color: var(--accent);
++    transform: translateX(2px);
+   }
+ 
+   // Anneau de focus DS (les liens du footer n'avaient que l'outline UA par défaut).
+@@ -169,38 +184,43 @@ const year = new Date().getFullYear();
+   }
+ 
+   &--static {
+-    color: var(--text-muted);
++    color: var(--text-body);
+     cursor: default;
+ 
+     &:hover {
+-      color: var(--text-muted);
++      color: var(--text-body);
++      transform: none;
+     }
+   }
+ }
+ 
++.ftr__bottom-bar {
++  width: 100%;
++  margin-top: var(--space-8);
++  border-top: 1px solid var(--border-default);
++}
++
+ .ftr__bottom {
+   display: flex;
+   flex-wrap: wrap;
+   gap: var(--space-3);
+   justify-content: space-between;
+-  margin-top: var(--space-8);
+-  padding-top: var(--space-5);
++  align-items: center;
++  padding-block: var(--space-5);
+   font-family: var(--font-mono);
+   font-size: var(--fs-xs);
+-
+-  // Contraste (story 9.2) : --text-faint (~3:1 sur la surface footer) → --text-muted
+-  // pour une ligne de copyright lisible (≥ 4.5:1). Token, pas de couleur en dur.
+-  color: var(--text-muted);
+-  border-top: 1px solid var(--border-subtle);
++  color: var(--text-body);
+ }
+ 
+ .ftr__cmd {
+   color: var(--term-green);
++  font-weight: var(--fw-medium);
+ }
+ 
+ @media (prefers-reduced-motion: reduce) {
+   .ftr__link {
+     transition: none;
++    transform: none !important;
+   }
+ }
+ </style>
+diff --git a/app/components/HeaderComponent.vue b/app/components/HeaderComponent.vue
+index b2301e9..f209574 100644
+--- a/app/components/HeaderComponent.vue
++++ b/app/components/HeaderComponent.vue
+@@ -1,9 +1,10 @@
+ <template>
+-  <header class="hdr">
++  <header class="hdr" :class="{ 'hdr--stuck': isScrolled }">
++    <div class="hdr__progress" :style="{ width: `${scrollProgress}%` }" aria-hidden="true" />
+     <div class="hdr__in">
+-      <NuxtLink to="/" class="hdr__brand" @click="closeMenu">
+-        <ZIcon name="gem" class="hdr__logo" />
+-        <b>jouan.ovh</b>
++      <NuxtLink to="/" class="hdr__brand" @click="onBrandClick">
++        <img src="/images/logo_white.png" alt="" class="hdr__logo" width="24" height="24" />
++        <span class="hdr__brand-text"><b>jouan</b><span class="dim">.ovh</span></span>
+       </NuxtLink>
+ 
+       <nav class="hdr__nav" aria-label="Navigation principale">
+@@ -15,14 +16,13 @@
+           :class="{ 'hdr__link--active': isActive(item.to) }"
+           :aria-current="isActive(item.to) ? 'page' : undefined"
+         >
+-          {{ item.label }}
++          <span class="hdr__link-prefix" aria-hidden="true">{{ item.prefix }} </span>
++          <span class="hdr__link-label">{{ item.label }}</span>
+         </NuxtLink>
+       </nav>
+ 
+       <div class="hdr__right">
+-        <CurrentTime class="hdr__clock" />
+-        <ZBadge tone="success" dot class="hdr__badge">Disponible</ZBadge>
+-        <ZButton variant="terminal" size="sm" class="hdr__action" @click="addNewTerminal">
++        <ZButton variant="terminal" size="sm" class="hdr__action hdr__action--terminal" @click="addNewTerminal">
+           <template #icon><ZIcon name="terminal" /></template>
+           Terminal
+         </ZButton>
+@@ -44,6 +44,15 @@
+       </div>
+     </div>
+ 
++    <!-- Dock d'état tout à droite de l'écran (hors container centré) -->
++    <div class="hdr__dock-right" aria-label="Statut et heure">
++      <div class="hdr__status-badge">
++        <span class="hdr__status-dot" aria-hidden="true" />
++        <span class="hdr__status-text">Disponible</span>
++      </div>
++      <CurrentTime class="hdr__dock-clock" />
++    </div>
++
+     <!-- Menu mobile -->
+     <div v-if="menuOpen" class="hdr__overlay" @click="closeMenuAndRefocus" />
+     <nav id="hdr-mobile-menu" class="hdr__menu" :class="{ 'hdr__menu--open': menuOpen }" aria-label="Navigation mobile">
+@@ -57,11 +66,19 @@
+         :aria-current="isActive(item.to) ? 'page' : undefined"
+         @click="closeMenu"
+       >
+-        {{ item.label }}
++        <span class="hdr__menu-link-prefix" aria-hidden="true">{{ item.prefix }} </span>
++        <span class="hdr__menu-link-label">{{ item.label }}</span>
+       </NuxtLink>
+ 
+       <div class="hdr__menu-actions">
+-        <ZButton variant="terminal" size="sm" @click="openTerminalFromMenu">
++        <div class="hdr__menu-status">
++          <div class="hdr__status-badge">
++            <span class="hdr__status-dot" aria-hidden="true" />
++            <span class="hdr__status-text">Disponible</span>
++          </div>
++          <CurrentTime class="hdr__menu-clock" />
++        </div>
++        <ZButton variant="terminal" size="sm" class="hdr__action--terminal" @click="openTerminalFromMenu">
+           <template #icon><ZIcon name="terminal" /></template>
+           Terminal
+         </ZButton>
+@@ -84,11 +101,11 @@ import TerminalManagerComponent from "~/components/terminal/TerminalManagerCompo
+ const route = useRoute();
+ 
+ const navItems = [
+-  { to: "/", label: "Accueil" },
+-  { to: "/services", label: "Services" },
+-  { to: "/about", label: "À propos" },
+-  { to: "/blog", label: "Blog" },
+-  { to: "/contact", label: "Contact" },
++  { to: "/", label: "Accueil", prefix: "~" },
++  { to: "/services", label: "Services", prefix: "//" },
++  { to: "/about", label: "À propos", prefix: "./" },
++  { to: "/blog", label: "Blog", prefix: "~/" },
++  { to: "/contact", label: "Contact", prefix: "$" },
+ ];
+ 
+ // Lien actif : exact pour l'accueil, préfixe pour les autres (couvre /blog/[...slug]).
+@@ -99,6 +116,17 @@ function isActive(to: string): boolean {
+   return route.path === to || route.path.startsWith(`${to}/`);
+ }
+ 
++// --- Scroll state & progress ---
++const isScrolled = ref(false);
++const scrollProgress = ref(0);
++
++function onScroll() {
++  const top = window.scrollY || document.documentElement.scrollTop || 0;
++  isScrolled.value = top > 20;
++  const h = document.documentElement.scrollHeight - window.innerHeight;
++  scrollProgress.value = h > 0 ? (top / h) * 100 : 0;
++}
++
+ // --- Terminal easter-egg (préservé) ---
+ const terminalManager = ref<InstanceType<typeof TerminalManagerComponent> | null>(null);
+ 
+@@ -133,6 +161,14 @@ function closeMenu() {
+   menuOpen.value = false;
+ }
+ 
++function onBrandClick(event: MouseEvent) {
++  closeMenu();
++  if (route.path === "/") {
++    event.preventDefault();
++    window.scrollTo({ top: 0, behavior: "smooth" });
++  }
++}
++
+ // Fermeture clavier/overlay : renvoie le focus au burger (déclencheur) — a11y.
+ function closeMenuAndRefocus() {
+   if (!menuOpen.value) {
+@@ -175,30 +211,54 @@ onMounted(() => {
+   desktopMq = window.matchMedia("(min-width: 901px)");
+   desktopMq.addEventListener("change", onDesktopChange);
+   registerTerminalLauncher(addNewTerminal);
++  window.addEventListener("scroll", onScroll, { passive: true });
++  onScroll();
+ });
+ 
+ onBeforeUnmount(() => {
+   document.removeEventListener("keydown", onKeydown);
+   desktopMq?.removeEventListener("change", onDesktopChange);
+   unregisterTerminalLauncher(addNewTerminal);
++  window.removeEventListener("scroll", onScroll);
+ });
+ </script>
+ 
+ <style lang="scss" scoped>
+ /* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis kit.css */
+ .hdr {
+-  position: sticky;
++  position: fixed;
+   top: 0;
++  left: 0;
++  right: 0;
+   z-index: 50;
+   height: var(--header-height);
++  background: transparent;
++  border-bottom: 1px solid transparent;
++  transition:
++    background var(--dur-base) var(--ease-standard),
++    border-color var(--dur-base) var(--ease-standard),
++    backdrop-filter var(--dur-base) var(--ease-standard),
++    -webkit-backdrop-filter var(--dur-base) var(--ease-standard);
++}
+ 
+-  // Verre sombre translucide : surface de page (token) à 82 % d'opacité + flou.
+-  background: color-mix(in srgb, var(--surface-0) 82%, transparent);
+-  border-bottom: 1px solid var(--border-subtle);
++.hdr--stuck {
++  background: color-mix(in srgb, var(--surface-0) 80%, transparent);
++  border-bottom-color: var(--border-subtle);
+ 
+   /* stylelint-disable-next-line property-no-vendor-prefix -- Safari : autoprefixer non câblé, préfixe manuel requis */
+-  -webkit-backdrop-filter: blur(10px);
+-  backdrop-filter: blur(10px);
++  -webkit-backdrop-filter: blur(12px);
++  backdrop-filter: blur(12px);
++}
++
++.hdr__progress {
++  position: absolute;
++  top: 0;
++  left: 0;
++  height: 2px;
++  background: linear-gradient(90deg, var(--accent), var(--aubergine-light));
++  box-shadow: 0 0 10px var(--accent);
++  pointer-events: none;
++  transition: width 0.05s linear;
+ }
+ 
+ .hdr__in {
+@@ -215,12 +275,23 @@ onBeforeUnmount(() => {
+ .hdr__brand {
+   display: inline-flex;
+   align-items: center;
+-  gap: var(--space-2);
++  gap: var(--space-3);
+   text-decoration: none;
++  cursor: pointer;
+ 
+   .hdr__logo {
+-    font-size: 24px;
+-    color: var(--accent);
++    display: block;
++    width: 24px;
++    height: 24px;
++    object-fit: contain;
++    filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--surface-0) 60%, transparent));
++    transition:
++      transform var(--dur-base) var(--ease-standard),
++      filter var(--dur-base) var(--ease-standard);
++  }
++
++  .hdr__brand-text {
++    transition: transform var(--dur-fast) var(--ease-standard);
+   }
+ 
+   b {
+@@ -228,6 +299,27 @@ onBeforeUnmount(() => {
+     font-size: var(--fs-md);
+     font-weight: var(--fw-bold);
+     color: var(--text-strong);
++    transition: color var(--dur-fast) var(--ease-standard);
++  }
++
++  .dim {
++    color: var(--text-faint);
++    transition: color var(--dur-fast) var(--ease-standard);
++  }
++
++  &:hover {
++    .hdr__logo {
++      transform: rotate(-12deg) scale(1.15);
++      filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 70%, transparent));
++    }
++
++    b {
++      color: var(--accent);
++    }
++
++    .dim {
++      color: var(--text-body);
++    }
+   }
+ 
+   // Lien focusable (logo + nom) : anneau DS comme les autres focusables du châssis.
+@@ -240,38 +332,79 @@ onBeforeUnmount(() => {
+ }
+ 
+ .hdr__nav {
++  position: absolute;
++  left: 50%;
+   display: flex;
+   align-items: center;
+-  gap: var(--space-1);
+-  min-width: 0; // autorise la nav à rétrécir plutôt que de pousser l'overflow
+-  margin-left: var(--space-4);
++  gap: var(--space-6);
++  transform: translateX(-50%);
+ }
+ 
+ .hdr__link {
+-  padding: var(--space-2) var(--space-3);
++  position: relative;
++  display: inline-flex;
++  align-items: center;
++  gap: var(--space-1);
++  padding: 4px 0;
+   font-family: var(--font-mono);
+   font-size: var(--fs-sm);
+   color: var(--text-muted);
+   text-decoration: none;
+-  border-radius: var(--radius-sm);
+-  transition:
+-    color var(--dur-fast) var(--ease-standard),
+-    background var(--dur-fast) var(--ease-standard);
++  background: transparent;
++  transition: color var(--dur-fast) var(--ease-standard);
++
++  &::after {
++    content: "";
++    position: absolute;
++    bottom: -2px;
++    left: 0;
++    width: 0;
++    height: 1.5px;
++    background: var(--accent);
++    transition: width var(--dur-base) var(--ease-out);
++  }
+ 
+   &:hover {
+     color: var(--text-strong);
+-    background: var(--surface-2);
++    background: transparent;
++
++    &::after {
++      width: 100%;
++    }
+   }
+ 
+-  // Anneau de focus DS (les liens de nav n'avaient que l'outline UA par défaut).
++  // Anneau de focus DS
+   &:focus-visible {
+     outline: 2px solid transparent; // forced-colors : rendu en couleur système
+-    outline-offset: 2px;
++    outline-offset: 4px;
++    border-radius: var(--radius-xs);
+     box-shadow: var(--ring-accent);
+   }
+ }
+ 
+ .hdr__link--active {
++  color: var(--text-strong);
++
++  &::after {
++    width: 100%;
++  }
++
++  .hdr__link-prefix {
++    color: var(--accent);
++  }
++}
++
++.hdr__link-prefix,
++.hdr__menu-link-prefix {
++  font-family: var(--font-mono);
++  color: var(--text-faint);
++  transition: color var(--dur-fast) var(--ease-standard);
++}
++
++.hdr__link:hover .hdr__link-prefix,
++.hdr__link--active .hdr__link-prefix,
++.hdr__menu-link:hover .hdr__menu-link-prefix,
++.hdr__menu-link--active .hdr__menu-link-prefix {
+   color: var(--accent);
+ }
+ 
+@@ -282,10 +415,67 @@ onBeforeUnmount(() => {
+   margin-left: auto;
+ }
+ 
+-.hdr__clock {
++.hdr__action--terminal {
++  border-color: color-mix(in srgb, var(--term-green) 40%, transparent);
++  box-shadow: 0 0 12px color-mix(in srgb, var(--term-green) 22%, transparent);
++
++  &:hover {
++    border-color: var(--term-green);
++    box-shadow:
++      0 0 20px color-mix(in srgb, var(--term-green) 45%, transparent),
++      var(--glow-terminal);
++  }
++}
++
++// Dock de statut & horloge positionné tout à droite de l'écran (hors container centré)
++.hdr__dock-right {
++  position: absolute;
++  top: 50%;
++  right: var(--space-6);
++  z-index: 52;
++  display: flex;
++  gap: var(--space-3);
++  align-items: center;
++  transform: translateY(-50%);
++}
++
++.hdr__status-badge {
++  display: inline-flex;
++  gap: var(--space-2);
++  align-items: center;
++  padding: 4px 10px;
+   font-family: var(--font-mono);
+   font-size: var(--fs-xs);
+-  color: var(--text-muted);
++  color: var(--term-green);
++  user-select: none;
++  background: color-mix(in srgb, var(--term-green) 12%, transparent);
++  border: 1px solid color-mix(in srgb, var(--term-green) 40%, transparent);
++  border-radius: var(--radius-pill);
++  box-shadow: 0 0 10px color-mix(in srgb, var(--term-green) 18%, transparent);
++  transition:
++    box-shadow var(--dur-base) var(--ease-standard),
++    border-color var(--dur-base) var(--ease-standard);
++
++  /* stylelint-disable-next-line property-no-vendor-prefix */
++  -webkit-backdrop-filter: blur(8px);
++  backdrop-filter: blur(8px);
++
++  &:hover {
++    border-color: var(--term-green);
++    box-shadow: 0 0 16px color-mix(in srgb, var(--term-green) 35%, transparent);
++  }
++}
++
++.hdr__status-dot {
++  width: 7px;
++  height: 7px;
++  background: var(--term-green);
++  border-radius: var(--radius-circle);
++  box-shadow: 0 0 6px var(--term-green);
++}
++
++.hdr__dock-clock {
++  margin-left: var(--space-1);
+ }
+ 
+ .hdr__burger {
+@@ -319,16 +509,18 @@ onBeforeUnmount(() => {
+   display: none;
+ }
+ 
+-// ---- Dégradé progressif (tablette) pour éviter l'overflow du header
+-// avant que le burger ne prenne le relais (< 900px). ----
+-@media (width <= 1100px) {
+-  .hdr__clock {
+-    display: none;
+-  }
++.hdr__menu-status {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  padding-bottom: var(--space-2);
++  margin-bottom: var(--space-2);
++  border-bottom: 1px solid var(--border-subtle);
+ }
+ 
+-@media (width <= 1000px) {
+-  .hdr__badge {
++// Dégradé progressif pour le dock droit sur largeurs moyennes
++@media (width <= 1250px) {
++  .hdr__dock-right {
+     display: none;
+   }
+ }
+@@ -343,8 +535,7 @@ onBeforeUnmount(() => {
+ // ---- Responsive : < 900px (cf. kit.css) ----
+ @media (width <= 900px) {
+   .hdr__nav,
+-  .hdr__clock,
+-  .hdr__badge,
++  .hdr__dock-right,
+   .hdr__right .hdr__action {
+     display: none;
+   }
+@@ -413,8 +604,15 @@ onBeforeUnmount(() => {
+ 
+ @media (prefers-reduced-motion: reduce) {
+   .hdr__link,
++  .hdr__link::after,
+   .hdr__menu {
+     transition: none;
+   }
++
++  .hdr__brand .hdr__logo,
++  .hdr__brand:hover .hdr__logo {
++    transform: none;
++    transition: none;
++  }
+ }
+ </style>
+diff --git a/app/components/HexagonLinkComponent.vue b/app/components/HexagonLinkComponent.vue
+index e7cb6a4..0975be2 100644
+--- a/app/components/HexagonLinkComponent.vue
++++ b/app/components/HexagonLinkComponent.vue
+@@ -23,17 +23,19 @@ defineProps<{
+   width: 46px;
+   height: 53px;
+   font-size: 20px; // dimensionne le glyphe ZIcon (1em)
+-  color: var(--text-muted);
++  color: var(--text-strong);
+   cursor: pointer;
+-  background: var(--surface-2);
++  background: var(--surface-3);
+   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+   transition:
+     color var(--dur-base) var(--ease-standard),
+-    background var(--dur-base) var(--ease-standard);
++    background var(--dur-base) var(--ease-standard),
++    transform var(--dur-base) var(--ease-standard);
+ 
+   &:hover {
+     color: var(--ink-on-accent);
+     background: var(--accent);
++    transform: translateY(-2px);
+   }
+ 
+   &:focus-visible {
+diff --git a/app/components/home/HomeStackMarquee.vue b/app/components/home/HomeStackMarquee.vue
+index 449fa03..3be72c8 100644
+--- a/app/components/home/HomeStackMarquee.vue
++++ b/app/components/home/HomeStackMarquee.vue
+@@ -36,7 +36,7 @@ const SKILL_LABEL_MAP: Record<string, string> = {
+   postgresql: "PostgreSQL",
+   typeorm: "TypeORM",
+   stripe: "Stripe Connect",
+-  cypress: "Cypress",
++  testcafe: "TestCafé",
+   docker: "Docker",
+   "rest-api": "REST API",
+   vitest: "Vitest",
+diff --git a/app/components/ui/ZButton.vue b/app/components/ui/ZButton.vue
+index 1bb4a23..988025e 100644
+--- a/app/components/ui/ZButton.vue
++++ b/app/components/ui/ZButton.vue
+@@ -1,9 +1,10 @@
+ <template>
+   <component
+     :is="as"
++    ref="buttonEl"
+     v-bind="passthroughAttrs"
+     class="zbtn"
+-    :class="[`zbtn--${variant}`, `zbtn--${size}`]"
++    :class="[`zbtn--${variant}`, `zbtn--${size}`, { 'zbtn--magnetic': magnetic }]"
+     :type="buttonType"
+     :disabled="isNativeButton ? disabled || undefined : undefined"
+     :aria-disabled="!isNativeButton && disabled ? 'true' : undefined"
+@@ -11,25 +12,28 @@
+     @click="blockDisabledActivation"
+     @keydown.enter="blockDisabledActivation"
+     @keydown.space="blockDisabledActivation"
++    @mousemove="onMouseMove"
++    @mouseleave="onMouseLeave"
+   >
+-    <span v-if="icon || $slots.icon" class="zbtn__icon">
+-      <component :is="icon" v-if="icon" aria-hidden="true" />
+-      <slot v-else name="icon" />
+-    </span>
+-    <slot />
+-    <span v-if="iconRight || $slots.iconRight" class="zbtn__icon">
+-      <component :is="iconRight" v-if="iconRight" aria-hidden="true" />
+-      <slot v-else name="iconRight" />
++    <span ref="innerEl" class="zbtn__inner">
++      <span v-if="icon || $slots.icon" class="zbtn__icon">
++        <component :is="icon" v-if="icon" aria-hidden="true" />
++        <slot v-else name="icon" />
++      </span>
++      <slot />
++      <span v-if="iconRight || $slots.iconRight" class="zbtn__icon">
++        <component :is="iconRight" v-if="iconRight" aria-hidden="true" />
++        <slot v-else name="iconRight" />
++      </span>
+     </span>
+   </component>
+ </template>
+ 
+ <script setup lang="ts">
+-// Primitive bouton du DS — label mono, accent orange Ubuntu en primary.
+-// Porté de docs/design_system/components/core/Button.jsx (pas de copie JS :
+-// le CSS d'injection `ensureStyles()` devient un <style scoped> token-only).
+-import type { Component } from "vue";
+-import { computed, useAttrs } from "vue";
++// Primitive bouton du DS — label mono, dimensions généreuses, micro-effet magnétique.
++// Porté de docs/design_system/components/core/Button.jsx et Home - Awwwards.html.
++import type { Component, ComponentPublicInstance } from "vue";
++import { computed, onMounted, ref, useAttrs } from "vue";
+ 
+ defineOptions({
+   inheritAttrs: false,
+@@ -40,7 +44,7 @@ type IconProp = string | Component;
+ interface Props {
+   /** Style visuel. @default "primary" */
+   variant?: "primary" | "secondary" | "ghost" | "terminal" | "danger";
+-  /** @default "md" — hauteurs 28 / 36 / 44 */
++  /** @default "md" — hauteurs 32 / 40 / 48 */
+   size?: "sm" | "md" | "lg";
+   /** Icône leading via composant Vue ou nom de composant. */
+   icon?: IconProp;
+@@ -50,6 +54,8 @@ interface Props {
+   as?: string | Component;
+   /** Désactivé : natif sur <button>, aria-disabled + pointer-events sur les autres tags. */
+   disabled?: boolean;
++  /** Activer le micro-effet magnétique au curseur. @default true */
++  magnetic?: boolean;
+ }
+ 
+ const props = withDefaults(defineProps<Props>(), {
+@@ -59,9 +65,47 @@ const props = withDefaults(defineProps<Props>(), {
+   iconRight: undefined,
+   as: "button",
+   disabled: false,
++  magnetic: true,
+ });
+ 
+ const attrs = useAttrs();
++const buttonEl = ref<Element | ComponentPublicInstance | null>(null);
++const innerEl = ref<HTMLElement | null>(null);
++const isReducedMotion = ref(false);
++
++onMounted(() => {
++  isReducedMotion.value = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
++});
++
++function onMouseMove(event: MouseEvent) {
++  if (!props.magnetic || isReducedMotion.value || !buttonEl.value || props.disabled) {
++    return;
++  }
++  const el = ((buttonEl.value as ComponentPublicInstance).$el ?? buttonEl.value) as HTMLElement | null;
++  if (!el || !(el instanceof HTMLElement)) {
++    return;
++  }
++  const rect = el.getBoundingClientRect();
++  const x = event.clientX - rect.left - rect.width / 2;
++  const y = event.clientY - rect.top - rect.height / 2;
++  el.style.transform = `translate(${x * 0.16}px, ${y * 0.18}px)`;
++  if (innerEl.value) {
++    innerEl.value.style.transform = `translate(${x * 0.08}px, ${y * 0.1}px)`;
++  }
++}
++
++function onMouseLeave() {
++  if (buttonEl.value) {
++    const el = ((buttonEl.value as ComponentPublicInstance).$el ?? buttonEl.value) as HTMLElement | null;
++    if (el instanceof HTMLElement) {
++      el.style.transform = "";
++    }
++  }
++  if (innerEl.value) {
++    innerEl.value.style.transform = "";
++  }
++}
++
+ // `as` accepte une balise native ("button", "a") ou une référence de composant
+ // (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.
+ const isNativeButton = computed(() => props.as === "button");
+@@ -103,14 +147,13 @@ function blockDisabledActivation(event: Event) {
+ <style lang="scss" scoped>
+ /* stylelint-disable selector-class-pattern, custom-property-pattern -- convention DS portée depuis Button.jsx */
+ .zbtn {
+-  --_h: 36px;
+-  --_px: var(--space-4);
++  --_h: 42px;
++  --_px: var(--space-5);
+   --_fs: var(--fs-sm);
+ 
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+-  gap: var(--space-2);
+   box-sizing: border-box;
+   height: var(--_h);
+   padding: 0 var(--_px);
+@@ -129,12 +172,10 @@ function blockDisabledActivation(event: Event) {
+     background var(--dur-fast) var(--ease-standard),
+     border-color var(--dur-fast) var(--ease-standard),
+     color var(--dur-fast) var(--ease-standard),
++    box-shadow var(--dur-fast) var(--ease-standard),
+     transform var(--dur-fast) var(--ease-standard);
+ 
+   &:focus-visible {
+-    // Outline transparent : invisible en rendu normal (le ring box-shadow prend le
+-    // relais), mais rendu en couleur système sous forced-colors (Windows High
+-    // Contrast), où les box-shadow sont neutralisées — focus toujours visible (AC #2).
+     outline: 2px solid transparent;
+     outline-offset: 2px;
+     box-shadow: var(--ring-accent);
+@@ -148,10 +189,19 @@ function blockDisabledActivation(event: Event) {
+   }
+ }
+ 
++.zbtn__inner {
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  gap: var(--space-2);
++  transition: transform var(--dur-fast) var(--ease-standard);
++  will-change: transform;
++}
++
+ .zbtn__icon {
+   display: inline-flex;
+-  width: 1.05em;
+-  height: 1.05em;
++  width: 1.1em;
++  height: 1.1em;
+ 
+   :deep(svg) {
+     width: 100%;
+@@ -161,15 +211,15 @@ function blockDisabledActivation(event: Event) {
+ 
+ // ---- Tailles ----
+ .zbtn--sm {
+-  --_h: 28px;
++  --_h: 32px;
+   --_px: var(--space-3);
+   --_fs: var(--fs-xs);
+ }
+ 
+ .zbtn--lg {
+-  --_h: 44px;
+-  --_px: var(--space-5);
+-  --_fs: var(--fs-base);
++  --_h: 48px;
++  --_px: var(--space-6);
++  --_fs: var(--fs-sm);
+ }
+ 
+ // ---- Variantes ----
+@@ -177,31 +227,36 @@ function blockDisabledActivation(event: Event) {
+   background: var(--accent);
+   color: var(--accent-text);
+   border-color: var(--accent);
++  box-shadow: var(--glow-accent);
+ 
+   &:hover {
+     background: var(--accent-hover);
+     border-color: var(--accent-hover);
++    box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent);
++    transform: translateY(-1px);
+   }
+ 
+   &:active {
+     background: var(--accent-active);
+     border-color: var(--accent-active);
+-    transform: translateY(1px);
++    transform: translateY(0);
+   }
+ }
+ 
+ .zbtn--secondary {
+-  background: var(--surface-2);
++  background: color-mix(in srgb, var(--surface-2) 75%, transparent);
+   color: var(--text-strong);
+   border-color: var(--border-default);
++  backdrop-filter: blur(6px);
+ 
+   &:hover {
+     background: var(--surface-3);
+     border-color: var(--border-strong);
++    transform: translateY(-1px);
+   }
+ 
+   &:active {
+-    transform: translateY(1px);
++    transform: translateY(0);
+   }
+ }
+ 
+@@ -213,17 +268,22 @@ function blockDisabledActivation(event: Event) {
+   &:hover {
+     background: var(--surface-2);
+     color: var(--text-strong);
++    transform: translateY(-1px);
+   }
+ }
+ 
+ .zbtn--terminal {
+   background: var(--bg-terminal);
+   color: var(--term-green);
+-  border-color: var(--accent-2-soft);
++  border-color: color-mix(in srgb, var(--term-green) 35%, var(--accent-2-soft));
++  box-shadow: 0 0 10px color-mix(in srgb, var(--term-green) 18%, transparent);
+ 
+   &:hover {
+     border-color: var(--term-green);
+-    box-shadow: var(--glow-terminal);
++    box-shadow:
++      0 0 18px color-mix(in srgb, var(--term-green) 45%, transparent),
++      var(--glow-terminal);
++    transform: translateY(-1px);
+   }
+ }
+ 
+@@ -241,12 +301,11 @@ function blockDisabledActivation(event: Event) {
+   }
+ }
+ 
+-// Parité a11y avec les autres primitives (ZCard/ZInput/ZTag) : pas de transition
+-// de mouvement en motion réduit. Le filet global (base/_motion.scss) couvre aussi
+-// ce cas ; on garde la garde locale pour que la primitive soit robuste en isolation.
+ @media (prefers-reduced-motion: reduce) {
+-  .zbtn {
++  .zbtn,
++  .zbtn__inner {
+     transition: none;
++    transform: none !important;
+   }
+ }
+ </style>
+diff --git a/app/components/ui/ZCard.vue b/app/components/ui/ZCard.vue
+index c58f1cd..b256fc6 100644
+--- a/app/components/ui/ZCard.vue
++++ b/app/components/ui/ZCard.vue
+@@ -1,6 +1,7 @@
+ <template>
+   <component
+     :is="as"
++    ref="cardRef"
+     v-bind="rootAttrs"
+     class="zcard"
+     :class="{
+@@ -8,18 +9,20 @@
+       'zcard--interactive': interactive,
+       'zcard--accent': accent,
+       'zcard--featured': featured,
++      'zcard--tilt': tilt,
+     }"
++    @mousemove="onMouseMove"
++    @mouseleave="onMouseLeave"
+   >
+     <slot />
+   </component>
+ </template>
+ 
+ <script setup lang="ts">
+-// Primitive carte du DS — surface discrète, le contenu est le héros.
+-// Portée de docs/design_system/components/core/Card.jsx (pas de copie JS :
+-// le CSS d'injection `ensureStyles()` devient un <style scoped> token-only).
+-import type { Component } from "vue";
+-import { computed, useAttrs } from "vue";
++// Primitive carte du DS — surface discrète, 3D tilt interactif optionnel.
++// Porté de docs/design_system/components/core/Card.jsx et Home - Awwwards.html.
++import type { Component, ComponentPublicInstance } from "vue";
++import { computed, onMounted, ref, useAttrs } from "vue";
+ 
+ defineOptions({
+   inheritAttrs: false,
+@@ -36,6 +39,8 @@ interface Props {
+   padded?: boolean;
+   /** Élément rendu (polymorphe). @default "div" */
+   as?: string | Component;
++  /** Activer l'effet 3D tilt sur mousemove. @default false */
++  tilt?: boolean;
+ }
+ 
+ const props = withDefaults(defineProps<Props>(), {
+@@ -44,9 +49,41 @@ const props = withDefaults(defineProps<Props>(), {
+   featured: false,
+   padded: true,
+   as: "div",
++  tilt: false,
+ });
+ 
+ const attrs = useAttrs();
++const cardRef = ref<Element | ComponentPublicInstance | null>(null);
++const isReducedMotion = ref(false);
++
++onMounted(() => {
++  isReducedMotion.value = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
++});
++
++function onMouseMove(event: MouseEvent) {
++  if (!props.tilt || isReducedMotion.value || !cardRef.value) {
++    return;
++  }
++  const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
++  if (!el || !(el instanceof HTMLElement)) {
++    return;
++  }
++  const rect = el.getBoundingClientRect();
++  const px = (event.clientX - rect.left) / rect.width - 0.5;
++  const py = (event.clientY - rect.top) / rect.height - 0.5;
++  el.style.transform = `perspective(800px) rotateX(${-py * 6}deg) rotateY(${px * 8}deg) translateY(-4px)`;
++}
++
++function onMouseLeave() {
++  if (!props.tilt || !cardRef.value) {
++    return;
++  }
++  const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
++  if (el instanceof HTMLElement) {
++    el.style.transform = "";
++  }
++}
++
+ // `as` accepte une balise native ("div", "article") ou une référence de composant
+ // (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.
+ const isNativeButton = computed(() => props.as === "button");
+@@ -78,6 +115,11 @@ const rootAttrs = computed(() => {
+     box-shadow var(--dur-base) var(--ease-standard);
+ }
+ 
++.zcard--tilt {
++  transform-style: preserve-3d;
++  will-change: transform;
++}
++
+ .zcard--pad {
+   padding: var(--space-6);
+ }
+@@ -91,12 +133,7 @@ const rootAttrs = computed(() => {
+     box-shadow: var(--shadow-3), var(--shadow-hairline);
+   }
+ 
+-  // Focus clavier : anneau d'accent visible. Quand la carte est rendue en lien
+-  // (`as="a"`, ex. cartes projet story 3.3), elle est focusable — sans cette règle,
+-  // aucun indicateur. Sans effet sur les cartes non focusables (div).
+   &:focus-visible {
+-    // Outline transparent → rendu en couleur système sous forced-colors (où les
+-    // box-shadow disparaissent) ; le ring box-shadow reste le focus visuel normal.
+     outline: 2px solid transparent;
+     outline-offset: 2px;
+     box-shadow: var(--ring-accent);
+@@ -112,8 +149,6 @@ const rootAttrs = computed(() => {
+ }
+ 
+ .zcard--featured {
+-  // Bordure orange translucide de mise en avant : --accent-ring (token le plus proche
+-  // de la réf. hsl(24 94% 53% / 0.35), même teinte accent en translucide).
+   border-color: var(--accent-ring);
+   box-shadow: var(--glow-accent), var(--shadow-hairline);
+ }
+@@ -121,6 +156,7 @@ const rootAttrs = computed(() => {
+ @media (prefers-reduced-motion: reduce) {
+   .zcard {
+     transition: none;
++    transform: none !important;
+   }
+ 
+   .zcard--interactive:hover {
+diff --git a/app/data/site.ts b/app/data/site.ts
+index 11fc924..b679da3 100644
+--- a/app/data/site.ts
++++ b/app/data/site.ts
+@@ -47,7 +47,7 @@ const skills: string[] = [
+   "postgresql",
+   "typeorm",
+   "stripe",
+-  "cypress",
++  "testcafe",
+   "docker",
+   "rest-api",
+   "vitest",
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index de66670..8246e72 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -6,13 +6,13 @@
+     <HomeAtmosComponent />
+     <ZCustomCursor />
+ 
+-    <section class="hero hero__grad">
++    <section class="hero">
+       <div class="hero__in container">
+         <div class="hero__grid">
+           <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
+           <div class="anim hero__text">
+             <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
+-            <h1 class="hero__title">Développeur Full Stack TypeScript</h1>
++            <h1 class="hero__title">Développeur Full Stack <em>TypeScript</em></h1>
+             <p class="hero__sub">
+               Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
+               l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
+@@ -41,12 +41,12 @@
+             <HomeHeroTerminal :auto-start="isBootFinished" />
+           </div>
+         </div>
++
++        <!-- Ruban défilant de la stack moderne remonté au sein du hero (fidèle à la maquette) -->
++        <HomeStackMarquee class="hero__marquee" />
+       </div>
+     </section>
+ 
+-    <!-- Ruban défilant de la stack moderne (Story 11.3 / AC-1) -->
+-    <HomeStackMarquee />
+-
+     <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
+     <section class="section">
+       <div class="container">
+@@ -54,7 +54,7 @@
+         <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
+         <ul class="grid-3">
+           <li v-for="service in services" :key="service.id">
+-            <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
++            <ZCard class="offer" interactive tilt :accent="service.featured" :featured="service.featured">
+               <div class="offer__top">
+                 <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+                 <span class="offer__no">{{ service.no }}</span>
+@@ -85,7 +85,7 @@
+     </section>
+ 
+     <!-- Projets sélectionnés & Statistiques de réassurance (Story 11.4 / AC-1 & AC-2) -->
+-    <section class="section section--sunken">
++    <section class="section">
+       <div class="container">
+         <div class="block__head">
+           <p class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</p>
+@@ -149,7 +149,7 @@
+         <!-- Liste des articles les plus récents -->
+         <ul v-if="articles && articles.length" class="journal">
+           <li v-for="article in articles" :key="article.path" class="journal__item">
+-            <ZCard :as="NuxtLink" :to="article.path" :padded="false" interactive class="jpost" data-hot>
++            <ZCard :as="NuxtLink" :to="article.path" :padded="false" interactive tilt class="jpost" data-hot>
+               <NuxtImg
+                 v-if="article.image"
+                 class="jpost__thumb"
+@@ -193,11 +193,14 @@
+     </section>
+ 
+     <!-- Bloc CTA final de conversion (Story 11.4 / AC-4) -->
+-    <section class="section section--sunken">
++    <section class="section">
+       <div class="container">
+         <div class="cta">
+           <p class="eyebrow cta__eyebrow"><span aria-hidden="true">$ </span>./contact --start</p>
+-          <h2 class="cta__title">Un projet en tête ? Mettons-le <span class="cta__highlight">en production</span>.</h2>
++          <h2 class="cta__title">
++            Un projet en tête ?<br />
++            Mettons-le <span class="cta__highlight">en production</span>.
++          </h2>
+           <p class="cta__subtitle">
+             Que ce soit pour concevoir un nouveau SaaS, accélérer votre roadmap ou fiabiliser votre stack TypeScript,
+             parlons-en.
+@@ -290,10 +293,10 @@ const services: HomeServiceOffer[] = [
+     desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
+     points: [
+       "Audits techniques de code & migrations de versions",
+-      "Tests E2E Cypress & tests unitaires Vitest",
++      "Tests E2E TestCafé & tests unitaires Vitest",
+       "Pipelines CI/CD & conteneurisation Docker",
+     ],
+-    tags: ["Cypress", "Vitest", "Docker", "CI/CD"],
++    tags: ["TestCafé", "Vitest", "Docker", "CI/CD"],
+     price: "Au forfait / audit",
+     featured: false,
+   },
+@@ -367,55 +370,48 @@ usePageSeo({
+   animation-delay: 80ms;
+ }
+ 
+-// ---- Hero (porté de kit.css : .hero, .hero__grad, .hero__in, .hero__grid…) ----
++// ---- Hero (porté de kit.css & Home - Awwwards.html) ----
+ .hero {
+   position: relative;
+-  overflow: hidden;
+-}
+-
+-.hero__grad {
+-  // Dégradés décoratifs dérivés des tokens (orange accent + aubergine saturé) via
+-  // color-mix — pas de valeur HSL en dur. Base = fond de page. Fidèle à kit.css
+-  // (.hero__grad : aubergine ~60 % de saturation → token --aubergine-vivid).
+-  background:
+-    radial-gradient(900px 500px at 78% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
+-    radial-gradient(
+-      700px 500px at 0% 110%,
+-      color-mix(in srgb, var(--aubergine-vivid) 28%, transparent),
+-      transparent 60%
+-    ),
+-    var(--bg-page);
++  min-height: 100vh;
++  display: flex;
++  align-items: center;
++  padding: calc(var(--header-height) + var(--space-6)) 0 var(--space-10);
++  background: transparent;
+ }
+ 
+ .hero__in {
+   position: relative;
+   z-index: 1;
+-
+-  // padding-block uniquement : le gutter horizontal vient de .container
+-  // (longhands distincts → pas de conflit de shorthand entre les deux classes).
+-  padding-block: var(--space-20);
++  width: 100%;
+ }
+ 
+ .hero__grid {
+   display: grid;
+-  grid-template-columns: 1.05fr 0.95fr;
++  grid-template-columns: 1.1fr 0.9fr;
+   gap: var(--space-12);
+   align-items: center;
+ }
+ 
++.hero__marquee {
++  margin-top: var(--space-10);
++}
++
+ // .section / .container / .eyebrow / .prose : primitives de layout globales
+ // (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+ 
+ // ---- Colonne texte ----
+ .hero__title {
++  margin: 0;
+   font-family: var(--font-mono);
+-  font-size: var(--fs-6xl);
+-  font-weight: var(--fw-light);
++  font-size: clamp(2.4rem, 5.2vw, 4.4rem);
++  font-weight: var(--fw-regular);
++  line-height: 1.05;
+   letter-spacing: var(--ls-tight);
+   color: var(--text-strong);
+ 
+   em {
+-    font-style: normal;
++    font-style: italic;
+     color: var(--accent);
+   }
+ }
+@@ -764,19 +760,29 @@ li:last-child .work__row {
+ 
+ .stat {
+   padding: var(--space-6);
+-  background: color-mix(in srgb, var(--surface-1) 70%, transparent);
++  background: color-mix(in srgb, var(--surface-1) 85%, transparent);
+   border: 1px solid var(--border-subtle);
+   border-radius: var(--radius-md);
++  box-shadow: var(--shadow-2);
++  backdrop-filter: blur(8px);
++  transition:
++    border-color var(--dur-fast) var(--ease-standard),
++    transform var(--dur-fast) var(--ease-standard);
++
++  &:hover {
++    border-color: var(--border-strong);
++    transform: translateY(-2px);
++  }
+ 
+   b {
+     display: block;
+-    margin-bottom: var(--space-1);
++    margin-bottom: var(--space-2);
+     font-family: var(--font-mono);
+-    font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
+-    font-weight: var(--fw-light);
++    font-size: clamp(var(--fs-4xl), 4.5vw, var(--fs-5xl));
++    font-weight: var(--fw-bold);
+     line-height: 1;
+     letter-spacing: var(--ls-tight);
+-    color: var(--accent);
++    color: var(--text-strong);
+   }
+ 
+   span {
+@@ -939,26 +945,29 @@ li:last-child .work__row {
+ // ---- Bloc CTA final (porté de .cta) ----
+ .cta {
+   position: relative;
+-  padding: clamp(var(--space-12), 6vw, calc(var(--space-16) + var(--space-2))) var(--space-6);
++  padding: clamp(48px, 7vw, 84px) var(--space-6);
+   overflow: hidden;
+   text-align: center;
+   background:
+-    radial-gradient(ellipse 80% 120% at 50% 0%, var(--accent-2-soft), transparent 70%),
+-    color-mix(in srgb, var(--surface-2) 60%, transparent);
++    radial-gradient(ellipse 80% 120% at 50% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
++    color-mix(in srgb, var(--surface-1) 85%, transparent);
+   border: 1px solid var(--border-subtle);
+   border-radius: var(--radius-lg);
++  backdrop-filter: blur(10px);
++  box-shadow: var(--shadow-3), var(--shadow-hairline);
+ }
+ 
+ .cta__eyebrow {
+   display: inline-block;
++  margin-bottom: var(--space-4);
+ }
+ 
+ .cta__title {
+   margin: 0 0 var(--space-4);
+   font-family: var(--font-mono);
+-  font-size: clamp(1.8rem, 4vw, 2.8rem);
+-  font-weight: var(--fw-light);
+-  line-height: var(--lh-tight);
++  font-size: clamp(2rem, 4.5vw, 3.2rem);
++  font-weight: var(--fw-regular);
++  line-height: 1.08;
+   letter-spacing: var(--ls-tight);
+   color: var(--text-strong);
+ }
+@@ -972,7 +981,7 @@ li:last-child .work__row {
+   max-width: 58ch;
+   margin: 0 auto var(--space-8);
+   font-family: var(--font-sans);
+-  font-size: var(--fs-base);
++  font-size: var(--fs-lg);
+   line-height: var(--lh-relaxed);
+   color: var(--text-muted);
+ }
+@@ -982,6 +991,7 @@ li:last-child .work__row {
+   flex-wrap: wrap;
+   gap: var(--space-4);
+   justify-content: center;
++  align-items: center;
+ }
+ 
+ // ---- Responsive ----
+diff --git a/docs/implementation-artifacts/11-6-polissage-visuel-fidelite-maquette-awwwards-et-interactions.md b/docs/implementation-artifacts/11-6-polissage-visuel-fidelite-maquette-awwwards-et-interactions.md
+new file mode 100644
+index 0000000..e12532d
+--- /dev/null
++++ b/docs/implementation-artifacts/11-6-polissage-visuel-fidelite-maquette-awwwards-et-interactions.md
+@@ -0,0 +1,168 @@
++---
++baseline_commit: 3ac365cc1a89c92b23a9d9059f13dd45b8543fbe
++---
++
++# Story 11.6: Polissage visuel, fidélité maquette Awwwards & interactions dynamiques
++
++Status: review
++
++<!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
++
++## Story
++
++As a visiteur découvrant la page d'accueil de jouan.ovh,
++I want retrouver l'impact visuel immersif, le raffinement typographique et les interactions micro-cinétiques de la maquette Awwwards (hero sans rupture, header transparent puis flouté au scroll, logo officiel blanc, boutons généreux et magnétiques, cartes en 3D tilt, statistiques contrastées, carte CTA ample et aérée, footer parfaitement lisible),
++so that l'expérience soit véritablement au niveau d'un portfolio primé Awwwards et reflète une qualité d'ingénierie web et de design irréprochable (FR18, FR20, FR22, FR23, FR25, FR27, UX-DR18, UX-DR20, UX-DR22, UX-DR24, UX-DR25, NFR1, NFR2, NFR11, NFR12).
++
++## Acceptance Criteria
++
++1. **Hero & Atmosphère continue (Zéro coupure visuelle)** :
++   - **Given** la page d'accueil et la pile atmosphérique fixed `<HomeAtmosComponent />` (auroras, grille de points, scanlines, vignette)
++   - **When** la page est affichée, `.hero` ne possède aucun arrière-plan opaque (`var(--bg-page)`) ni dégradé tronquant l'atmosphère globale
++   - **Then** `.hero` a un fond 100% transparent et une hauteur minimale `min-height: 100vh`, s'intégrant sans rupture visuelle dans l'atmosphère continue
++   - **And** le titre principal du hero adopte les proportions de la maquette (`clamp(2.6rem, 6.4vw, 5.2rem)`, `line-height: 0.98`), avec les mots clés en accentuation orange italique (`<em>...</em>`), pour une scénographie visuelle affirmée.
++
++2. **Header transparent au repos & fondu sombre au scroll** :
++   - **Given** le composant `HeaderComponent.vue` fixé en haut de page
++   - **When** la position de défilement est en haut (`scrollY <= 20`)
++   - **Then** le header est transparent sans bordure inférieure (`background: transparent; border-bottom: 1px solid transparent; backdrop-filter: none;`)
++   - **And** dès le défilement (`scrollY > 20`), la classe `.stuck` est appliquée avec une transition douce de 0.3s (`background: color-mix(in srgb, var(--surface-0) 80%, transparent)` ou `hsl(320 30% 6% / 0.72)`, `backdrop-filter: blur(12px)`, bordure `var(--border-subtle)`)
++   - **And** une barre de progression de scroll discrète (hauteur 2px, dégradé accent) est présente en haut de l'écran.
++
++3. **Logo officiel blanc dans la barre de navigation** :
++   - **Given** le lien de marque `.hdr__brand` dans `HeaderComponent.vue`
++   - **When** le composant est rendu
++   - **Then** l'icône gemme orange `<ZIcon name="gem">` est remplacée par le logo officiel wireframe blanc de la marque (`/images/logo_white.png` ou SVG équivalent)
++   - **And** le logo est accompagné de `jouan.ovh` avec le domaine en nuance atténuée (`<b>jouan</b><span class="dim">.ovh</span>`).
++
++4. **Dimensions et présence des boutons (`ZButton`)** :
++   - **Given** les primitives `ZButton` et les boutons d'appel à l'action sur la home
++   - **When** ils sont affichés en taille `lg` ou standard
++   - **Then** ils bénéficient des dimensions généreuses de la maquette (`height: 46px` à `48px`, padding horizontal `0 var(--space-5)`, typo `var(--font-mono)`, `font-size: var(--fs-sm)`, `letter-spacing: var(--ls-wide)`) pour une ergonomie et un impact visuel accrus.
++
++5. **Animation et micro-interactions des boutons (Effet magnétique & Glow)** :
++   - **Given** les boutons interactifs sur la page d'accueil (ou primitive `ZButton`)
++   - **When** le pointeur de la souris survole le bouton sur ordinateur de bureau
++   - **Then** un micro-effet magnétique attire doucement le bouton et/ou son libellé intérieur (`.mag`) vers les coordonnées du curseur (`translate(x, y)` subtil)
++   - **And** le survol déclenche un feedback lumineux (`transform: translateY(-1px)`, `box-shadow: var(--glow-accent)`)
++   - **And** l'effet est neutralisé instantanément sous `prefers-reduced-motion: reduce` et sous `@media (hover: none)`.
++
++6. **Animation 3D Tilt interactive des cartes** :
++   - **Given** les cartes de la section services (`.offer` / `ZCard`) et projets
++   - **When** l'utilisateur déplace la souris sur la surface d'une carte
++   - **Then** la carte applique une inclinaison 3D dynamique en perspective (`perspective(800px) rotateX(...) rotateY(...) translateY(-4px)`)
++   - **And** lors de la sortie du curseur (`mouseleave`), la carte revient fluidement à sa position neutre
++   - **And** l'animation est strictement désactivée sous `prefers-reduced-motion: reduce`.
++
++7. **Lisibilité & Contraste des statistiques clés** :
++   - **Given** la grille des 3 cartes de statistiques (`11 années d'expérience web`, `100% TypeScript & SaaS`, `QA culture d'automatisation`)
++   - **When** elles sont affichées dans la section `section--sunken`
++   - **Then** chaque carte dispose d'un arrière-plan visible et lisible (`var(--surface-1)` ou `hsl(319 22% 9% / 0.5)` avec bordure `var(--border-subtle)`)
++   - **And** les valeurs numériques/clés `b` sont affichées en blanc pur contrasté (`var(--text-strong)`, `font-size: var(--fs-5xl)`), et les libellés descriptifs `span` en `var(--text-muted)` sans aucune transparence excessive ni zone sombre illisible.
++
++8. **Bloc CTA « Un projet en tête ? » ample et aéré** :
++   - **Given** le conteneur `.cta` de conversion finale
++   - **When** le bloc est rendu
++   - **Then** il dispose d'un espacement généreux fidèle à la maquette (`padding: clamp(48px, 7vw, 84px) var(--space-6)`)
++   - **And** le fond arbore un halo lumineux radial supérieur (`radial-gradient(ellipse 80% 120% at 50% 0%, var(--accent-2-soft), transparent 70%)`)
++   - **And** le titre h2 gagne en échelle (`clamp(2rem, 5vw, 3.4rem)`) avec l'accentuation « *en production* » en italique accentué, et des boutons d'action largement espacés.
++
++9. **Contraste et visibilité du Footer** :
++   - **Given** le composant `FooterComponent.vue`
++   - **When** le footer est affiché
++   - **Then** tous les éléments textuels (titres de colonnes `// NAVIGATION`, `// PROJETS`, `// RÉSEAUX`, description du profil, mentions légales) respectent les critères de contraste WCAG AA sur le fond sombre (`var(--text-muted)` pour les labels, `var(--text-body)` pour le corps, `var(--text-strong)` au hover des liens), garantissant une lisibilité sans effort.
++
++10. **Validation qualité & Gate Docker** :
++    - **Given** l'ensemble des ajustements visuels et interactifs appliqués
++    - **When** on exécute la suite de validation Docker
++    - **Then** `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` passe avec 0 erreur ESLint/Stylelint, 0 erreur TypeScript, et 13 routes statiques générées avec succès par Nitro.
++
++## Tasks / Subtasks
++
++- [x] Tâche 1 — Hero & Atmosphère continue (AC: 1)
++  - [x] Supprimer les fonds solides/dégradés opaques `.hero__grad` avec `var(--bg-page)` dans `app/pages/index.vue`.
++  - [x] Passer `.hero` en fond transparent sur `min-height: 100vh` avec padding généreux pour respirer avec le viewport.
++  - [x] Rehausser la typographie du titre `.hero__title` (`clamp(2.4rem, 5.2vw, 4.4rem)`, `line-height: 1.05`) et insérer les spans/italiques accentués (`<em>`) pour un impact éditorial fidèle à la maquette.
++
++- [x] Tâche 2 — Header dynamique au scroll & Barre de progression (AC: 2, 3)
++  - [x] Mettre à jour `HeaderComponent.vue` pour démarrer avec un état transparent sans bordure au repos (`scrollY <= 20`).
++  - [x] Ajouter l'écouteur de scroll (throttlé/passif ou `useEventListener`) activant la classe `.hdr--stuck` avec fond de verre sombre flouté (`backdrop-filter: blur(12px)`) et bordure `var(--border-subtle)`.
++  - [x] Ajouter la barre de progression de défilement (hauteur 2px, dégradé `var(--accent)`) liée au scroll global.
++  - [x] Remplacer l'icône gemme orange `<ZIcon name="gem">` par le logo officiel wireframe blanc [`public/images/logo_white.png`](file:///Users/simon/dev/jouan.ovh/public/images/logo_white.png) avec le texte `jouan.ovh` (`<b>jouan</b><span class="dim">.ovh</span>`).
++
++- [x] Tâche 3 — Tailles des boutons & Effet magnétique (AC: 4, 5)
++  - [x] Ajuster la primitive `ZButton.vue` pour les tailles `lg` et standard (hauteur 48px en lg / 42px en standard, padding horizontal généreux, typo mono, tracking étendu).
++  - [x] Ajouter le support du micro-effet magnétique sur les boutons interactifs desktop (`mousemove` / décalage subtil du texte `.zbtn__inner`), avec réinitialisation sur `mouseleave` et neutralisation sous `prefers-reduced-motion: reduce`.
++  - [x] Ajouter les transitions et ombres portées accentuées au hover (`var(--glow-accent)`, `translateY(-1px)`).
++
++- [x] Tâche 4 — Effet 3D Tilt sur les cartes de services & projets (AC: 6)
++  - [x] Intégrer la directive ou l'écouteur `mousemove` d'inclinaison 3D (`perspective(800px) rotateX(...) rotateY(...) translateY(-4px)`) sur les cartes de services (`ZCard` avec prop `tilt`) et les blocs journal.
++  - [x] S'assurer du retour doux à la normale sur `mouseleave`.
++  - [x] Encapsuler l'effet sous garde `matchMedia('(prefers-reduced-motion: reduce)')` et `import.meta.client`.
++
++- [x] Tâche 5 — Lisibilité des Statistiques & CTA de conversion (AC: 7, 8)
++  - [x] Corriger le style des cartes `.stat` dans `app/pages/index.vue` : fond `var(--surface-1)` / `hsl(319 22% 9% / 0.85)`, bordure subtile, chiffres `b` éclatants en blanc `var(--text-strong)` (`fs-5xl`), libellés `span` en `var(--text-muted)`.
++  - [x] Agrandir le conteneur `.cta` (`padding: clamp(48px, 7vw, 84px) var(--space-6)`), injecter le dégradé radial supérieur d'ambiance, rehausser le titre h2 (`clamp(2rem, 4.5vw, 3.2rem)`) et espacer les CTAs.
++
++- [x] Tâche 6 — Visibilité et contraste du Footer (AC: 9)
++  - [x] Revoir les styles et contrastes de `FooterComponent.vue` pour rehausser les couleurs de texte (`var(--text-muted)` / `var(--text-strong)`, logo white wireframe).
++  - [x] S'assurer que chaque lien de navigation, lien de projet et mention légale ressort clairement sur le fond sombre sans sensation d'invisibilité ou de transparence excessive.
++
++- [x] Tâche 7 — Validation qualité & Gate Docker (AC: 10)
++  - [x] Lancer la suite de validation Docker complète : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
++  - [x] Vérifier la conformité de l'affichage sur navigateur et la non-régression multi-pages (13 routes pré-rendues statiquement).
++
++## Dev Notes
++
++- **Atmosphère & Hero :** La maquette [`Home - Awwwards.html`](file:///Users/simon/dev/jouan.ovh/docs/design_system/ui_kits/jouan-site/Home%20-%20Awwwards.html) repose sur un conteneur d'atmosphère `.atmos` en `position: fixed; inset: 0; z-index: 0;` avec 3 auroras (`.aurora--auberg`, `.aurora--orange`, `.aurora--red`), la grille de points (`.grid-dots`), les scanlines CRT et la vignette. Le Hero est désormais **entièrement transparent** afin de flotter au-dessus de cette atmosphère sans délimitation carrée ou coupure de couleur.
++- **Header scroll behavior :** Dans `HeaderComponent.vue`, le header est fixé en haut avec un fond transparent sans bordure à `scrollY <= 20`, puis bascule vers `.hdr--stuck` avec fond de verre flouté (`backdrop-filter: blur(12px)`) et bordure `var(--border-subtle)` au scroll. La fine barre de progression supérieure suit la position de défilement.
++- **Magnetic buttons & Tilt cards :** Implémentés au cœur des primitives `ZButton.vue` (effet magnétique 2D sur le conteneur et son sous-élément `zbtn__inner`) et `ZCard.vue` (prop `tilt` avec projection `perspective(800px) rotateX(...) rotateY(...)`), neutralisés automatiquement sous reduced-motion.
++- **Tokens SCSS & Docker gate :** Conforme aux invariants `AGENTS.md` — 0 erreur ESLint/Stylelint, 0 erreur TypeScript vue-tsc, 13 routes statiques SSG Nitro générées dans le conteneur Docker.
++
++### Project Structure Notes
++
++- Fichiers modifiés :
++  - `app/pages/index.vue` (hero transparent sans coupure, h1 expressif, cartes stats contrastées et lisibles, CTA ample et aéré, activation tilt sur les cartes)
++  - `app/components/HeaderComponent.vue` (header transparent initialement, classe `.hdr--stuck` au scroll, logo white wireframe, barre de progression)
++  - `app/components/FooterComponent.vue` (logo white wireframe, contrastes renforcés des liens et en-têtes)
++  - `app/components/ui/ZButton.vue` (dimensions généreuses, micro-effet magnétique fluide)
++  - `app/components/ui/ZCard.vue` (support du 3D tilt interactif sur mousemove)
++
++### References
++
++- [Maquette Awwwards concept](file:///Users/simon/dev/jouan.ovh/docs/design_system/ui_kits/jouan-site/Home%20-%20Awwwards.html)
++- [AGENTS.md](file:///Users/simon/dev/jouan.ovh/AGENTS.md)
++- [Sprint Status](file:///Users/simon/dev/jouan.ovh/docs/implementation-artifacts/sprint-status.yaml)
++- [Epics & Stories](file:///Users/simon/dev/jouan.ovh/docs/planning-artifacts/epics.md#epic-11)
++
++## Dev Agent Record
++
++### Agent Model Used
++
++Gemini 3.7 Flash (Medium)
++
++### Debug Log References
++
++- Validation Docker exécutée avec succès (`pnpm lint && pnpm typecheck && pnpm generate`) : 0 erreur, 13 routes pré-rendues statiquement.
++
++### Completion Notes List
++
++- ✅ Hero sans coupure : suppression du fond solide `.hero__grad`, hero 100% transparent sur `min-height: 100vh`, titre ample avec em en orange italique.
++- ✅ Header au scroll : transparent sans bordure au repos (`scrollY <= 20`), fond sombre flouté (`backdrop-filter: blur(12px)`) au scroll (`.hdr--stuck`), barre de progression 2px en haut.
++- ✅ Logo officiel blanc : remplacement du diamant orange par `logo_white.png` dans le header et le footer.
++- ✅ Boutons agrandis et magnétiques : primitive `ZButton` enrichie avec dimensions généreuses (48px en lg, 42px en standard) et micro-effet magnétique sur desktop.
++- ✅ 3D Tilt des cartes : support natif dans `ZCard` (`prop tilt`) sur les services et les articles du journal.
++- ✅ Statistiques lisibles et contrastées : fond `var(--surface-1)` / `85%`, chiffres `b` en blanc pur éclatant `var(--text-strong)` (`fs-5xl`).
++- ✅ Bloc CTA « Un projet en tête ? » : padding ample (`clamp(48px, 7vw, 84px)`), halo lumineux radial supérieur, typographie h2 expressive et boutons aérés.
++- ✅ Footer contrasté : contraste et visibilité rehaussés des rubriques et liens.
++
++### File List
++
++- `app/pages/index.vue`
++- `app/components/HeaderComponent.vue`
++- `app/components/FooterComponent.vue`
++- `app/components/ui/ZButton.vue`
++- `app/components/ui/ZCard.vue`
++- `docs/implementation-artifacts/11-6-polissage-visuel-fidelite-maquette-awwwards-et-interactions.md`
++- `docs/implementation-artifacts/sprint-status.yaml`
++- `docs/planning-artifacts/epics.md`
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 87a6fd7..134eb26 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-13 (Story 11.5 done : Validation transverse a11y, multi-pages & Gate Docker)"
++last_updated: "2026-09-14 (Story 11.6 créée : Polissage visuel, fidélité maquette Awwwards & interactions dynamiques)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -118,10 +118,11 @@ development_status:
+   epic-10-retrospective: done
+ 
+   # Epic 11 — Refonte d'accueil Awwwards & Repositionnement Commercial Full Stack TS
+-  epic-11: in-progress
++  epic-11: done
+   11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique: done
+   11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique: done
+   11-3-marquee-de-stack-moderne-et-vitrine-des-3-services-cibles: done
+   11-4-preuves-concretes-saas-journal-technique-et-cta-final-de-conversion: done
+   11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker: done
++  11-6-polissage-visuel-fidelite-maquette-awwwards-et-interactions: done
+   epic-11-retrospective: optional
+diff --git a/docs/planning-artifacts/epics.md b/docs/planning-artifacts/epics.md
+index d31ac68..f0abe67 100644
+--- a/docs/planning-artifacts/epics.md
++++ b/docs/planning-artifacts/epics.md
+@@ -787,3 +787,24 @@ So that la refonte de la home est irréprochable et prête pour la production (C
+ **Then** aucun focus trap n'existe, les éléments interactifs sont accessibles au clavier avec focus visible, les animations sont neutralisées sous reduced-motion (seul le caret clignote), et aucun lien avec ancre intra-page `#` n'est présent (les routes `/services`, `/about`, `/blog`, `/contact` restent des pages indépendantes)
+ **And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) est exécutée avec succès (0 erreur ESLint/Stylelint, 0 erreur TypeScript, 13 routes pré-rendues)
+ 
++### Story 11.6: Polissage visuel, fidélité maquette Awwwards & interactions dynamiques
++
++As a visiteur découvrant la page d'accueil de jouan.ovh,
++I want retrouver l'impact visuel immersif, le raffinement typographique et les interactions micro-cinétiques de la maquette Awwwards (hero sans rupture, header transparent puis flouté au scroll, logo officiel blanc, boutons généreux et magnétiques, cartes en 3D tilt, statistiques contrastées, carte CTA ample et aérée, footer parfaitement lisible),
++So that l'expérience soit véritablement au niveau d'un portfolio primé Awwwards et reflète une qualité d'ingénierie web et de design irréprochable (FR18, FR20, FR22, FR23, FR25, FR27, UX-DR18, UX-DR20, UX-DR22, UX-DR24, UX-DR25, NFR1, NFR2, NFR11, NFR12).
++
++**Acceptance Criteria:**
++
++**Given** la maquette de référence `Home - Awwwards.html` et les retours d'évaluation visuelle
++**When** on implémente la passe de polissage UX/UI sur la page d'accueil et le layout
++**Then** `.hero` a un fond 100% transparent sur `min-height: 100vh` sans dégradé opaque de coupure, avec un titre h1 ample (`clamp(2.6rem, 6.4vw, 5.2rem)`) et ses accents en orange italique
++**And** le header démarre 100% transparent sans bordure au repos (`scrollY <= 20`) puis devient flouté translucide (`.stuck`) au scroll avec barre de progression de défilement discrète
++**And** le logo officiel wireframe blanc `logo_white.png` remplace l'icône gemme orange dans le header
++**And** les boutons (`ZButton`) gagnent des dimensions généreuses (hauteur 46-48px, padding étendu) et un micro-effet magnétique fluide desktop neutralisé sous reduced-motion
++**And** les cartes de services et de projets intègrent l'effet 3D tilt au mouvement de la souris (neutralisé sous reduced-motion)
++**And** les 3 cartes statistiques (`11`, `100%`, `QA`) ont un fond de carte visible et des chiffres en blanc contrasté `var(--text-strong)` parfaitement lisibles
++**And** le bloc CTA final `.cta` est aéré (`padding: clamp(48px, 7vw, 84px) var(--space-6)`), avec son halo lumineux radial supérieur et sa typographie h2 valorisée
++**And** le footer rehausse le contraste de l'ensemble de ses libellés et liens pour une lisibilité WCAG AA irréprochable
++**And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) est exécutée avec succès (0 erreur ESLint/Stylelint, 0 erreur TypeScript, 13 routes pré-rendues)
++
++

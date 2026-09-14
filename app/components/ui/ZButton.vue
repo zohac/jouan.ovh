@@ -33,7 +33,7 @@
 // Primitive bouton du DS — label mono, dimensions généreuses, micro-effet magnétique.
 // Porté de docs/design_system/components/core/Button.jsx et Home - Awwwards.html.
 import type { Component, ComponentPublicInstance } from "vue";
-import { computed, onMounted, ref, useAttrs } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
 
 defineOptions({
   inheritAttrs: false,
@@ -44,7 +44,7 @@ type IconProp = string | Component;
 interface Props {
   /** Style visuel. @default "primary" */
   variant?: "primary" | "secondary" | "ghost" | "terminal" | "danger";
-  /** @default "md" — hauteurs 32 / 40 / 48 */
+  /** @default "md" — hauteurs 32 / 46 / 48 */
   size?: "sm" | "md" | "lg";
   /** Icône leading via composant Vue ou nom de composant. */
   icon?: IconProp;
@@ -72,13 +72,30 @@ const attrs = useAttrs();
 const buttonEl = ref<Element | ComponentPublicInstance | null>(null);
 const innerEl = ref<HTMLElement | null>(null);
 const isReducedMotion = ref(false);
+let motionMq: MediaQueryList | null = null;
+
+function onMotionChange(event: MediaQueryListEvent) {
+  isReducedMotion.value = event.matches;
+  if (event.matches) {
+    onMouseLeave();
+  }
+}
 
 onMounted(() => {
-  isReducedMotion.value = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  isReducedMotion.value = motionMq.matches;
+  motionMq.addEventListener("change", onMotionChange);
+});
+
+onBeforeUnmount(() => {
+  motionMq?.removeEventListener("change", onMotionChange);
 });
 
 function onMouseMove(event: MouseEvent) {
   if (!props.magnetic || isReducedMotion.value || !buttonEl.value || props.disabled) {
+    return;
+  }
+  if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
     return;
   }
   const el = ((buttonEl.value as ComponentPublicInstance).$el ?? buttonEl.value) as HTMLElement | null;
@@ -86,11 +103,16 @@ function onMouseMove(event: MouseEvent) {
     return;
   }
   const rect = el.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return;
+  }
   const x = event.clientX - rect.left - rect.width / 2;
   const y = event.clientY - rect.top - rect.height / 2;
-  el.style.transform = `translate(${x * 0.16}px, ${y * 0.18}px)`;
+  el.style.setProperty("--mag-x", `${(x * 0.16).toFixed(2)}px`);
+  el.style.setProperty("--mag-y", `${(y * 0.18).toFixed(2)}px`);
   if (innerEl.value) {
-    innerEl.value.style.transform = `translate(${x * 0.08}px, ${y * 0.1}px)`;
+    innerEl.value.style.setProperty("--mag-inner-x", `${(x * 0.08).toFixed(2)}px`);
+    innerEl.value.style.setProperty("--mag-inner-y", `${(y * 0.1).toFixed(2)}px`);
   }
 }
 
@@ -98,13 +120,22 @@ function onMouseLeave() {
   if (buttonEl.value) {
     const el = ((buttonEl.value as ComponentPublicInstance).$el ?? buttonEl.value) as HTMLElement | null;
     if (el instanceof HTMLElement) {
-      el.style.transform = "";
+      el.style.removeProperty("--mag-x");
+      el.style.removeProperty("--mag-y");
     }
   }
   if (innerEl.value) {
-    innerEl.value.style.transform = "";
+    innerEl.value.style.removeProperty("--mag-inner-x");
+    innerEl.value.style.removeProperty("--mag-inner-y");
   }
 }
+
+watch(
+  () => [props.magnetic, props.disabled],
+  () => {
+    onMouseLeave();
+  },
+);
 
 // `as` accepte une balise native ("button", "a") ou une référence de composant
 // (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.
@@ -114,42 +145,34 @@ const buttonType = computed(() => {
   if (!isNativeButton.value) {
     return undefined;
   }
-
-  return typeof attrs.type === "string" ? attrs.type : "button";
+  return typeof attrs.type === "string" ? (attrs.type as "button" | "submit" | "reset") : "button";
 });
 
+// Transmet tous les attributs au root polymorphe en excluant `type` pour les non-boutons.
 const passthroughAttrs = computed(() => {
-  if (!isDisabledNonNative.value) {
+  if (isNativeButton.value) {
     return attrs;
   }
-
-  return Object.fromEntries(
-    Object.entries(attrs).filter(([key]) => {
-      return key !== "href" && key !== "tabindex" && key !== "tabIndex" && !/^on[A-Z]/.test(key);
-    }),
-  );
+  const { type: _discardedType, ...rest } = attrs;
+  return rest;
 });
 
 function blockDisabledActivation(event: Event) {
-  if (!isDisabledNonNative.value) {
+  if (!props.disabled) {
     return;
   }
-
   event.preventDefault();
   event.stopPropagation();
-
-  if ("stopImmediatePropagation" in event) {
-    event.stopImmediatePropagation();
-  }
 }
 </script>
 
 <style lang="scss" scoped>
 /* stylelint-disable selector-class-pattern, custom-property-pattern -- convention DS portée depuis Button.jsx */
 .zbtn {
-  --_h: 42px;
+  --_h: 46px;
   --_px: var(--space-5);
   --_fs: var(--fs-sm);
+  --_ty: 0;
 
   display: inline-flex;
   align-items: center;
@@ -168,12 +191,21 @@ function blockDisabledActivation(event: Event) {
   user-select: none;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
+  transform: translate(var(--mag-x, 0), calc(var(--mag-y, 0) + var(--_ty, 0)));
   transition:
     background var(--dur-fast) var(--ease-standard),
     border-color var(--dur-fast) var(--ease-standard),
     color var(--dur-fast) var(--ease-standard),
     box-shadow var(--dur-fast) var(--ease-standard),
     transform var(--dur-fast) var(--ease-standard);
+
+  &:hover {
+    --_ty: -1px;
+  }
+
+  &:active {
+    --_ty: 0;
+  }
 
   &:focus-visible {
     outline: 2px solid transparent;
@@ -194,6 +226,7 @@ function blockDisabledActivation(event: Event) {
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  transform: translate(var(--mag-inner-x, 0), var(--mag-inner-y, 0));
   transition: transform var(--dur-fast) var(--ease-standard);
   will-change: transform;
 }
@@ -233,13 +266,11 @@ function blockDisabledActivation(event: Event) {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
     box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent);
-    transform: translateY(-1px);
   }
 
   &:active {
     background: var(--accent-active);
     border-color: var(--accent-active);
-    transform: translateY(0);
   }
 }
 
@@ -252,11 +283,6 @@ function blockDisabledActivation(event: Event) {
   &:hover {
     background: var(--surface-3);
     border-color: var(--border-strong);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
   }
 }
 
@@ -268,7 +294,6 @@ function blockDisabledActivation(event: Event) {
   &:hover {
     background: var(--surface-2);
     color: var(--text-strong);
-    transform: translateY(-1px);
   }
 }
 
@@ -283,7 +308,6 @@ function blockDisabledActivation(event: Event) {
     box-shadow:
       0 0 18px color-mix(in srgb, var(--term-green) 45%, transparent),
       var(--glow-terminal);
-    transform: translateY(-1px);
   }
 }
 
@@ -297,7 +321,7 @@ function blockDisabledActivation(event: Event) {
   }
 
   &:active {
-    transform: translateY(1px);
+    --_ty: 1px;
   }
 }
 
