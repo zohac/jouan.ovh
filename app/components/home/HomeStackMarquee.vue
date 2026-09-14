@@ -36,7 +36,7 @@ const SKILL_LABEL_MAP: Record<string, string> = {
   postgresql: "PostgreSQL",
   typeorm: "TypeORM",
   stripe: "Stripe Connect",
-  cypress: "Cypress",
+  testcafe: "TestCafé",
   docker: "Docker",
   "rest-api": "REST API",
   vitest: "Vitest",

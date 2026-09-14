@@ -23,17 +23,19 @@ defineProps<{
   width: 46px;
   height: 53px;
   font-size: 20px; // dimensionne le glyphe ZIcon (1em)
-  color: var(--text-muted);
+  color: var(--text-strong);
   cursor: pointer;
-  background: var(--surface-2);
+  background: var(--surface-3);
   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
   transition:
     color var(--dur-base) var(--ease-standard),
-    background var(--dur-base) var(--ease-standard);
+    background var(--dur-base) var(--ease-standard),
+    transform var(--dur-base) var(--ease-standard);
 
   &:hover {
     color: var(--ink-on-accent);
     background: var(--accent);
+    transform: translateY(-2px);
   }
 
   &:focus-visible {

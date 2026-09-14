@@ -1,6 +1,7 @@
 <template>
   <component
     :is="as"
+    ref="cardRef"
     v-bind="rootAttrs"
     class="zcard"
     :class="{
@@ -8,18 +9,20 @@
       'zcard--interactive': interactive,
       'zcard--accent': accent,
       'zcard--featured': featured,
+      'zcard--tilt': tilt,
     }"
+    @mousemove="onMouseMove"
+    @mouseleave="onMouseLeave"
   >
     <slot />
   </component>
 </template>
 
 <script setup lang="ts">
-// Primitive carte du DS — surface discrète, le contenu est le héros.
-// Portée de docs/design_system/components/core/Card.jsx (pas de copie JS :
-// le CSS d'injection `ensureStyles()` devient un <style scoped> token-only).
-import type { Component } from "vue";
-import { computed, useAttrs } from "vue";
+// Primitive carte du DS — surface discrète, 3D tilt interactif optionnel.
+// Porté de docs/design_system/components/core/Card.jsx et Home - Awwwards.html.
+import type { Component, ComponentPublicInstance } from "vue";
+import { computed, onMounted, ref, useAttrs } from "vue";
 
 defineOptions({
   inheritAttrs: false,
@@ -36,6 +39,8 @@ interface Props {
   padded?: boolean;
   /** Élément rendu (polymorphe). @default "div" */
   as?: string | Component;
+  /** Activer l'effet 3D tilt sur mousemove. @default false */
+  tilt?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -44,9 +49,41 @@ const props = withDefaults(defineProps<Props>(), {
   featured: false,
   padded: true,
   as: "div",
+  tilt: false,
 });
 
 const attrs = useAttrs();
+const cardRef = ref<Element | ComponentPublicInstance | null>(null);
+const isReducedMotion = ref(false);
+
+onMounted(() => {
+  isReducedMotion.value = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+});
+
+function onMouseMove(event: MouseEvent) {
+  if (!props.tilt || isReducedMotion.value || !cardRef.value) {
+    return;
+  }
+  const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
+  if (!el || !(el instanceof HTMLElement)) {
+    return;
+  }
+  const rect = el.getBoundingClientRect();
+  const px = (event.clientX - rect.left) / rect.width - 0.5;
+  const py = (event.clientY - rect.top) / rect.height - 0.5;
+  el.style.transform = `perspective(800px) rotateX(${-py * 6}deg) rotateY(${px * 8}deg) translateY(-4px)`;
+}
+
+function onMouseLeave() {
+  if (!props.tilt || !cardRef.value) {
+    return;
+  }
+  const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
+  if (el instanceof HTMLElement) {
+    el.style.transform = "";
+  }
+}
+
 // `as` accepte une balise native ("div", "article") ou une référence de composant
 // (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.
 const isNativeButton = computed(() => props.as === "button");
@@ -78,6 +115,11 @@ const rootAttrs = computed(() => {
     box-shadow var(--dur-base) var(--ease-standard);
 }
 
+.zcard--tilt {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
 .zcard--pad {
   padding: var(--space-6);
 }
@@ -91,12 +133,7 @@ const rootAttrs = computed(() => {
     box-shadow: var(--shadow-3), var(--shadow-hairline);
   }
 
-  // Focus clavier : anneau d'accent visible. Quand la carte est rendue en lien
-  // (`as="a"`, ex. cartes projet story 3.3), elle est focusable — sans cette règle,
-  // aucun indicateur. Sans effet sur les cartes non focusables (div).
   &:focus-visible {
-    // Outline transparent → rendu en couleur système sous forced-colors (où les
-    // box-shadow disparaissent) ; le ring box-shadow reste le focus visuel normal.
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow: var(--ring-accent);
@@ -112,8 +149,6 @@ const rootAttrs = computed(() => {
 }
 
 .zcard--featured {
-  // Bordure orange translucide de mise en avant : --accent-ring (token le plus proche
-  // de la réf. hsl(24 94% 53% / 0.35), même teinte accent en translucide).
   border-color: var(--accent-ring);
   box-shadow: var(--glow-accent), var(--shadow-hairline);
 }
@@ -121,6 +156,7 @@ const rootAttrs = computed(() => {
 @media (prefers-reduced-motion: reduce) {
   .zcard {
     transition: none;
+    transform: none !important;
   }
 
   .zcard--interactive:hover {

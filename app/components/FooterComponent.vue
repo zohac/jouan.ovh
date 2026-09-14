@@ -4,8 +4,8 @@
       <div class="ftr__in">
         <div class="ftr__brand-col">
           <NuxtLink to="/" class="ftr__brand">
-            <ZIcon name="gem" class="ftr__logo" />
-            <b>jouan.ovh</b>
+            <img src="/images/logo_white.png" alt="" class="ftr__logo" width="22" height="22" />
+            <span><b>jouan</b><span class="dim">.ovh</span></span>
           </NuxtLink>
           <p class="ftr__tagline">{{ profile.role }}. {{ profile.city }}.</p>
         </div>
@@ -32,8 +32,11 @@
           <LinkListComponent />
         </div>
       </div>
+    </div>
 
-      <div class="ftr__bottom">
+    <!-- Barre basse pleine largeur (border-top 100% de la fenêtre) -->
+    <div class="ftr__bottom-bar">
+      <div class="ftr__container ftr__bottom">
         <span>© {{ year }} Simon Jouan — jouan.ovh</span>
         <span class="ftr__term">anon.@jouan.ovh:~$ <span class="ftr__cmd">echo "merci de votre visite"</span></span>
       </div>
@@ -65,10 +68,12 @@ const year = new Date().getFullYear();
 <style lang="scss" scoped>
 /* stylelint-disable selector-class-pattern -- convention DS BEM (block__element) portée depuis Footer.jsx/kit.css */
 .ftr {
+  position: relative;
+  z-index: 10;
   margin-top: auto;
   background: var(--surface-1);
   border-top: 1px solid var(--border-subtle);
-  padding: var(--space-12) 0 var(--space-8);
+  padding: var(--space-12) 0 0;
 }
 
 .ftr__container {
@@ -93,13 +98,16 @@ const year = new Date().getFullYear();
 .ftr__brand {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   margin-bottom: var(--space-3);
   text-decoration: none;
 
   .ftr__logo {
-    font-size: 22px;
-    color: var(--accent);
+    display: block;
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--surface-0) 60%, transparent));
   }
 
   b {
@@ -107,6 +115,10 @@ const year = new Date().getFullYear();
     font-size: var(--fs-md);
     font-weight: var(--fw-bold);
     color: var(--text-strong);
+  }
+
+  .dim {
+    color: var(--text-muted);
   }
 
   // Lien focusable (logo + nom) : anneau DS cohérent avec le reste du châssis.
@@ -121,7 +133,7 @@ const year = new Date().getFullYear();
 .ftr__tagline {
   margin: 0;
   font-size: var(--fs-sm);
-  color: var(--text-muted);
+  color: var(--text-body);
 }
 
 .ftr__col {
@@ -133,10 +145,10 @@ const year = new Date().getFullYear();
   margin: 0 0 var(--space-3);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-medium);
   letter-spacing: var(--ls-wider);
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--accent);
 }
 
 .ftr__list {
@@ -152,12 +164,15 @@ const year = new Date().getFullYear();
   padding: var(--space-1) 0;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  color: var(--text-body);
+  color: var(--text-strong);
   text-decoration: none;
-  transition: color var(--dur-fast) var(--ease-standard);
+  transition:
+    color var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
 
   &:hover {
     color: var(--accent);
+    transform: translateX(2px);
   }
 
   // Anneau de focus DS (les liens du footer n'avaient que l'outline UA par défaut).
@@ -169,13 +184,20 @@ const year = new Date().getFullYear();
   }
 
   &--static {
-    color: var(--text-muted);
+    color: var(--text-body);
     cursor: default;
 
     &:hover {
-      color: var(--text-muted);
+      color: var(--text-body);
+      transform: none;
     }
   }
+}
+
+.ftr__bottom-bar {
+  width: 100%;
+  margin-top: var(--space-8);
+  border-top: 1px solid var(--border-default);
 }
 
 .ftr__bottom {
@@ -183,24 +205,22 @@ const year = new Date().getFullYear();
   flex-wrap: wrap;
   gap: var(--space-3);
   justify-content: space-between;
-  margin-top: var(--space-8);
-  padding-top: var(--space-5);
+  align-items: center;
+  padding-block: var(--space-5);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-
-  // Contraste (story 9.2) : --text-faint (~3:1 sur la surface footer) → --text-muted
-  // pour une ligne de copyright lisible (≥ 4.5:1). Token, pas de couleur en dur.
-  color: var(--text-muted);
-  border-top: 1px solid var(--border-subtle);
+  color: var(--text-body);
 }
 
 .ftr__cmd {
   color: var(--term-green);
+  font-weight: var(--fw-medium);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ftr__link {
     transition: none;
+    transform: none !important;
   }
 }
 </style>

@@ -6,13 +6,13 @@
     <HomeAtmosComponent />
     <ZCustomCursor />
 
-    <section class="hero hero__grad">
+    <section class="hero">
       <div class="hero__in container">
         <div class="hero__grid">
           <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
           <div class="anim hero__text">
             <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
-            <h1 class="hero__title">Développeur Full Stack TypeScript</h1>
+            <h1 class="hero__title">Développeur Full Stack <em>TypeScript</em></h1>
             <p class="hero__sub">
               Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
               l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
@@ -41,11 +41,11 @@
             <HomeHeroTerminal :auto-start="isBootFinished" />
           </div>
         </div>
+
+        <!-- Ruban défilant de la stack moderne remonté au sein du hero (fidèle à la maquette) -->
+        <HomeStackMarquee class="hero__marquee" />
       </div>
     </section>
-
-    <!-- Ruban défilant de la stack moderne (Story 11.3 / AC-1) -->
-    <HomeStackMarquee />
 
     <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
     <section class="section">
@@ -54,7 +54,7 @@
         <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
         <ul class="grid-3">
           <li v-for="service in services" :key="service.id">
-            <ZCard class="offer" interactive :accent="service.featured" :featured="service.featured">
+            <ZCard class="offer" interactive tilt :accent="service.featured" :featured="service.featured">
               <div class="offer__top">
                 <div class="offer__icon"><ZIcon :name="service.icon" /></div>
                 <span class="offer__no">{{ service.no }}</span>
@@ -85,7 +85,7 @@
     </section>
 
     <!-- Projets sélectionnés & Statistiques de réassurance (Story 11.4 / AC-1 & AC-2) -->
-    <section class="section section--sunken">
+    <section class="section">
       <div class="container">
         <div class="block__head">
           <p class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</p>
@@ -149,7 +149,7 @@
         <!-- Liste des articles les plus récents -->
         <ul v-if="articles && articles.length" class="journal">
           <li v-for="article in articles" :key="article.path" class="journal__item">
-            <ZCard :as="NuxtLink" :to="article.path" :padded="false" interactive class="jpost" data-hot>
+            <ZCard :as="NuxtLink" :to="article.path" :padded="false" interactive tilt class="jpost" data-hot>
               <NuxtImg
                 v-if="article.image"
                 class="jpost__thumb"
@@ -193,11 +193,14 @@
     </section>
 
     <!-- Bloc CTA final de conversion (Story 11.4 / AC-4) -->
-    <section class="section section--sunken">
+    <section class="section">
       <div class="container">
         <div class="cta">
           <p class="eyebrow cta__eyebrow"><span aria-hidden="true">$ </span>./contact --start</p>
-          <h2 class="cta__title">Un projet en tête ? Mettons-le <span class="cta__highlight">en production</span>.</h2>
+          <h2 class="cta__title">
+            Un projet en tête ?<br />
+            Mettons-le <span class="cta__highlight">en production</span>.
+          </h2>
           <p class="cta__subtitle">
             Que ce soit pour concevoir un nouveau SaaS, accélérer votre roadmap ou fiabiliser votre stack TypeScript,
             parlons-en.
@@ -290,10 +293,10 @@ const services: HomeServiceOffer[] = [
     desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
     points: [
       "Audits techniques de code & migrations de versions",
-      "Tests E2E Cypress & tests unitaires Vitest",
+      "Tests E2E TestCafé & tests unitaires Vitest",
       "Pipelines CI/CD & conteneurisation Docker",
     ],
-    tags: ["Cypress", "Vitest", "Docker", "CI/CD"],
+    tags: ["TestCafé", "Vitest", "Docker", "CI/CD"],
     price: "Au forfait / audit",
     featured: false,
   },
@@ -367,40 +370,31 @@ usePageSeo({
   animation-delay: 80ms;
 }
 
-// ---- Hero (porté de kit.css : .hero, .hero__grad, .hero__in, .hero__grid…) ----
+// ---- Hero (porté de kit.css & Home - Awwwards.html) ----
 .hero {
   position: relative;
-  overflow: hidden;
-}
-
-.hero__grad {
-  // Dégradés décoratifs dérivés des tokens (orange accent + aubergine saturé) via
-  // color-mix — pas de valeur HSL en dur. Base = fond de page. Fidèle à kit.css
-  // (.hero__grad : aubergine ~60 % de saturation → token --aubergine-vivid).
-  background:
-    radial-gradient(900px 500px at 78% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
-    radial-gradient(
-      700px 500px at 0% 110%,
-      color-mix(in srgb, var(--aubergine-vivid) 28%, transparent),
-      transparent 60%
-    ),
-    var(--bg-page);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--header-height) + var(--space-6)) 0 var(--space-10);
+  background: transparent;
 }
 
 .hero__in {
   position: relative;
   z-index: 1;
-
-  // padding-block uniquement : le gutter horizontal vient de .container
-  // (longhands distincts → pas de conflit de shorthand entre les deux classes).
-  padding-block: var(--space-20);
+  width: 100%;
 }
 
 .hero__grid {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: 1.1fr 0.9fr;
   gap: var(--space-12);
   align-items: center;
+}
+
+.hero__marquee {
+  margin-top: var(--space-10);
 }
 
 // .section / .container / .eyebrow / .prose : primitives de layout globales
@@ -408,14 +402,16 @@ usePageSeo({
 
 // ---- Colonne texte ----
 .hero__title {
+  margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--fs-6xl);
-  font-weight: var(--fw-light);
+  font-size: clamp(2.4rem, 5.2vw, 4.4rem);
+  font-weight: var(--fw-regular);
+  line-height: 1.05;
   letter-spacing: var(--ls-tight);
   color: var(--text-strong);
 
   em {
-    font-style: normal;
+    font-style: italic;
     color: var(--accent);
   }
 }
@@ -764,19 +760,29 @@ li:last-child .work__row {
 
 .stat {
   padding: var(--space-6);
-  background: color-mix(in srgb, var(--surface-1) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-1) 85%, transparent);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
+  backdrop-filter: blur(8px);
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
+
+  &:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+  }
 
   b {
     display: block;
-    margin-bottom: var(--space-1);
+    margin-bottom: var(--space-2);
     font-family: var(--font-mono);
-    font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
-    font-weight: var(--fw-light);
+    font-size: clamp(var(--fs-4xl), 4.5vw, var(--fs-5xl));
+    font-weight: var(--fw-bold);
     line-height: 1;
     letter-spacing: var(--ls-tight);
-    color: var(--accent);
+    color: var(--text-strong);
   }
 
   span {
@@ -939,26 +945,29 @@ li:last-child .work__row {
 // ---- Bloc CTA final (porté de .cta) ----
 .cta {
   position: relative;
-  padding: clamp(var(--space-12), 6vw, calc(var(--space-16) + var(--space-2))) var(--space-6);
+  padding: clamp(48px, 7vw, 84px) var(--space-6);
   overflow: hidden;
   text-align: center;
   background:
-    radial-gradient(ellipse 80% 120% at 50% 0%, var(--accent-2-soft), transparent 70%),
-    color-mix(in srgb, var(--surface-2) 60%, transparent);
+    radial-gradient(ellipse 80% 120% at 50% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+    color-mix(in srgb, var(--surface-1) 85%, transparent);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-3), var(--shadow-hairline);
 }
 
 .cta__eyebrow {
   display: inline-block;
+  margin-bottom: var(--space-4);
 }
 
 .cta__title {
   margin: 0 0 var(--space-4);
   font-family: var(--font-mono);
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  font-weight: var(--fw-light);
-  line-height: var(--lh-tight);
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: var(--fw-regular);
+  line-height: 1.08;
   letter-spacing: var(--ls-tight);
   color: var(--text-strong);
 }
@@ -972,7 +981,7 @@ li:last-child .work__row {
   max-width: 58ch;
   margin: 0 auto var(--space-8);
   font-family: var(--font-sans);
-  font-size: var(--fs-base);
+  font-size: var(--fs-lg);
   line-height: var(--lh-relaxed);
   color: var(--text-muted);
 }
@@ -982,6 +991,7 @@ li:last-child .work__row {
   flex-wrap: wrap;
   gap: var(--space-4);
   justify-content: center;
+  align-items: center;
 }
 
 // ---- Responsive ----

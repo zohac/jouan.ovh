@@ -787,3 +787,24 @@ So that la refonte de la home est irréprochable et prête pour la production (C
 **Then** aucun focus trap n'existe, les éléments interactifs sont accessibles au clavier avec focus visible, les animations sont neutralisées sous reduced-motion (seul le caret clignote), et aucun lien avec ancre intra-page `#` n'est présent (les routes `/services`, `/about`, `/blog`, `/contact` restent des pages indépendantes)
 **And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) est exécutée avec succès (0 erreur ESLint/Stylelint, 0 erreur TypeScript, 13 routes pré-rendues)
 
+### Story 11.6: Polissage visuel, fidélité maquette Awwwards & interactions dynamiques
+
+As a visiteur découvrant la page d'accueil de jouan.ovh,
+I want retrouver l'impact visuel immersif, le raffinement typographique et les interactions micro-cinétiques de la maquette Awwwards (hero sans rupture, header transparent puis flouté au scroll, logo officiel blanc, boutons généreux et magnétiques, cartes en 3D tilt, statistiques contrastées, carte CTA ample et aérée, footer parfaitement lisible),
+So that l'expérience soit véritablement au niveau d'un portfolio primé Awwwards et reflète une qualité d'ingénierie web et de design irréprochable (FR18, FR20, FR22, FR23, FR25, FR27, UX-DR18, UX-DR20, UX-DR22, UX-DR24, UX-DR25, NFR1, NFR2, NFR11, NFR12).
+
+**Acceptance Criteria:**
+
+**Given** la maquette de référence `Home - Awwwards.html` et les retours d'évaluation visuelle
+**When** on implémente la passe de polissage UX/UI sur la page d'accueil et le layout
+**Then** `.hero` a un fond 100% transparent sur `min-height: 100vh` sans dégradé opaque de coupure, avec un titre h1 ample (`clamp(2.6rem, 6.4vw, 5.2rem)`) et ses accents en orange italique
+**And** le header démarre 100% transparent sans bordure au repos (`scrollY <= 20`) puis devient flouté translucide (`.stuck`) au scroll avec barre de progression de défilement discrète
+**And** le logo officiel wireframe blanc `logo_white.png` remplace l'icône gemme orange dans le header
+**And** les boutons (`ZButton`) gagnent des dimensions généreuses (hauteur 46-48px, padding étendu) et un micro-effet magnétique fluide desktop neutralisé sous reduced-motion
+**And** les cartes de services et de projets intègrent l'effet 3D tilt au mouvement de la souris (neutralisé sous reduced-motion)
+**And** les 3 cartes statistiques (`11`, `100%`, `QA`) ont un fond de carte visible et des chiffres en blanc contrasté `var(--text-strong)` parfaitement lisibles
+**And** le bloc CTA final `.cta` est aéré (`padding: clamp(48px, 7vw, 84px) var(--space-6)`), avec son halo lumineux radial supérieur et sa typographie h2 valorisée
+**And** le footer rehausse le contraste de l'ensemble de ses libellés et liens pour une lisibilité WCAG AA irréprochable
+**And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) est exécutée avec succès (0 erreur ESLint/Stylelint, 0 erreur TypeScript, 13 routes pré-rendues)
+
+

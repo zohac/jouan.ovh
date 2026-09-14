@@ -1,9 +1,10 @@
 <template>
-  <header class="hdr">
+  <header class="hdr" :class="{ 'hdr--stuck': isScrolled }">
+    <div class="hdr__progress" :style="{ width: `${scrollProgress}%` }" aria-hidden="true" />
     <div class="hdr__in">
-      <NuxtLink to="/" class="hdr__brand" @click="closeMenu">
-        <ZIcon name="gem" class="hdr__logo" />
-        <b>jouan.ovh</b>
+      <NuxtLink to="/" class="hdr__brand" @click="onBrandClick">
+        <img src="/images/logo_white.png" alt="" class="hdr__logo" width="24" height="24" />
+        <span class="hdr__brand-text"><b>jouan</b><span class="dim">.ovh</span></span>
       </NuxtLink>
 
       <nav class="hdr__nav" aria-label="Navigation principale">
@@ -15,14 +16,13 @@
           :class="{ 'hdr__link--active': isActive(item.to) }"
           :aria-current="isActive(item.to) ? 'page' : undefined"
         >
-          {{ item.label }}
+          <span class="hdr__link-prefix" aria-hidden="true">{{ item.prefix }} </span>
+          <span class="hdr__link-label">{{ item.label }}</span>
         </NuxtLink>
       </nav>
 
       <div class="hdr__right">
-        <CurrentTime class="hdr__clock" />
-        <ZBadge tone="success" dot class="hdr__badge">Disponible</ZBadge>
-        <ZButton variant="terminal" size="sm" class="hdr__action" @click="addNewTerminal">
+        <ZButton variant="terminal" size="sm" class="hdr__action hdr__action--terminal" @click="addNewTerminal">
           <template #icon><ZIcon name="terminal" /></template>
           Terminal
         </ZButton>
@@ -44,6 +44,15 @@
       </div>
     </div>
 
+    <!-- Dock d'état tout à droite de l'écran (hors container centré) -->
+    <div class="hdr__dock-right" aria-label="Statut et heure">
+      <div class="hdr__status-badge">
+        <span class="hdr__status-dot" aria-hidden="true" />
+        <span class="hdr__status-text">Disponible</span>
+      </div>
+      <CurrentTime class="hdr__dock-clock" />
+    </div>
+
     <!-- Menu mobile -->
     <div v-if="menuOpen" class="hdr__overlay" @click="closeMenuAndRefocus" />
     <nav id="hdr-mobile-menu" class="hdr__menu" :class="{ 'hdr__menu--open': menuOpen }" aria-label="Navigation mobile">
@@ -57,11 +66,19 @@
         :aria-current="isActive(item.to) ? 'page' : undefined"
         @click="closeMenu"
       >
-        {{ item.label }}
+        <span class="hdr__menu-link-prefix" aria-hidden="true">{{ item.prefix }} </span>
+        <span class="hdr__menu-link-label">{{ item.label }}</span>
       </NuxtLink>
 
       <div class="hdr__menu-actions">
-        <ZButton variant="terminal" size="sm" @click="openTerminalFromMenu">
+        <div class="hdr__menu-status">
+          <div class="hdr__status-badge">
+            <span class="hdr__status-dot" aria-hidden="true" />
+            <span class="hdr__status-text">Disponible</span>
+          </div>
+          <CurrentTime class="hdr__menu-clock" />
+        </div>
+        <ZButton variant="terminal" size="sm" class="hdr__action--terminal" @click="openTerminalFromMenu">
           <template #icon><ZIcon name="terminal" /></template>
           Terminal
         </ZButton>
@@ -84,11 +101,11 @@ import TerminalManagerComponent from "~/components/terminal/TerminalManagerCompo
 const route = useRoute();
 
 const navItems = [
-  { to: "/", label: "Accueil" },
-  { to: "/services", label: "Services" },
-  { to: "/about", label: "À propos" },
-  { to: "/blog", label: "Blog" },
-  { to: "/contact", label: "Contact" },
+  { to: "/", label: "Accueil", prefix: "~" },
+  { to: "/services", label: "Services", prefix: "//" },
+  { to: "/about", label: "À propos", prefix: "./" },
+  { to: "/blog", label: "Blog", prefix: "~/" },
+  { to: "/contact", label: "Contact", prefix: "$" },
 ];
 
 // Lien actif : exact pour l'accueil, préfixe pour les autres (couvre /blog/[...slug]).
@@ -97,6 +114,17 @@ function isActive(to: string): boolean {
     return route.path === "/";
   }
   return route.path === to || route.path.startsWith(`${to}/`);
+}
+
+// --- Scroll state & progress ---
+const isScrolled = ref(false);
+const scrollProgress = ref(0);
+
+function onScroll() {
+  const top = window.scrollY || document.documentElement.scrollTop || 0;
+  isScrolled.value = top > 20;
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  scrollProgress.value = h > 0 ? (top / h) * 100 : 0;
 }
 
 // --- Terminal easter-egg (préservé) ---
@@ -131,6 +159,14 @@ function openMenu() {
 
 function closeMenu() {
   menuOpen.value = false;
+}
+
+function onBrandClick(event: MouseEvent) {
+  closeMenu();
+  if (route.path === "/") {
+    event.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 // Fermeture clavier/overlay : renvoie le focus au burger (déclencheur) — a11y.
@@ -175,30 +211,54 @@ onMounted(() => {
   desktopMq = window.matchMedia("(min-width: 901px)");
   desktopMq.addEventListener("change", onDesktopChange);
   registerTerminalLauncher(addNewTerminal);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener("keydown", onKeydown);
   desktopMq?.removeEventListener("change", onDesktopChange);
   unregisterTerminalLauncher(addNewTerminal);
+  window.removeEventListener("scroll", onScroll);
 });
 </script>
 
 <style lang="scss" scoped>
 /* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis kit.css */
 .hdr {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
   height: var(--header-height);
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition:
+    background var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard),
+    backdrop-filter var(--dur-base) var(--ease-standard),
+    -webkit-backdrop-filter var(--dur-base) var(--ease-standard);
+}
 
-  // Verre sombre translucide : surface de page (token) à 82 % d'opacité + flou.
-  background: color-mix(in srgb, var(--surface-0) 82%, transparent);
-  border-bottom: 1px solid var(--border-subtle);
+.hdr--stuck {
+  background: color-mix(in srgb, var(--surface-0) 80%, transparent);
+  border-bottom-color: var(--border-subtle);
 
   /* stylelint-disable-next-line property-no-vendor-prefix -- Safari : autoprefixer non câblé, préfixe manuel requis */
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.hdr__progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--aubergine-light));
+  box-shadow: 0 0 10px var(--accent);
+  pointer-events: none;
+  transition: width 0.05s linear;
 }
 
 .hdr__in {
@@ -215,12 +275,23 @@ onBeforeUnmount(() => {
 .hdr__brand {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   text-decoration: none;
+  cursor: pointer;
 
   .hdr__logo {
-    font-size: 24px;
-    color: var(--accent);
+    display: block;
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--surface-0) 60%, transparent));
+    transition:
+      transform var(--dur-base) var(--ease-standard),
+      filter var(--dur-base) var(--ease-standard);
+  }
+
+  .hdr__brand-text {
+    transition: transform var(--dur-fast) var(--ease-standard);
   }
 
   b {
@@ -228,6 +299,27 @@ onBeforeUnmount(() => {
     font-size: var(--fs-md);
     font-weight: var(--fw-bold);
     color: var(--text-strong);
+    transition: color var(--dur-fast) var(--ease-standard);
+  }
+
+  .dim {
+    color: var(--text-faint);
+    transition: color var(--dur-fast) var(--ease-standard);
+  }
+
+  &:hover {
+    .hdr__logo {
+      transform: rotate(-12deg) scale(1.15);
+      filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 70%, transparent));
+    }
+
+    b {
+      color: var(--accent);
+    }
+
+    .dim {
+      color: var(--text-body);
+    }
   }
 
   // Lien focusable (logo + nom) : anneau DS comme les autres focusables du châssis.
@@ -240,38 +332,79 @@ onBeforeUnmount(() => {
 }
 
 .hdr__nav {
+  position: absolute;
+  left: 50%;
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  min-width: 0; // autorise la nav à rétrécir plutôt que de pousser l'overflow
-  margin-left: var(--space-4);
+  gap: var(--space-6);
+  transform: translateX(-50%);
 }
 
 .hdr__link {
-  padding: var(--space-2) var(--space-3);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 0;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   color: var(--text-muted);
   text-decoration: none;
-  border-radius: var(--radius-sm);
-  transition:
-    color var(--dur-fast) var(--ease-standard),
-    background var(--dur-fast) var(--ease-standard);
+  background: transparent;
+  transition: color var(--dur-fast) var(--ease-standard);
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background: var(--accent);
+    transition: width var(--dur-base) var(--ease-out);
+  }
 
   &:hover {
     color: var(--text-strong);
-    background: var(--surface-2);
+    background: transparent;
+
+    &::after {
+      width: 100%;
+    }
   }
 
-  // Anneau de focus DS (les liens de nav n'avaient que l'outline UA par défaut).
+  // Anneau de focus DS
   &:focus-visible {
     outline: 2px solid transparent; // forced-colors : rendu en couleur système
-    outline-offset: 2px;
+    outline-offset: 4px;
+    border-radius: var(--radius-xs);
     box-shadow: var(--ring-accent);
   }
 }
 
 .hdr__link--active {
+  color: var(--text-strong);
+
+  &::after {
+    width: 100%;
+  }
+
+  .hdr__link-prefix {
+    color: var(--accent);
+  }
+}
+
+.hdr__link-prefix,
+.hdr__menu-link-prefix {
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+
+.hdr__link:hover .hdr__link-prefix,
+.hdr__link--active .hdr__link-prefix,
+.hdr__menu-link:hover .hdr__menu-link-prefix,
+.hdr__menu-link--active .hdr__menu-link-prefix {
   color: var(--accent);
 }
 
@@ -282,10 +415,67 @@ onBeforeUnmount(() => {
   margin-left: auto;
 }
 
-.hdr__clock {
+.hdr__action--terminal {
+  border-color: color-mix(in srgb, var(--term-green) 40%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--term-green) 22%, transparent);
+
+  &:hover {
+    border-color: var(--term-green);
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--term-green) 45%, transparent),
+      var(--glow-terminal);
+  }
+}
+
+// Dock de statut & horloge positionné tout à droite de l'écran (hors container centré)
+.hdr__dock-right {
+  position: absolute;
+  top: 50%;
+  right: var(--space-6);
+  z-index: 52;
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  transform: translateY(-50%);
+}
+
+.hdr__status-badge {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  padding: 4px 10px;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  color: var(--text-muted);
+  color: var(--term-green);
+  user-select: none;
+  background: color-mix(in srgb, var(--term-green) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--term-green) 40%, transparent);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--term-green) 18%, transparent);
+  transition:
+    box-shadow var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard);
+
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+
+  &:hover {
+    border-color: var(--term-green);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--term-green) 35%, transparent);
+  }
+}
+
+.hdr__status-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--term-green);
+  border-radius: var(--radius-circle);
+  box-shadow: 0 0 6px var(--term-green);
+}
+
+.hdr__dock-clock {
+  margin-left: var(--space-1);
 }
 
 .hdr__burger {
@@ -319,16 +509,18 @@ onBeforeUnmount(() => {
   display: none;
 }
 
-// ---- Dégradé progressif (tablette) pour éviter l'overflow du header
-// avant que le burger ne prenne le relais (< 900px). ----
-@media (width <= 1100px) {
-  .hdr__clock {
-    display: none;
-  }
+.hdr__menu-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-@media (width <= 1000px) {
-  .hdr__badge {
+// Dégradé progressif pour le dock droit sur largeurs moyennes
+@media (width <= 1250px) {
+  .hdr__dock-right {
     display: none;
   }
 }
@@ -343,8 +535,7 @@ onBeforeUnmount(() => {
 // ---- Responsive : < 900px (cf. kit.css) ----
 @media (width <= 900px) {
   .hdr__nav,
-  .hdr__clock,
-  .hdr__badge,
+  .hdr__dock-right,
   .hdr__right .hdr__action {
     display: none;
   }
@@ -413,7 +604,14 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .hdr__link,
+  .hdr__link::after,
   .hdr__menu {
+    transition: none;
+  }
+
+  .hdr__brand .hdr__logo,
+  .hdr__brand:hover .hdr__logo {
+    transform: none;
     transition: none;
   }
 }

@@ -1,9 +1,10 @@
 <template>
   <component
     :is="as"
+    ref="buttonEl"
     v-bind="passthroughAttrs"
     class="zbtn"
-    :class="[`zbtn--${variant}`, `zbtn--${size}`]"
+    :class="[`zbtn--${variant}`, `zbtn--${size}`, { 'zbtn--magnetic': magnetic }]"
     :type="buttonType"
     :disabled="isNativeButton ? disabled || undefined : undefined"
     :aria-disabled="!isNativeButton && disabled ? 'true' : undefined"
@@ -11,25 +12,28 @@
     @click="blockDisabledActivation"
     @keydown.enter="blockDisabledActivation"
     @keydown.space="blockDisabledActivation"
+    @mousemove="onMouseMove"
+    @mouseleave="onMouseLeave"
   >
-    <span v-if="icon || $slots.icon" class="zbtn__icon">
-      <component :is="icon" v-if="icon" aria-hidden="true" />
-      <slot v-else name="icon" />
-    </span>
-    <slot />
-    <span v-if="iconRight || $slots.iconRight" class="zbtn__icon">
-      <component :is="iconRight" v-if="iconRight" aria-hidden="true" />
-      <slot v-else name="iconRight" />
+    <span ref="innerEl" class="zbtn__inner">
+      <span v-if="icon || $slots.icon" class="zbtn__icon">
+        <component :is="icon" v-if="icon" aria-hidden="true" />
+        <slot v-else name="icon" />
+      </span>
+      <slot />
+      <span v-if="iconRight || $slots.iconRight" class="zbtn__icon">
+        <component :is="iconRight" v-if="iconRight" aria-hidden="true" />
+        <slot v-else name="iconRight" />
+      </span>
     </span>
   </component>
 </template>
 
 <script setup lang="ts">
-// Primitive bouton du DS — label mono, accent orange Ubuntu en primary.
-// Porté de docs/design_system/components/core/Button.jsx (pas de copie JS :
-// le CSS d'injection `ensureStyles()` devient un <style scoped> token-only).
-import type { Component } from "vue";
-import { computed, useAttrs } from "vue";
+// Primitive bouton du DS — label mono, dimensions généreuses, micro-effet magnétique.
+// Porté de docs/design_system/components/core/Button.jsx et Home - Awwwards.html.
+import type { Component, ComponentPublicInstance } from "vue";
+import { computed, onMounted, ref, useAttrs } from "vue";
 
 defineOptions({
   inheritAttrs: false,
@@ -40,7 +44,7 @@ type IconProp = string | Component;
 interface Props {
   /** Style visuel. @default "primary" */
   variant?: "primary" | "secondary" | "ghost" | "terminal" | "danger";
-  /** @default "md" — hauteurs 28 / 36 / 44 */
+  /** @default "md" — hauteurs 32 / 40 / 48 */
   size?: "sm" | "md" | "lg";
   /** Icône leading via composant Vue ou nom de composant. */
   icon?: IconProp;
@@ -50,6 +54,8 @@ interface Props {
   as?: string | Component;
   /** Désactivé : natif sur <button>, aria-disabled + pointer-events sur les autres tags. */
   disabled?: boolean;
+  /** Activer le micro-effet magnétique au curseur. @default true */
+  magnetic?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -59,9 +65,47 @@ const props = withDefaults(defineProps<Props>(), {
   iconRight: undefined,
   as: "button",
   disabled: false,
+  magnetic: true,
 });
 
 const attrs = useAttrs();
+const buttonEl = ref<Element | ComponentPublicInstance | null>(null);
+const innerEl = ref<HTMLElement | null>(null);
+const isReducedMotion = ref(false);
+
+onMounted(() => {
+  isReducedMotion.value = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+});
+
+function onMouseMove(event: MouseEvent) {
+  if (!props.magnetic || isReducedMotion.value || !buttonEl.value || props.disabled) {
+    return;
+  }
+  const el = ((buttonEl.value as ComponentPublicInstance).$el ?? buttonEl.value) as HTMLElement | null;
+  if (!el || !(el instanceof HTMLElement)) {
+    return;
+  }
+  const rect = el.getBoundingClientRect();
+  const x = event.clientX - rect.left - rect.width / 2;
+  const y = event.clientY - rect.top - rect.height / 2;
+  el.style.transform = `translate(${x * 0.16}px, ${y * 0.18}px)`;
+  if (innerEl.value) {
+    innerEl.value.style.transform = `translate(${x * 0.08}px, ${y * 0.1}px)`;
+  }
+}
+
+function onMouseLeave() {
+  if (buttonEl.value) {
+    const el = ((buttonEl.value as ComponentPublicInstance).$el ?? buttonEl.value) as HTMLElement | null;
+    if (el instanceof HTMLElement) {
+      el.style.transform = "";
+    }
+  }
+  if (innerEl.value) {
+    innerEl.value.style.transform = "";
+  }
+}
+
 // `as` accepte une balise native ("button", "a") ou une référence de composant
 // (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.
 const isNativeButton = computed(() => props.as === "button");
@@ -103,14 +147,13 @@ function blockDisabledActivation(event: Event) {
 <style lang="scss" scoped>
 /* stylelint-disable selector-class-pattern, custom-property-pattern -- convention DS portée depuis Button.jsx */
 .zbtn {
-  --_h: 36px;
-  --_px: var(--space-4);
+  --_h: 42px;
+  --_px: var(--space-5);
   --_fs: var(--fs-sm);
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
   box-sizing: border-box;
   height: var(--_h);
   padding: 0 var(--_px);
@@ -129,12 +172,10 @@ function blockDisabledActivation(event: Event) {
     background var(--dur-fast) var(--ease-standard),
     border-color var(--dur-fast) var(--ease-standard),
     color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard),
     transform var(--dur-fast) var(--ease-standard);
 
   &:focus-visible {
-    // Outline transparent : invisible en rendu normal (le ring box-shadow prend le
-    // relais), mais rendu en couleur système sous forced-colors (Windows High
-    // Contrast), où les box-shadow sont neutralisées — focus toujours visible (AC #2).
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow: var(--ring-accent);
@@ -148,10 +189,19 @@ function blockDisabledActivation(event: Event) {
   }
 }
 
+.zbtn__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: transform var(--dur-fast) var(--ease-standard);
+  will-change: transform;
+}
+
 .zbtn__icon {
   display: inline-flex;
-  width: 1.05em;
-  height: 1.05em;
+  width: 1.1em;
+  height: 1.1em;
 
   :deep(svg) {
     width: 100%;
@@ -161,15 +211,15 @@ function blockDisabledActivation(event: Event) {
 
 // ---- Tailles ----
 .zbtn--sm {
-  --_h: 28px;
+  --_h: 32px;
   --_px: var(--space-3);
   --_fs: var(--fs-xs);
 }
 
 .zbtn--lg {
-  --_h: 44px;
-  --_px: var(--space-5);
-  --_fs: var(--fs-base);
+  --_h: 48px;
+  --_px: var(--space-6);
+  --_fs: var(--fs-sm);
 }
 
 // ---- Variantes ----
@@ -177,31 +227,36 @@ function blockDisabledActivation(event: Event) {
   background: var(--accent);
   color: var(--accent-text);
   border-color: var(--accent);
+  box-shadow: var(--glow-accent);
 
   &:hover {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent);
+    transform: translateY(-1px);
   }
 
   &:active {
     background: var(--accent-active);
     border-color: var(--accent-active);
-    transform: translateY(1px);
+    transform: translateY(0);
   }
 }
 
 .zbtn--secondary {
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--surface-2) 75%, transparent);
   color: var(--text-strong);
   border-color: var(--border-default);
+  backdrop-filter: blur(6px);
 
   &:hover {
     background: var(--surface-3);
     border-color: var(--border-strong);
+    transform: translateY(-1px);
   }
 
   &:active {
-    transform: translateY(1px);
+    transform: translateY(0);
   }
 }
 
@@ -213,17 +268,22 @@ function blockDisabledActivation(event: Event) {
   &:hover {
     background: var(--surface-2);
     color: var(--text-strong);
+    transform: translateY(-1px);
   }
 }
 
 .zbtn--terminal {
   background: var(--bg-terminal);
   color: var(--term-green);
-  border-color: var(--accent-2-soft);
+  border-color: color-mix(in srgb, var(--term-green) 35%, var(--accent-2-soft));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--term-green) 18%, transparent);
 
   &:hover {
     border-color: var(--term-green);
-    box-shadow: var(--glow-terminal);
+    box-shadow:
+      0 0 18px color-mix(in srgb, var(--term-green) 45%, transparent),
+      var(--glow-terminal);
+    transform: translateY(-1px);
   }
 }
 
@@ -241,12 +301,11 @@ function blockDisabledActivation(event: Event) {
   }
 }
 
-// Parité a11y avec les autres primitives (ZCard/ZInput/ZTag) : pas de transition
-// de mouvement en motion réduit. Le filet global (base/_motion.scss) couvre aussi
-// ce cas ; on garde la garde locale pour que la primitive soit robuste en isolation.
 @media (prefers-reduced-motion: reduce) {
-  .zbtn {
+  .zbtn,
+  .zbtn__inner {
     transition: none;
+    transform: none !important;
   }
 }
 </style>

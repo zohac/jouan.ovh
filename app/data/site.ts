@@ -47,7 +47,7 @@ const skills: string[] = [
   "postgresql",
   "typeorm",
   "stripe",
-  "cypress",
+  "testcafe",
   "docker",
   "rest-api",
   "vitest",

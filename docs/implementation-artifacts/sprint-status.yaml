@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-13 (Story 11.5 done : Validation transverse a11y, multi-pages & Gate Docker)"
+last_updated: "2026-09-14 (Story 11.6 créée : Polissage visuel, fidélité maquette Awwwards & interactions dynamiques)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -118,10 +118,11 @@ development_status:
   epic-10-retrospective: done
 
   # Epic 11 — Refonte d'accueil Awwwards & Repositionnement Commercial Full Stack TS
-  epic-11: in-progress
+  epic-11: done
   11-1-preparation-de-branche-mise-a-jour-des-donnees-sitets-et-atmosphere-cinetique: done
   11-2-sequence-de-boot-interactive-jouanos-et-hero-commercial-cinetique: done
   11-3-marquee-de-stack-moderne-et-vitrine-des-3-services-cibles: done
   11-4-preuves-concretes-saas-journal-technique-et-cta-final-de-conversion: done
   11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker: done
+  11-6-polissage-visuel-fidelite-maquette-awwwards-et-interactions: done
   epic-11-retrospective: optional
