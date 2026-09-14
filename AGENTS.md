@@ -8,7 +8,7 @@ Ce document constitue la **source de vérité universelle** pour tout agent IA (
 
 - **Projet :** `jouan.ovh` — Portfolio, vitrine de services et blog de **Simon Jouan** (développeur web freelance).
 - **URL de production :** [`https://jouan.ovh`](https://jouan.ovh) (déployé sur **GitHub Pages**, domaine custom, HTTPS Let's Encrypt forcé, DNS OVH).
-- **Statut actuel :** **Refonte complète livrée et active en production** (Epics 1 à 10 validés et clôturés). Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
+- **Statut actuel :** **Refonte complète et page d'accueil Awwwards livrées** (Epics 1 à 11 validés et clôturés). Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
 - **Langue & Voix (NFR6) :** 
   - Interface et contenu en **FRANÇAIS** (`lang="fr"`).
   - Voix : **1re personne (« je »)** pour Simon, **vouvoiement** pour le visiteur/client.
@@ -72,8 +72,9 @@ jouan.ovh/
 │   │   ├── base/            # _reset.scss, _layout.scss (primitives globales), _motion.scss
 │   │   └── main.scss        # Point d'entrée SCSS global
 │   ├── components/
-│   │   ├── ui/              # Primitives DS auto-importées sans préfixe (ZButton, ZCard, ZExternalLink...)
+│   │   ├── ui/              # Primitives DS auto-importées sans préfixe (ZButton, ZCard, ZExternalLink, ZCustomCursor...)
 │   │   ├── card/            # Sous-blocs ZCardHeader, ZCardBody, ZCardFooter
+│   │   ├── home/            # Composants immersifs d'accueil (HomeAtmosComponent, HomeBootOverlay, HomeHeroTerminal, HomeStackMarquee)
 │   │   ├── terminal/        # Sous-système terminal draggable (TerminalComponent, TerminalManagerComponent)
 │   │   │   └── programs/    # Classes TypeScript pures implémentant IProgram
 │   │   ├── HeaderComponent.vue
@@ -143,6 +144,16 @@ jouan.ovh/
 - Le fichier `public/CNAME` contient **`jouan.ovh`**. Ne jamais le modifier ou le supprimer.
 - Le step `Verify static output` dans `.github/workflows/cd.yml` vérifie `grep -qx "jouan.ovh" .output/public/CNAME`. Tout changement de domaine doit être répercuté simultanément sur ces deux fichiers.
 
+### 7. Composants Immersifs, Canvas & WebGL (Acquis Epic 11)
+- **Cycle de vie client strict :** Tout accès WebGL, animation canvas ou écouteur de souris (`mousemove`, `resize`, `scroll`) DOIT être instancié dans `onMounted()` et obligatoirement démonté/nettoyé dans `onBeforeUnmount()`.
+- **Résilience WebGL :** Toujours écouter l'événement `webglcontextlost` sur le canvas et basculer gracieusement vers le repli CSS pur sans interrompre la navigation.
+- **Économie de ressources :** Mettre en pause les boucles de rendu (`requestAnimationFrame`) lorsque l'onglet est masqué via l'API `document.visibilitychange`.
+- **Neutralisation universelle :** Tout effet cinétique (auroras, 3D tilt sur `ZCard`, magnétisme sur `ZButton`, micro-curseur) doit être strictement désactivé sous `prefers-reduced-motion: reduce` et sous `@media (hover: none)`.
+
+### 8. Fidélité Visuelle & Spécifications (Accords Rétro Epic 11)
+- **Spécifications complètes dès la rédaction :** Toute nouvelle story d'UI doit stipuler les contraintes de rendu spatial (dimensions, échelles `clamp`, transparences, gestion de l'arrière-plan d'ambiance) directement dérivées de la maquette cible.
+- **Revue visuelle obligatoire :** L'obtention d'une gate de test verte (lint/build) est une condition nécessaire mais NON suffisante pour valider une story d'interface. Un contrôle visuel comparatif (navigateur / captures) est obligatoire avant clôture.
+
 ---
 
 ## 6. Checklist de Validation Qualité (Definition of Done)
@@ -155,8 +166,9 @@ Avant de soumettre tout changement ou de clore une tâche, l'agent IA doit exéc
    ```
    - 0 erreur ESLint / Stylelint.
    - 0 erreur TypeScript vue-tsc.
-   - 13 routes pré-rendues statiquement avec succès par Nitro.
+   - 13 routes statiques (+ assets) pré-rendues avec succès par Nitro.
 2. **Vérification visuelle & comportementale :**
+   - Contrôle visuel comparatif sur navigateur (desktop et mobile) conforme à la maquette cible.
    - Rendu fidèle au Design System (thème sombre aubergine, orange accent, typographie Ubuntu).
    - Navigation clavier fonctionnelle (focus visible, ordre logique).
    - Pas de valeurs CSS en dur non justifiées.
@@ -167,5 +179,5 @@ Avant de soumettre tout changement ou de clore une tâche, l'agent IA doit exéc
 
 - [`docs/project-context.md`](file:///Users/simon/dev/jouan.ovh/docs/project-context.md) : Historique détaillé, leçons apprises par épic et règles fines.
 - [`docs/implementation-artifacts/sprint-status.yaml`](file:///Users/simon/dev/jouan.ovh/docs/implementation-artifacts/sprint-status.yaml) : Registre officiel des stories et de leur statut.
-- [`docs/planning-artifacts/epics.md`](file:///Users/simon/dev/jouan.ovh/docs/planning-artifacts/epics.md) : Cahier des charges et critères d'acceptation des Epics 1 à 10.
+- [`docs/planning-artifacts/epics.md`](file:///Users/simon/dev/jouan.ovh/docs/planning-artifacts/epics.md) : Cahier des charges et critères d'acceptation des Epics 1 à 11.
 - [`docs/implementation-artifacts/deferred-work.md`](file:///Users/simon/dev/jouan.ovh/docs/implementation-artifacts/deferred-work.md) : Inventaire des arbitrages et améliorations futures optionnelles.

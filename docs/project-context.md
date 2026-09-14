@@ -1,7 +1,7 @@
 ---
 project_name: "jouan.ovh"
 user_name: "Simon"
-date: "2026-09-13"
+date: "2026-09-14"
 sections_completed: ["technology_stack", "language_framework", "code_quality", "workflow_testing", "critical_rules"]
 status: "complete"
 optimized_for_llm: true
@@ -110,11 +110,14 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 **Conventions de nommage**
 
 - **Primitives du design system : préfixe `Z`, sous `app/components/ui/`**
-  (`ZButton`, `ZCard`, `ZBadge`, `ZTag`, `ZInput`, `ZAvatar`, `ZIcon`, `ZExternalLink`) — `<script setup>`,
+  (`ZButton`, `ZCard`, `ZBadge`, `ZTag`, `ZInput`, `ZAvatar`, `ZIcon`, `ZExternalLink`, `ZCustomCursor`) — `<script setup>`,
   auto-importées sans préfixe de dossier.
 - Sous-blocs de carte : `app/components/card/` (`ZCardHeader`, `ZCardBody`,
-  `ZCardFooter`), restylés via tokens et composés avec `<ZCard>`. (L'ancien
-  `ZCardComponent` monolithique a été supprimé en story 2.4.)
+  `ZCardFooter`), restylés via tokens et composés avec `<ZCard>` (supportant le 3D tilt via prop `tilt`).
+- Composants d'accueil immersifs sous `app/components/home/` : `HomeAtmosComponent.vue`
+  (shader WebGL Flow Chrome accéléré avec repli CSS pur automatique, écouteurs `webglcontextlost` et `visibilitychange`),
+  `HomeBootOverlay.vue` (boot interactif jouan.os), `HomeHeroTerminal.vue` (terminal Hero à frappe dynamique)
+  et `HomeStackMarquee.vue` (défilement infini CSS pur).
 - Composants applicatifs legacy : PascalCase suffixé `Component`
   (`HeaderComponent.vue`, `FooterComponent.vue`, `HexagonLinkComponent.vue`…).
 - Sous-système terminal sous `components/terminal/` : coquilles Vue
@@ -253,8 +256,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   dans **Chrome DevTools MCP** ET la référence visuelle correspondante, puis comparer
   le rendu (padding/marges/espacement/fidélité), en desktop ET mobile. La revue de code
   est aveugle aux régressions de rendu. Réfs par page :
-  - **Home** → `docs/animations_jouan.ovh/Home animée.dc.html` + screenshots
-    `docs/animations_jouan.ovh/screenshots/` (`hero*.png`, `services.png`, `booted.png`).
+  - **Home** → `docs/design_system/ui_kits/jouan-site/Home - Awwwards.html` (maquette cible Awwwards officielle depuis l'Epic 11).
   - **Services / About / Blog / Contact** → `docs/design_system/ui_kits/jouan-site/index.html`
     (UI kit cible ; ouvrir la section correspondante).
   - Routine appliquée sans faille sur Epics 4-8 (desktop + mobile) → zéro régression de
@@ -262,6 +264,9 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
     attrapé un bug d'ancres de titres `@nuxt/content` (6.2) et validé la refonte terminal
     (diff visuel **et comportemental** avant/après, Epic 8). Sur les passes transverses a11y/motion (Epics 9 & 10) :
     vérification du comportement clavier/motion/contraste sous émulation `forced-colors: active` et `prefers-reduced-motion: reduce`.
+  - **Accords d'équipe consolidés (Rétro Epic 11) :**
+    1. **Revue visuelle et capture comparative obligatoire** : toute story comportant de l'UI doit être validée visuellement sur navigateur avant passage en review/done (la gate Docker seule ne protège pas du décalage d'ambiance visuelle).
+    2. **Critères d'acceptation spatiaux et sensoriels dès la spécification** : consigner les échelles `clamp`, hauteurs de ligne, transparences et micro-cinétiques dès l'écriture des stories.
 
 ---
 
@@ -279,4 +284,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-09-13 (post-Epic 10 : refonte complète livrée en production sur https://jouan.ovh — epics 1→10 done ; 13 routes statiques pré-rendues ; validation runtime a11y émulée ; primitive ZExternalLink ; SEO centralisé usePageSeo/useSiteUrl ; conformité légale RGPD /confidentialite et /mentions-legales ; déploiement réel gh-pages prouvé sur main avec HTTPS forcé et DNS OVH opérationnel).
+Dernière mise à jour : 2026-09-14 (post-Epic 11 : refonte d'accueil Awwwards & repositionnement commercial Full Stack TS livrés — epics 1→11 done ; shader WebGL Flow Chrome avec repli CSS pur automatique ; boot overlay jouan.os ; header transparent/flouté au scroll avec barre de progression ; boutons magnétiques et 3D tilt ; 17 routes/assets statiques pré-rendus ; accords d'équipe rétro 11 sur la revue visuelle comparative et les ACs spatiaux).
