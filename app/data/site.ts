@@ -17,6 +17,8 @@ export interface IProfile {
   city: string;
   available: boolean;
   maltUrl?: string;
+  phone?: string;
+  phoneRaw?: string;
 }
 
 export interface IProject {
@@ -35,6 +37,8 @@ const profile: IProfile = {
   city: "Rouen, France",
   available: true,
   maltUrl: "https://www.malt.fr/profile/simonjouan",
+  phone: "+33 6 58 96 90 20",
+  phoneRaw: "+33658969020",
 };
 
 // Stack technique moderne prioritaire ordonnée.

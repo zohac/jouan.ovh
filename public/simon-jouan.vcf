@@ -1,0 +1,12 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Jouan;Simon;;;
+FN:Simon Jouan
+TITLE:Développeur Full Stack TypeScript — Nuxt / NestJS
+ORG:Simon Jouan
+TEL;TYPE=CELL,VOICE;VALUE=uri:tel:+33658969020
+EMAIL;TYPE=WORK,INTERNET:simon@jouan.ovh
+URL:https://jouan.ovh
+ADR;TYPE=WORK:;;;Rouen;;;France
+NOTE:Développeur web freelance — Conception d'applications modernes Nuxt & NestJS
+END:VCARD

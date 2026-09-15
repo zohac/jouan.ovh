@@ -111,6 +111,16 @@
               </dl>
             </ZCard>
 
+            <!-- Carte d'accès carte de visite digitale & QR Code -->
+            <ZCard class="contact__cardcta">
+              <p class="contact__cardcta-eyebrow"><span aria-hidden="true">// </span>carte de visite digitale</p>
+              <p class="prose contact__cardcta-text">Fiche contact prête à scanner avec QR code vCard.</p>
+              <ZButton :as="NuxtLink" to="/contact/card" variant="secondary" size="sm">
+                <template #icon><ZIcon name="qr" /></template>
+                Carte de visite &amp; QR Code
+              </ZButton>
+            </ZCard>
+
             <!-- Carte CTA terminal : ouvre l'easter-egg via le lanceur partagé (useTerminal) -->
             <ZCard class="contact__term">
               <!-- Prompt décoratif (flavor terminal) : aria-hidden — le bouton + l'invite portent le sens. -->
@@ -137,6 +147,7 @@
 // Page Contact — colonne gauche : en-tête + formulaire (story 7.1, envoi Web3Forms,
 // service tiers SANS serveur). Colonne droite : infos + CTA terminal + socials (story 7.2).
 import { nextTick } from "vue";
+import { NuxtLink } from "#components";
 import { SITE } from "~/data/site";
 
 // Infos de contact — source unique `app/data/site.ts`.
@@ -472,6 +483,20 @@ usePageSeo({
 }
 
 .contact__term-text {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+// ---- Carte CTA Carte de visite & QR Code ----
+.contact__cardcta-eyebrow {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.contact__cardcta-text {
   margin: 0 0 var(--space-3);
   font-size: var(--fs-sm);
   color: var(--text-muted);
