@@ -1,6 +1,6 @@
 <template>
   <main class="card-screen">
-    <div class="card-screen__ambient" aria-hidden="true" />
+    <HomeAtmosComponent />
 
     <section class="card-screen__wrap" aria-labelledby="card-title">
       <div class="vcard">
@@ -122,19 +122,9 @@ usePageSeo({
   box-sizing: border-box;
   padding-inline: var(--space-4);
   padding-block: var(--space-4);
-  background: var(--bg-base);
+  background: transparent;
   color: var(--text-body);
   overflow-x: hidden;
-}
-
-// Halo d'ambiance aubergine / orange discret en arrière-plan
-.card-screen__ambient {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 15%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
-    radial-gradient(ellipse 70% 50% at 50% 85%, color-mix(in srgb, var(--aubergine) 30%, transparent), transparent 75%);
 }
 
 .card-screen__wrap {
