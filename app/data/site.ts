@@ -27,8 +27,13 @@ export interface IProject {
   name: string;
   role: string;
   desc: string;
+  hook?: string;
+  image?: string;
+  imageAlt?: string;
+  badge?: string;
   url?: string;
   status?: string;
+  statusVariant?: string;
   tags: string[];
 }
 
@@ -67,22 +72,32 @@ const projects: IProject[] = [
   {
     name: "Keova Signal",
     role: "Concepteur & Développeur Full Stack",
-    desc: "Moteur d'acquisition B2B & qualification de leads par ingestion Open Data Insee, scraping éthique et serveur MCP natif.",
-    status: "● Système interne / Dépôt privé",
+    hook: "Détecter le bon prospect au bon moment",
+    desc: "Moteur d'acquisition B2B & qualification de leads par ingestion Open Data Insee, scraping éthique, double étage de scoring Zod et serveur MCP natif (10 outils).",
+    image: "/images/projects/keova-signal-dashboard.png",
+    imageAlt: "Tableau de bord de qualification de prospects Keova Signal",
+    badge: "Projet interne / Dépôt privé",
+    status: "● Système interne / En développement actif",
     tags: ["Node.js 22", "TypeScript", "MCP Server", "PostgreSQL", "Cheerio", "Docker"],
   },
   {
     name: "Debrief",
     role: "Concepteur & Développeur Full Stack",
-    desc: "Application desktop privacy-first de synthèse commerciale 100 % locale (ASR whisper.cpp, diarisation sherpa-onnx, LLM Gemma 4).",
-    status: "◐ R&D / Dépôt privé",
+    hook: "Transformer un rendez-vous commercial en apprentissage exploitable",
+    desc: "Application desktop privacy-first (100 % on-device) de synthèse commerciale et analyse d'appels, sans fuite réseau ni dépendance cloud externe.",
+    image: "/images/projects/debrief-dashboard.png",
+    imageAlt: "Interface desktop de synthèse d'appels Debrief",
+    badge: "Dépôt privé",
+    status: "◐ R&D / En développement",
     tags: ["Tauri", "Rust", "whisper.cpp", "sherpa-onnx", "llama.cpp", "Gemma 4"],
   },
   {
     name: "Devis-Assist",
     role: "Architecte & Développeur Full Stack",
-    desc: "Solution d'ingestion et d'analyse de devis artisans BTP combinant Mistral OCR 3, file asynchrone BullMQ et matching flou PostgreSQL.",
-    status: "○ Architecture validée / Dépôt privé",
+    hook: "Transformer un historique de devis BTP en aide au chiffrage",
+    desc: "Solution d'ingestion et d'analyse de devis artisans BTP combinant Mistral OCR 3, file asynchrone BullMQ/Redis et matching flou PostgreSQL pg_trgm.",
+    badge: "Dépôt privé",
+    status: "○ Produit / Architecture BMM validée",
     tags: ["NestJS", "Nuxt UI 4", "PostgreSQL pg_trgm", "Mistral OCR", "BullMQ"],
   },
 ];

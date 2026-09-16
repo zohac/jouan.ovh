@@ -1,40 +1,46 @@
 <template>
   <main class="services">
-    <!-- En-tête + grille d'offres (story 4.1). La 2e section (process) viendra en 4.2. -->
+    <!-- En-tête + grille d'offres (story 12.5) -->
     <section class="section">
       <div class="container">
         <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
-        <h1 class="services__title">Des prestations claires, pensées comme des produits.</h1>
+        <h1 class="services__title">Des systèmes IA construits autour de vos vrais processus métier.</h1>
         <p class="prose services__intro">
-          Du site WordPress à l'application sur-mesure, en passant par l'IA appliquée — je m'occupe de la technique,
-          vous gardez la main sur votre projet.
+          Je pars d’un workflow existant, pas d’une technologie à placer. Du cadrage initial jusqu'au maintien en
+          condition opérationnelle, l’IA intervient uniquement là où elle apporte réellement quelque chose.
         </p>
 
         <ul class="grid-3">
           <li v-for="offer in offers" :key="offer.id">
             <ZCard class="offer" :accent="offer.featured" :featured="offer.featured">
               <div v-if="offer.featured" class="offer__badge">
-                <ZBadge tone="accent">Le plus demandé</ZBadge>
+                <ZBadge tone="accent">Format cœur</ZBadge>
               </div>
               <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
               <h2 class="offer__title">{{ offer.title }}</h2>
+              <p v-if="offer.hook" class="offer__hook">{{ offer.hook }}</p>
               <p class="offer__desc">{{ offer.desc }}</p>
               <ul class="offer__points">
                 <li v-for="point in offer.points" :key="point">{{ point }}</li>
               </ul>
-              <div class="offer__price">
-                <b>{{ offer.price }}</b>
-              </div>
-              <div class="offer__cta">
-                <ZButton
-                  :as="NuxtLink"
-                  to="/contact"
-                  :variant="offer.featured ? 'primary' : 'secondary'"
-                  :aria-label="`Discuter du projet — ${offer.title}`"
-                  class="offer__btn"
-                >
-                  Discuter du projet
-                </ZButton>
+              <div class="offer__footer">
+                <div class="offer__price">
+                  <b>{{ offer.price }}</b>
+                </div>
+                <p v-if="offer.disclaimer" class="offer__disclaimer">
+                  {{ offer.disclaimer }}
+                </p>
+                <div class="offer__cta">
+                  <ZButton
+                    :as="NuxtLink"
+                    to="/contact"
+                    :variant="offer.featured ? 'primary' : 'secondary'"
+                    :aria-label="offer.ctaAriaLabel"
+                    class="offer__btn"
+                  >
+                    {{ offer.ctaText }}
+                  </ZButton>
+                </div>
               </div>
             </ZCard>
           </li>
@@ -42,7 +48,7 @@
       </div>
     </section>
 
-    <!-- Section process : 4 étapes ordonnées + CTA (story 4.2). Porté de Services.jsx L45-61. -->
+    <!-- Section process : 4 étapes ordonnées + CTA (story 12.5) -->
     <section class="section section--sunken">
       <div class="container">
         <p class="eyebrow"><span aria-hidden="true">// </span>comment ça se passe</p>
@@ -53,6 +59,11 @@
             <div class="process__num" aria-hidden="true">{{ step.n }}</div>
             <h3 class="process__step-title">{{ step.title }}</h3>
             <p class="prose process__desc">{{ step.desc }}</p>
+            <div v-if="step.inlineCta" class="process__cta-inline-wrapper">
+              <NuxtLink :to="step.inlineCta.to" class="process__inline-cta">
+                {{ step.inlineCta.label }}
+              </NuxtLink>
+            </div>
           </li>
         </ol>
 
@@ -68,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-// Page Services : catalogue d'offres packagées + process 4 étapes + CTA contact.
+// Page Services : catalogue d'offres IA packagées + process 4 étapes + CTA contact.
 // Données statiques (3 offres, 4 étapes) déclarées localement. Prerender-safe, dark-first.
 import { NuxtLink } from "#components";
 import { SITE } from "~/data/site";
@@ -76,56 +87,115 @@ import { SITE } from "~/data/site";
 interface Offer {
   /** Clé v-for stable (indépendante du contenu affiché). */
   id: string;
-  /** Nom d'icône dans le set ZIcon (story 2.7). */
+  /** Nom d'icône dans le set ZIcon. */
   icon: string;
   title: string;
+  hook?: string;
   desc: string;
   points: string[];
   price: string;
+  disclaimer?: string;
   /** Offre mise en avant : carte accent + glow + badge. */
   featured: boolean;
+  ctaText: string;
+  ctaAriaLabel: string;
 }
 
-// Contenu repris à l'identique de data.js (window.SITE.services) — 1re personne,
-// vouvoiement, pas d'emoji. « Applications web » est l'offre mise en avant.
+interface Step {
+  n: string;
+  title: string;
+  desc: string;
+  inlineCta?: {
+    to: string;
+    label: string;
+  };
+}
+
+// Les 3 offres officielles V1 — 1re personne, vouvoiement, zéro emoji.
 const offers: Offer[] = [
   {
-    id: "wordpress",
-    icon: "wp",
-    title: "WordPress sur-mesure",
-    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
-    points: ["Thème sur-mesure (press-wind / Tailwind)", "Plugins & blocs Gutenberg", "Performance & SEO technique"],
-    price: "à partir de 1 500 €",
-    featured: false,
-  },
-  {
-    id: "apps",
-    icon: "code",
-    title: "Applications web",
-    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
-    points: ["API REST / GraphQL (Symfony · Nest.js)", "Front Vue / Nuxt", "Tests & CI/CD, qualité QA"],
-    price: "sur devis",
+    id: "sprint",
+    icon: "zap",
+    title: "AI Workflow Sprint",
+    hook: "Un Sprint = un workflow prioritaire",
+    desc: "Conception, intégration logicielle et mise en production d'un workflow métier complet avec IA ciblée et supervision humaine.",
+    points: [
+      "Diagnostic approfondi & cartographie avant/après",
+      "Architecture système, connecteurs API & intégrations métier",
+      "Modèles d'IA & prompt engineering avec sorties typées",
+      "Tests automatisés sur cas réels & boucle de validation humaine",
+      "Déploiement en production, documentation & mesure initiale",
+    ],
+    price: "À partir de 3 500 € HT",
     featured: true,
+    ctaText: "Lancer un Sprint",
+    ctaAriaLabel: "Discuter d'un AI Workflow Sprint",
   },
   {
-    id: "ia",
-    icon: "spark",
-    title: "IA & automatisation",
-    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
-    points: ["Agents & workflows (n8n)", "Intégration d'API LLM", "Automatisation de contenu"],
-    price: "sur devis",
+    id: "blueprint",
+    icon: "layers",
+    title: "AI Workflow Blueprint",
+    hook: "Cadrage préalable pour problématique complexe",
+    desc: "Pour les projets nécessitant un audit préalable, une modélisation de données et des choix d'architecture avant de s'engager sur le build.",
+    points: [
+      "Audit du processus actuel, volumes & points de friction",
+      "Matrice de décision : code déterministe vs IA vs humain",
+      "Schéma d'architecture technique & flux de données cibles",
+      "Analyse des risques, contraintes de sécurité & secrets",
+      "Spécification des KPI de mesure & estimation budgétaire",
+    ],
+    price: "À partir de 750 € HT",
     featured: false,
+    ctaText: "Demander un Blueprint",
+    ctaAriaLabel: "Demander un AI Workflow Blueprint",
+  },
+  {
+    id: "care",
+    icon: "bot",
+    title: "AI Care",
+    hook: "Maintien en condition opérationnelle",
+    desc: "Maintien en condition opérationnelle d'une capacité intégrée au processus métier pour garantir disponibilité, précision et maîtrise des coûts.",
+    points: [
+      "Supervision proactive, alertes & analyse des échecs",
+      "Maintenance corrective & adaptation aux APIs tierces",
+      "Suivi des coûts d'inférence & micro-ajustements de prompts",
+      "Support technique réactif & veille sur les nouveaux modèles",
+    ],
+    disclaimer:
+      "Consommations tierces d'APIs et tokens (LLM, OCR, scraping...) refacturées au réel ou prises en charge directement par le client.",
+    price: "À partir de 490 € HT / mois",
+    featured: false,
+    ctaText: "Découvrir AI Care",
+    ctaAriaLabel: "Découvrir l'accompagnement AI Care",
   },
 ];
 
-// Étapes du process — texte repris à l'identique de Services.jsx (tableau `steps`,
-// pas dans data.js). L'ordre du tableau garantit l'affichage 01 → 04 (AC #1).
-// `n` (numéro affiché) sert aussi de clé v-for stable et unique.
-const steps = [
-  { n: "01", title: "Échange", desc: "On cadre le besoin, le périmètre et le budget — sans jargon inutile." },
-  { n: "02", title: "Conception", desc: "Architecture, maquette, et plan de livraison clair." },
-  { n: "03", title: "Développement", desc: "Code propre, testé, livré par itérations visibles." },
-  { n: "04", title: "Livraison & suivi", desc: "Mise en ligne, documentation, et accompagnement." },
+// Étapes du process en 4 temps. L'ordre du tableau garantit l'affichage 01 → 04.
+const steps: Step[] = [
+  {
+    n: "01",
+    title: "Diagnostic",
+    desc: "Échange de 20 à 30 minutes pour qualifier le problème, comprendre le workflow existant et identifier les goulots d'étranglement.",
+    inlineCta: {
+      to: "/contact",
+      label: "Identifier un workflow →",
+    },
+  },
+  {
+    n: "02",
+    title: "Cadrage",
+    desc: "Formalisation du workflow cible, des étapes manuelles à conserver sous contrôle humain, des connecteurs API requis et des KPI de mesure. Fait l'objet d'un Blueprint pour les sujets complexes.",
+  },
+  {
+    n: "03",
+    title: "Construction & intégration",
+    desc: "Développement logiciel du système, connexion aux outils métiers (CRM, ERP, messagerie...), couverture de tests automatisés et mise à l'épreuve sur cas réels avant livraison.",
+  },
+  {
+    n: "04",
+    title: "Suivi & amélioration",
+    desc: "Monitoring en production, maintenance préventive/corrective, ajustements aux évolutions d'APIs tierces ou modèles d'IA, mesure factuelle des résultats.",
+  },
 ];
 
 const siteUrl = useSiteUrl();
@@ -133,9 +203,9 @@ const siteUrl = useSiteUrl();
 const servicesJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Services — jouan.ovh",
+  name: "Services & Tarifs — Simon Jouan",
   description:
-    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
+    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
   url: `${siteUrl}/services`,
   mainEntity: {
     "@type": "ItemList",
@@ -161,9 +231,9 @@ const servicesJsonLd = {
 };
 
 usePageSeo({
-  title: "Services — jouan.ovh",
+  title: "Services & Tarifs — Simon Jouan",
   description:
-    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
+    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
   path: "/services",
   image: "/images/portrait.jpeg",
   type: "website",
@@ -172,7 +242,7 @@ usePageSeo({
 </script>
 
 <style lang="scss" scoped>
-/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis kit.css / Services.jsx */
+/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) */
 .services {
   display: block;
 }
@@ -180,9 +250,9 @@ usePageSeo({
 // .section / .section--sunken / .container / .eyebrow / .prose : primitives de
 // layout globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
 
-// ---- En-tête (porté de Services.jsx L13-21) ----
+// ---- En-tête ----
 .services__title {
-  max-width: 16ch;
+  max-width: 22ch;
   margin-bottom: var(--space-3);
   font-family: var(--font-mono);
   font-size: var(--fs-4xl);
@@ -192,12 +262,12 @@ usePageSeo({
 }
 
 .services__intro {
-  max-width: 60ch;
+  max-width: 62ch;
   margin-bottom: var(--space-10);
   color: var(--text-muted);
 }
 
-// ---- Grille des offres (porté de kit.css : .grid-3 / .offer*) ----
+// ---- Grille des offres (.grid-3 / .offer*) ----
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -211,8 +281,6 @@ usePageSeo({
   }
 }
 
-// `display:flex` (porté de l'inline JSX) : le prix + CTA sont poussés en bas via
-// `margin-top: auto`, alignant les pieds de carte sur des hauteurs inégales.
 .offer {
   display: flex;
   flex-direction: column;
@@ -240,11 +308,20 @@ usePageSeo({
 }
 
 .offer__title {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
   font-family: var(--font-mono);
   font-size: var(--fs-xl);
   font-weight: var(--fw-regular);
   color: var(--text-strong);
+}
+
+.offer__hook {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-wide);
+  color: var(--accent);
 }
 
 .offer__desc {
@@ -268,7 +345,7 @@ usePageSeo({
     color: var(--text-muted);
   }
 
-  // Puce fléchée « → » (porté de kit.css .offer li::before).
+  // Puce fléchée « → »
   li::before {
     content: "→";
     position: absolute;
@@ -277,11 +354,14 @@ usePageSeo({
   }
 }
 
-.offer__price {
-  // `margin-top: auto` colle le prix (et le CTA qui suit) au bas de la carte ;
-  // `padding-top` reprend l'inline JSX (space-5) au lieu du margin-top du kit.
+.offer__footer {
+  display: flex;
+  flex-direction: column;
   margin-top: auto;
   padding-top: var(--space-5);
+}
+
+.offer__price {
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   color: var(--text-muted);
@@ -293,16 +373,24 @@ usePageSeo({
   }
 }
 
+.offer__disclaimer {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-normal);
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
 .offer__cta {
   margin-top: var(--space-4);
 }
 
-// Bouton CTA en pleine largeur (porté de l'inline `width: 100%` du JSX).
 .offer__btn {
   width: 100%;
 }
 
-// ---- Section process (porté de Services.jsx L45-61) ----
+// ---- Section process ----
 .process__title {
   margin-bottom: var(--space-8);
   font-family: var(--font-mono);
@@ -318,6 +406,11 @@ usePageSeo({
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.process__step {
+  display: flex;
+  flex-direction: column;
 }
 
 .process__num {
@@ -340,12 +433,41 @@ usePageSeo({
   color: var(--text-muted);
 }
 
+.process__cta-inline-wrapper {
+  margin-top: auto;
+  padding-top: var(--space-3);
+}
+
+.process__inline-cta {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--accent);
+  text-decoration: none;
+  transition:
+    color var(--dur-base) var(--ease-standard),
+    text-decoration-color var(--dur-base) var(--ease-standard);
+
+  &:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--ring-accent);
+    border-radius: var(--radius-xs);
+  }
+}
+
 .process__cta {
   margin-top: var(--space-12);
   text-align: center;
 }
 
-// ---- Responsive (cf. kit.css @media max-width: 900px) ----
+// ---- Responsive ----
 @media (width <= 900px) {
   .grid-3,
   .process {

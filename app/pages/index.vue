@@ -117,7 +117,7 @@
       </div>
     </section>
 
-    <!-- Projets sélectionnés & Statistiques de réassurance (Story 11.4 / AC-1 & AC-2) -->
+    <!-- Projets sélectionnés & Statistiques de réassurance (Story 12.4 / AC-1, AC-2, AC-3) -->
     <section class="section">
       <div class="container">
         <div class="block__head">
@@ -125,35 +125,67 @@
           <h2 class="section__title">Des produits qui tournent en production</h2>
         </div>
 
-        <ul class="work">
-          <li v-for="(project, index) in projects" :key="project.name">
-            <component
-              :is="project.url ? ZExternalLink : 'div'"
-              :href="project.url"
-              class="work__row"
-              :class="{ 'work__row--link': Boolean(project.url) }"
-              :data-hot="project.url ? '' : undefined"
-              @mousemove="onProjectMouseMove"
-              @mouseleave="onProjectMouseLeave"
-            >
-              <span class="work__no">{{ String(index + 1).padStart(2, "0") }}</span>
-              <div class="work__main">
-                <div class="work__topline">
-                  <h3 class="work__name">{{ project.name }}</h3>
-                  <span v-if="project.status" class="work__status">{{ project.status }}</span>
+        <ul class="projects-grid">
+          <li v-for="(project, index) in projects" :key="project.name" class="projects-grid__item">
+            <ZCard class="project-card" tilt :padded="false">
+              <div v-if="project.image" class="project-card__media">
+                <NuxtImg
+                  :src="project.image"
+                  :alt="project.imageAlt || `Capture d'écran du projet ${project.name}`"
+                  width="720"
+                  height="405"
+                  sizes="(max-width: 900px) 100vw, (max-width: 1200px) 50vw, 380px"
+                  format="webp"
+                  loading="lazy"
+                  class="project-card__img"
+                />
+              </div>
+              <div v-else class="project-card__media project-card__media--schematic">
+                <div
+                  class="project-card__blueprint"
+                  role="img"
+                  aria-label="Schéma d'architecture du pipeline documentaire Devis-Assist : Mistral OCR 3 vers BullMQ et Redis, puis matching flou PostgreSQL pg_trgm"
+                >
+                  <div class="project-card__blueprint-grid">
+                    <div class="project-card__node">
+                      <ZIcon name="layers" class="project-card__node-icon" />
+                      <span class="project-card__node-label">Mistral OCR 3</span>
+                    </div>
+                    <span class="project-card__node-flow">→</span>
+                    <div class="project-card__node">
+                      <ZIcon name="zap" class="project-card__node-icon" />
+                      <span class="project-card__node-label">BullMQ / Redis</span>
+                    </div>
+                    <span class="project-card__node-flow">→</span>
+                    <div class="project-card__node">
+                      <ZIcon name="code" class="project-card__node-icon" />
+                      <span class="project-card__node-label">pg_trgm Match</span>
+                    </div>
+                  </div>
+                  <div class="project-card__blueprint-sub">Pipeline documentaire &amp; extraction tabulaire</div>
                 </div>
-                <p class="work__role">{{ project.role }}</p>
-                <p class="prose work__desc">{{ project.desc }}</p>
-                <ul class="hero__tags work__tags">
-                  <li v-for="(tag, tagIndex) in project.tags" :key="`${tag}-${tagIndex}`">
+              </div>
+
+              <div class="project-card__body">
+                <div class="project-card__header">
+                  <span class="project-card__no"
+                    >{{ String(index + 1).padStart(2, "0") }} / {{ String(projects.length).padStart(2, "0") }}</span
+                  >
+                  <ZBadge v-if="project.badge" tone="neutral">{{ project.badge }}</ZBadge>
+                </div>
+                <div class="project-card__title-wrap">
+                  <h3 class="project-card__title">{{ project.name }}</h3>
+                  <span v-if="project.status" class="project-card__status">{{ project.status }}</span>
+                </div>
+                <p v-if="project.hook" class="project-card__hook">{{ project.hook }}</p>
+                <p class="project-card__desc prose">{{ project.desc }}</p>
+                <ul class="hero__tags project-card__tags">
+                  <li v-for="tag in project.tags" :key="tag">
                     <ZTag>{{ tag }}</ZTag>
                   </li>
                 </ul>
               </div>
-              <span v-if="project.url" class="work__go" aria-hidden="true">
-                <ZIcon name="arrow" />
-              </span>
-            </component>
+            </ZCard>
           </li>
         </ul>
 
@@ -290,33 +322,6 @@ onBeforeUnmount(() => {
 
 function onBootComplete() {
   isBootFinished.value = true;
-}
-
-function onProjectMouseMove(event: MouseEvent) {
-  if (isReducedMotion.value) {
-    return;
-  }
-  if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
-    return;
-  }
-  const target = event.currentTarget as HTMLElement | null;
-  if (!target) {
-    return;
-  }
-  const rect = target.getBoundingClientRect();
-  if (rect.width <= 0 || rect.height <= 0) {
-    return;
-  }
-  const px = (event.clientX - rect.left) / rect.width - 0.5;
-  const py = (event.clientY - rect.top) / rect.height - 0.5;
-  target.style.transform = `perspective(1000px) rotateX(${-py * 3.5}deg) rotateY(${px * 4.5}deg) translateY(-2px)`;
-}
-
-function onProjectMouseLeave(event: MouseEvent) {
-  const target = event.currentTarget as HTMLElement | null;
-  if (target) {
-    target.style.transform = "";
-  }
 }
 
 interface HomeServiceOffer {
@@ -808,136 +813,188 @@ usePageSeo({
   color: var(--text-muted);
 }
 
-// ---- Section Projets sélectionnés (porté de Home - Awwwards.html .work) ----
-.work {
-  display: flex;
-  flex-direction: column;
+// ---- Section Projets sélectionnés (Story 12.4 / AC-1 & AC-3) ----
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
   margin: 0;
   padding: 0;
   list-style: none;
 
   > li {
-    display: block;
-    width: 100%;
+    display: flex;
   }
 }
 
-.work__row {
+.project-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.project-card__media {
   position: relative;
-  display: grid;
-  grid-template-columns: var(--fs-6xl) 1fr auto;
-  gap: var(--space-6);
-  align-items: center;
-  padding: var(--space-8) var(--space-3);
-  border-top: 1px solid var(--border-subtle);
-  text-decoration: none;
-  color: inherit;
-  transition:
-    padding-left var(--dur-slow) var(--ease-out),
-    background var(--dur-slow) var(--ease-standard),
-    transform var(--dur-fast) var(--ease-standard);
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, var(--accent-soft), transparent 60%);
-    opacity: 0;
-    transition: opacity var(--dur-slow) var(--ease-standard);
-  }
-}
-
-li:last-child .work__row {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface-0);
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.work__row--link {
-  cursor: pointer;
-
-  &:hover {
-    padding-left: var(--space-6);
-
-    &::before {
-      opacity: 1;
-    }
-
-    .work__name {
-      color: var(--accent);
-    }
-
-    .work__go {
-      color: var(--accent);
-      transform: translate(6px, -6px);
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    box-shadow: var(--ring-accent);
-    border-radius: var(--radius-xs);
-  }
+.project-card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform var(--dur-slow) var(--ease-out);
 }
 
-.work__no {
-  position: relative;
+.project-card:hover .project-card__img {
+  transform: scale(1.03);
+}
+
+.project-card__media--schematic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+    var(--surface-0);
+}
+
+.project-card__blueprint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-3);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-1) 60%, transparent);
+}
+
+.project-card__blueprint-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.project-card__node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-1);
+}
+
+.project-card__node-icon {
+  font-size: var(--fs-md);
+  color: var(--accent);
+}
+
+.project-card__node-label {
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+
+.project-card__node-flow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
+.project-card__blueprint-sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-align: center;
+  letter-spacing: var(--ls-wide);
+}
+
+.project-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: var(--space-6);
+}
+
+.project-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.project-card__no {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wider);
   color: var(--text-faint);
 }
 
-.work__main {
-  position: relative;
-}
-
-.work__topline {
+.project-card__title-wrap {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-3);
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
 }
 
-.work__name {
+.project-card__title {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: clamp(1.4rem, 2.8vw, 2rem);
+  font-size: var(--fs-xl);
   font-weight: var(--fw-regular);
-  letter-spacing: var(--ls-tight);
   color: var(--text-strong);
-  transition: color var(--dur-base) var(--ease-standard);
+  transition: color var(--dur-fast) var(--ease-standard);
 }
 
-.work__status {
+.project-card:hover .project-card__title {
+  color: var(--accent);
+}
+
+.project-card__status {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--accent);
   letter-spacing: var(--ls-wide);
 }
 
-.work__role {
-  margin: var(--space-1) 0 0;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
+.project-card__hook {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  font-style: italic;
+  color: var(--text-body);
+  line-height: var(--lh-snug);
+}
+
+.project-card__desc {
+  margin: 0 0 var(--space-5);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
   color: var(--text-muted);
 }
 
-.work__desc {
-  max-width: 65ch;
-  margin: var(--space-3) 0 0;
-  font-size: var(--fs-sm);
-}
-
-.work__tags {
-  margin-top: var(--space-4);
-}
-
-.work__go {
-  position: relative;
-  font-size: var(--fs-xl);
-  color: var(--text-faint);
-  transition:
-    transform var(--dur-base) var(--ease-out),
-    color var(--dur-base) var(--ease-standard);
+.project-card__tags {
+  margin-top: auto;
 }
 
 // ---- Stats (porté de .stats) ----
@@ -1197,6 +1254,7 @@ li:last-child .work__row {
   }
 
   .grid-3,
+  .projects-grid,
   .journal {
     grid-template-columns: 1fr;
   }
@@ -1212,16 +1270,6 @@ li:last-child .work__row {
 }
 
 @media (width <= 680px) {
-  .work__row {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
-  }
-
-  .work__no,
-  .work__go {
-    display: none;
-  }
-
   .pillars-grid,
   .stats {
     grid-template-columns: 1fr;
@@ -1233,8 +1281,8 @@ li:last-child .work__row {
     animation: none;
   }
 
-  .work__row,
-  .work__go,
+  .project-card__img,
+  .project-card__title,
   .jpost__arrow,
   .seeall {
     transition: none;
@@ -1248,22 +1296,20 @@ li:last-child .work__row {
     }
   }
 
-  .work__row {
-    transform: none !important;
-  }
-
-  .work__row--link:hover {
-    padding-left: var(--space-3);
-
-    .work__go {
-      transform: none;
-    }
+  .project-card:hover .project-card__img {
+    transform: none;
   }
 
   .jpost:hover {
     .jpost__arrow {
       transform: none;
     }
+  }
+}
+
+@media (hover: none) {
+  .project-card:hover .project-card__img {
+    transform: none;
   }
 }
 </style>

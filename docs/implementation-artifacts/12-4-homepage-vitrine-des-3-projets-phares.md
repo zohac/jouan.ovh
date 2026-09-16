@@ -4,7 +4,7 @@ baseline_commit: c7136c64cd1a9dd3de9b7a6689a26000a217af56
 
 # Story 12.4: Page d'accueil — Vitrine des 3 projets phares (Keova Signal, Debrief, Devis-Assist)
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -62,38 +62,47 @@ so that je sois convaincu de la faisabilité de mon propre projet sans être tro
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Modélisation et enrichissement des métadonnées de projets dans `app/data/site.ts` (AC: 1, 2)
-  - [ ] Mettre à jour l'interface `IProject` pour supporter optionnellement `hook?: string`, `image?: string`, `badge?: string`, `statusVariant?: string` sans casser la compatibilité existante (`FooterComponent`, `HomeHeroTerminal`, `About.ts`).
-  - [ ] Aligner les entrées de `SITE.projects` avec les libellés officiels de `projects-showcase.md` :
+- [x] Tâche 1 — Modélisation et enrichissement des métadonnées de projets dans `app/data/site.ts` (AC: 1, 2)
+  - [x] Mettre à jour l'interface `IProject` pour supporter optionnellement `hook?: string`, `image?: string`, `imageAlt?: string`, `badge?: string`, `statusVariant?: string` sans casser la compatibilité existante (`FooterComponent`, `HomeHeroTerminal`, `About.ts`).
+  - [x] Aligner les entrées de `SITE.projects` avec les libellés officiels de `projects-showcase.md` :
     - Keova Signal : accroche, statut `● Système interne / En développement actif`, image `/images/projects/keova-signal-dashboard.png`, badge `Projet interne / Dépôt privé`
     - Debrief : accroche, statut `◐ R&D / En développement`, image `/images/projects/debrief-dashboard.png`, badge `Dépôt privé`
     - Devis-Assist : accroche, statut `○ Produit / Architecture BMM validée`, badge `Dépôt privé`
 
-- [ ] Tâche 2 — Intégration du composant et de la grille de cartes riches dans `app/pages/index.vue` (AC: 1, 2, 3)
-  - [ ] Remplacer l'ancienne liste linéaire `.work` par une grille de cartes riches mettant en scène les 3 démonstrateurs techniques.
-  - [ ] Utiliser `<ZCard>` (ou structure dédiée conforme au Design System) avec :
+- [x] Tâche 2 — Intégration du composant et de la grille de cartes riches dans `app/pages/index.vue` (AC: 1, 2, 3)
+  - [x] Remplacer l'ancienne liste linéaire `.work` par une grille de cartes riches mettant en scène les 3 démonstrateurs techniques.
+  - [x] Utiliser `<ZCard>` (ou structure dédiée conforme au Design System) avec :
     - En-tête de carte : numéro de projet, badge de confidentialité `<ZBadge>`, pastille de statut
     - Visuel projet optimisé avec `<NuxtImg>` (lazy-loading, format webp, fallback visuel soigné pour Devis-Assist)
     - Titre du projet et accroche métier mise en avant
     - Description technique mettant en valeur la résolution du problème concret
     - Liste des tags technologiques avec `<ZTag>`
-  - [ ] S'assurer de l'absence de lien mort (pas de balise `<a>` vide ou `href="#"`).
+  - [x] S'assurer de l'absence de lien mort (pas de balise `<a>` vide ou `href="#"`).
 
-- [ ] Tâche 3 — Styles SCSS, responsive et design tokens (AC: 3)
-  - [ ] Développer les styles SCSS scopés pour la vitrine de projets dans `app/pages/index.vue`.
-  - [ ] Définir les adaptations responsive sous 900px et 680px (bascule fluide en 1 colonne sur mobile).
-  - [ ] Intégrer les styles pour les visuels d'écran (ombrage discret, liseré de démarcation `--border-subtle`, arrondi `--radius-md`).
-  - [ ] Vérifier que tous les styles consomment les custom properties (`--space-*`, `--radius-*`, `--color-*`, `--text-*`).
+- [x] Tâche 3 — Styles SCSS, responsive et design tokens (AC: 3)
+  - [x] Développer les styles SCSS scopés pour la vitrine de projets dans `app/pages/index.vue`.
+  - [x] Définir les adaptations responsive sous 900px et 680px (bascule fluide en 1 colonne sur mobile).
+  - [x] Intégrer les styles pour les visuels d'écran (ombrage discret, liseré de démarcation `--border-subtle`, arrondi `--radius-md`).
+  - [x] Vérifier que tous les styles consomment les custom properties (`--space-*`, `--radius-*`, `--color-*`, `--text-*`).
 
-- [ ] Tâche 4 — Accessibilité, vérification sans emoji et respect motion (AC: 2, 3)
-  - [ ] Vérifier les attributs `alt` pertinents sur chaque image `<NuxtImg>`.
-  - [ ] Valider l'ordre de tabulation clavier et le focus visible (`:focus-visible`).
-  - [ ] Valider le respect strict de `prefers-reduced-motion: reduce`.
-  - [ ] Vérifier l'absence absolue de tout emoji dans le DOM et les textes.
+- [x] Tâche 4 — Accessibilité, vérification sans emoji et respect motion (AC: 2, 3)
+  - [x] Vérifier les attributs `alt` pertinents sur chaque image `<NuxtImg>`.
+  - [x] Valider l'ordre de tabulation clavier et le focus visible (`:focus-visible`).
+  - [x] Valider le respect strict de `prefers-reduced-motion: reduce`.
+  - [x] Vérifier l'absence absolue de tout emoji dans le DOM et les textes.
 
-- [ ] Tâche 5 — Validation qualité Docker (AC: 4)
-  - [ ] Exécuter la gate de validation complète : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
-  - [ ] S'assurer de 0 erreur ESLint / Stylelint, 0 erreur vue-tsc, et génération SSG Nitro réussie.
+- [x] Tâche 5 — Validation qualité Docker (AC: 4)
+  - [x] Exécuter la gate de validation complète : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
+  - [x] S'assurer de 0 erreur ESLint / Stylelint, 0 erreur vue-tsc, et génération SSG Nitro réussie.
+
+### Review Findings
+
+- [x] [Review][Patch] Ajouter `statusVariant?: string;` dans l'interface `IProject` [app/data/site.ts:37]
+- [x] [Review][Patch] Retirer la prop `interactive` de `<ZCard>` pour éliminer le curseur `pointer` trompeur sur les cartes sans lien sortant [app/pages/index.vue:130]
+- [x] [Review][Patch] Rendre accessible le schéma de pipeline documentaire Devis-Assist (`role="img"` et `aria-label`) [app/pages/index.vue:144]
+- [x] [Review][Patch] Compléter la neutralisation des transitions sous `prefers-reduced-motion` et désactiver l'effet zoom sous `@media (hover: none)` [app/pages/index.vue:1277]
+- [x] [Review][Patch] Rendre dynamique le total du compteur de cartes (`/ {{ String(projects.length).padStart(2, "0") }}`) et ajouter `flex-wrap: wrap` au blueprint grid [app/pages/index.vue:167, 876]
+- [x] [Review][Defer] Rendu d'un lien sortant dynamique si `project.url` est défini [app/pages/index.vue:130] — deferred, pre-existing
 
 ## Dev Notes
 
@@ -123,9 +132,21 @@ so that je sois convaincu de la faisabilité de mon propre projet sans être tro
 ## Dev Agent Record
 
 ### Agent Model Used
+- Gemini 3.7 Flash (Antigravity Dev Agent)
 
 ### Debug Log References
+- Exécution Docker de validation gate: `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 erreur ESLint / Stylelint, 0 erreur vue-tsc, 24 routes et assets statiques pré-rendus par Nitro.
 
 ### Completion Notes List
+- Modélisation enrichie de `IProject` et de `SITE.projects` dans `app/data/site.ts` avec les métadonnées officielles (accroches, badges de confidentialité, visuels HD, statuts précis, tags technologiques).
+- Remplacement de l'ancienne liste linéaire `.work` par la grille de cartes riches `.projects-grid` et `.project-card` utilisant `<ZCard>` (3D tilt interactif préservé), `<NuxtImg>` pour les captures Keova Signal et Debrief, et un schéma visuel de pipeline documentaire pour Devis-Assist.
+- Intégration complète des badges `<ZBadge>`, tags `<ZTag>`, titres, accroches métier et descriptions techniques sans aucun lien sortant mort.
+- Préservation intégrale du bloc de chiffres clés de réassurance `ul.stats`.
+- Respect strict des tokens CSS, du responsive (grille 3 col desktop -> 1 col mobile < 900px), de `prefers-reduced-motion: reduce`, de l'accessibilité a11y et de la règle zéro emoji.
+- Gate Docker 100% verte validée.
 
 ### File List
+- `app/data/site.ts`
+- `app/pages/index.vue`
+- `docs/implementation-artifacts/12-4-homepage-vitrine-des-3-projets-phares.md`
+- `docs/implementation-artifacts/sprint-status.yaml`

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-16 (Story 12.4 initialisée en ready-for-dev)"
+last_updated: "2026-09-16 (Story 12.6 initialisée en ready-for-dev)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -132,7 +132,7 @@ development_status:
   12-1-source-unique-de-donnees-sitets-et-coherence-globale: done
   12-2-homepage-hero-commercial-cinetique-et-terminal-interactif: done
   12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur: done
-  12-4-homepage-vitrine-des-3-projets-phares: ready-for-dev
-  12-5-page-services-restructuration-des-offres-et-process-4-etapes: backlog
-  12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide: backlog
+  12-4-homepage-vitrine-des-3-projets-phares: done
+  12-5-page-services-restructuration-des-offres-et-process-4-etapes: done
+  12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide: ready-for-dev
   epic-12-retrospective: optional
