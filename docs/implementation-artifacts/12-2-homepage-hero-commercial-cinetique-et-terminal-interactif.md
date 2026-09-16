@@ -1,6 +1,10 @@
+---
+baseline_commit: c7136c64cd1a9dd3de9b7a6689a26000a217af56
+---
+
 # Story 12.2: Page d'accueil — Hero commercial cinétique & Terminal interactif
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -42,33 +46,39 @@ so that je comprends en 5 secondes ce que Simon apporte à mon équipe (FR29, NF
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Refonte textuelle et sémantique du Hero dans `app/pages/index.vue` (AC: 1, 3)
-  - [ ] Remplacer le sur-titre par `<h2 class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA & AUTOMATISATION</h2>`.
-  - [ ] Mettre à jour le `<h1>` avec `Automatisez les workflows qui freinent votre équipe.`.
-  - [ ] Mettre à jour `.hero__sub` avec le nouveau pitch d'intégration de systèmes.
-  - [ ] Ajouter la ligne de crédibilité `.hero__credibility` sous le sous-titre avec les tokens de typographie monospace / muted.
-  - [ ] Mettre à jour le badge de disponibilité avec `Disponible pour nouvelles missions freelance` tout en conservant le lien Malt externe.
-  - [ ] Mettre à jour le CTA principal (`/contact`) : `Identifier un workflow à automatiser`.
-  - [ ] Mettre à jour le CTA secondaire (`/services`) : `Voir mes systèmes IA`.
+- [x] Tâche 1 — Refonte textuelle et sémantique du Hero dans `app/pages/index.vue` (AC: 1, 3)
+  - [x] Remplacer le sur-titre par `<h2 class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA & AUTOMATISATION</h2>`.
+  - [x] Mettre à jour le `<h1>` avec `Automatisez les workflows qui freinent votre équipe.`.
+  - [x] Mettre à jour `.hero__sub` avec le nouveau pitch d'intégration de systèmes.
+  - [x] Ajouter la ligne de crédibilité `.hero__credibility` sous le sous-titre avec les tokens de typographie monospace / muted.
+  - [x] Mettre à jour le badge de disponibilité avec `Disponible pour nouvelles missions freelance` tout en conservant le lien Malt externe.
+  - [x] Mettre à jour le CTA principal (`/contact`) : `Identifier un workflow à automatiser`.
+  - [x] Mettre à jour le CTA secondaire (`/services`) : `Voir mes systèmes IA`.
 
-- [ ] Tâche 2 — Mise à jour de la séquence et des commandes dans `HomeHeroTerminal.vue` (AC: 2, 3)
-  - [ ] Mettre à jour le tableau `fullRows` :
+- [x] Tâche 2 — Mise à jour de la séquence et des commandes dans `HomeHeroTerminal.vue` (AC: 2, 3)
+  - [x] Mettre à jour le tableau `fullRows` :
     - `cmd: "whoami"`, `out: "${SITE.profile.name} — Développeur Full Stack spécialisé IA & automatisation"`, `tone: "ink"`
     - `cmd: "cat focus.txt"`, `out: "Systèmes IA · automatisation métier · agents · applications Full Stack · QA"`, `tone: "blue"`
     - `cmd: "ls ~/systems"`, `out: projectsOutput`, `tone: "green"`
-  - [ ] Vérifier que `projectsOutput` formate correctement les slugs des projets de `SITE.projects` (`keova-signal/  debrief/  devis-assist/`).
-  - [ ] Mettre à jour le bloc `<noscript>` pour refléter les nouvelles commandes et sorties textuelles.
-  - [ ] Vérifier que l'interaction d'ouverture du terminal (`openTerminal` sur `help`) fonctionne sans régression.
-  - [ ] Vérifier la neutralisation immédiate sous `prefers-reduced-motion: reduce`.
+  - [x] Vérifier que `projectsOutput` formate correctement les slugs des projets de `SITE.projects` (`keova-signal/  debrief/  devis-assist/`).
+  - [x] Mettre à jour le bloc `<noscript>` pour refléter les nouvelles commandes et sorties textuelles.
+  - [x] Vérifier que l'interaction d'ouverture du terminal (`openTerminal` sur `help`) fonctionne sans régression.
+  - [x] Vérifier la neutralisation immédiate sous `prefers-reduced-motion: reduce`.
 
-- [ ] Tâche 3 — Validation responsive, accessibilité et design tokens (AC: 1, 2, 3)
-  - [ ] Vérifier le rendu sur mobile et desktop (pas de débordement de texte, wrapping correct des CTAs).
-  - [ ] Vérifier la conformité de la hiérarchie de titres (`<h2>` eyebrow -> `<h1>`).
-  - [ ] Vérifier l'absence absolue d'emoji dans les textes.
+- [x] Tâche 3 — Validation responsive, accessibilité et design tokens (AC: 1, 2, 3)
+  - [x] Vérifier le rendu sur mobile et desktop (pas de débordement de texte, wrapping correct des CTAs).
+  - [x] Vérifier la conformité de la hiérarchie de titres (`<h2>` eyebrow -> `<h1>`).
+  - [x] Vérifier l'absence absolue d'emoji dans les textes.
 
-- [ ] Tâche 4 — Validation qualité Docker (AC: 4)
-  - [ ] Exécuter `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
-  - [ ] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript et génération SSG Nitro complète.
+- [x] Tâche 4 — Validation qualité Docker (AC: 4)
+  - [x] Exécuter `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
+  - [x] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript et génération SSG Nitro complète.
+
+### Review Findings
+
+- [x] [Review][Patch] Centraliser `shortRole` dans `app/data/site.ts` et le consommer dans `HomeHeroTerminal.vue` pour respecter l'invariant DRY [app/components/home/HomeHeroTerminal.vue:118]
+- [x] [Review][Patch] Remplacer les emojis décoratifs de coches dans les notes de completion par des marqueurs textuels conformes à la règle Zéro Emoji [docs/implementation-artifacts/12-2-homepage-hero-commercial-cinetique-et-terminal-interactif.md:115]
+- [x] [Review][Patch] Clarifier la note de route count dans le journal dev pour expliciter les 20 sorties Nitro (11 pages + 9 assets) vs 13 routes statiques [docs/implementation-artifacts/12-2-homepage-hero-commercial-cinetique-et-terminal-interactif.md:110]
 
 ## Dev Notes
 
@@ -79,11 +89,12 @@ so that je comprends en 5 secondes ce que Simon apporte à mon équipe (FR29, NF
   - Tout lien ouvrant un nouvel onglet utilise `<ZExternalLink>`.
   - Le sur-titre sans h2 propre doit être un `<h2 class="eyebrow">` avec `<span aria-hidden="true">// </span>`.
   - Les boutons vers les routes internes Nuxt utilisent `<ZButton :as="NuxtLink" to="...">` pour éviter l'échec de résolution de composants dynamiques chaînés. [Source: AGENTS.md#Section 5.4 et 5.5]
-- **Zéro Emoji :** Règle stricte NFR6 / NFR13. Aucune icône emoji dans le DOM.
+- **Zéro Emoji :** Règle stricte NFR6 / NFR13. Aucune icône emoji dans le DOM ni dans les artéfacts documentaires.
 
 ### Fichiers concernés
 - [MODIFY] [app/pages/index.vue](file:///Users/simon/dev/jouan.ovh/app/pages/index.vue)
 - [MODIFY] [app/components/home/HomeHeroTerminal.vue](file:///Users/simon/dev/jouan.ovh/app/components/home/HomeHeroTerminal.vue)
+- [MODIFY] [app/data/site.ts](file:///Users/simon/dev/jouan.ovh/app/data/site.ts)
 
 ### Ce qui doit être préservé
 - `HomeBootOverlay` et son écouteur `@boot-complete="onBootComplete"`.
@@ -100,9 +111,33 @@ so that je comprends en 5 secondes ce que Simon apporte à mon équipe (FR29, NF
 ## Dev Agent Record
 
 ### Agent Model Used
+- Gemini 3.7 Flash
 
 ### Debug Log References
+- Gate de validation Docker complète : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` (0 erreur ESLint / Stylelint, 0 erreur vue-tsc, 20 routes et assets Nitro pré-rendus avec succès, soit 11 pages HTML/content et 9 assets/images transformés via IPX correspondant aux routes statiques du projet).
+- Résolution du formatage Prettier sous `app/pages/index.vue` via `eslint --fix .`.
+- Redémarrage propre du conteneur web pour synchronisation de la base SQLite @nuxt/content (`docker compose restart web`).
 
 ### Completion Notes List
+- [OK] **AC-1 :** Section Hero mise à jour dans `app/pages/index.vue` :
+  - Sur-titre sémantique `<h2 class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA & AUTOMATISATION</h2>`.
+  - H1 : `Automatisez les workflows qui freinent votre équipe.`.
+  - Sous-titre : `Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants — de l’identification du problème jusqu’à la mise en production.`.
+  - Ligne de crédibilité `.hero__credibility` : `Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA`.
+  - Badge de disponibilité : `Disponible pour nouvelles missions freelance` + lien profil Malt vérifié via `<ZExternalLink>`.
+  - CTAs : `Identifier un workflow à automatiser` (`/contact`) et `Voir mes systèmes IA` (`/services`).
+- [OK] **AC-2 :** Terminal Hero cinétique mis à jour dans `HomeHeroTerminal.vue` :
+  - Commande `$ whoami` -> `${SITE.profile.name} — ${SITE.profile.shortRole ?? SITE.profile.role}` (ton `ink`, consommé depuis `site.ts` en respect de l'invariant DRY).
+  - Commande `$ cat focus.txt` -> `Systèmes IA · automatisation métier · agents · applications Full Stack · QA` (ton `blue`).
+  - Commande `$ ls ~/systems` -> `keova-signal/  debrief/  devis-assist/` dérivé de `SITE.projects` (ton `green`).
+  - Bloc `<noscript>` et état reduced-motion synchronisés avec les nouvelles sorties.
+  - Interaction d'ouverture modal `$ help` (`useTerminal().open()`) préservée.
+- [OK] **AC-3 :** Accessibilité, hiérarchie de titres, ordre de focus et règle stricte Zéro Emoji validés.
+- [OK] **AC-4 :** Gate de validation Docker 100 % verte.
 
 ### File List
+- `app/pages/index.vue` (modifié)
+- `app/components/home/HomeHeroTerminal.vue` (modifié)
+- `app/data/site.ts` (modifié)
+- `docs/implementation-artifacts/12-2-homepage-hero-commercial-cinetique-et-terminal-interactif.md` (modifié)
+- `docs/implementation-artifacts/sprint-status.yaml` (modifié)

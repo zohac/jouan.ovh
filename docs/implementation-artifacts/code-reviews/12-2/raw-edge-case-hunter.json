@@ -1,0 +1,616 @@
+Reading prompt from stdin...
+2026-09-16T20:21:47.271000Z ERROR codex_models_manager::cache: failed to load models cache: missing field `base_instructions` at line 133 column 5
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0abe1-f5b4-7c90-8127-128102c43ccd
+--------
+user
+# Edge Case Hunter Prompt — Story 12.2
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/12-2/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+exec
+/bin/zsh -lc "sed -n '1,260p' docs/implementation-artifacts/code-reviews/12-2/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+diff --git a/app/components/home/HomeHeroTerminal.vue b/app/components/home/HomeHeroTerminal.vue
+index 83b79b4..4b97174 100644
+--- a/app/components/home/HomeHeroTerminal.vue
++++ b/app/components/home/HomeHeroTerminal.vue
+@@ -81,8 +81,8 @@ import { ref, watch, onMounted, onUnmounted } from "vue";
+ import { useTerminal } from "~/composables/useTerminal";
+ import { SITE } from "~/data/site";
+ 
+-// Terminal hero cinétique (Story 11.2 / AC-2 / CAP-3).
+-// Déroule une animation de frappe séquentielle pour whoami, cat focus.txt et ls ~/projets.
++// Terminal hero cinétique (Story 11.2 / 12.2 / AC-2 / CAP-2).
++// Déroule une animation de frappe séquentielle pour whoami, cat focus.txt et ls ~/systems.
+ // Neutralisé sous prefers-reduced-motion (affichage statique complet immédiat).
+ // Ouvre l'easter-egg terminal via useTerminal().open sur l'invite finale help.
+ 
+@@ -115,16 +115,16 @@ const projectsOutput = SITE.projects
+ const fullRows: ITermRow[] = [
+   {
+     cmd: "whoami",
+-    out: `${SITE.profile.name} — ${SITE.profile.role}`,
++    out: `${SITE.profile.name} — Développeur Full Stack spécialisé IA & automatisation`,
+     tone: "ink",
+   },
+   {
+     cmd: "cat focus.txt",
+-    out: "SaaS, web apps, clean architecture, automated testing (QA) & AI engineering",
++    out: "Systèmes IA · automatisation métier · agents · applications Full Stack · QA",
+     tone: "blue",
+   },
+   {
+-    cmd: "ls ~/projets",
++    cmd: "ls ~/systems",
+     out: projectsOutput,
+     tone: "green",
+   },
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index c513732..7cac3e1 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -11,16 +11,21 @@
+         <div class="hero__grid">
+           <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
+           <div class="anim hero__text">
+-            <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
+-            <h1 class="hero__title">Développeur Full Stack <em>TypeScript</em></h1>
++            <h2 class="eyebrow">
++              <span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA &amp; AUTOMATISATION
++            </h2>
++            <h1 class="hero__title">Automatisez les workflows qui freinent votre équipe.</h1>
+             <p class="hero__sub">
+-              Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
+-              l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
++              Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants —
++              de l’identification du problème jusqu’à la mise en production.
++            </p>
++            <p class="hero__credibility">
++              Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA
+             </p>
+ 
+             <div class="hero__badge-wrap">
+               <span class="hero__pulse-dot" aria-hidden="true" />
+-              <span>Disponible pour missions freelance</span>
++              <span>Disponible pour nouvelles missions freelance</span>
+               <template v-if="SITE.profile.maltUrl">
+                 <span aria-hidden="true"> · </span>
+                 <ZExternalLink :href="SITE.profile.maltUrl"> Profil Malt vérifié </ZExternalLink>
+@@ -29,10 +34,10 @@
+ 
+             <div class="hero__cta">
+               <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+-                Discuter de votre projet
++                Identifier un workflow à automatiser
+                 <template #iconRight><ZIcon name="arrow" /></template>
+               </ZButton>
+-              <ZButton :as="NuxtLink" to="/about" variant="secondary" size="lg"> Voir le parcours &amp; CV </ZButton>
++              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir mes systèmes IA </ZButton>
+             </div>
+           </div>
+ 
+@@ -464,7 +469,7 @@ usePageSeo({
+ 
+ .hero__sub {
+   max-width: 46ch;
+-  margin: var(--space-5) 0 var(--space-6);
++  margin: var(--space-5) 0 var(--space-4);
+   font-family: var(--font-sans);
+   font-size: var(--fs-lg);
+   line-height: var(--lh-relaxed);
+@@ -472,6 +477,14 @@ usePageSeo({
+   text-shadow: 0 1px 8px color-mix(in srgb, var(--surface-0) 70%, transparent);
+ }
+ 
++.hero__credibility {
++  margin: 0 0 var(--space-6);
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  letter-spacing: var(--ls-wide);
++  color: var(--text-muted);
++}
++
+ .hero__cta {
+   display: flex;
+   flex-wrap: wrap;
+diff --git a/docs/implementation-artifacts/12-2-homepage-hero-commercial-cinetique-et-terminal-interactif.md b/docs/implementation-artifacts/12-2-homepage-hero-commercial-cinetique-et-terminal-interactif.md
+index 3f0b722..a1abbb2 100644
+--- a/docs/implementation-artifacts/12-2-homepage-hero-commercial-cinetique-et-terminal-interactif.md
++++ b/docs/implementation-artifacts/12-2-homepage-hero-commercial-cinetique-et-terminal-interactif.md
+@@ -1,6 +1,10 @@
++---
++baseline_commit: c7136c64cd1a9dd3de9b7a6689a26000a217af56
++---
++
+ # Story 12.2: Page d'accueil — Hero commercial cinétique & Terminal interactif
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -42,33 +46,33 @@ so that je comprends en 5 secondes ce que Simon apporte à mon équipe (FR29, NF
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Refonte textuelle et sémantique du Hero dans `app/pages/index.vue` (AC: 1, 3)
+-  - [ ] Remplacer le sur-titre par `<h2 class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA & AUTOMATISATION</h2>`.
+-  - [ ] Mettre à jour le `<h1>` avec `Automatisez les workflows qui freinent votre équipe.`.
+-  - [ ] Mettre à jour `.hero__sub` avec le nouveau pitch d'intégration de systèmes.
+-  - [ ] Ajouter la ligne de crédibilité `.hero__credibility` sous le sous-titre avec les tokens de typographie monospace / muted.
+-  - [ ] Mettre à jour le badge de disponibilité avec `Disponible pour nouvelles missions freelance` tout en conservant le lien Malt externe.
+-  - [ ] Mettre à jour le CTA principal (`/contact`) : `Identifier un workflow à automatiser`.
+-  - [ ] Mettre à jour le CTA secondaire (`/services`) : `Voir mes systèmes IA`.
+-
+-- [ ] Tâche 2 — Mise à jour de la séquence et des commandes dans `HomeHeroTerminal.vue` (AC: 2, 3)
+-  - [ ] Mettre à jour le tableau `fullRows` :
++- [x] Tâche 1 — Refonte textuelle et sémantique du Hero dans `app/pages/index.vue` (AC: 1, 3)
++  - [x] Remplacer le sur-titre par `<h2 class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA & AUTOMATISATION</h2>`.
++  - [x] Mettre à jour le `<h1>` avec `Automatisez les workflows qui freinent votre équipe.`.
++  - [x] Mettre à jour `.hero__sub` avec le nouveau pitch d'intégration de systèmes.
++  - [x] Ajouter la ligne de crédibilité `.hero__credibility` sous le sous-titre avec les tokens de typographie monospace / muted.
++  - [x] Mettre à jour le badge de disponibilité avec `Disponible pour nouvelles missions freelance` tout en conservant le lien Malt externe.
++  - [x] Mettre à jour le CTA principal (`/contact`) : `Identifier un workflow à automatiser`.
++  - [x] Mettre à jour le CTA secondaire (`/services`) : `Voir mes systèmes IA`.
++
++- [x] Tâche 2 — Mise à jour de la séquence et des commandes dans `HomeHeroTerminal.vue` (AC: 2, 3)
++  - [x] Mettre à jour le tableau `fullRows` :
+     - `cmd: "whoami"`, `out: "${SITE.profile.name} — Développeur Full Stack spécialisé IA & automatisation"`, `tone: "ink"`
+     - `cmd: "cat focus.txt"`, `out: "Systèmes IA · automatisation métier · agents · applications Full Stack · QA"`, `tone: "blue"`
+     - `cmd: "ls ~/systems"`, `out: projectsOutput`, `tone: "green"`
+-  - [ ] Vérifier que `projectsOutput` formate correctement les slugs des projets de `SITE.projects` (`keova-signal/  debrief/  devis-assist/`).
+-  - [ ] Mettre à jour le bloc `<noscript>` pour refléter les nouvelles commandes et sorties textuelles.
+-  - [ ] Vérifier que l'interaction d'ouverture du terminal (`openTerminal` sur `help`) fonctionne sans régression.
+-  - [ ] Vérifier la neutralisation immédiate sous `prefers-reduced-motion: reduce`.
++  - [x] Vérifier que `projectsOutput` formate correctement les slugs des projets de `SITE.projects` (`keova-signal/  debrief/  devis-assist/`).
++  - [x] Mettre à jour le bloc `<noscript>` pour refléter les nouvelles commandes et sorties textuelles.
++  - [x] Vérifier que l'interaction d'ouverture du terminal (`openTerminal` sur `help`) fonctionne sans régression.
++  - [x] Vérifier la neutralisation immédiate sous `prefers-reduced-motion: reduce`.
+ 
+-- [ ] Tâche 3 — Validation responsive, accessibilité et design tokens (AC: 1, 2, 3)
+-  - [ ] Vérifier le rendu sur mobile et desktop (pas de débordement de texte, wrapping correct des CTAs).
+-  - [ ] Vérifier la conformité de la hiérarchie de titres (`<h2>` eyebrow -> `<h1>`).
+-  - [ ] Vérifier l'absence absolue d'emoji dans les textes.
++- [x] Tâche 3 — Validation responsive, accessibilité et design tokens (AC: 1, 2, 3)
++  - [x] Vérifier le rendu sur mobile et desktop (pas de débordement de texte, wrapping correct des CTAs).
++  - [x] Vérifier la conformité de la hiérarchie de titres (`<h2>` eyebrow -> `<h1>`).
++  - [x] Vérifier l'absence absolue d'emoji dans les textes.
+ 
+-- [ ] Tâche 4 — Validation qualité Docker (AC: 4)
+-  - [ ] Exécuter `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
+-  - [ ] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript et génération SSG Nitro complète.
++- [x] Tâche 4 — Validation qualité Docker (AC: 4)
++  - [x] Exécuter `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
++  - [x] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript et génération SSG Nitro complète.
+ 
+ ## Dev Notes
+ 
+@@ -100,9 +104,32 @@ so that je comprends en 5 secondes ce que Simon apporte à mon équipe (FR29, NF
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++- Gemini 3.7 Flash
+ 
+ ### Debug Log References
++- Gate de validation Docker complète : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` (0 erreur ESLint / Stylelint, 0 erreur vue-tsc, 20 routes et assets Nitro pré-rendus avec succès).
++- Résolution du formatage Prettier sous `app/pages/index.vue` via `eslint --fix .`.
++- Redémarrage propre du conteneur web pour synchronisation de la base SQLite @nuxt/content (`docker compose restart web`).
+ 
+ ### Completion Notes List
++- ✅ **AC-1 :** Section Hero mise à jour dans `app/pages/index.vue` :
++  - Sur-titre sémantique `<h2 class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA & AUTOMATISATION</h2>`.
++  - H1 : `Automatisez les workflows qui freinent votre équipe.`.
++  - Sous-titre : `Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants — de l’identification du problème jusqu’à la mise en production.`.
++  - Ligne de crédibilité `.hero__credibility` : `Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA`.
++  - Badge de disponibilité : `Disponible pour nouvelles missions freelance` + lien profil Malt vérifié via `<ZExternalLink>`.
++  - CTAs : `Identifier un workflow à automatiser` (`/contact`) et `Voir mes systèmes IA` (`/services`).
++- ✅ **AC-2 :** Terminal Hero cinétique mis à jour dans `HomeHeroTerminal.vue` :
++  - Commande `$ whoami` -> `${SITE.profile.name} — Développeur Full Stack spécialisé IA & automatisation` (ton `ink`).
++  - Commande `$ cat focus.txt` -> `Systèmes IA · automatisation métier · agents · applications Full Stack · QA` (ton `blue`).
++  - Commande `$ ls ~/systems` -> `keova-signal/  debrief/  devis-assist/` dérivé de `SITE.projects` (ton `green`).
++  - Bloc `<noscript>` et état reduced-motion synchronisés avec les nouvelles sorties.
++  - Interaction d'ouverture modal `$ help` (`useTerminal().open()`) préservée.
++- ✅ **AC-3 :** Accessibilité, hiérarchie de titres, ordre de focus et règle stricte Zéro Emoji validés.
++- ✅ **AC-4 :** Gate de validation Docker 100 % verte.
+ 
+ ### File List
++- `app/pages/index.vue` (modifié)
++- `app/components/home/HomeHeroTerminal.vue` (modifié)
++- `docs/implementation-artifacts/12-2-homepage-hero-commercial-cinetique-et-terminal-interactif.md` (modifié)
++- `docs/implementation-artifacts/sprint-status.yaml` (modifié)
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 15c84cd..88be376 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-16 (Story 12.2 initialisée en ready-for-dev)"
++last_updated: "2026-09-16 (Story 12.2 passée en review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -130,7 +130,7 @@ development_status:
+   # Epic 12 — Repositionnement Commercial V1 : Systèmes IA & Automatisation Métier
+   epic-12: in-progress
+   12-1-source-unique-de-donnees-sitets-et-coherence-globale: done
+-  12-2-homepage-hero-commercial-cinetique-et-terminal-interactif: ready-for-dev
++  12-2-homepage-hero-commercial-cinetique-et-terminal-interactif: review
+   12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur: backlog
+   12-4-homepage-vitrine-des-3-projets-phares: backlog
+   12-5-page-services-restructuration-des-offres-et-process-4-etapes: backlog
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '450,495p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   450	// .section / .container / .eyebrow / .prose : primitives de layout globales
+   451	// (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+   452	
+   453	// ---- Colonne texte ----
+   454	.hero__title {
+   455	  margin: 0;
+   456	  font-family: var(--font-mono);
+   457	  font-size: clamp(2.6rem, 6.4vw, 5.2rem);
+   458	  font-weight: var(--fw-regular);
+   459	  line-height: 0.98;
+   460	  letter-spacing: var(--ls-tight);
+   461	  color: var(--text-strong);
+   462	  text-shadow: 0 2px 14px color-mix(in srgb, var(--surface-0) 80%, transparent);
+   463	
+   464	  em {
+   465	    font-style: italic;
+   466	    color: var(--accent);
+   467	  }
+   468	}
+   469	
+   470	.hero__sub {
+   471	  max-width: 46ch;
+   472	  margin: var(--space-5) 0 var(--space-4);
+   473	  font-family: var(--font-sans);
+   474	  font-size: var(--fs-lg);
+   475	  line-height: var(--lh-relaxed);
+   476	  color: var(--text-body);
+   477	  text-shadow: 0 1px 8px color-mix(in srgb, var(--surface-0) 70%, transparent);
+   478	}
+   479	
+   480	.hero__credibility {
+   481	  margin: 0 0 var(--space-6);
+   482	  font-family: var(--font-mono);
+   483	  font-size: var(--fs-xs);
+   484	  letter-spacing: var(--ls-wide);
+   485	  color: var(--text-muted);
+   486	}
+   487	
+   488	.hero__cta {
+   489	  display: flex;
+   490	  flex-wrap: wrap;
+   491	  gap: var(--space-3);
+   492	  margin-bottom: var(--space-6);
+   493	}
+   494	
+   495	// ---- Badge de disponibilité & CTAs ----
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '1,60p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     1	<template>
+     2	  <main class="home">
+     3	    <ClientOnly>
+     4	      <HomeBootOverlay @boot-complete="onBootComplete" />
+     5	    </ClientOnly>
+     6	    <HomeAtmosComponent />
+     7	    <ZCustomCursor />
+     8	
+     9	    <section class="hero">
+    10	      <div class="hero__in container">
+    11	        <div class="hero__grid">
+    12	          <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
+    13	          <div class="anim hero__text">
+    14	            <h2 class="eyebrow">
+    15	              <span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA &amp; AUTOMATISATION
+    16	            </h2>
+    17	            <h1 class="hero__title">Automatisez les workflows qui freinent votre équipe.</h1>
+    18	            <p class="hero__sub">
+    19	              Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants —
+    20	              de l’identification du problème jusqu’à la mise en production.
+    21	            </p>
+    22	            <p class="hero__credibility">
+    23	              Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA
+    24	            </p>
+    25	
+    26	            <div class="hero__badge-wrap">
+    27	              <span class="hero__pulse-dot" aria-hidden="true" />
+    28	              <span>Disponible pour nouvelles missions freelance</span>
+    29	              <template v-if="SITE.profile.maltUrl">
+    30	                <span aria-hidden="true"> · </span>
+    31	                <ZExternalLink :href="SITE.profile.maltUrl"> Profil Malt vérifié </ZExternalLink>
+    32	              </template>
+    33	            </div>
+    34	
+    35	            <div class="hero__cta">
+    36	              <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+    37	                Identifier un workflow à automatiser
+    38	                <template #iconRight><ZIcon name="arrow" /></template>
+    39	              </ZButton>
+    40	              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir mes systèmes IA </ZButton>
+    41	            </div>
+    42	          </div>
+    43	
+    44	          <!-- Colonne droite : terminal hero cinétique -->
+    45	          <div class="anim hero__term-col">
+    46	            <HomeHeroTerminal :auto-start="isBootFinished" />
+    47	          </div>
+    48	        </div>
+    49	
+    50	        <!-- Ruban défilant de la stack moderne remonté au sein du hero (fidèle à la maquette) -->
+    51	        <HomeStackMarquee class="hero__marquee" />
+    52	      </div>
+    53	    </section>
+    54	
+    55	    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
+    56	    <section class="section">
+    57	      <div class="container">
+    58	        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
+    59	        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
+    60	        <ul class="grid-3">
+
+exec
+/bin/zsh -lc "nl -ba app/components/home/HomeHeroTerminal.vue | sed -n '105,135p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   105	
+   106	const projectsOutput = SITE.projects
+   107	  .map((p) => {
+   108	    if (p.url) {
+   109	      return `${p.url.replace(/^https?:\/\//, "").replace(/\/.*$/, "")}/`;
+   110	    }
+   111	    return `${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/`;
+   112	  })
+   113	  .join("  ");
+   114	
+   115	const fullRows: ITermRow[] = [
+   116	  {
+   117	    cmd: "whoami",
+   118	    out: `${SITE.profile.name} — Développeur Full Stack spécialisé IA & automatisation`,
+   119	    tone: "ink",
+   120	  },
+   121	  {
+   122	    cmd: "cat focus.txt",
+   123	    out: "Systèmes IA · automatisation métier · agents · applications Full Stack · QA",
+   124	    tone: "blue",
+   125	  },
+   126	  {
+   127	    cmd: "ls ~/systems",
+   128	    out: projectsOutput,
+   129	    tone: "green",
+   130	  },
+   131	];
+   132	
+   133	const executedRows = ref<ITermRow[]>([]);
+   134	const currentTypingLine = ref<ITermRow | null>(null);
+   135	const currentTypingText = ref("");
+
+exec
+/bin/zsh -lc 'rg -n "noscript|projets|systems|fullRows|reduced|static|prefers" app/components/home/HomeHeroTerminal.vue app/pages/index.vue' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+app/pages/index.vue:96:          <p class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</p>
+app/pages/index.vue:254:  motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+app/pages/index.vue:529:  @media (prefers-reduced-motion: reduce) {
+app/pages/index.vue:1095:@media (prefers-reduced-motion: reduce) {
+app/components/home/HomeHeroTerminal.vue:59:      <noscript>
+app/components/home/HomeHeroTerminal.vue:61:          <template v-for="(row, idx) in fullRows" :key="`noscript-${idx}`">
+app/components/home/HomeHeroTerminal.vue:74:      </noscript>
+app/components/home/HomeHeroTerminal.vue:85:// Déroule une animation de frappe séquentielle pour whoami, cat focus.txt et ls ~/systems.
+app/components/home/HomeHeroTerminal.vue:86:// Neutralisé sous prefers-reduced-motion (affichage statique complet immédiat).
+app/components/home/HomeHeroTerminal.vue:115:const fullRows: ITermRow[] = [
+app/components/home/HomeHeroTerminal.vue:127:    cmd: "ls ~/systems",
+app/components/home/HomeHeroTerminal.vue:144:  executedRows.value = [...fullRows];
+app/components/home/HomeHeroTerminal.vue:154:  const reduceMotion = import.meta.client && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+app/components/home/HomeHeroTerminal.vue:164:    if (rowIndex >= fullRows.length) {
+app/components/home/HomeHeroTerminal.vue:171:    const row = fullRows[rowIndex];
+app/components/home/HomeHeroTerminal.vue:230:  motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+app/components/home/HomeHeroTerminal.vue:405:@media (prefers-reduced-motion: reduce) {
+
+exec
+/bin/zsh -lc "nl -ba app/components/home/HomeHeroTerminal.vue | sed -n '50,76p;136,180p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    50	          <span class="prm__sep">:</span>
+    51	          <span class="prm__dir">~</span>
+    52	          <span class="prm__sep">$ </span>
+    53	          <span class="prm__cmd">help</span>
+    54	          <span class="prm__caret" aria-hidden="true" />
+    55	        </span>
+    56	      </button>
+    57	
+    58	      <!-- Fallback statique si JavaScript est désactivé -->
+    59	      <noscript>
+    60	        <div>
+    61	          <template v-for="(row, idx) in fullRows" :key="`noscript-${idx}`">
+    62	            <p class="hero-term__line">
+    63	              <span class="prm">
+    64	                <span class="prm__user">anon.@jouan.ovh</span>
+    65	                <span class="prm__sep">:</span>
+    66	                <span class="prm__dir">~</span>
+    67	                <span class="prm__sep">$ </span>
+    68	                <span class="prm__cmd">{{ row.cmd }}</span>
+    69	              </span>
+    70	            </p>
+    71	            <p class="hero-term__out" :class="`hero-term__out--${row.tone}`">{{ row.out }}</p>
+    72	          </template>
+    73	        </div>
+    74	      </noscript>
+    75	    </div>
+    76	  </div>
+   136	const isSequenceComplete = ref(false);
+   137	
+   138	let typingTimeoutId: ReturnType<typeof setTimeout> | null = null;
+   139	let stepTimeoutId: ReturnType<typeof setTimeout> | null = null;
+   140	let motionMq: MediaQueryList | null = null;
+   141	let isStarted = false;
+   142	
+   143	function showInstantState() {
+   144	  executedRows.value = [...fullRows];
+   145	  currentTypingLine.value = null;
+   146	  currentTypingText.value = "";
+   147	  isSequenceComplete.value = true;
+   148	}
+   149	
+   150	function startTypingSequence() {
+   151	  if (isStarted) return;
+   152	  isStarted = true;
+   153	
+   154	  const reduceMotion = import.meta.client && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+   155	
+   156	  if (reduceMotion) {
+   157	    showInstantState();
+   158	    return;
+   159	  }
+   160	
+   161	  let rowIndex = 0;
+   162	
+   163	  function typeRow() {
+   164	    if (rowIndex >= fullRows.length) {
+   165	      currentTypingLine.value = null;
+   166	      currentTypingText.value = "";
+   167	      isSequenceComplete.value = true;
+   168	      return;
+   169	    }
+   170	
+   171	    const row = fullRows[rowIndex];
+   172	    if (!row) return;
+   173	
+   174	    const activeRow: ITermRow = row;
+   175	    currentTypingLine.value = activeRow;
+   176	    currentTypingText.value = "";
+   177	
+   178	    let charIndex = 0;
+   179	    const fullCmd = activeRow.cmd;
+   180	
+
+codex
+[
+  {
+    "location": "app/components/home/HomeHeroTerminal.vue:118",
+    "trigger_condition": "SITE.profile.role changes after terminal role is hardcoded",
+    "guard_snippet": "out: `${SITE.profile.name} — ${SITE.profile.heroRole ?? SITE.profile.role}`",
+    "potential_consequence": "Terminal displays stale positioning."
+  },
+  {
+    "location": "app/components/home/HomeHeroTerminal.vue:128",
+    "trigger_condition": "SITE.projects is empty",
+    "guard_snippet": "out: projectsOutput || \"aucun système public pour le moment\"",
+    "potential_consequence": "Terminal prints an empty systems listing."
+  }
+]
+tokens used
+34 069
+[
+  {
+    "location": "app/components/home/HomeHeroTerminal.vue:118",
+    "trigger_condition": "SITE.profile.role changes after terminal role is hardcoded",
+    "guard_snippet": "out: `${SITE.profile.name} — ${SITE.profile.heroRole ?? SITE.profile.role}`",
+    "potential_consequence": "Terminal displays stale positioning."
+  },
+  {
+    "location": "app/components/home/HomeHeroTerminal.vue:128",
+    "trigger_condition": "SITE.projects is empty",
+    "guard_snippet": "out: projectsOutput || \"aucun système public pour le moment\"",
+    "potential_consequence": "Terminal prints an empty systems listing."
+  }
+]

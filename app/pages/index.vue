@@ -11,16 +11,21 @@
         <div class="hero__grid">
           <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
           <div class="anim hero__text">
-            <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
-            <h1 class="hero__title">Développeur Full Stack <em>TypeScript</em></h1>
+            <h2 class="eyebrow">
+              <span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA &amp; AUTOMATISATION
+            </h2>
+            <h1 class="hero__title">Automatisez les workflows qui freinent votre équipe.</h1>
             <p class="hero__sub">
-              Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
-              l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
+              Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants —
+              de l’identification du problème jusqu’à la mise en production.
+            </p>
+            <p class="hero__credibility">
+              Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA
             </p>
 
             <div class="hero__badge-wrap">
               <span class="hero__pulse-dot" aria-hidden="true" />
-              <span>Disponible pour missions freelance</span>
+              <span>Disponible pour nouvelles missions freelance</span>
               <template v-if="SITE.profile.maltUrl">
                 <span aria-hidden="true"> · </span>
                 <ZExternalLink :href="SITE.profile.maltUrl"> Profil Malt vérifié </ZExternalLink>
@@ -29,10 +34,10 @@
 
             <div class="hero__cta">
               <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
-                Discuter de votre projet
+                Identifier un workflow à automatiser
                 <template #iconRight><ZIcon name="arrow" /></template>
               </ZButton>
-              <ZButton :as="NuxtLink" to="/about" variant="secondary" size="lg"> Voir le parcours &amp; CV </ZButton>
+              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir mes systèmes IA </ZButton>
             </div>
           </div>
 
@@ -47,11 +52,11 @@
       </div>
     </section>
 
-    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
+    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1) -->
     <section class="section">
       <div class="container">
         <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
-        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
+        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos systèmes</h2>
         <ul class="grid-3">
           <li v-for="service in services" :key="service.id">
             <ZCard class="offer" interactive tilt :accent="service.featured" :featured="service.featured">
@@ -78,6 +83,34 @@
               <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
                 En savoir plus →
               </NuxtLink>
+            </ZCard>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Bloc différenciateur « Prototype → Production » (Story 12.3 / AC-2) -->
+    <section class="section section--sunken diff-block">
+      <div class="container">
+        <p class="eyebrow"><span aria-hidden="true">// </span>au-delà de la démo</p>
+        <h2 class="section__title diff-block__title">
+          Un agent qui fonctionne trois fois n’est pas encore un système fiable.
+        </h2>
+        <p class="prose diff-block__lead">
+          Mon background Full Stack et QA me permet de traiter ce qui arrive après le prototype : authentification,
+          permissions, données, erreurs, retries, logs, tests, coûts, monitoring, sécurité et supervision humaine.
+          L’objectif n’est pas de mettre de l’IA partout. L’objectif est de construire un workflow qui reste utile
+          lorsqu’il rencontre la vraie vie.
+        </p>
+
+        <ul class="pillars-grid">
+          <li v-for="pillar in pillars" :key="pillar.id">
+            <ZCard class="pillar" padded>
+              <div class="pillar__icon">
+                <ZIcon :name="pillar.icon" />
+              </div>
+              <h3 class="pillar__title">{{ pillar.title }}</h3>
+              <p class="pillar__desc">{{ pillar.desc }}</p>
             </ZCard>
           </li>
         </ul>
@@ -289,7 +322,7 @@ function onProjectMouseLeave(event: MouseEvent) {
 interface HomeServiceOffer {
   id: string;
   no: string;
-  icon: "code" | "layers" | "spark";
+  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
   title: string;
   desc: string;
   points: string[];
@@ -298,52 +331,87 @@ interface HomeServiceOffer {
   featured: boolean;
 }
 
-// Vitrine des 3 offres ciblées Full Stack TS (Story 11.3 / AC-2).
+interface ProductionPillar {
+  id: string;
+  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+  title: string;
+  desc: string;
+}
+
+// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1).
 const services: HomeServiceOffer[] = [
   {
-    id: "creation",
+    id: "automation",
     no: "01 / 03",
-    icon: "code",
-    title: "Création d'applications web & SaaS",
-    desc: "De l'idée à la production : architecture, développement front & back, base de données, authentification et paiements Stripe.",
+    icon: "layers",
+    title: "Automatisation de processus métier",
+    desc: "Cartographie d'un workflow existant, identification des tâches répétitives et construction du système qui automatise ce qui mérite réellement de l'être.",
     points: [
-      "Architecture logicielle & APIs REST",
-      "Applications Vue 3 / Nuxt 4 & NestJS",
-      "Intégration Stripe & PostgreSQL",
+      "Cartographie de flux & connecteurs d'APIs",
+      "Ingestion, enrichissement et traitement de données",
+      "Synchronisation d'outils métier & reporting",
     ],
-    tags: ["Nuxt", "NestJS", "PostgreSQL", "Stripe Connect"],
-    price: "Sur devis / au sprint",
+    tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
+    price: "À partir de 3 500 € HT",
     featured: false,
   },
   {
-    id: "fullstack",
+    id: "agents",
     no: "02 / 03",
-    icon: "layers",
-    title: "Développement Full Stack TypeScript",
-    desc: "Renfort d'équipe produit ou développement de modules complexes avec une stack moderne unifiée de bout en bout.",
+    icon: "bot",
+    title: "Agents IA intégrés à vos outils",
+    desc: "Intégration d'agents outillés dans vos flux existants pour lire, interpréter, synthétiser et décider sans casser vos habitudes de travail.",
     points: [
-      "Composants Vue 3 / Nuxt avec TypeScript strict",
-      "Microservices & backend modulaire NestJS",
-      "Fiabilisation et optimisation des performances",
+      "Agents outillés (Tool Calling) & serveurs MCP",
+      "Extraction structurée & analyse documentaire",
+      "Supervision humaine obligatoire (Human-in-the-loop)",
     ],
-    tags: ["TypeScript", "Vue 3", "Nuxt", "NestJS", "Node.js"],
-    price: "Sur devis / TJM",
+    tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
+    price: "À partir de 3 500 € HT",
     featured: true,
   },
   {
-    id: "evolution",
+    id: "apps",
     no: "03 / 03",
-    icon: "spark",
-    title: "Évolution & Architecture applicative",
-    desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
+    icon: "code",
+    title: "Applications IA sur mesure",
+    desc: "Développement complet de solutions logicielles dédiées quand le workflow nécessite une interface, un backend robuste et une base de données sur mesure.",
     points: [
-      "Audits techniques de code & migrations de versions",
-      "Tests E2E TestCafé & tests unitaires Vitest",
-      "Pipelines CI/CD & conteneurisation Docker",
+      "Applications web complètes Nuxt & NestJS",
+      "Applications desktop sécurisées Tauri (IA locale)",
+      "Architecture PostgreSQL, tests QA & déploiement",
     ],
-    tags: ["TestCafé", "Vitest", "Docker", "CI/CD"],
-    price: "Au forfait / audit",
+    tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
+    price: "Sur mesure / Sprint",
     featured: false,
+  },
+];
+
+// 4 Piliers d'industrialisation « Prototype → Production » (Story 12.3 / AC-2).
+const pillars: ProductionPillar[] = [
+  {
+    id: "data",
+    icon: "layers",
+    title: "Données",
+    desc: "Provenance, structuration, stockage, rétention, secrets.",
+  },
+  {
+    id: "reliability",
+    icon: "zap",
+    title: "Fiabilité",
+    desc: "Cas limites, retries, fallbacks, tests, observabilité.",
+  },
+  {
+    id: "ai",
+    icon: "bot",
+    title: "IA",
+    desc: "Sorties structurées, versionnage, évaluations, contrôle humain.",
+  },
+  {
+    id: "ops",
+    icon: "terminal",
+    title: "Exploitation",
+    desc: "Monitoring, coûts, support, maintenance, évolution.",
   },
 ];
 
@@ -464,12 +532,20 @@ usePageSeo({
 
 .hero__sub {
   max-width: 46ch;
-  margin: var(--space-5) 0 var(--space-6);
+  margin: var(--space-5) 0 var(--space-4);
   font-family: var(--font-sans);
   font-size: var(--fs-lg);
   line-height: var(--lh-relaxed);
   color: var(--text-body);
   text-shadow: 0 1px 8px color-mix(in srgb, var(--surface-0) 70%, transparent);
+}
+
+.hero__credibility {
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-muted);
 }
 
 .hero__cta {
@@ -651,6 +727,12 @@ usePageSeo({
   color: var(--accent);
   text-decoration: none;
 
+  &::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+  }
+
   &:hover {
     text-decoration: underline;
   }
@@ -662,6 +744,68 @@ usePageSeo({
     box-shadow: var(--ring-accent);
     border-radius: var(--radius-xs);
   }
+}
+
+// ---- Bloc Différenciateur « Prototype → Production » (Story 12.3 / AC-2) ----
+.diff-block__title {
+  max-width: 28ch;
+  margin-bottom: var(--space-4);
+}
+
+.diff-block__lead {
+  max-width: 72ch;
+  margin: 0 0 var(--space-8);
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+  }
+}
+
+.pillar {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pillar__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  margin-bottom: var(--space-4);
+  font-size: var(--fs-xl);
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-md);
+}
+
+.pillar__title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+.pillar__desc {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-normal);
+  color: var(--text-muted);
 }
 
 // ---- Section Projets sélectionnés (porté de Home - Awwwards.html .work) ----
@@ -1057,6 +1201,10 @@ li:last-child .work__row {
     grid-template-columns: 1fr;
   }
 
+  .pillars-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .block__head--row {
     flex-direction: column;
     align-items: flex-start;
@@ -1074,6 +1222,7 @@ li:last-child .work__row {
     display: none;
   }
 
+  .pillars-grid,
   .stats {
     grid-template-columns: 1fr;
   }

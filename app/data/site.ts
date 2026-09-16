@@ -13,6 +13,7 @@
 export interface IProfile {
   name: string;
   role: string;
+  shortRole?: string;
   bio?: string;
   email: string;
   city: string;
@@ -34,6 +35,7 @@ export interface IProject {
 const profile: IProfile = {
   name: "Simon Jouan",
   role: "Développeur Full Stack spécialisé en systèmes IA & automatisation métier",
+  shortRole: "Développeur Full Stack spécialisé IA & automatisation",
   bio: "Conception et industrialisation d'applications web, agents IA et pipelines d'automatisation métier de bout en bout.",
   email: "simon@jouan.ovh",
   city: "France · Remote",
