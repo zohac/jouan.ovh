@@ -12,6 +12,11 @@ inputDocuments:
   - docs/specs/spec-home-awwwards/.decision-log.md
   - docs/contexte_malt.md
   - docs/direction_strategique_site.md
+  - docs/specs/spec-repositionnement-ia/SPEC.md
+  - docs/specs/spec-repositionnement-ia/messaging-matrix.md
+  - docs/specs/spec-repositionnement-ia/services-and-pricing.md
+  - docs/specs/spec-repositionnement-ia/projects-showcase.md
+  - docs/jouan-ovh-offre-v1-brief-codex.md
   - AGENTS.md
 ---
 
@@ -58,6 +63,17 @@ FR25: Bloc CTA final de conversion orienté mission (« Discuter de votre projet
 FR26: Maintien strict de l'architecture multi-pages : tous les liens de navigation et de renvoi ciblent les routes Nuxt indépendantes sans repli vers des ancres intra-page `#`. _(CAP-9)_
 FR27: Micro-curseur interactif progressif pour navigateurs de bureau avec souris (`data-hot`), désactivé sur tactile et sous reduced-motion. _(CAP-10)_
 
+#### Epic 12 — Repositionnement Commercial V1 : Systèmes IA & Automatisation Métier (SPEC-repositionnement-ia)
+FR28: Source de données unique (`site.ts`), assainissement sémantique et cohérence globale du profil (nouveau titre, bio, localisation « France · Remote », stack ciblée, vitrine Keova Signal / Debrief / Devis-Assist, élimination de « Ingénieur IA » et « ERP équestre »). _(CAP-1)_
+FR29: Page d'accueil — Hero commercial cinétique & Terminal interactif (H1 « Automatisez les workflows qui freinent votre équipe », sous-titre d'intégration de systèmes, CTAs vers workflow, commandes terminal `whoami`, `cat focus.txt`, `ls ~/systems`). _(CAP-2)_
+FR30: Page d'accueil — Vitrine des 3 services ciblés & Bloc différenciateur « Prototype → Production » (Automatisation, Agents IA, Applications sur mesure, suivi de « Un agent qui fonctionne trois fois n'est pas encore un système fiable » articulé sur 4 piliers). _(CAP-3)_
+FR31: Page d'accueil — Vitrine des 3 projets phares (Keova Signal avec dashboard réel HD, Debrief 100% on-device avec capture HD, Devis-Assist avec pipeline OCR BTP et matching pg_trgm, sans faux ROI, relégation des anciens projets en archives/parcours). _(CAP-4)_
+FR32: Page Services — Restructuration complète des offres & Processus en 4 étapes (Workflow Sprint à 3 500 € HT, Blueprint à 750 € HT, AI Care à 490 € HT/mois hors consommations tierces, et process Diagnostic → Cadrage → Build → Suivi). _(CAP-5)_
+FR33: Page À propos — Trajectoire professionnelle et rigueur QA (métrologie industrielle → QA logicielle → Full Stack → systèmes IA en production). _(CAP-6)_
+FR34: CTA global inspecteur de workflow (`$ ./workflow --inspect`) et formulaire de contact orienté qualification de processus. _(CAP-7)_
+FR35: SEO centralisé, OpenGraph et Schema.org/JSON-LD alignés sur « Systèmes IA, agents & automatisation métier ». _(CAP-8)_
+FR36: Préservation de la DA terminal dark-first, accessibilité WCAG AA, conformité motion réduit et validation de la gate Docker 100% verte. _(CAP-9)_
+
 ### NonFunctional Requirements
 
 NFR1: Dark-first uniquement — aucun thème clair ; orange Ubuntu = unique accent héros.
@@ -72,6 +88,10 @@ NFR9: Easter-egg terminal préservé — aucune commande existante cassée.
 NFR10: Isolement Git — le développement de l'Epic 11 s'exécute sur une branche dédiée issue de `develop` (ex. `feat/home-awwwards`), préservant la branche `main` de production.
 NFR11: Alignement commercial & Malt strict — aucun élément de WordPress, PHP legacy ou QA manuelle en offre de premier niveau sur la home ; harmonisation intégrale avec `docs/contexte_malt.md` et `docs/direction_strategique_site.md`.
 NFR12: Fiabilité des liens et accessibilité — zéro lien externe mort (TryOn sans lien 404), balisage systématique de tout lien externe via `<ZExternalLink>`, et respect des standards a11y (titres, listes, contrastes, motion réduit).
+NFR13: Sobriété & Zéro Emoji — aucun emoji dans les contenus et composants (NFR6), aucun visuel générique d'IA (pas de robots, cerveaux lumineux ou gradients néon SaaS).
+NFR14: Confidentialité & Propriété intellectuelle — respect strict des dépôts privés (`zohac/*`), aucun lien sortant 404, mention transparente des statuts réels.
+NFR15: Exécution Docker stricte — toute compilation et validation de gate s'effectue dans le conteneur Docker.
+NFR16: Performance SSG & Zéro régression — génération statique Nitro préservée avec 13 routes pré-rendues.
 
 ### Additional Requirements
 
@@ -111,6 +131,10 @@ UX-DR22: Grille des 3 cartes de service avec numérotation terminale, promesse d
 UX-DR23: Section projets avec cartes en relief, badges de statut (`● En production`, `○ Étude de cas`, `◐ R&D`), intégration propre de TryOn sans lien mort 404, et 3 blocs compteurs statistiques.
 UX-DR24: Bloc CTA de conversion avec fond aubergine contrasté, typographie Ubuntu et boutons d'action (contact + lien Malt via `<ZExternalLink>`).
 UX-DR25: Micro-curseur interactif custom (`dot` + `ring`) réactif aux zones interactives (`data-hot`), actif uniquement sur desktop avec souris (`@media (hover: hover)`).
+UX-DR28: Intégration des captures d'écran réelles HD de Keova Signal et Debrief dans `public/images/projects/` avec ratios et bordures conformes au Design System.
+UX-DR29: Grille modulaire pour le bloc différenciateur « Prototype → Production » (4 piliers Données, Fiabilité, IA, Exploitation).
+UX-DR30: Grille tarifaire transparente sur `/services` dissociant honoraires forfaitaires et coûts variables d'APIs/tokens tiers.
+UX-DR31: Formulaire `/contact` allégé et orienté description textuelle de workflow sans questions invasives de budget au premier contact.
 
 ### FR Coverage Map
 
@@ -141,6 +165,15 @@ FR24: Epic 11 — Vitrine des articles récents du blog
 FR25: Epic 11 — Bloc CTA de conversion orienté mission & profil Malt
 FR26: Epic 11 — Préservation de l'architecture multi-pages
 FR27: Epic 11 — Micro-curseur interactif progressif desktop
+FR28: Epic 12 — Source de vérité site.ts, assainissement sémantique & profil
+FR29: Epic 12 — Page d'accueil hero commercial cinétique & terminal
+FR30: Epic 12 — Vitrine des 3 services & bloc différenciateur Prototype → Production
+FR31: Epic 12 — Vitrine des 3 projets phares (Keova Signal, Debrief, Devis-Assist)
+FR32: Epic 12 — Page Services, offres Workflow Sprint / Blueprint / Care & process
+FR33: Epic 12 — Page À propos, trajectoire métrologie / QA & systèmes IA
+FR34: Epic 12 — CTA final inspecteur de workflow & formulaire de contact
+FR35: Epic 12 — SEO centralisé, OpenGraph & Schema.org
+FR36: Epic 12 — Préservation DA terminal, a11y & non-régression gate Docker
 
 ## Epic List
 
@@ -187,6 +220,10 @@ La refonte est réellement livrée : a11y résiduelle bouclée et validée, SEO 
 ### Epic 11: Refonte d'accueil Awwwards & Repositionnement Commercial Full Stack TS
 Le visiteur arrivant sur la page d'accueil de `jouan.ovh` découvre une vitrine immersive haute performance (« Awwwards level ») et comprend instantanément le positionnement de Simon Jouan comme Développeur Full Stack TypeScript (Nuxt / NestJS / PostgreSQL) pour applications web et SaaS, appuyé par des preuves concrètes de réalisations (Keova en production, TryOn en étude de cas, Nodium en lab R&D), une réassurance chiffrée (11 ans d'expérience, culture qualité logicielle), et des points de contact directs (formulaire et profil Malt) sans altérer l'architecture multi-pages existante.
 **FRs covered:** FR18, FR19, FR20, FR21, FR22, FR23, FR24, FR25, FR26, FR27 _(NFR10, NFR11, NFR12, UX-DR18 à UX-DR25)_
+
+### Epic 12: Repositionnement Commercial V1 — Systèmes IA & Automatisation Métier
+Le visiteur arrivant sur `jouan.ovh` (prospect ou client) comprend en moins de 15 secondes que Simon Jouan automatise les workflows métier des entreprises grâce à des systèmes IA robustes et industriels, validés par des réalisations concrètes (Keova Signal, Debrief, Devis-Assist) et une culture QA éprouvée, avec une grille tarifaire claire (Sprint à partir de 3 500 € HT) et un appel direct à qualifier son processus sans friction.
+**FRs covered:** FR28, FR29, FR30, FR31, FR32, FR33, FR34, FR35, FR36 _(NFR13 à NFR16, UX-DR28 à UX-DR31)_
 
 ---
 
@@ -806,5 +843,143 @@ So that l'expérience soit véritablement au niveau d'un portfolio primé Awwwar
 **And** le bloc CTA final `.cta` est aéré (`padding: clamp(48px, 7vw, 84px) var(--space-6)`), avec son halo lumineux radial supérieur et sa typographie h2 valorisée
 **And** le footer rehausse le contraste de l'ensemble de ses libellés et liens pour une lisibilité WCAG AA irréprochable
 **And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) est exécutée avec succès (0 erreur ESLint/Stylelint, 0 erreur TypeScript, 13 routes pré-rendues)
+
+---
+
+## Epic 12: Repositionnement Commercial V1 — Systèmes IA & Automatisation Métier
+
+Le visiteur arrivant sur `jouan.ovh` (prospect ou client) comprend en moins de 15 secondes que Simon Jouan automatise les workflows métier des entreprises grâce à des systèmes IA robustes et industriels, validés par des réalisations concrètes (Keova Signal, Debrief, Devis-Assist) et une culture QA éprouvée, avec une grille tarifaire claire (Sprint à partir de 3 500 € HT) et un appel direct à qualifier son processus sans friction.
+
+### Story 12.1: Source unique de données `site.ts`, assainissement sémantique & cohérence globale
+
+As a visiteur du site,
+I want consulter un profil et des métadonnées alignés sur les systèmes IA et l'automatisation métier,
+So that j'identifie la spécialisation de Simon et ne trouve plus de références obsolètes (FR28, NFR13, NFR14).
+
+**Acceptance Criteria:**
+
+**Given** le fichier source unique `app/data/site.ts` et le composant Footer
+**When** on met à jour les données de `SITE` :
+  - `profile.role` devient `Développeur Full Stack spécialisé en systèmes IA & automatisation métier`
+  - `profile.location` devient `France · Remote` (suppression définitive de `Rouen, France`)
+  - `profile.bio` reflète la promesse d'automatisation des workflows et d'industrialisation IA
+  - `skills` met en avant la stack ciblée (`TypeScript`, `Node.js 22`, `NestJS`, `Nuxt`, `PostgreSQL`, `MCP`, `Docker`, `whisper.cpp`, `sherpa-onnx`, `llama.cpp`, `BullMQ`, `Mistral OCR`)
+  - `projects` intègre les entrées de `keova-signal` (interne/privé), `debrief` (R&D/privé) et `devis-assist` (architecture validée/privé) avec leurs tags et statuts réels
+  - Les projets historiques (`keova-app`, `tryon`, `nodium`, web) sont maintenus dans une catégorie d'archives ou parcours, avec correction de la mention « ERP équestre » remplacée par « Application SaaS de gestion opérationnelle » et suppression du terme « Ingénieur IA » au profit de « Créateur · R&D agents IA »
+**Then** aucun terme « Ingénieur IA » ni « ERP équestre » ne subsiste dans `site.ts` et les pieds de page
+**And** la validation Docker (`pnpm lint && pnpm typecheck && pnpm generate`) est exécutée avec succès (0 erreur ESLint/Stylelint, 0 erreur TypeScript, 13 routes pré-rendues).
+
+### Story 12.2: Page d'accueil — Hero commercial cinétique & Terminal interactif
+
+As a prospect découvrant la page d'accueil,
+I want lire immédiatement une promesse orientée vers la résolution de mes irritants métier et voir un terminal interactif cohérent,
+So that je comprends en 5 secondes ce que Simon apporte à mon équipe (FR29, NFR13, NFR15, UX-DR28).
+
+**Acceptance Criteria:**
+
+**Given** la page d'accueil `app/pages/index.vue` et le composant `HomeHeroTerminal.vue`
+**When** on charge la page d'accueil
+**Then** le hero affiche en typographie Ubuntu et SCSS tokens :
+  - Sur-titre : `<h2 class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA & AUTOMATISATION</h2>`
+  - H1 : `Automatisez les workflows qui freinent votre équipe.`
+  - Sous-titre : `Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants — de l’identification du problème jusqu’à la mise en production.`
+  - Ligne de crédibilité : `Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA`
+  - CTA principal : `<ZButton to="/contact">Identifier un workflow à automatiser</ZButton>`
+  - CTA secondaire : `<ZButton variant="secondary" href="#systems">Voir mes systèmes IA</ZButton>` (ou route `/services`)
+  - Signal de disponibilité : `Disponible pour nouvelles missions freelance`
+**And** la séquence de frappe du terminal hero exécute les nouvelles commandes :
+  - `$ whoami` -> `Simon Jouan — Développeur Full Stack spécialisé IA & automatisation`
+  - `$ cat focus.txt` -> `Systèmes IA · automatisation métier · agents · applications Full Stack · QA`
+  - `$ ls ~/systems` -> `keova-signal/ debrief/ devis-assist/`
+**And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) passe avec 0 erreur.
+
+### Story 12.3: Page d'accueil — Vitrine des 3 services ciblés & Bloc différenciateur « Prototype → Production »
+
+As a visiteur évaluant l'offre de services sur la page d'accueil,
+I want découvrir les 3 piliers d'accompagnement et les arguments prouvant la viabilité des systèmes déployés,
+So that je distingue le travail industriel d'une simple démonstration de chatbot fragile (FR30, NFR13, UX-DR29).
+
+**Acceptance Criteria:**
+
+**Given** la section services d'accueil et le nouveau bloc différenciateur
+**When** le visiteur fait défiler la page d'accueil
+**Then** la section vitrine expose 3 cartes `ZCard` d'offres :
+  1. *Automatisation de processus métier* (cartographie de workflow, tâches répétitives, tags `Workflow` · `APIs` · `Automation` · `PostgreSQL`)
+  2. *Agents IA intégrés à vos outils* (lecture, interprétation, synthèse, validation humaine, tags `Agents IA` · `LLM` · `MCP` · `Human-in-the-loop`)
+  3. *Applications IA sur mesure* (produits dédiés, toute la chaîne logicielle, tags `TypeScript` · `Nuxt` · `NestJS` · `PostgreSQL` · `Tauri`)
+**And** chaque carte redirige vers `/services`
+**And** immédiatement après, le bloc différenciateur `.prototype-to-prod` expose :
+  - Eyebrow `<span class="eyebrow">// au-delà de la démo</span>`
+  - H2 `Un agent qui fonctionne trois fois n’est pas encore un système fiable.`
+  - Texte explicatif valorisant le background Full Stack et QA (gestion des erreurs, retries, logs, tests, coûts, monitoring, sécurité)
+  - 4 piliers techniques : *Données*, *Fiabilité*, *IA*, *Exploitation*
+**And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) passe avec 0 erreur.
+
+### Story 12.4: Page d'accueil — Vitrine des 3 projets phares (Keova Signal, Debrief, Devis-Assist)
+
+As a prospect technique en quête de preuves de compétences,
+I want examiner 3 réalisations concrètes résolvant des cas réels avec visuels et stacks précises,
+So that je sois convaincu de la faisabilité de mon propre projet sans être trompé par de faux indicateurs (FR31, NFR14, UX-DR28).
+
+**Acceptance Criteria:**
+
+**Given** la section des projets de la page d'accueil
+**When** on rend la vitrine des projets phares
+**Then** les 3 projets sont affichés sous forme de cartes riches :
+  - **Keova Signal** : statut `● Système interne / En développement actif`, accroche `Détecter le bon prospect au bon moment`, description courte (Open Data Sirene, Token Bucket, scraping éthique, double étage de scoring Zod, serveur MCP 10 outils), tags (`Node.js 22` · `TypeScript` · `MCP Server` · `PostgreSQL` · `Cheerio` · `Docker`), capture réelle HD `keova-signal-dashboard.png` (via `<NuxtImg>`), badge `Projet interne / Dépôt privé` sans lien externe mort
+  - **Debrief** : statut `◐ R&D / En développement`, accroche `Transformer un rendez-vous commercial en apprentissage exploitable`, description courte (application desktop privacy-first, 100% on-device, whisper.cpp large-v3, sherpa-onnx, NER composite GLiNER/CamemBERT, llama-server Gemma 4 IT), tags (`Tauri` · `Rust` · `whisper.cpp` · `sherpa-onnx` · `llama.cpp` · `Gemma 4`), capture réelle `debrief-dashboard.png`, badge `Dépôt privé`
+  - **Devis-Assist** : statut `○ Produit / Architecture BMM validée`, accroche `Transformer un historique de devis BTP en aide au chiffrage`, description courte (Mistral OCR 3, file BullMQ/Redis, catalogue de services canoniques BTP avec Data Flywheel et matching pg_trgm), tags (`NestJS` · `Nuxt UI 4` · `PostgreSQL pg_trgm` · `Mistral OCR` · `BullMQ`), badge `Dépôt privé`
+**And** aucun ROI client ni chiffre d'affaires inventé n'apparaît
+**And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) passe avec 0 erreur.
+
+### Story 12.5: Page Services — Restructuration complète des offres & Processus en 4 étapes
+
+As a client potentiel prêt à s'engager,
+I want consulter le déroulement type d'une mission et des tarifs forfaitaires clairs,
+So that je puisse budgéter mon besoin sans crainte de coûts cachés (FR32, NFR13, UX-DR30).
+
+**Acceptance Criteria:**
+
+**Given** la page `app/pages/services.vue`
+**When** on charge la page
+**Then** le hero affiche :
+  - H1 : `Des systèmes IA construits autour de vos vrais processus métier.`
+  - Intro : `Je pars d’un workflow existant, pas d’une technologie à placer... L’IA intervient uniquement là où elle apporte réellement quelque chose.`
+**And** les 3 offres commerciales sont détaillées :
+  1. **AI Workflow Sprint** (Offre principale) : `À partir de 3 500 € HT`. Règle : `Un Sprint = un workflow prioritaire`. Liste complète des livrables inclus (diagnostic, cartographie, KPI, architecture, dev, intégrations, tests, MEP, documentation, mesure initiale).
+  2. **AI Workflow Blueprint** : `À partir de 750 € HT`. Cadrage préalable pour problématique complexe (processus actuel, volumes, risques, flux cible, matrice IA vs automation vs humain, KPI, estimation).
+  3. **AI Care** : `À partir de 490 € HT / mois`. Maintien en condition opérationnelle (monitoring, maintenance, support, veille coûts et modèles), avec exclusion explicite des consommations tierces d'APIs/tokens refacturées au réel.
+**And** le processus en 4 étapes est balisé sémantiquement en liste ordonnée `<ol>` :
+  - Étape 1 : *Diagnostic* (20-30 min pour qualifier le problème) avec CTA `Identifier un workflow`
+  - Étape 2 : *Cadrage* (workflow cible, KPI, architecture)
+  - Étape 3 : *Construction & intégration* (développement, tests sur cas réels, MEP)
+  - Étape 4 : *Suivi & amélioration* (monitoring, maintenance, mesure des résultats)
+**And** l'ancienne offre WordPress principale est supprimée de la page
+**And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) passe avec 0 erreur.
+
+### Story 12.6: Page À propos, CTA d'inspection de workflow, formulaire & SEO site-wide
+
+As a prospect souhaitant vérifier la crédibilité du profil et initier une demande ciblée,
+I want comprendre le lien entre le parcours qualité/métrologie de Simon et la robustesse de ses systèmes IA, et pouvoir qualifier mon workflow dans le formulaire,
+So that j'envoie une demande précise et pertinente (FR33, FR34, FR35, FR36, NFR15, NFR16, UX-DR31).
+
+**Acceptance Criteria:**
+
+**Given** les pages `app/pages/about.vue`, `app/pages/contact/index.vue`, le layout global et les métadonnées SEO
+**When** on navigue sur le site
+**Then** la page À propos (`/about`) :
+  - Présente le titre `Développeur Full Stack spécialisé en systèmes IA & automatisation métier`
+  - Relie les 12 ans de métrologie industrielle et l'expérience QA aux réflexes de fiabilité des systèmes IA (reproductibilité, gestion des cas limites, observabilité)
+  - Expose le bloc philosophie (« Je ne pars pas de "où mettre de l'IA ?", je pars de "qu'est-ce qui prend du temps ?" »)
+  - Mentionne l'expérience Linkizz dans le parcours selon les données réelles
+**And** le CTA final présent sur les pages de conversion affiche :
+  - Eyebrow : `$ ./workflow --inspect`
+  - Titre : `Quel process vous fait perdre du temps chaque semaine ?`
+  - Texte d'accompagnement orienté diagnostic pragmatique
+  - Boutons d'action `Identifier un workflow à automatiser` (vers `/contact`) et `M’écrire directement`
+**And** le formulaire de contact (`/contact`) est orienté qualification de workflow (champs processus à améliorer, fonctionnement actuel, répétition)
+**And** `usePageSeo` met à jour les balises de titres (`Simon Jouan — Systèmes IA, agents & automatisation métier`), descriptions et métadonnées canoniques/OpenGraph sur l'ensemble des 13 routes
+**And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) réussit avec 0 erreur (0 ESLint/Stylelint, 0 typecheck TypeScript, 13 routes statiques pré-rendues).
+
 
 

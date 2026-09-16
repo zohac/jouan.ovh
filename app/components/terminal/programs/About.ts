@@ -63,10 +63,10 @@ const aboutData = {
   userInfo: {
     firstname: "Simon",
     lastname: "JOUAN",
-    poste: "Développeur Fullstack & Testeur QA",
+    poste: SITE.profile.role,
     experience: "3 ans",
     ville: SITE.profile.city,
-    telephone: "+33 6 58 96 90 20",
+    telephone: SITE.profile.phone ?? "+33 6 58 96 90 20",
     email: SITE.profile.email,
   },
   experiences: [

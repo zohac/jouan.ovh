@@ -25,10 +25,10 @@
           <div class="about__bio">
             <h2 class="eyebrow">// à propos</h2>
             <p class="prose about__para">
-              Développeur web freelance basé à <strong>{{ city }}</strong
-              >, je viens d'un parcours technique (métrologie, instrumentation) avant de basculer avec passion dans le
-              code. Aujourd'hui, je conçois et développe des applications web et produits SaaS modernes avec
-              <strong>Vue 3 / Nuxt 4</strong>, <strong>NestJS</strong> et <strong>PostgreSQL</strong>.
+              Développeur Full Stack freelance basé en <strong>France (Remote)</strong>, je viens d'un parcours
+              technique (métrologie, instrumentation) avant de basculer avec passion dans le code. Aujourd'hui, je
+              conçois et développe des applications web et produits SaaS modernes avec <strong>Vue 3 / Nuxt 4</strong>,
+              <strong>NestJS</strong> et <strong>PostgreSQL</strong>.
             </p>
             <p class="prose about__para">
               Je suis également co-fondateur de la plateforme SaaS
@@ -102,7 +102,9 @@ import { SITE } from "~/data/site";
 const profile = SITE.profile;
 const skills = SITE.skills;
 const city = profile.city.split(",")[0]?.trim() ?? profile.city;
-const keovaProject = SITE.projects.find((p) => p.name.toLowerCase().includes("keova") || p.url?.includes("keova"));
+const keovaProject =
+  SITE.legacyProjects.find((p) => p.name.toLowerCase().includes("keova") && p.url) ??
+  SITE.projects.find((p) => p.name.toLowerCase().includes("keova") && p.url);
 const keovaUrl = keovaProject?.url ?? "";
 const keovaHostname = keovaUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
 

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-14 (Epic 11 rétrospective clôturée, accords d'équipe formalisés, prêt pour merge prod)"
+last_updated: "2026-09-16 (Story 12.2 initialisée en ready-for-dev)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -126,3 +126,13 @@ development_status:
   11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker: done
   11-6-polissage-visuel-fidelite-maquette-awwwards-et-interactions: done
   epic-11-retrospective: done
+
+  # Epic 12 — Repositionnement Commercial V1 : Systèmes IA & Automatisation Métier
+  epic-12: in-progress
+  12-1-source-unique-de-donnees-sitets-et-coherence-globale: done
+  12-2-homepage-hero-commercial-cinetique-et-terminal-interactif: ready-for-dev
+  12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur: backlog
+  12-4-homepage-vitrine-des-3-projets-phares: backlog
+  12-5-page-services-restructuration-des-offres-et-process-4-etapes: backlog
+  12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide: backlog
+  epic-12-retrospective: optional

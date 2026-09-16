@@ -59,7 +59,7 @@ const navItems = [
 ];
 
 const profile = SITE.profile;
-// Projets — source unique `app/data/site.ts` (le footer n'affiche que nom + URL).
+// Projets — source unique `app/data/site.ts` (lien externe si URL présente, affichage statique sinon).
 const projects = SITE.projects;
 
 const year = new Date().getFullYear();
