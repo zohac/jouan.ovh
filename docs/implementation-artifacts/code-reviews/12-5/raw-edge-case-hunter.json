@@ -1,0 +1,1197 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0ac2e-62c8-7f30-bb23-9d659666d734
+--------
+user
+# Edge Case Hunter Prompt — Story 12.5
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/12-5/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+exec
+/bin/zsh -lc "sed -n '1,260p' docs/implementation-artifacts/code-reviews/12-5/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+diff --git a/app/pages/services.vue b/app/pages/services.vue
+index 349512a..a8d9ea1 100644
+--- a/app/pages/services.vue
++++ b/app/pages/services.vue
+@@ -1,40 +1,46 @@
+ <template>
+   <main class="services">
+-    <!-- En-tête + grille d'offres (story 4.1). La 2e section (process) viendra en 4.2. -->
++    <!-- En-tête + grille d'offres (story 12.5) -->
+     <section class="section">
+       <div class="container">
+         <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
+-        <h1 class="services__title">Des prestations claires, pensées comme des produits.</h1>
++        <h1 class="services__title">Des systèmes IA construits autour de vos vrais processus métier.</h1>
+         <p class="prose services__intro">
+-          Du site WordPress à l'application sur-mesure, en passant par l'IA appliquée — je m'occupe de la technique,
+-          vous gardez la main sur votre projet.
++          Je pars d’un workflow existant, pas d’une technologie à placer. Du cadrage initial jusqu'au maintien en
++          condition opérationnelle, l’IA intervient uniquement là où elle apporte réellement quelque chose.
+         </p>
+ 
+         <ul class="grid-3">
+           <li v-for="offer in offers" :key="offer.id">
+             <ZCard class="offer" :accent="offer.featured" :featured="offer.featured">
+               <div v-if="offer.featured" class="offer__badge">
+-                <ZBadge tone="accent">Le plus demandé</ZBadge>
++                <ZBadge tone="accent">Format cœur</ZBadge>
+               </div>
+               <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+               <h2 class="offer__title">{{ offer.title }}</h2>
++              <p v-if="offer.hook" class="offer__hook">{{ offer.hook }}</p>
+               <p class="offer__desc">{{ offer.desc }}</p>
+               <ul class="offer__points">
+                 <li v-for="point in offer.points" :key="point">{{ point }}</li>
+               </ul>
+-              <div class="offer__price">
+-                <b>{{ offer.price }}</b>
+-              </div>
+-              <div class="offer__cta">
+-                <ZButton
+-                  :as="NuxtLink"
+-                  to="/contact"
+-                  :variant="offer.featured ? 'primary' : 'secondary'"
+-                  :aria-label="`Discuter du projet — ${offer.title}`"
+-                  class="offer__btn"
+-                >
+-                  Discuter du projet
+-                </ZButton>
++              <div class="offer__footer">
++                <div class="offer__price">
++                  <b>{{ offer.price }}</b>
++                </div>
++                <p v-if="offer.disclaimer" class="offer__disclaimer">
++                  {{ offer.disclaimer }}
++                </p>
++                <div class="offer__cta">
++                  <ZButton
++                    :as="NuxtLink"
++                    to="/contact"
++                    :variant="offer.featured ? 'primary' : 'secondary'"
++                    :aria-label="offer.ctaAriaLabel"
++                    class="offer__btn"
++                  >
++                    {{ offer.ctaText }}
++                  </ZButton>
++                </div>
+               </div>
+             </ZCard>
+           </li>
+@@ -42,7 +48,7 @@
+       </div>
+     </section>
+ 
+-    <!-- Section process : 4 étapes ordonnées + CTA (story 4.2). Porté de Services.jsx L45-61. -->
++    <!-- Section process : 4 étapes ordonnées + CTA (story 12.5) -->
+     <section class="section section--sunken">
+       <div class="container">
+         <p class="eyebrow"><span aria-hidden="true">// </span>comment ça se passe</p>
+@@ -53,6 +59,11 @@
+             <div class="process__num" aria-hidden="true">{{ step.n }}</div>
+             <h3 class="process__step-title">{{ step.title }}</h3>
+             <p class="prose process__desc">{{ step.desc }}</p>
++            <div v-if="step.inlineCta" class="process__cta-inline-wrapper">
++              <NuxtLink :to="step.inlineCta.to" class="process__inline-cta">
++                {{ step.inlineCta.label }}
++              </NuxtLink>
++            </div>
+           </li>
+         </ol>
+ 
+@@ -68,7 +79,7 @@
+ </template>
+ 
+ <script setup lang="ts">
+-// Page Services : catalogue d'offres packagées + process 4 étapes + CTA contact.
++// Page Services : catalogue d'offres IA packagées + process 4 étapes + CTA contact.
+ // Données statiques (3 offres, 4 étapes) déclarées localement. Prerender-safe, dark-first.
+ import { NuxtLink } from "#components";
+ import { SITE } from "~/data/site";
+@@ -76,56 +87,115 @@ import { SITE } from "~/data/site";
+ interface Offer {
+   /** Clé v-for stable (indépendante du contenu affiché). */
+   id: string;
+-  /** Nom d'icône dans le set ZIcon (story 2.7). */
++  /** Nom d'icône dans le set ZIcon. */
+   icon: string;
+   title: string;
++  hook?: string;
+   desc: string;
+   points: string[];
+   price: string;
++  disclaimer?: string;
+   /** Offre mise en avant : carte accent + glow + badge. */
+   featured: boolean;
++  ctaText: string;
++  ctaAriaLabel: string;
++}
++
++interface Step {
++  n: string;
++  title: string;
++  desc: string;
++  inlineCta?: {
++    to: string;
++    label: string;
++  };
+ }
+ 
+-// Contenu repris à l'identique de data.js (window.SITE.services) — 1re personne,
+-// vouvoiement, pas d'emoji. « Applications web » est l'offre mise en avant.
++// Les 3 offres officielles V1 — 1re personne, vouvoiement, zéro emoji.
+ const offers: Offer[] = [
+   {
+-    id: "wordpress",
+-    icon: "wp",
+-    title: "WordPress sur-mesure",
+-    desc: "Thèmes et plugins développés à la main — rapides, maintenables, et faciles à éditer pour vous.",
+-    points: ["Thème sur-mesure (press-wind / Tailwind)", "Plugins & blocs Gutenberg", "Performance & SEO technique"],
+-    price: "à partir de 1 500 €",
+-    featured: false,
++    id: "sprint",
++    icon: "zap",
++    title: "AI Workflow Sprint",
++    hook: "Un Sprint = un workflow prioritaire",
++    desc: "Conception, intégration logicielle et mise en production d'un workflow métier complet avec IA ciblée et supervision humaine.",
++    points: [
++      "Diagnostic approfondi & cartographie avant/après",
++      "Architecture système, connecteurs API & intégrations métier",
++      "Modèles d'IA & prompt engineering avec sorties typées",
++      "Tests automatisés sur cas réels & boucle de validation humaine",
++      "Déploiement en production, documentation & mesure initiale",
++    ],
++    price: "À partir de 3 500 € HT",
++    featured: true,
++    ctaText: "Lancer un Sprint",
++    ctaAriaLabel: "Discuter d'un AI Workflow Sprint",
+   },
+   {
+-    id: "apps",
+-    icon: "code",
+-    title: "Applications web",
+-    desc: "Des produits complets en Symfony, Nest.js et Nuxt.js, pensés en architecture propre.",
+-    points: ["API REST / GraphQL (Symfony · Nest.js)", "Front Vue / Nuxt", "Tests & CI/CD, qualité QA"],
+-    price: "sur devis",
+-    featured: true,
++    id: "blueprint",
++    icon: "layers",
++    title: "AI Workflow Blueprint",
++    hook: "Cadrage préalable pour problématique complexe",
++    desc: "Pour les projets nécessitant un audit préalable, une modélisation de données et des choix d'architecture avant de s'engager sur le build.",
++    points: [
++      "Audit du processus actuel, volumes & points de friction",
++      "Matrice de décision : code déterministe vs IA vs humain",
++      "Schéma d'architecture technique & flux de données cibles",
++      "Analyse des risques, contraintes de sécurité & secrets",
++      "Spécification des KPI de mesure & estimation budgétaire",
++    ],
++    price: "À partir de 750 € HT",
++    featured: false,
++    ctaText: "Demander un Blueprint",
++    ctaAriaLabel: "Demander un AI Workflow Blueprint",
+   },
+   {
+-    id: "ia",
+-    icon: "spark",
+-    title: "IA & automatisation",
+-    desc: "L'IA au service du code : agents, workflows n8n, et intégrations LLM dans vos outils.",
+-    points: ["Agents & workflows (n8n)", "Intégration d'API LLM", "Automatisation de contenu"],
+-    price: "sur devis",
++    id: "care",
++    icon: "bot",
++    title: "AI Care",
++    hook: "Maintien en condition opérationnelle",
++    desc: "Maintien en condition opérationnelle d'une capacité intégrée au processus métier pour garantir disponibilité, précision et maîtrise des coûts.",
++    points: [
++      "Supervision proactive, alertes & analyse des échecs",
++      "Maintenance corrective & adaptation aux APIs tierces",
++      "Suivi des coûts d'inférence & micro-ajustements de prompts",
++      "Support technique réactif & veille sur les nouveaux modèles",
++    ],
++    disclaimer:
++      "Consommations tierces d'APIs et tokens (LLM, OCR, scraping...) refacturées au réel ou prises en charge directement par le client.",
++    price: "À partir de 490 € HT / mois",
+     featured: false,
++    ctaText: "Découvrir AI Care",
++    ctaAriaLabel: "Découvrir l'accompagnement AI Care",
+   },
+ ];
+ 
+-// Étapes du process — texte repris à l'identique de Services.jsx (tableau `steps`,
+-// pas dans data.js). L'ordre du tableau garantit l'affichage 01 → 04 (AC #1).
+-// `n` (numéro affiché) sert aussi de clé v-for stable et unique.
+-const steps = [
+-  { n: "01", title: "Échange", desc: "On cadre le besoin, le périmètre et le budget — sans jargon inutile." },
+-  { n: "02", title: "Conception", desc: "Architecture, maquette, et plan de livraison clair." },
+-  { n: "03", title: "Développement", desc: "Code propre, testé, livré par itérations visibles." },
+-  { n: "04", title: "Livraison & suivi", desc: "Mise en ligne, documentation, et accompagnement." },
++// Étapes du process en 4 temps. L'ordre du tableau garantit l'affichage 01 → 04.
++const steps: Step[] = [
++  {
++    n: "01",
++    title: "Diagnostic",
++    desc: "Échange de 20 à 30 minutes pour qualifier le problème, comprendre le workflow existant et identifier les goulots d'étranglement.",
++    inlineCta: {
++      to: "/contact",
++      label: "Identifier un workflow →",
++    },
++  },
++  {
++    n: "02",
++    title: "Cadrage",
++    desc: "Formalisation du workflow cible, des étapes manuelles à conserver sous contrôle humain, des connecteurs API requis et des KPI de mesure. Fait l'objet d'un Blueprint pour les sujets complexes.",
++  },
++  {
++    n: "03",
++    title: "Construction & intégration",
++    desc: "Développement logiciel du système, connexion aux outils métiers (CRM, ERP, messagerie...), couverture de tests automatisés et mise à l'épreuve sur cas réels avant livraison.",
++  },
++  {
++    n: "04",
++    title: "Suivi & amélioration",
++    desc: "Monitoring en production, maintenance préventive/corrective, ajustements aux évolutions d'APIs tierces ou modèles d'IA, mesure factuelle des résultats.",
++  },
+ ];
+ 
+ const siteUrl = useSiteUrl();
+@@ -133,9 +203,9 @@ const siteUrl = useSiteUrl();
+ const servicesJsonLd = {
+   "@context": "https://schema.org",
+   "@type": "WebPage",
+-  name: "Services — jouan.ovh",
++  name: "Services & Tarifs — Simon Jouan",
+   description:
+-    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
++    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
+   url: `${siteUrl}/services`,
+   mainEntity: {
+     "@type": "ItemList",
+@@ -161,9 +231,9 @@ const servicesJsonLd = {
+ };
+
+exec
+/bin/zsh -lc "sed -n '261,620p' docs/implementation-artifacts/code-reviews/12-5/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+ 
+ usePageSeo({
+-  title: "Services — jouan.ovh",
++  title: "Services & Tarifs — Simon Jouan",
+   description:
+-    "Mes prestations de développeur web freelance : WordPress sur-mesure, applications web (Symfony, Nest.js, Nuxt), IA & automatisation.",
++    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
+   path: "/services",
+   image: "/images/portrait.jpeg",
+   type: "website",
+@@ -172,7 +242,7 @@ usePageSeo({
+ </script>
+ 
+ <style lang="scss" scoped>
+-/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) portée depuis kit.css / Services.jsx */
++/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) */
+ .services {
+   display: block;
+ }
+@@ -180,9 +250,9 @@ usePageSeo({
+ // .section / .section--sunken / .container / .eyebrow / .prose : primitives de
+ // layout globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+ 
+-// ---- En-tête (porté de Services.jsx L13-21) ----
++// ---- En-tête ----
+ .services__title {
+-  max-width: 16ch;
++  max-width: 22ch;
+   margin-bottom: var(--space-3);
+   font-family: var(--font-mono);
+   font-size: var(--fs-4xl);
+@@ -192,12 +262,12 @@ usePageSeo({
+ }
+ 
+ .services__intro {
+-  max-width: 60ch;
++  max-width: 62ch;
+   margin-bottom: var(--space-10);
+   color: var(--text-muted);
+ }
+ 
+-// ---- Grille des offres (porté de kit.css : .grid-3 / .offer*) ----
++// ---- Grille des offres (.grid-3 / .offer*) ----
+ .grid-3 {
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+@@ -211,8 +281,6 @@ usePageSeo({
+   }
+ }
+ 
+-// `display:flex` (porté de l'inline JSX) : le prix + CTA sont poussés en bas via
+-// `margin-top: auto`, alignant les pieds de carte sur des hauteurs inégales.
+ .offer {
+   display: flex;
+   flex-direction: column;
+@@ -230,9 +298,6 @@ usePageSeo({
+   width: var(--space-10); // 40px
+   height: var(--space-10);
+   margin-bottom: var(--space-4);
+-
+-  // Dimensionne le glyphe ZIcon (1em) à 22px — fidèle au kit (.offer__icon svg),
+-  // pas de token d'espacement à 22px (entre --space-5/20 et --space-6/24).
+   font-size: 22px;
+   color: var(--accent);
+   background: var(--accent-soft);
+@@ -240,13 +305,22 @@ usePageSeo({
+ }
+ 
+ .offer__title {
+-  margin-bottom: var(--space-2);
++  margin-bottom: var(--space-1);
+   font-family: var(--font-mono);
+   font-size: var(--fs-xl);
+   font-weight: var(--fw-regular);
+   color: var(--text-strong);
+ }
+ 
++.offer__hook {
++  margin: 0 0 var(--space-3);
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  font-weight: var(--fw-medium);
++  letter-spacing: var(--ls-wide);
++  color: var(--accent);
++}
++
+ .offer__desc {
+   margin: 0 0 var(--space-4);
+   font-family: var(--font-sans);
+@@ -268,7 +342,7 @@ usePageSeo({
+     color: var(--text-muted);
+   }
+ 
+-  // Puce fléchée « → » (porté de kit.css .offer li::before).
++  // Puce fléchée « → »
+   li::before {
+     content: "→";
+     position: absolute;
+@@ -277,11 +351,14 @@ usePageSeo({
+   }
+ }
+ 
+-.offer__price {
+-  // `margin-top: auto` colle le prix (et le CTA qui suit) au bas de la carte ;
+-  // `padding-top` reprend l'inline JSX (space-5) au lieu du margin-top du kit.
++.offer__footer {
++  display: flex;
++  flex-direction: column;
+   margin-top: auto;
+   padding-top: var(--space-5);
++}
++
++.offer__price {
+   font-family: var(--font-mono);
+   font-size: var(--fs-sm);
+   color: var(--text-muted);
+@@ -293,16 +370,24 @@ usePageSeo({
+   }
+ }
+ 
++.offer__disclaimer {
++  margin: var(--space-2) 0 0;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  line-height: var(--lh-normal);
++  color: var(--text-muted);
++  opacity: 0.85;
++}
++
+ .offer__cta {
+   margin-top: var(--space-4);
+ }
+ 
+-// Bouton CTA en pleine largeur (porté de l'inline `width: 100%` du JSX).
+ .offer__btn {
+   width: 100%;
+ }
+ 
+-// ---- Section process (porté de Services.jsx L45-61) ----
++// ---- Section process ----
+ .process__title {
+   margin-bottom: var(--space-8);
+   font-family: var(--font-mono);
+@@ -320,6 +405,11 @@ usePageSeo({
+   list-style: none;
+ }
+ 
++.process__step {
++  display: flex;
++  flex-direction: column;
++}
++
+ .process__num {
+   font-family: var(--font-mono);
+   font-size: var(--fs-3xl);
+@@ -340,12 +430,41 @@ usePageSeo({
+   color: var(--text-muted);
+ }
+ 
++.process__cta-inline-wrapper {
++  margin-top: auto;
++  padding-top: var(--space-3);
++}
++
++.process__inline-cta {
++  display: inline-flex;
++  align-items: center;
++  font-family: var(--font-mono);
++  font-size: var(--fs-sm);
++  color: var(--accent);
++  text-decoration: none;
++  transition:
++    color var(--dur-base) var(--ease-standard),
++    text-decoration-color var(--dur-base) var(--ease-standard);
++
++  &:hover {
++    color: var(--accent-hover);
++    text-decoration: underline;
++  }
++
++  &:focus-visible {
++    outline: 2px solid transparent;
++    outline-offset: 2px;
++    box-shadow: var(--ring-accent);
++    border-radius: var(--radius-xs);
++  }
++}
++
+ .process__cta {
+   margin-top: var(--space-12);
+   text-align: center;
+ }
+ 
+-// ---- Responsive (cf. kit.css @media max-width: 900px) ----
++// ---- Responsive ----
+ @media (width <= 900px) {
+   .grid-3,
+   .process {
+
+exec
+/bin/zsh -lc "nl -ba app/pages/services.vue | sed -n '1,260p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     1	<template>
+     2	  <main class="services">
+     3	    <!-- En-tête + grille d'offres (story 12.5) -->
+     4	    <section class="section">
+     5	      <div class="container">
+     6	        <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
+     7	        <h1 class="services__title">Des systèmes IA construits autour de vos vrais processus métier.</h1>
+     8	        <p class="prose services__intro">
+     9	          Je pars d’un workflow existant, pas d’une technologie à placer. Du cadrage initial jusqu'au maintien en
+    10	          condition opérationnelle, l’IA intervient uniquement là où elle apporte réellement quelque chose.
+    11	        </p>
+    12	
+    13	        <ul class="grid-3">
+    14	          <li v-for="offer in offers" :key="offer.id">
+    15	            <ZCard class="offer" :accent="offer.featured" :featured="offer.featured">
+    16	              <div v-if="offer.featured" class="offer__badge">
+    17	                <ZBadge tone="accent">Format cœur</ZBadge>
+    18	              </div>
+    19	              <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+    20	              <h2 class="offer__title">{{ offer.title }}</h2>
+    21	              <p v-if="offer.hook" class="offer__hook">{{ offer.hook }}</p>
+    22	              <p class="offer__desc">{{ offer.desc }}</p>
+    23	              <ul class="offer__points">
+    24	                <li v-for="point in offer.points" :key="point">{{ point }}</li>
+    25	              </ul>
+    26	              <div class="offer__footer">
+    27	                <div class="offer__price">
+    28	                  <b>{{ offer.price }}</b>
+    29	                </div>
+    30	                <p v-if="offer.disclaimer" class="offer__disclaimer">
+    31	                  {{ offer.disclaimer }}
+    32	                </p>
+    33	                <div class="offer__cta">
+    34	                  <ZButton
+    35	                    :as="NuxtLink"
+    36	                    to="/contact"
+    37	                    :variant="offer.featured ? 'primary' : 'secondary'"
+    38	                    :aria-label="offer.ctaAriaLabel"
+    39	                    class="offer__btn"
+    40	                  >
+    41	                    {{ offer.ctaText }}
+    42	                  </ZButton>
+    43	                </div>
+    44	              </div>
+    45	            </ZCard>
+    46	          </li>
+    47	        </ul>
+    48	      </div>
+    49	    </section>
+    50	
+    51	    <!-- Section process : 4 étapes ordonnées + CTA (story 12.5) -->
+    52	    <section class="section section--sunken">
+    53	      <div class="container">
+    54	        <p class="eyebrow"><span aria-hidden="true">// </span>comment ça se passe</p>
+    55	        <h2 class="process__title">Un déroulé simple en quatre temps</h2>
+    56	
+    57	        <ol class="process">
+    58	          <li v-for="step in steps" :key="step.n" class="process__step">
+    59	            <div class="process__num" aria-hidden="true">{{ step.n }}</div>
+    60	            <h3 class="process__step-title">{{ step.title }}</h3>
+    61	            <p class="prose process__desc">{{ step.desc }}</p>
+    62	            <div v-if="step.inlineCta" class="process__cta-inline-wrapper">
+    63	              <NuxtLink :to="step.inlineCta.to" class="process__inline-cta">
+    64	                {{ step.inlineCta.label }}
+    65	              </NuxtLink>
+    66	            </div>
+    67	          </li>
+    68	        </ol>
+    69	
+    70	        <div class="process__cta">
+    71	          <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+    72	            Me parler de votre besoin
+    73	            <template #iconRight><ZIcon name="arrow" /></template>
+    74	          </ZButton>
+    75	        </div>
+    76	      </div>
+    77	    </section>
+    78	  </main>
+    79	</template>
+    80	
+    81	<script setup lang="ts">
+    82	// Page Services : catalogue d'offres IA packagées + process 4 étapes + CTA contact.
+    83	// Données statiques (3 offres, 4 étapes) déclarées localement. Prerender-safe, dark-first.
+    84	import { NuxtLink } from "#components";
+    85	import { SITE } from "~/data/site";
+    86	
+    87	interface Offer {
+    88	  /** Clé v-for stable (indépendante du contenu affiché). */
+    89	  id: string;
+    90	  /** Nom d'icône dans le set ZIcon. */
+    91	  icon: string;
+    92	  title: string;
+    93	  hook?: string;
+    94	  desc: string;
+    95	  points: string[];
+    96	  price: string;
+    97	  disclaimer?: string;
+    98	  /** Offre mise en avant : carte accent + glow + badge. */
+    99	  featured: boolean;
+   100	  ctaText: string;
+   101	  ctaAriaLabel: string;
+   102	}
+   103	
+   104	interface Step {
+   105	  n: string;
+   106	  title: string;
+   107	  desc: string;
+   108	  inlineCta?: {
+   109	    to: string;
+   110	    label: string;
+   111	  };
+   112	}
+   113	
+   114	// Les 3 offres officielles V1 — 1re personne, vouvoiement, zéro emoji.
+   115	const offers: Offer[] = [
+   116	  {
+   117	    id: "sprint",
+   118	    icon: "zap",
+   119	    title: "AI Workflow Sprint",
+   120	    hook: "Un Sprint = un workflow prioritaire",
+   121	    desc: "Conception, intégration logicielle et mise en production d'un workflow métier complet avec IA ciblée et supervision humaine.",
+   122	    points: [
+   123	      "Diagnostic approfondi & cartographie avant/après",
+   124	      "Architecture système, connecteurs API & intégrations métier",
+   125	      "Modèles d'IA & prompt engineering avec sorties typées",
+   126	      "Tests automatisés sur cas réels & boucle de validation humaine",
+   127	      "Déploiement en production, documentation & mesure initiale",
+   128	    ],
+   129	    price: "À partir de 3 500 € HT",
+   130	    featured: true,
+   131	    ctaText: "Lancer un Sprint",
+   132	    ctaAriaLabel: "Discuter d'un AI Workflow Sprint",
+   133	  },
+   134	  {
+   135	    id: "blueprint",
+   136	    icon: "layers",
+   137	    title: "AI Workflow Blueprint",
+   138	    hook: "Cadrage préalable pour problématique complexe",
+   139	    desc: "Pour les projets nécessitant un audit préalable, une modélisation de données et des choix d'architecture avant de s'engager sur le build.",
+   140	    points: [
+   141	      "Audit du processus actuel, volumes & points de friction",
+   142	      "Matrice de décision : code déterministe vs IA vs humain",
+   143	      "Schéma d'architecture technique & flux de données cibles",
+   144	      "Analyse des risques, contraintes de sécurité & secrets",
+   145	      "Spécification des KPI de mesure & estimation budgétaire",
+   146	    ],
+   147	    price: "À partir de 750 € HT",
+   148	    featured: false,
+   149	    ctaText: "Demander un Blueprint",
+   150	    ctaAriaLabel: "Demander un AI Workflow Blueprint",
+   151	  },
+   152	  {
+   153	    id: "care",
+   154	    icon: "bot",
+   155	    title: "AI Care",
+   156	    hook: "Maintien en condition opérationnelle",
+   157	    desc: "Maintien en condition opérationnelle d'une capacité intégrée au processus métier pour garantir disponibilité, précision et maîtrise des coûts.",
+   158	    points: [
+   159	      "Supervision proactive, alertes & analyse des échecs",
+   160	      "Maintenance corrective & adaptation aux APIs tierces",
+   161	      "Suivi des coûts d'inférence & micro-ajustements de prompts",
+   162	      "Support technique réactif & veille sur les nouveaux modèles",
+   163	    ],
+   164	    disclaimer:
+   165	      "Consommations tierces d'APIs et tokens (LLM, OCR, scraping...) refacturées au réel ou prises en charge directement par le client.",
+   166	    price: "À partir de 490 € HT / mois",
+   167	    featured: false,
+   168	    ctaText: "Découvrir AI Care",
+   169	    ctaAriaLabel: "Découvrir l'accompagnement AI Care",
+   170	  },
+   171	];
+   172	
+   173	// Étapes du process en 4 temps. L'ordre du tableau garantit l'affichage 01 → 04.
+   174	const steps: Step[] = [
+   175	  {
+   176	    n: "01",
+   177	    title: "Diagnostic",
+   178	    desc: "Échange de 20 à 30 minutes pour qualifier le problème, comprendre le workflow existant et identifier les goulots d'étranglement.",
+   179	    inlineCta: {
+   180	      to: "/contact",
+   181	      label: "Identifier un workflow →",
+   182	    },
+   183	  },
+   184	  {
+   185	    n: "02",
+   186	    title: "Cadrage",
+   187	    desc: "Formalisation du workflow cible, des étapes manuelles à conserver sous contrôle humain, des connecteurs API requis et des KPI de mesure. Fait l'objet d'un Blueprint pour les sujets complexes.",
+   188	  },
+   189	  {
+   190	    n: "03",
+   191	    title: "Construction & intégration",
+   192	    desc: "Développement logiciel du système, connexion aux outils métiers (CRM, ERP, messagerie...), couverture de tests automatisés et mise à l'épreuve sur cas réels avant livraison.",
+   193	  },
+   194	  {
+   195	    n: "04",
+   196	    title: "Suivi & amélioration",
+   197	    desc: "Monitoring en production, maintenance préventive/corrective, ajustements aux évolutions d'APIs tierces ou modèles d'IA, mesure factuelle des résultats.",
+   198	  },
+   199	];
+   200	
+   201	const siteUrl = useSiteUrl();
+   202	
+   203	const servicesJsonLd = {
+   204	  "@context": "https://schema.org",
+   205	  "@type": "WebPage",
+   206	  name: "Services & Tarifs — Simon Jouan",
+   207	  description:
+   208	    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
+   209	  url: `${siteUrl}/services`,
+   210	  mainEntity: {
+   211	    "@type": "ItemList",
+   212	    itemListElement: offers.map((offer, index) => ({
+   213	      "@type": "ListItem",
+   214	      position: index + 1,
+   215	      item: {
+   216	        "@type": "Service",
+   217	        name: offer.title,
+   218	        description: offer.desc,
+   219	        provider: {
+   220	          "@type": "Organization",
+   221	          "@id": `${siteUrl}/#organization`,
+   222	          name: SITE.profile.name,
+   223	        },
+   224	        offers: {
+   225	          "@type": "Offer",
+   226	          description: offer.price,
+   227	        },
+   228	      },
+   229	    })),
+   230	  },
+   231	};
+   232	
+   233	usePageSeo({
+   234	  title: "Services & Tarifs — Simon Jouan",
+   235	  description:
+   236	    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
+   237	  path: "/services",
+   238	  image: "/images/portrait.jpeg",
+   239	  type: "website",
+   240	  jsonLd: servicesJsonLd,
+   241	});
+   242	</script>
+   243	
+   244	<style lang="scss" scoped>
+   245	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) */
+   246	.services {
+   247	  display: block;
+   248	}
+   249	
+   250	// .section / .section--sunken / .container / .eyebrow / .prose : primitives de
+   251	// layout globales (app/assets/scss/base/_layout.scss) — non redéclarées ici.
+   252	
+   253	// ---- En-tête ----
+   254	.services__title {
+   255	  max-width: 22ch;
+   256	  margin-bottom: var(--space-3);
+   257	  font-family: var(--font-mono);
+   258	  font-size: var(--fs-4xl);
+   259	  font-weight: var(--fw-light);
+   260	  line-height: var(--lh-tight);
+
+exec
+/bin/zsh -lc "nl -ba app/pages/services.vue | sed -n '260,520p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   260	  line-height: var(--lh-tight);
+   261	  color: var(--text-strong);
+   262	}
+   263	
+   264	.services__intro {
+   265	  max-width: 62ch;
+   266	  margin-bottom: var(--space-10);
+   267	  color: var(--text-muted);
+   268	}
+   269	
+   270	// ---- Grille des offres (.grid-3 / .offer*) ----
+   271	.grid-3 {
+   272	  display: grid;
+   273	  grid-template-columns: repeat(3, 1fr);
+   274	  gap: var(--space-5);
+   275	  margin: 0;
+   276	  padding: 0;
+   277	  list-style: none;
+   278	
+   279	  > li {
+   280	    display: flex;
+   281	  }
+   282	}
+   283	
+   284	.offer {
+   285	  display: flex;
+   286	  flex-direction: column;
+   287	  width: 100%;
+   288	}
+   289	
+   290	.offer__badge {
+   291	  margin-bottom: var(--space-3);
+   292	}
+   293	
+   294	.offer__icon {
+   295	  display: flex;
+   296	  align-items: center;
+   297	  justify-content: center;
+   298	  width: var(--space-10); // 40px
+   299	  height: var(--space-10);
+   300	  margin-bottom: var(--space-4);
+   301	  font-size: 22px;
+   302	  color: var(--accent);
+   303	  background: var(--accent-soft);
+   304	  border-radius: var(--radius-md);
+   305	}
+   306	
+   307	.offer__title {
+   308	  margin-bottom: var(--space-1);
+   309	  font-family: var(--font-mono);
+   310	  font-size: var(--fs-xl);
+   311	  font-weight: var(--fw-regular);
+   312	  color: var(--text-strong);
+   313	}
+   314	
+   315	.offer__hook {
+   316	  margin: 0 0 var(--space-3);
+   317	  font-family: var(--font-mono);
+   318	  font-size: var(--fs-xs);
+   319	  font-weight: var(--fw-medium);
+   320	  letter-spacing: var(--ls-wide);
+   321	  color: var(--accent);
+   322	}
+   323	
+   324	.offer__desc {
+   325	  margin: 0 0 var(--space-4);
+   326	  font-family: var(--font-sans);
+   327	  font-size: var(--fs-sm);
+   328	  line-height: var(--lh-relaxed);
+   329	  color: var(--text-body);
+   330	}
+   331	
+   332	.offer__points {
+   333	  margin: 0;
+   334	  padding: 0;
+   335	  list-style: none;
+   336	
+   337	  li {
+   338	    position: relative;
+   339	    padding: var(--space-1) 0 var(--space-1) var(--space-5);
+   340	    font-family: var(--font-mono);
+   341	    font-size: var(--fs-sm);
+   342	    color: var(--text-muted);
+   343	  }
+   344	
+   345	  // Puce fléchée « → »
+   346	  li::before {
+   347	    content: "→";
+   348	    position: absolute;
+   349	    left: 0;
+   350	    color: var(--accent);
+   351	  }
+   352	}
+   353	
+   354	.offer__footer {
+   355	  display: flex;
+   356	  flex-direction: column;
+   357	  margin-top: auto;
+   358	  padding-top: var(--space-5);
+   359	}
+   360	
+   361	.offer__price {
+   362	  font-family: var(--font-mono);
+   363	  font-size: var(--fs-sm);
+   364	  color: var(--text-muted);
+   365	
+   366	  b {
+   367	    font-size: var(--fs-lg);
+   368	    font-weight: var(--fw-bold);
+   369	    color: var(--text-strong);
+   370	  }
+   371	}
+   372	
+   373	.offer__disclaimer {
+   374	  margin: var(--space-2) 0 0;
+   375	  font-family: var(--font-mono);
+   376	  font-size: var(--fs-xs);
+   377	  line-height: var(--lh-normal);
+   378	  color: var(--text-muted);
+   379	  opacity: 0.85;
+   380	}
+   381	
+   382	.offer__cta {
+   383	  margin-top: var(--space-4);
+   384	}
+   385	
+   386	.offer__btn {
+   387	  width: 100%;
+   388	}
+   389	
+   390	// ---- Section process ----
+   391	.process__title {
+   392	  margin-bottom: var(--space-8);
+   393	  font-family: var(--font-mono);
+   394	  font-size: var(--fs-3xl);
+   395	  font-weight: var(--fw-regular);
+   396	  color: var(--text-strong);
+   397	}
+   398	
+   399	.process {
+   400	  display: grid;
+   401	  grid-template-columns: repeat(4, 1fr);
+   402	  gap: var(--space-5);
+   403	  margin: 0;
+   404	  padding: 0;
+   405	  list-style: none;
+   406	}
+   407	
+   408	.process__step {
+   409	  display: flex;
+   410	  flex-direction: column;
+   411	}
+   412	
+   413	.process__num {
+   414	  font-family: var(--font-mono);
+   415	  font-size: var(--fs-3xl);
+   416	  font-weight: var(--fw-light);
+   417	  color: var(--accent);
+   418	}
+   419	
+   420	.process__step-title {
+   421	  margin: var(--space-2) 0;
+   422	  font-family: var(--font-mono);
+   423	  font-size: var(--fs-lg);
+   424	  font-weight: var(--fw-regular);
+   425	  color: var(--text-strong);
+   426	}
+   427	
+   428	.process__desc {
+   429	  font-size: var(--fs-sm);
+   430	  color: var(--text-muted);
+   431	}
+   432	
+   433	.process__cta-inline-wrapper {
+   434	  margin-top: auto;
+   435	  padding-top: var(--space-3);
+   436	}
+   437	
+   438	.process__inline-cta {
+   439	  display: inline-flex;
+   440	  align-items: center;
+   441	  font-family: var(--font-mono);
+   442	  font-size: var(--fs-sm);
+   443	  color: var(--accent);
+   444	  text-decoration: none;
+   445	  transition:
+   446	    color var(--dur-base) var(--ease-standard),
+   447	    text-decoration-color var(--dur-base) var(--ease-standard);
+   448	
+   449	  &:hover {
+   450	    color: var(--accent-hover);
+   451	    text-decoration: underline;
+   452	  }
+   453	
+   454	  &:focus-visible {
+   455	    outline: 2px solid transparent;
+   456	    outline-offset: 2px;
+   457	    box-shadow: var(--ring-accent);
+   458	    border-radius: var(--radius-xs);
+   459	  }
+   460	}
+   461	
+   462	.process__cta {
+   463	  margin-top: var(--space-12);
+   464	  text-align: center;
+   465	}
+   466	
+   467	// ---- Responsive ----
+   468	@media (width <= 900px) {
+   469	  .grid-3,
+   470	  .process {
+   471	    grid-template-columns: 1fr;
+   472	  }
+   473	}
+   474	</style>
+
+exec
+/bin/zsh -lc "rg \"zap|layers|bot|const icons|icons\" app/components app -g'*.vue' -g'*.ts'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+app/components/HeaderComponent.vue:          <ZIcon :name="menuOpen ? 'arrow' : 'layers'" />
+app/components/HeaderComponent.vue:  border-bottom: 1px solid transparent;
+app/components/HeaderComponent.vue:  border-bottom-color: var(--border-subtle);
+app/components/HeaderComponent.vue:    bottom: -2px;
+app/components/HeaderComponent.vue:  padding-bottom: var(--space-2);
+app/components/HeaderComponent.vue:  margin-bottom: var(--space-2);
+app/components/HeaderComponent.vue:  border-bottom: 1px solid var(--border-subtle);
+app/components/HeaderComponent.vue:    border-bottom: 1px solid var(--border-subtle);
+app/pages/about.vue:    margin-bottom: 0;
+app/pages/about.vue:  bottom: 6px;
+app/pages/about.vue:  padding-bottom: var(--space-6);
+app/pages/blog/[...slug].vue:  margin-bottom: var(--space-5);
+app/pages/blog/[...slug].vue:  margin-bottom: var(--space-4);
+app/pages/blog/[...slug].vue:  margin-bottom: var(--space-4);
+app/pages/blog/[...slug].vue:  margin-bottom: var(--space-8);
+app/pages/blog/[...slug].vue:    margin-bottom: var(--space-2);
+app/pages/blog/[...slug].vue:    margin-bottom: 0;
+app/components/FooterComponent.vue:    <div class="ftr__bottom-bar">
+app/components/FooterComponent.vue:      <div class="ftr__container ftr__bottom">
+app/components/FooterComponent.vue:  margin-bottom: var(--space-3);
+app/components/FooterComponent.vue:.ftr__bottom-bar {
+app/components/FooterComponent.vue:.ftr__bottom {
+app/pages/blog/index.vue:  margin-bottom: var(--space-2);
+app/pages/blog/index.vue:  margin-bottom: var(--space-10);
+app/pages/blog/index.vue:  margin-bottom: var(--space-2);
+app/pages/blog/index.vue:  margin-bottom: var(--space-2);
+app/pages/blog/index.vue:  margin-bottom: var(--space-3);
+app/pages/services.vue:    icon: "zap",
+app/pages/services.vue:    icon: "layers",
+app/pages/services.vue:    icon: "bot",
+app/pages/services.vue:  margin-bottom: var(--space-3);
+app/pages/services.vue:  margin-bottom: var(--space-10);
+app/pages/services.vue:  margin-bottom: var(--space-3);
+app/pages/services.vue:  margin-bottom: var(--space-4);
+app/pages/services.vue:  margin-bottom: var(--space-1);
+app/pages/services.vue:  margin-bottom: var(--space-8);
+app/pages/mentions-legales.vue:  margin-bottom: var(--space-4);
+app/pages/mentions-legales.vue:  margin-bottom: var(--space-10);
+app/pages/contact/index.vue:              <!-- Honeypot anti-spam : hors flux visuel et hors tabulation ; rempli = bot. -->
+app/pages/contact/index.vue:  // Honeypot rempli = bot : on n'envoie rien et on affiche l'état de succès.
+app/pages/contact/index.vue:        botcheck: "",
+app/pages/contact/index.vue:  margin-bottom: var(--space-3);
+app/pages/contact/index.vue:  margin-bottom: var(--space-8);
+app/pages/contact/index.vue:// Honeypot : hors écran et hors tabulation (piège à bots, invisible aux humains).
+app/pages/contact/index.vue:// On évite display:none (certains bots l'ignorent).
+app/pages/contact/index.vue:  margin-bottom: var(--space-2);
+app/pages/contact/index.vue:    margin-bottom: var(--space-5);
+app/pages/confidentialite.vue:  margin-bottom: var(--space-4);
+app/pages/confidentialite.vue:  margin-bottom: var(--space-10);
+app/pages/index.vue:                      <ZIcon name="layers" class="project-card__node-icon" />
+app/pages/index.vue:                      <ZIcon name="zap" class="project-card__node-icon" />
+app/pages/index.vue:  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+app/pages/index.vue:  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+app/pages/index.vue:    icon: "layers",
+app/pages/index.vue:    icon: "bot",
+app/pages/index.vue:    icon: "layers",
+app/pages/index.vue:    icon: "zap",
+app/pages/index.vue:    icon: "bot",
+app/pages/index.vue:  animation: fade-rise var(--dur-slow) var(--ease-out) both;
+app/pages/index.vue:  margin-bottom: var(--space-6);
+app/pages/index.vue:  margin-bottom: var(--space-6);
+app/pages/index.vue:  margin-bottom: var(--space-8);
+app/pages/index.vue:  margin-bottom: var(--space-4);
+app/pages/index.vue:  margin-bottom: var(--space-2);
+app/pages/index.vue:  margin-bottom: var(--space-4);
+app/pages/index.vue:  margin-bottom: var(--space-4);
+app/pages/index.vue:  margin-bottom: var(--space-4);
+app/pages/index.vue:  border-bottom: 1px solid var(--border-subtle);
+app/pages/index.vue:  margin-bottom: var(--space-3);
+app/pages/index.vue:  margin-bottom: var(--space-2);
+app/pages/index.vue:    margin-bottom: var(--space-2);
+app/pages/index.vue:  margin-bottom: var(--space-8);
+app/pages/index.vue:    margin-bottom: 0;
+app/pages/index.vue:  border-bottom: 1px solid var(--border-subtle);
+app/pages/index.vue:  margin-bottom: var(--space-3);
+app/pages/index.vue:  margin-bottom: var(--space-4);
+app/components/terminal/TerminalComponent.vue:  resize: both;
+app/components/terminal/TerminalComponent.vue:      background-image: linear-gradient(to bottom right, var(--term-red), hsl(0deg 100% 27%));
+app/components/terminal/TerminalComponent.vue:    bottom: 0;
+app/components/WindowWrapperComponent.vue:      background-image: linear-gradient(to bottom right, var(--wwc-color-red), var(--wwc-color-red-dark));
+app/components/home/HomeBootOverlay.vue:  margin-bottom: var(--space-5);
+app/components/home/HomeHeroTerminal.vue:  vertical-align: text-bottom;
+app/components/HeaderComponent.vue:          <ZIcon :name="menuOpen ? 'arrow' : 'layers'" />
+app/components/HeaderComponent.vue:  border-bottom: 1px solid transparent;
+app/components/HeaderComponent.vue:  border-bottom-color: var(--border-subtle);
+app/components/HeaderComponent.vue:    bottom: -2px;
+app/components/HeaderComponent.vue:  padding-bottom: var(--space-2);
+app/components/HeaderComponent.vue:  margin-bottom: var(--space-2);
+app/components/HeaderComponent.vue:  border-bottom: 1px solid var(--border-subtle);
+app/components/HeaderComponent.vue:    border-bottom: 1px solid var(--border-subtle);
+app/components/FooterComponent.vue:    <div class="ftr__bottom-bar">
+app/components/FooterComponent.vue:      <div class="ftr__container ftr__bottom">
+app/components/FooterComponent.vue:  margin-bottom: var(--space-3);
+app/components/FooterComponent.vue:.ftr__bottom-bar {
+app/components/FooterComponent.vue:.ftr__bottom {
+app/components/ui/ZIcon.vue:// diamant (gem) = fill. Porté de docs/design_system/ui_kits/jouan-site/icons.jsx.
+app/components/ui/ZIcon.vue:  layers: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+app/components/ui/ZIcon.vue:  bot: '<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 4v4"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M2 14h2M20 14h2"/>',
+app/components/ui/ZIcon.vue:  zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+app/components/home/HomeHeroTerminal.vue:  vertical-align: text-bottom;
+app/components/home/HomeBootOverlay.vue:  margin-bottom: var(--space-5);
+app/components/terminal/TerminalComponent.vue:  resize: both;
+app/components/terminal/TerminalComponent.vue:      background-image: linear-gradient(to bottom right, var(--term-red), hsl(0deg 100% 27%));
+app/components/terminal/TerminalComponent.vue:    bottom: 0;
+app/components/ui/ZIcon.vue:// diamant (gem) = fill. Porté de docs/design_system/ui_kits/jouan-site/icons.jsx.
+app/components/ui/ZIcon.vue:  layers: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+app/components/ui/ZIcon.vue:  bot: '<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 4v4"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M2 14h2M20 14h2"/>',
+app/components/ui/ZIcon.vue:  zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+app/components/WindowWrapperComponent.vue:      background-image: linear-gradient(to bottom right, var(--wwc-color-red), var(--wwc-color-red-dark));
+
+codex
+[
+  {
+    "location": "app/pages/services.vue:438-447",
+    "trigger_condition": "Reduced-motion users hover the inline CTA",
+    "guard_snippet": "@media (prefers-reduced-motion: reduce) { .process__inline-cta { transition: none; } }",
+    "potential_consequence": "Motion preference is ignored on interactive text"
+  },
+  {
+    "location": "app/pages/services.vue:467-473",
+    "trigger_condition": "Viewport is slightly wider than 900px",
+    "guard_snippet": "@media (width <= 1100px) { .grid-3, .process { grid-template-columns: repeat(2, minmax(0, 1fr)); } }",
+    "potential_consequence": "Long new copy becomes cramped or overflows columns"
+  }
+]
+tokens used
+37 983
+[
+  {
+    "location": "app/pages/services.vue:438-447",
+    "trigger_condition": "Reduced-motion users hover the inline CTA",
+    "guard_snippet": "@media (prefers-reduced-motion: reduce) { .process__inline-cta { transition: none; } }",
+    "potential_consequence": "Motion preference is ignored on interactive text"
+  },
+  {
+    "location": "app/pages/services.vue:467-473",
+    "trigger_condition": "Viewport is slightly wider than 900px",
+    "guard_snippet": "@media (width <= 1100px) { .grid-3, .process { grid-template-columns: repeat(2, minmax(0, 1fr)); } }",
+    "potential_consequence": "Long new copy becomes cramped or overflows columns"
+  }
+]

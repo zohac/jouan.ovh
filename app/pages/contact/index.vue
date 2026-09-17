@@ -3,20 +3,22 @@
     <section class="section">
       <div class="container">
         <div class="contact__grid">
-          <!-- Colonne gauche : en-tête + formulaire (story 7.1) -->
+          <!-- Colonne gauche : en-tête + formulaire (story 7.1 / story 12.6) -->
           <div class="contact__main">
             <p class="eyebrow"><span aria-hidden="true">// </span>contact</p>
-            <h1 class="contact__title">Parlons de votre projet</h1>
+            <h1 class="contact__title">Parlons de votre workflow</h1>
             <p class="prose contact__intro">
-              Une idée, un site à refaire, une automatisation à mettre en place ? Décrivez-moi le besoin — je réponds
-              sous 48h.
+              Décrivez-moi simplement le processus qui vous ralentit ou vous fait perdre du temps au quotidien. Je vous
+              réponds sous 48h avec une première analyse de faisabilité.
             </p>
 
             <!-- État « envoyé » : carte accent + ligne mono verte. role="status" + focus
                  programmatique (tabindex -1) → annonce fiable aux lecteurs d'écran. -->
             <ZCard v-if="sent" ref="sentCard" accent class="contact__sent" role="status" tabindex="-1">
               <p class="contact__sent-line"><span aria-hidden="true">✓</span> Message envoyé</p>
-              <p class="prose contact__sent-text">Merci ! Je vous réponds très vite à votre adresse.</p>
+              <p class="prose contact__sent-text">
+                Merci ! Je vous réponds sous 48h avec une première analyse de faisabilité à votre adresse.
+              </p>
             </ZCard>
 
             <!-- Formulaire — envoi via Web3Forms (service sans serveur, clé en env). Validation
@@ -43,29 +45,49 @@
                 />
                 <ZInput
                   v-model="form.email"
-                  label="Email"
+                  label="Email professionnel"
                   type="email"
-                  placeholder="vous@exemple.com"
+                  placeholder="vous@entreprise.com"
                   required
                   autocomplete="email"
                   :error="Boolean(errors.email)"
                   :hint="errors.email"
                 />
               </div>
+
+              <div class="contact__row">
+                <ZInput
+                  v-model="form.company"
+                  label="Entreprise"
+                  placeholder="Nom de votre structure"
+                  autocomplete="organization"
+                />
+                <ZInput
+                  v-model="form.frequency"
+                  label="Combien de fois ce process se répète-t-il ?"
+                  placeholder="Ex : quotidien, 10x par semaine…"
+                  autocomplete="off"
+                />
+              </div>
+
               <ZInput
-                v-model="form.subject"
-                label="Sujet"
-                placeholder="Site WordPress, application, IA…"
-                autocomplete="off"
-              />
-              <ZInput
-                v-model="form.message"
-                label="Message"
-                multiline
-                placeholder="Parlez-moi de votre projet…"
+                v-model="form.workflow"
+                label="Quel processus souhaitez-vous améliorer ?"
+                placeholder="Ex : qualification des leads, devis BTP, extraction de factures…"
                 required
-                :error="Boolean(errors.message)"
-                :hint="errors.message"
+                autocomplete="off"
+                :error="Boolean(errors.workflow)"
+                :hint="errors.workflow"
+              />
+
+              <ZInput
+                v-model="form.currentState"
+                label="Comment fonctionne-t-il aujourd’hui ?"
+                multiline
+                placeholder="Outils utilisés, étapes manuelles, qui intervient, où l’information se perd…"
+                required
+                :error="Boolean(errors.currentState)"
+                :hint="errors.currentState"
               />
 
               <!-- Erreur d'envoi réseau (distincte des erreurs de validation par champ). -->
@@ -73,14 +95,14 @@
 
               <div>
                 <ZButton type="submit" variant="primary" size="lg" :disabled="sending">
-                  {{ sending ? "Envoi en cours…" : "Envoyer le message" }}
+                  {{ sending ? "Envoi en cours…" : "Décrire mon workflow" }}
                   <template #iconRight><ZIcon name="arrow" /></template>
                 </ZButton>
               </div>
 
               <p class="contact__rgpd">
-                En envoyant ce formulaire, vos nom, email, sujet et message sont transmis via Web3Forms à seule fin de
-                traiter votre demande. Consultez la
+                En envoyant ce formulaire, vos coordonnées et la description de votre workflow sont transmises via
+                Web3Forms à seule fin de qualifier votre besoin et vous répondre. Consultez la
                 <NuxtLink to="/confidentialite" class="contact__rgpd-link">politique de confidentialité</NuxtLink>.
               </p>
             </form>
@@ -146,7 +168,7 @@
 <script setup lang="ts">
 // Page Contact — colonne gauche : en-tête + formulaire (story 7.1, envoi Web3Forms,
 // service tiers SANS serveur). Colonne droite : infos + CTA terminal + socials (story 7.2).
-import { nextTick } from "vue";
+import { nextTick, reactive, ref, watch } from "vue";
 import { NuxtLink } from "#components";
 import { SITE } from "~/data/site";
 
@@ -160,8 +182,10 @@ const { open: openTerminal } = useTerminal();
 interface ContactForm {
   name: string;
   email: string;
-  subject: string;
-  message: string;
+  company?: string;
+  workflow: string;
+  currentState: string;
+  frequency?: string;
 }
 
 interface Web3FormsResponse {
@@ -174,9 +198,23 @@ const ERROR_MESSAGE = `L'envoi a échoué. Réessayez, ou écrivez-moi directeme
 // Clé Web3Forms injectée par l'env (NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY) — jamais en dur.
 const accessKey = useRuntimeConfig().public.web3formsAccessKey;
 
-const form = reactive<ContactForm>({ name: "", email: "", subject: "", message: "" });
+const form = reactive<ContactForm>({
+  name: "",
+  email: "",
+  company: "",
+  workflow: "",
+  currentState: "",
+  frequency: "",
+});
+
 // Message d'erreur par champ requis ("" = valide). Rendu sous le champ via ZInput.
-const errors = reactive({ name: "", email: "", message: "" });
+const errors = reactive({
+  name: "",
+  email: "",
+  workflow: "",
+  currentState: "",
+});
+
 const honeypot = ref("");
 const sent = ref(false);
 const sending = ref(false);
@@ -191,21 +229,28 @@ const sentCard = ref<{ $el: HTMLElement } | null>(null);
 // faux négatifs d'une regex stricte ; Web3Forms revalide côté service.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Nettoie les espaces et les caractères zero-width / invisibles (ex: \u200B)
+function cleanInput(val?: string): string {
+  return (val ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+}
+
 function validate(): boolean {
-  errors.name = form.name.trim() ? "" : "Votre nom est requis.";
-  errors.email = !form.email.trim()
-    ? "Votre email est requis."
-    : EMAIL_RE.test(form.email.trim())
-      ? ""
-      : "Cet email ne semble pas valide.";
-  errors.message = form.message.trim() ? "" : "Un message est requis.";
-  return !errors.name && !errors.email && !errors.message;
+  const name = cleanInput(form.name);
+  const email = cleanInput(form.email);
+  const workflow = cleanInput(form.workflow);
+  const currentState = cleanInput(form.currentState);
+
+  errors.name = name ? "" : "Votre nom est requis.";
+  errors.email = !email ? "Votre email est requis." : EMAIL_RE.test(email) ? "" : "Cet email ne semble pas valide.";
+  errors.workflow = workflow ? "" : "Veuillez préciser le processus à améliorer.";
+  errors.currentState = currentState ? "" : "Veuillez décrire le fonctionnement actuel.";
+  return !errors.name && !errors.email && !errors.workflow && !errors.currentState;
 }
 
 // Après un 1er envoi, re-valider à la saisie : corriger un champ lève son message d'erreur
 // sans attendre une nouvelle soumission.
 watch(
-  () => [form.name, form.email, form.message],
+  () => [form.name, form.email, form.workflow, form.currentState],
   () => {
     if (submitted.value) {
       validate();
@@ -238,14 +283,26 @@ async function onSubmit(): Promise<void> {
 
   sending.value = true;
   try {
+    const name = cleanInput(form.name);
+    const email = cleanInput(form.email);
+    const company = cleanInput(form.company);
+    const workflow = cleanInput(form.workflow);
+    const currentState = cleanInput(form.currentState);
+    const frequency = cleanInput(form.frequency);
+    const workflowSubject = workflow.slice(0, 80);
+
     const res = await $fetch<Web3FormsResponse>("https://api.web3forms.com/submit", {
       method: "POST",
       body: {
         access_key: accessKey,
-        name: form.name.trim(),
-        email: form.email.trim(),
-        subject: form.subject.trim() || "Nouveau message depuis jouan.ovh",
-        message: form.message.trim(),
+        name,
+        email,
+        company,
+        subject: `Qualification de workflow : ${workflowSubject || "Nouveau projet"}`,
+        workflow,
+        current_state: currentState,
+        frequency,
+        message: `Processus à améliorer : ${workflow}\n\nFonctionnement actuel :\n${currentState}\n\nFréquence : ${frequency || "Non spécifiée"}\nEntreprise : ${company || "Non spécifiée"}`,
         botcheck: "",
       },
     });
@@ -267,9 +324,9 @@ const siteUrl = useSiteUrl();
 const contactJsonLd = {
   "@context": "https://schema.org",
   "@type": "ContactPage",
-  name: "Contact — jouan.ovh",
+  name: "Contact — Simon Jouan",
   description:
-    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+    "Parlons de votre workflow : décrivez le processus métier qui vous ralentit pour identifier les opportunités d'automatisation et d'agents IA adaptés.",
   url: `${siteUrl}/contact`,
   mainEntity: {
     "@type": "Person",
@@ -284,9 +341,9 @@ const contactJsonLd = {
 };
 
 usePageSeo({
-  title: "Contact — jouan.ovh",
+  title: "Contact — Simon Jouan",
   description:
-    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
+    "Parlons de votre workflow : décrivez le processus métier qui vous ralentit pour identifier les opportunités d'automatisation et d'agents IA adaptés.",
   path: "/contact",
   image: "/images/portrait.jpeg",
   type: "website",

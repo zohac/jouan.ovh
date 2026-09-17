@@ -13,7 +13,11 @@
 // Bloc de section vertical. padding-block uniquement : le gutter
 // horizontal vient de .container (enfant) — évite le conflit de
 // shorthand padding multi-axes (cf. project-context, piège story 3.1).
+// position: relative et z-index: 1 garantissent que le contenu des sections
+// s'affiche toujours au-dessus du conteneur atmosphérique fixed (.atmos, z-index: 0).
 .section {
+  position: relative;
+  z-index: 1;
   padding-block: var(--space-16);
 }
 

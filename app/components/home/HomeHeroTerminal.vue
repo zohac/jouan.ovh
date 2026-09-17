@@ -81,8 +81,8 @@ import { ref, watch, onMounted, onUnmounted } from "vue";
 import { useTerminal } from "~/composables/useTerminal";
 import { SITE } from "~/data/site";
 
-// Terminal hero cinétique (Story 11.2 / AC-2 / CAP-3).
-// Déroule une animation de frappe séquentielle pour whoami, cat focus.txt et ls ~/projets.
+// Terminal hero cinétique (Story 11.2 / 12.2 / AC-2 / CAP-2).
+// Déroule une animation de frappe séquentielle pour whoami, cat focus.txt et ls ~/systems.
 // Neutralisé sous prefers-reduced-motion (affichage statique complet immédiat).
 // Ouvre l'easter-egg terminal via useTerminal().open sur l'invite finale help.
 
@@ -115,16 +115,16 @@ const projectsOutput = SITE.projects
 const fullRows: ITermRow[] = [
   {
     cmd: "whoami",
-    out: `${SITE.profile.name} — ${SITE.profile.role}`,
+    out: `${SITE.profile.name} — ${SITE.profile.shortRole ?? SITE.profile.role}`,
     tone: "ink",
   },
   {
     cmd: "cat focus.txt",
-    out: "SaaS, web apps, clean architecture, automated testing (QA) & AI engineering",
+    out: "Systèmes IA · automatisation métier · agents · applications Full Stack · QA",
     tone: "blue",
   },
   {
-    cmd: "ls ~/projets",
+    cmd: "ls ~/systems",
     out: projectsOutput,
     tone: "green",
   },

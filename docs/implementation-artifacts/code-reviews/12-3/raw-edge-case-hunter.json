@@ -1,0 +1,1450 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0abf7-f05f-72b0-b978-5edb4b43fa36
+--------
+user
+# Edge Case Hunter Prompt — Story 12.3
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/12-3/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’ll use `bmad-review-edge-case-hunter` and keep the final output to the JSON array only.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md && sed -n '1,240p' docs/implementation-artifacts/code-reviews/12-3/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index c513732..755db7b 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -11,16 +11,21 @@
+         <div class="hero__grid">
+           <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
+           <div class="anim hero__text">
+-            <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
+-            <h1 class="hero__title">Développeur Full Stack <em>TypeScript</em></h1>
++            <h2 class="eyebrow">
++              <span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA &amp; AUTOMATISATION
++            </h2>
++            <h1 class="hero__title">Automatisez les workflows qui freinent votre équipe.</h1>
+             <p class="hero__sub">
+-              Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
+-              l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
++              Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants —
++              de l’identification du problème jusqu’à la mise en production.
++            </p>
++            <p class="hero__credibility">
++              Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA
+             </p>
+ 
+             <div class="hero__badge-wrap">
+               <span class="hero__pulse-dot" aria-hidden="true" />
+-              <span>Disponible pour missions freelance</span>
++              <span>Disponible pour nouvelles missions freelance</span>
+               <template v-if="SITE.profile.maltUrl">
+                 <span aria-hidden="true"> · </span>
+                 <ZExternalLink :href="SITE.profile.maltUrl"> Profil Malt vérifié </ZExternalLink>
+@@ -29,10 +34,10 @@
+ 
+             <div class="hero__cta">
+               <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+-                Discuter de votre projet
++                Identifier un workflow à automatiser
+                 <template #iconRight><ZIcon name="arrow" /></template>
+               </ZButton>
+-              <ZButton :as="NuxtLink" to="/about" variant="secondary" size="lg"> Voir le parcours &amp; CV </ZButton>
++              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir mes systèmes IA </ZButton>
+             </div>
+           </div>
+ 
+@@ -47,11 +52,11 @@
+       </div>
+     </section>
+ 
+-    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
++    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1) -->
+     <section class="section">
+       <div class="container">
+         <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
+-        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
++        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos systèmes</h2>
+         <ul class="grid-3">
+           <li v-for="service in services" :key="service.id">
+             <ZCard class="offer" interactive tilt :accent="service.featured" :featured="service.featured">
+@@ -84,6 +89,34 @@
+       </div>
+     </section>
+ 
++    <!-- Bloc différenciateur « Prototype → Production » (Story 12.3 / AC-2) -->
++    <section class="section section--sunken diff-block">
++      <div class="container">
++        <p class="eyebrow"><span aria-hidden="true">// </span>au-delà de la démo</p>
++        <h2 class="section__title diff-block__title">
++          Un agent qui fonctionne trois fois n’est pas encore un système fiable.
++        </h2>
++        <p class="prose diff-block__lead">
++          Mon background Full Stack et QA me permet de traiter ce qui arrive après le prototype : authentification,
++          permissions, données, erreurs, retries, logs, tests, coûts, monitoring, sécurité et supervision humaine.
++          L’objectif n’est pas de mettre de l’IA partout. L’objectif est de construire un workflow qui reste utile
++          lorsqu’il rencontre la vraie vie.
++        </p>
++
++        <ul class="pillars-grid">
++          <li v-for="pillar in pillars" :key="pillar.id">
++            <ZCard class="pillar" padded interactive tilt>
++              <div class="pillar__icon">
++                <ZIcon :name="pillar.icon" />
++              </div>
++              <h3 class="pillar__title">{{ pillar.title }}</h3>
++              <p class="pillar__desc">{{ pillar.desc }}</p>
++            </ZCard>
++          </li>
++        </ul>
++      </div>
++    </section>
++
+     <!-- Projets sélectionnés & Statistiques de réassurance (Story 11.4 / AC-1 & AC-2) -->
+     <section class="section">
+       <div class="container">
+@@ -289,7 +322,7 @@ function onProjectMouseLeave(event: MouseEvent) {
+ interface HomeServiceOffer {
+   id: string;
+   no: string;
+-  icon: "code" | "layers" | "spark";
++  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+   title: string;
+   desc: string;
+   points: string[];
+@@ -298,55 +331,90 @@ interface HomeServiceOffer {
+   featured: boolean;
+ }
+ 
+-// Vitrine des 3 offres ciblées Full Stack TS (Story 11.3 / AC-2).
++interface ProductionPillar {
++  id: string;
++  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
++  title: string;
++  desc: string;
++}
++
++// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1).
+ const services: HomeServiceOffer[] = [
+   {
+-    id: "creation",
++    id: "automation",
+     no: "01 / 03",
+-    icon: "code",
+-    title: "Création d'applications web & SaaS",
+-    desc: "De l'idée à la production : architecture, développement front & back, base de données, authentification et paiements Stripe.",
++    icon: "layers",
++    title: "Automatisation de processus métier",
++    desc: "Cartographie d'un workflow existant, identification des tâches répétitives et construction du système qui automatise ce qui mérite réellement de l'être.",
+     points: [
+-      "Architecture logicielle & APIs REST",
+-      "Applications Vue 3 / Nuxt 4 & NestJS",
+-      "Intégration Stripe & PostgreSQL",
++      "Cartographie de flux & connecteurs d'APIs",
++      "Ingestion, enrichissement et traitement de données",
++      "Synchronisation d'outils métier & reporting",
+     ],
+-    tags: ["Nuxt", "NestJS", "PostgreSQL", "Stripe Connect"],
+-    price: "Sur devis / au sprint",
++    tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
++    price: "À partir de 3 500 € HT",
+     featured: false,
+   },
+   {
+-    id: "fullstack",
++    id: "agents",
+     no: "02 / 03",
+-    icon: "layers",
+-    title: "Développement Full Stack TypeScript",
+-    desc: "Renfort d'équipe produit ou développement de modules complexes avec une stack moderne unifiée de bout en bout.",
++    icon: "bot",
++    title: "Agents IA intégrés à vos outils",
++    desc: "Intégration d'agents outillés dans vos flux existants pour lire, interpréter, synthétiser et décider sans casser vos habitudes de travail.",
+     points: [
+-      "Composants Vue 3 / Nuxt avec TypeScript strict",
+-      "Microservices & backend modulaire NestJS",
+-      "Fiabilisation et optimisation des performances",
++      "Agents outillés (Tool Calling) & serveurs MCP",
++      "Extraction structurée & analyse documentaire",
++      "Supervision humaine obligatoire (Human-in-the-loop)",
+     ],
+-    tags: ["TypeScript", "Vue 3", "Nuxt", "NestJS", "Node.js"],
+-    price: "Sur devis / TJM",
++    tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
++    price: "À partir de 3 500 € HT",
+     featured: true,
+   },
+   {
+-    id: "evolution",
++    id: "apps",
+     no: "03 / 03",
+-    icon: "spark",
+-    title: "Évolution & Architecture applicative",
+-    desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
++    icon: "code",
++    title: "Applications IA sur mesure",
++    desc: "Développement complet de solutions logicielles dédiées quand le workflow nécessite une interface, un backend robuste et une base de données sur mesure.",
+     points: [
+-      "Audits techniques de code & migrations de versions",
+-      "Tests E2E TestCafé & tests unitaires Vitest",
+-      "Pipelines CI/CD & conteneurisation Docker",
++      "Applications web complètes Nuxt & NestJS",
++      "Applications desktop sécurisées Tauri (IA locale)",
++      "Architecture PostgreSQL, tests QA & déploiement",
+     ],
+-    tags: ["TestCafé", "Vitest", "Docker", "CI/CD"],
+-    price: "Au forfait / audit",
++    tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
++    price: "Sur mesure / Sprint",
+     featured: false,
+   },
+ ];
+ 
++// 4 Piliers d'industrialisation « Prototype → Production » (Story 12.3 / AC-2).
++const pillars: ProductionPillar[] = [
++  {
++    id: "data",
++    icon: "layers",
++    title: "Données",
++    desc: "Provenance, structuration, stockage, rétention, secrets.",
++  },
++  {
++    id: "reliability",
++    icon: "zap",
++    title: "Fiabilité",
++    desc: "Cas limites, retries, fallbacks, tests, observabilité.",
++  },
++  {
++    id: "ai",
++    icon: "bot",
++    title: "IA",
++    desc: "Sorties structurées, versionnage, évaluations, contrôle humain.",
++  },
++  {
++    id: "ops",
++    icon: "terminal",
++    title: "Exploitation",
++    desc: "Monitoring, coûts, support, maintenance, évolution.",
++  },
++];
++
+ // Projets sélectionnés — source unique `app/data/site.ts` (Story 11.4 / AC-1).
+ const projects = SITE.projects;
+ 
+@@ -464,7 +532,7 @@ usePageSeo({
+ 
+ .hero__sub {
+   max-width: 46ch;
+-  margin: var(--space-5) 0 var(--space-6);
++  margin: var(--space-5) 0 var(--space-4);
+   font-family: var(--font-sans);
+   font-size: var(--fs-lg);
+   line-height: var(--lh-relaxed);
+@@ -472,6 +540,14 @@ usePageSeo({
+   text-shadow: 0 1px 8px color-mix(in srgb, var(--surface-0) 70%, transparent);
+ }
+ 
++.hero__credibility {
++  margin: 0 0 var(--space-6);
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  letter-spacing: var(--ls-wide);
++  color: var(--text-muted);
+
+exec
+/bin/zsh -lc "sed -n '241,520p' docs/implementation-artifacts/code-reviews/12-3/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
++}
++
+ .hero__cta {
+   display: flex;
+   flex-wrap: wrap;
+@@ -664,6 +740,68 @@ usePageSeo({
+   }
+ }
+ 
++// ---- Bloc Différenciateur « Prototype → Production » (Story 12.3 / AC-2) ----
++.diff-block__title {
++  max-width: 28ch;
++  margin-bottom: var(--space-4);
++}
++
++.diff-block__lead {
++  max-width: 72ch;
++  margin: 0 0 var(--space-8);
++  font-size: var(--fs-md);
++  line-height: var(--lh-relaxed);
++  color: var(--text-body);
++}
++
++.pillars-grid {
++  display: grid;
++  grid-template-columns: repeat(4, 1fr);
++  gap: var(--space-5);
++  margin: 0;
++  padding: 0;
++  list-style: none;
++
++  > li {
++    display: flex;
++  }
++}
++
++.pillar {
++  display: flex;
++  flex-direction: column;
++  width: 100%;
++}
++
++.pillar__icon {
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  width: var(--space-10);
++  height: var(--space-10);
++  margin-bottom: var(--space-4);
++  font-size: var(--fs-xl);
++  color: var(--accent);
++  background: var(--accent-soft);
++  border-radius: var(--radius-md);
++}
++
++.pillar__title {
++  margin: 0 0 var(--space-2);
++  font-family: var(--font-mono);
++  font-size: var(--fs-lg);
++  font-weight: var(--fw-regular);
++  color: var(--text-strong);
++}
++
++.pillar__desc {
++  margin: 0;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  line-height: var(--lh-normal);
++  color: var(--text-muted);
++}
++
+ // ---- Section Projets sélectionnés (porté de Home - Awwwards.html .work) ----
+ .work {
+   display: flex;
+@@ -1057,6 +1195,10 @@ li:last-child .work__row {
+     grid-template-columns: 1fr;
+   }
+ 
++  .pillars-grid {
++    grid-template-columns: repeat(2, 1fr);
++  }
++
+   .block__head--row {
+     flex-direction: column;
+     align-items: flex-start;
+@@ -1074,6 +1216,7 @@ li:last-child .work__row {
+     display: none;
+   }
+ 
++  .pillars-grid,
+   .stats {
+     grid-template-columns: 1fr;
+   }
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 15c84cd..64e81a5 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-16 (Story 12.2 initialisée en ready-for-dev)"
++last_updated: "2026-09-16 (Story 12.3 passée en review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -130,8 +130,8 @@ development_status:
+   # Epic 12 — Repositionnement Commercial V1 : Systèmes IA & Automatisation Métier
+   epic-12: in-progress
+   12-1-source-unique-de-donnees-sitets-et-coherence-globale: done
+-  12-2-homepage-hero-commercial-cinetique-et-terminal-interactif: ready-for-dev
+-  12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur: backlog
++  12-2-homepage-hero-commercial-cinetique-et-terminal-interactif: done
++  12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur: review
+   12-4-homepage-vitrine-des-3-projets-phares: backlog
+   12-5-page-services-restructuration-des-offres-et-process-4-etapes: backlog
+   12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide: backlog
+diff --git a/docs/implementation-artifacts/12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur.md b/docs/implementation-artifacts/12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur.md
+new file mode 100644
+index 0000000..67f7ae7
+--- /dev/null
++++ b/docs/implementation-artifacts/12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur.md
+@@ -0,0 +1,127 @@
++---
++baseline_commit: c7136c64cd1a9dd3de9b7a6689a26000a217af56
++---
++
++# Story 12.3: Page d'accueil — Vitrine des 3 services ciblés & Bloc différenciateur « Prototype → Production »
++
++Status: review
++
++<!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
++
++## Story
++
++As a visiteur évaluant l'offre de services sur la page d'accueil,
++I want découvrir les 3 piliers d'accompagnement et les arguments prouvant la viabilité des systèmes déployés,
++so that je distingue le travail industriel d'une simple démonstration de chatbot fragile (FR30, NFR13, UX-DR29).
++
++## Acceptance Criteria
++
++1. **Given** la section vitrine des services dans `app/pages/index.vue`
++   **When** la page est rendue et inspectée
++   **Then** le sur-titre affiche `<p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>`
++   **And** le titre de section affiche `Trois expertises pour concevoir et faire évoluer vos systèmes`
++   **And** la liste sémantique `<ul class="grid-3">` expose 3 cartes structurées `<ZCard class="offer" interactive tilt ...>` avec numérotation terminale `01 / 03`, `02 / 03`, `03 / 03` :
++     1. **Automatisation de processus métier** (`id: "automation"`, icône `layers`, tags `Workflow` · `APIs` · `Automation` · `PostgreSQL`, prix/format `À partir de 3 500 € HT` ou `Format Sprint`)
++     2. **Agents IA intégrés à vos outils** (`id: "agents"`, `featured: true`, icône `bot` ou `spark`, tags `Agents IA` · `LLM` · `MCP` · `Human-in-the-loop`, prix/format `À partir de 3 500 € HT` ou `Format Sprint`)
++     3. **Applications IA sur mesure** (`id: "apps"`, icône `code`, tags `TypeScript` · `Nuxt` · `NestJS` · `PostgreSQL` · `Tauri`, prix/format `Sur mesure / Sprint`)
++   **And** chaque carte oriente directement vers la route Nuxt `/services` (via `<NuxtLink to="/services" ...>` et lien d'action accessible).
++
++2. **Given** le nouveau bloc différenciateur « Prototype → Production » dans `app/pages/index.vue`
++   **When** le visiteur fait défiler la page immédiatement sous la vitrine des services
++   **Then** une section ou un conteneur dédié `.diff-block` (ou `.section--sunken`) expose :
++     - Le sur-titre `<p class="eyebrow"><span aria-hidden="true">// </span>au-delà de la démo</p>`
++     - Le titre de section `<h2>` ou `<h3>` affichant `Un agent qui fonctionne trois fois n’est pas encore un système fiable.`
++     - Le texte explicatif officiel (messaging matrix 4.3) valorisant la culture Full Stack et QA : `Mon background Full Stack et QA me permet de traiter ce qui arrive après le prototype : authentification, permissions, données, erreurs, retries, logs, tests, coûts, monitoring, sécurité et supervision humaine. L’objectif n’est pas de mettre de l’IA partout. L’objectif est de construire un workflow qui reste utile lorsqu’il rencontre la vraie vie.`
++     - Les 4 piliers d'industrialisation balisés sous forme de liste sémantique `<ul class="pillars-grid">` avec cartes `<ZCard :padded="true">` :
++       - **Données :** provenance, structuration, stockage, rétention, secrets. (icône `layers` ou `terminal`)
++       - **Fiabilité :** cas limites, retries, fallbacks, tests, observabilité. (icône `check` ou `zap`)
++       - **IA :** sorties structurées, versionnage, évaluations, contrôle humain. (icône `bot` ou `spark`)
++       - **Exploitation :** monitoring, coûts, support, maintenance, évolution. (icône `terminal` ou `code`)
++
++3. **Given** les critères d'accessibilité (a11y RGAA/WCAG), de responsive et de design tokens
++   **When** la page est affichée sur mobile (< 900px, < 680px), sur desktop ou naviguée au clavier
++   **Then** les grilles `.grid-3` et `.pillars-grid` basculent harmonieusement de 3/4 colonnes à 1 colonne sans débordement horizontal
++   **And** sous `prefers-reduced-motion: reduce`, les effets de tilt 3D sur `ZCard` et transitions dynamiques sont instantanément neutralisés
++   **And** le focus clavier (`Tab`) parcourt les cartes et liens `/services` selon un ordre séquentiel et visible (`:focus-visible` avec outline 2px)
++   **And** aucun emoji n'est injecté dans les templates, textes ou styles (NFR6 / NFR13)
++   **And** tous les styles SCSS consomment exclusivement les tokens de thème `:root` (`var(--token)`).
++
++4. **Given** l'ensemble des modifications de la story
++   **When** on exécute la gate de validation Docker
++   **Then** `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` réussit avec 0 erreur et les routes statiques pré-rendues.
++
++## Tasks / Subtasks
++
++- [x] Tâche 1 — Mise à jour des données et cartes de la vitrine des 3 services dans `app/pages/index.vue` (AC: 1, 3)
++  - [x] Mettre à jour l'interface `HomeServiceOffer` et la constante `services` dans le `<script setup>` :
++    - Offre 1 : `id: "automation"`, `no: "01 / 03"`, `title: "Automatisation de processus métier"`, promesse/points, tags `["Workflow", "APIs", "Automation", "PostgreSQL"]`, format tarifaire `À partir de 3 500 € HT`
++    - Offre 2 : `id: "agents"`, `no: "02 / 03"`, `title: "Agents IA intégrés à vos outils"`, promesse/points, tags `["Agents IA", "LLM", "MCP", "Human-in-the-loop"]`, format tarifaire `À partir de 3 500 € HT`, `featured: true`
++    - Offre 3 : `id: "apps"`, `no: "03 / 03"`, `title: "Applications IA sur mesure"`, promesse/points, tags `["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"]`, format tarifaire `Sur mesure / Sprint`
++  - [x] Mettre à jour le titre de la section : `Trois expertises pour concevoir et faire évoluer vos systèmes`
++  - [x] Vérifier que tous les liens d'action pointent vers `/services` sans ancre `#`.
++
++- [x] Tâche 2 — Intégration du bloc différenciateur « Prototype → Production » (AC: 2, 3)
++  - [x] Créer la structure HTML sémantique immédiatement sous la vitrine des services dans `app/pages/index.vue` :
++    - Sur-titre : `<p class="eyebrow"><span aria-hidden="true">// </span>au-delà de la démo</p>`
++    - Titre H2 : `Un agent qui fonctionne trois fois n’est pas encore un système fiable.`
++    - Texte d'accroche valorisant le background Full Stack & QA
++    - Grille `ul.pillars-grid` de 4 cartes `ZCard` (Données, Fiabilité, IA, Exploitation) avec icônes `ZIcon` dédiées et puces descriptives
++  - [x] Ajouter les styles SCSS scopés pour `.diff-block` / `.pillars-grid` en utilisant les tokens du Design System (`--space-*`, `--radius-*`, `--font-*`, `--surface-*`, `--border-*`).
++
++- [x] Tâche 3 — Vérification responsive, a11y et respect des invariants (AC: 3)
++  - [x] Vérifier le comportement responsive sous breakpoints mobile (900px, 680px).
++  - [x] Valider l'absence totale d'emoji dans le DOM et les contenus textuels.
++  - [x] Valider la navigation clavier et le respect de `prefers-reduced-motion: reduce`.
++
++- [x] Tâche 4 — Validation qualité Docker (AC: 4)
++  - [x] Lancer la commande de validation complète : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
++  - [x] S'assurer de 0 erreur ESLint / Stylelint, 0 erreur TypeScript vue-tsc, et génération statique Nitro réussie.
++
++## Dev Notes
++
++### Architecture & Contraintes d'environnement
++- **Environnement Docker STRICT :** Ne jamais exécuter `pnpm` sur l'hôte macOS. Toute commande d'outillage doit s'exécuter dans Docker : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm <cmd>"`. [Source: AGENTS.md#Section 2]
++- **Tokens & Design System :** Aucune couleur ou espacement en dur. Utiliser impérativement `var(--token)`.
++- **Primitives de Layout :** Les classes `.section`, `.section--sunken`, `.container`, `.eyebrow`, `.prose` sont des primitives globales (`app/assets/scss/base/_layout.scss`). Ne pas les redéclarer dans le bloc scoped. [Source: AGENTS.md#Section 5.3]
++- **Icônes :** Utiliser les glyphes SVG intégrés de `<ZIcon name="..." />` (`code`, `layers`, `bot`, `spark`, `check`, `terminal`, `zap`). Ne pas importer de bibliothèque d'icônes externe.
++- **Zéro Emoji :** Règle stricte NFR6 / NFR13.
++
++### Fichiers concernés
++- [MODIFY] [app/pages/index.vue](file:///Users/simon/dev/jouan.ovh/app/pages/index.vue)
++
++### Ce qui doit être préservé
++- La section Hero commercial et son terminal interactif (`HomeHeroTerminal`).
++- Le bandeau défilant `HomeStackMarquee`.
++- La section des projets sélectionnés et le journal technique situés en aval.
++- L'intégrité du routing multi-pages Nuxt 4.
++
++### Références
++- Spécification canonique : [docs/specs/spec-repositionnement-ia/SPEC.md#CAP-3](file:///Users/simon/dev/jouan.ovh/docs/specs/spec-repositionnement-ia/SPEC.md)
++- Charte éditoriale & bloc différenciateur : [docs/specs/spec-repositionnement-ia/messaging-matrix.md#Section-4.3](file:///Users/simon/dev/jouan.ovh/docs/specs/spec-repositionnement-ia/messaging-matrix.md)
++- Offres et tarifs : [docs/specs/spec-repositionnement-ia/services-and-pricing.md#Section-1](file:///Users/simon/dev/jouan.ovh/docs/specs/spec-repositionnement-ia/services-and-pricing.md)
++- Cahier des charges : [docs/planning-artifacts/epics.md#Story-12.3](file:///Users/simon/dev/jouan.ovh/docs/planning-artifacts/epics.md)
++- Invariants d'implémentation : [AGENTS.md](file:///Users/simon/dev/jouan.ovh/AGENTS.md)
++
++## Dev Agent Record
++
++### Agent Model Used
++- Gemini 3.7 Flash
++
++### Debug Log References
++- Gate de validation Docker complète réussie : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
++- 0 erreur ESLint / Stylelint.
++- 0 erreur TypeScript (vue-tsc).
++- 20 routes pré-rendues statiquement via Nitro SSG avec succès.
++
++### Completion Notes List
++- Vitrine des 3 services mise à jour dans `app/pages/index.vue` avec les nouvelles offres : Automatisation de processus métier, Agents IA intégrés à vos outils (mis en avant), Applications IA sur mesure.
++- Intégration du bloc différenciateur « Prototype → Production » (`section.diff-block.section--sunken`) avec son accroche Full Stack / QA et sa grille sémantique de 4 piliers (Données, Fiabilité, IA, Exploitation).
++- Styles SCSS scopés conformes au Design System, responsive (1/2/4 colonnes), support motion réduit et navigation clavier testés et validés.
++
++### File List
++- app/pages/index.vue
++- docs/implementation-artifacts/12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur.md
++- docs/implementation-artifacts/sprint-status.yaml
++
++### Change Log
++- 2026-09-16 : Implémentation complète de la Story 12.3 (vitrine des 3 services ciblés et bloc différenciateur Prototype vers Production). Passé en revue.
+
+exec
+/bin/zsh -lc "rg -n \"defineProps|name:|bot|terminal|zap|check\" app/components -g 'ZIcon*' -g '*.vue'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+app/components/HeaderComponent.vue:25:        <ZButton variant="terminal" size="sm" class="hdr__action hdr__action--terminal" @click="addNewTerminal">
+app/components/HeaderComponent.vue:26:          <template #icon><ZIcon name="terminal" /></template>
+app/components/HeaderComponent.vue:81:        <ZButton variant="terminal" size="sm" class="hdr__action--terminal" @click="openTerminalFromMenu">
+app/components/HeaderComponent.vue:82:          <template #icon><ZIcon name="terminal" /></template>
+app/components/HeaderComponent.vue:91:    <TerminalManagerComponent ref="terminalManager" />
+app/components/HeaderComponent.vue:99:import TerminalManagerComponent from "~/components/terminal/TerminalManagerComponent.vue";
+app/components/HeaderComponent.vue:132:const terminalManager = ref<InstanceType<typeof TerminalManagerComponent> | null>(null);
+app/components/HeaderComponent.vue:135:  terminalManager.value?.createNewTerminal();
+app/components/HeaderComponent.vue:138:// Expose l'ouverture du terminal au reste du site via le lanceur partagé
+app/components/HeaderComponent.vue:243:  border-bottom: 1px solid transparent;
+app/components/HeaderComponent.vue:253:  border-bottom-color: var(--border-subtle);
+app/components/HeaderComponent.vue:366:    bottom: -2px;
+app/components/HeaderComponent.vue:425:.hdr__action--terminal {
+app/components/HeaderComponent.vue:433:      var(--glow-terminal);
+app/components/HeaderComponent.vue:523:  padding-bottom: var(--space-2);
+app/components/HeaderComponent.vue:524:  margin-bottom: var(--space-2);
+app/components/HeaderComponent.vue:525:  border-bottom: 1px solid var(--border-subtle);
+app/components/HeaderComponent.vue:563:    border-bottom: 1px solid var(--border-subtle);
+app/components/MainComponent.vue:9:  name: "MainComponent",
+app/components/FooterComponent.vue:38:    <div class="ftr__bottom-bar">
+app/components/FooterComponent.vue:39:      <div class="ftr__container ftr__bottom">
+app/components/FooterComponent.vue:102:  margin-bottom: var(--space-3);
+app/components/FooterComponent.vue:197:.ftr__bottom-bar {
+app/components/FooterComponent.vue:203:.ftr__bottom {
+app/components/HexagonLinkComponent.vue:11:defineProps<{
+app/components/terminal/TerminalComponent.vue:3:    Téléporté sur <body> : le terminal est monté dans le <header>, qui porte un
+app/components/terminal/TerminalComponent.vue:10:    <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput" @keydown.esc="closeTerminal">
+app/components/terminal/TerminalComponent.vue:11:      <div class="terminal-header" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
+app/components/terminal/TerminalComponent.vue:12:        <div class="terminal-dots">
+app/components/terminal/TerminalComponent.vue:17:            aria-label="Fermer le terminal"
+app/components/terminal/TerminalComponent.vue:22:          <span class="terminal-dot terminal-dot--min" aria-hidden="true"></span>
+app/components/terminal/TerminalComponent.vue:23:          <span class="terminal-dot terminal-dot--max" aria-hidden="true"></span>
+app/components/terminal/TerminalComponent.vue:28:      <div class="terminal-body">
+app/components/terminal/TerminalComponent.vue:31:            <!-- eslint-disable-next-line vue/no-v-html -- sortie générée en interne par les programmes du terminal (contenu maîtrisé) -->
+app/components/terminal/TerminalComponent.vue:32:            <span class="terminal-response" v-html="line.text"></span>
+app/components/terminal/TerminalComponent.vue:51:          aria-label="Saisie de commande du terminal"
+app/components/terminal/TerminalComponent.vue:65:import type { ITerminalConfig } from "~/components/terminal/interfaces";
+app/components/terminal/TerminalComponent.vue:66:import programManager from "~/components/terminal/programs/ProgramManager";
+app/components/terminal/TerminalComponent.vue:70:import { terminalDefaults } from "~/terminal.config";
+app/components/terminal/TerminalComponent.vue:74:defineOptions({ name: "TerminalComponent" });
+app/components/terminal/TerminalComponent.vue:77:  defineProps<{
+app/components/terminal/TerminalComponent.vue:80:    terminalConfig?: ITerminalConfig;
+app/components/terminal/TerminalComponent.vue:85:    terminalConfig: () => ({}),
+app/components/terminal/TerminalComponent.vue:94:const terminalElement = ref<HTMLElement | null>(null);
+app/components/terminal/TerminalComponent.vue:102:  width: props.terminalConfig.width || terminalDefaults.width,
+app/components/terminal/TerminalComponent.vue:103:  height: props.terminalConfig.height || terminalDefaults.height,
+app/components/terminal/TerminalComponent.vue:104:  userName: props.terminalConfig.userName || terminalDefaults.userName,
+app/components/terminal/TerminalComponent.vue:105:  domainName: props.terminalConfig.domainName || terminalDefaults.domainName,
+app/components/terminal/TerminalComponent.vue:106:  initialData: props.terminalConfig.initialData || terminalDefaults.initialData,
+app/components/terminal/TerminalComponent.vue:117:  if (terminalElement.value) {
+app/components/terminal/TerminalComponent.vue:119:    terminalElement.value.style.zIndex = (Date.now() % 2147483647).toString();
+app/components/terminal/TerminalComponent.vue:207:  if (resizing.value && terminalElement.value) {
+app/components/terminal/TerminalComponent.vue:208:    const terminalRect = terminalElement.value.getBoundingClientRect();
+app/components/terminal/TerminalComponent.vue:211:    const newWidth = Math.max(minWidth, event.clientX - terminalRect.left);
+app/components/terminal/TerminalComponent.vue:212:    const newHeight = Math.max(minHeight, event.clientY - terminalRect.top);
+app/components/terminal/TerminalComponent.vue:214:    terminalElement.value.style.width = `${newWidth}px`;
+app/components/terminal/TerminalComponent.vue:215:    terminalElement.value.style.height = `${newHeight}px`;
+app/components/terminal/TerminalComponent.vue:235:    event.target.classList.contains("terminal-header")
+app/components/terminal/TerminalComponent.vue:251:  if (dragging.value && terminalElement.value) {
+app/components/terminal/TerminalComponent.vue:252:    const terminalElementValue = terminalElement.value;
+app/components/terminal/TerminalComponent.vue:253:    // Borne haute clampée à 0 : si le terminal est plus large/haut que le viewport,
+app/components/terminal/TerminalComponent.vue:255:    const maxLeft = Math.max(0, window.innerWidth - terminalElementValue.offsetWidth);
+app/components/terminal/TerminalComponent.vue:256:    const maxTop = Math.max(0, window.innerHeight - terminalElementValue.offsetHeight);
+app/components/terminal/TerminalComponent.vue:260:    terminalElementValue.style.left = `${newLeft}px`;
+app/components/terminal/TerminalComponent.vue:261:    terminalElementValue.style.top = `${newTop}px`;
+app/components/terminal/TerminalComponent.vue:277:  if (terminalElement.value) {
+app/components/terminal/TerminalComponent.vue:278:    terminalElement.value.style.width = defaultConfig.value.width;
+app/components/terminal/TerminalComponent.vue:279:    terminalElement.value.style.height = defaultConfig.value.height;
+app/components/terminal/TerminalComponent.vue:284:  if (terminalElement.value) {
+app/components/terminal/TerminalComponent.vue:285:    terminalElement.value.style.display = "none";
+app/components/terminal/TerminalComponent.vue:294:  // Mémorise le déclencheur AVANT de déplacer le focus dans le terminal : à ce
+app/components/terminal/TerminalComponent.vue:295:  // stade, l'élément actif est encore le bouton qui a ouvert le terminal.
+app/components/terminal/TerminalComponent.vue:320:.terminal {
+app/components/terminal/TerminalComponent.vue:323:  // handlers (terminal-header, close-button, user-input, resize-handle) sont préservées.
+app/components/terminal/TerminalComponent.vue:324:  // `position: fixed` (et non absolute) : le terminal est <Teleport>é sur <body> (pour que
+app/components/terminal/TerminalComponent.vue:337:  resize: both;
+app/components/terminal/TerminalComponent.vue:340:  border: 1px solid var(--border-terminal);
+app/components/terminal/TerminalComponent.vue:342:  box-shadow: var(--glow-terminal);
+app/components/terminal/TerminalComponent.vue:357:    .terminal-dots {
+app/components/terminal/TerminalComponent.vue:369:      background-image: linear-gradient(to bottom right, var(--term-red), hsl(0deg 100% 27%));
+app/components/terminal/TerminalComponent.vue:385:    .terminal-dot {
+app/components/terminal/TerminalComponent.vue:392:    .terminal-dot--min {
+app/components/terminal/TerminalComponent.vue:396:    .terminal-dot--max {
+app/components/terminal/TerminalComponent.vue:423:    background: var(--bg-terminal);
+app/components/terminal/TerminalComponent.vue:477:    .terminal-response {
+app/components/terminal/TerminalComponent.vue:498:    .terminal-body {
+app/components/terminal/TerminalComponent.vue:499:      background: color-mix(in srgb, var(--bg-terminal) 86%, transparent);
+app/components/terminal/TerminalComponent.vue:509:    bottom: 0;
+app/components/terminal/TerminalComponent.vue:549:      // --color-dark est redéfini localement ci-dessus (le bloc `.terminal` qui exposait
+app/components/terminal/TerminalManagerComponent.vue:3:    <div v-for="(terminal, index) in terminals" :key="index">
+app/components/terminal/TerminalManagerComponent.vue:6:        :create-new-terminal="createNewTerminal"
+app/components/terminal/TerminalManagerComponent.vue:7:        :terminal-config="terminal.terminalConfig"
+app/components/terminal/TerminalManagerComponent.vue:14:import type { ITerminalConfig } from "~/components/terminal/interfaces";
+app/components/terminal/TerminalManagerComponent.vue:18:defineOptions({ name: "TerminalManagerComponent" });
+app/components/terminal/TerminalManagerComponent.vue:20:const terminals = ref<Array<{ id: string; terminalConfig: ITerminalConfig }>>([]);
+app/components/terminal/TerminalManagerComponent.vue:22:const createNewTerminal = (terminalConfig: ITerminalConfig = {}) => {
+app/components/terminal/TerminalManagerComponent.vue:23:  // Créez une nouvelle instance de terminal et ajoutez-la à la liste des terminaux.
+app/components/terminal/TerminalManagerComponent.vue:26:    terminalConfig,
+app/components/terminal/TerminalManagerComponent.vue:28:  terminals.value.push(newTerminal);
+app/components/terminal/TerminalManagerComponent.vue:33:// (`terminalManager.value?.createNewTerminal()`, HeaderComponent.vue). Le hero et /contact
+app/components/WindowWrapperComponent.vue:34:  name: "WindowWrapperComponent",
+app/components/WindowWrapperComponent.vue:329:      background-image: linear-gradient(to bottom right, var(--wwc-color-red), var(--wwc-color-red-dark));
+app/components/card/ZCardFooter.vue:11:  name: "ZCardFooter",
+app/components/card/ZCardBody.vue:10:  name: "ZCardBody",
+app/components/card/ZCardHeader.vue:26:  name: "ZCardHeader",
+app/components/home/HomeBootOverlay.vue:42:// Émet 'boot-complete' dès la fin de l'animation pour orchestrer le hero terminal.
+app/components/home/HomeBootOverlay.vue:204:  margin-bottom: var(--space-5);
+app/components/home/HomeHeroTerminal.vue:39:      <!-- Bouton d'ouverture du terminal interactif / invite finale -->
+app/components/home/HomeHeroTerminal.vue:44:        aria-label="Ouvrir le terminal interactif"
+app/components/home/HomeHeroTerminal.vue:87:// Ouvre l'easter-egg terminal via useTerminal().open sur l'invite finale help.
+app/components/home/HomeHeroTerminal.vue:90:  defineProps<{
+app/components/home/HomeHeroTerminal.vue:266:  box-shadow: var(--glow-terminal);
+app/components/home/HomeHeroTerminal.vue:324:  background: var(--bg-terminal);
+app/components/home/HomeHeroTerminal.vue:330:    background: color-mix(in srgb, var(--bg-terminal) 86%, transparent);
+app/components/home/HomeHeroTerminal.vue:400:  vertical-align: text-bottom;
+app/components/ui/ZButton.vue:46:  variant?: "primary" | "secondary" | "ghost" | "terminal" | "danger";
+app/components/ui/ZButton.vue:61:const props = withDefaults(defineProps<Props>(), {
+app/components/ui/ZButton.vue:307:.zbtn--terminal {
+app/components/ui/ZButton.vue:308:  background: var(--bg-terminal);
+app/components/ui/ZButton.vue:317:      var(--glow-terminal);
+app/components/ui/ZBadge.vue:9:// Primitive badge du DS — petit libellé de statut / catégorie (palette terminale/sémantique).
+app/components/ui/ZBadge.vue:19:withDefaults(defineProps<Props>(), {
+app/components/ui/ZAvatar.vue:31:const props = withDefaults(defineProps<Props>(), {
+app/components/ui/ZInput.vue:71:const props = withDefaults(defineProps<Props>(), {
+app/components/ui/ZExternalLink.vue:29:const props = withDefaults(defineProps<Props>(), {
+app/components/ui/ZIcon.vue:33:  terminal: '<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>',
+app/components/ui/ZIcon.vue:36:  bot: '<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 4v4"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M2 14h2M20 14h2"/>',
+app/components/ui/ZIcon.vue:41:  check: '<polyline points="20 6 9 17 4 12"/>',
+app/components/ui/ZIcon.vue:42:  zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+app/components/ui/ZIcon.vue:79:  /** Nom de l'icône dans le set (arrow, terminal, github, gem…). */
+app/components/ui/ZIcon.vue:80:  name: string;
+app/components/ui/ZIcon.vue:85:const props = withDefaults(defineProps<Props>(), {
+app/components/ui/ZCard.vue:46:const props = withDefaults(defineProps<Props>(), {
+app/components/ui/ZTag.vue:35:withDefaults(defineProps<Props>(), {
+app/components/ui/ZTag.vue:47:function hasListener(name: "onClick" | "onRemove") {
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '1,140p' && nl -ba app/pages/index.vue | sed -n '300,390p' && nl -ba app/pages/index.vue | sed -n '720,790p' && nl -ba app/pages/index.vue | sed -n '1188,1222p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     1	<template>
+     2	  <main class="home">
+     3	    <ClientOnly>
+     4	      <HomeBootOverlay @boot-complete="onBootComplete" />
+     5	    </ClientOnly>
+     6	    <HomeAtmosComponent />
+     7	    <ZCustomCursor />
+     8	
+     9	    <section class="hero">
+    10	      <div class="hero__in container">
+    11	        <div class="hero__grid">
+    12	          <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
+    13	          <div class="anim hero__text">
+    14	            <h2 class="eyebrow">
+    15	              <span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA &amp; AUTOMATISATION
+    16	            </h2>
+    17	            <h1 class="hero__title">Automatisez les workflows qui freinent votre équipe.</h1>
+    18	            <p class="hero__sub">
+    19	              Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants —
+    20	              de l’identification du problème jusqu’à la mise en production.
+    21	            </p>
+    22	            <p class="hero__credibility">
+    23	              Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA
+    24	            </p>
+    25	
+    26	            <div class="hero__badge-wrap">
+    27	              <span class="hero__pulse-dot" aria-hidden="true" />
+    28	              <span>Disponible pour nouvelles missions freelance</span>
+    29	              <template v-if="SITE.profile.maltUrl">
+    30	                <span aria-hidden="true"> · </span>
+    31	                <ZExternalLink :href="SITE.profile.maltUrl"> Profil Malt vérifié </ZExternalLink>
+    32	              </template>
+    33	            </div>
+    34	
+    35	            <div class="hero__cta">
+    36	              <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+    37	                Identifier un workflow à automatiser
+    38	                <template #iconRight><ZIcon name="arrow" /></template>
+    39	              </ZButton>
+    40	              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir mes systèmes IA </ZButton>
+    41	            </div>
+    42	          </div>
+    43	
+    44	          <!-- Colonne droite : terminal hero cinétique -->
+    45	          <div class="anim hero__term-col">
+    46	            <HomeHeroTerminal :auto-start="isBootFinished" />
+    47	          </div>
+    48	        </div>
+    49	
+    50	        <!-- Ruban défilant de la stack moderne remonté au sein du hero (fidèle à la maquette) -->
+    51	        <HomeStackMarquee class="hero__marquee" />
+    52	      </div>
+    53	    </section>
+    54	
+    55	    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1) -->
+    56	    <section class="section">
+    57	      <div class="container">
+    58	        <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
+    59	        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos systèmes</h2>
+    60	        <ul class="grid-3">
+    61	          <li v-for="service in services" :key="service.id">
+    62	            <ZCard class="offer" interactive tilt :accent="service.featured" :featured="service.featured">
+    63	              <div class="offer__top">
+    64	                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+    65	                <span class="offer__no">{{ service.no }}</span>
+    66	              </div>
+    67	              <h3 class="offer__title">{{ service.title }}</h3>
+    68	              <p class="offer__desc">{{ service.desc }}</p>
+    69	              <ul class="offer__points">
+    70	                <li v-for="point in service.points" :key="point">
+    71	                  <ZIcon name="check" class="offer__check" />
+    72	                  <span>{{ point }}</span>
+    73	                </li>
+    74	              </ul>
+    75	              <ul class="hero__tags offer__tags">
+    76	                <li v-for="tag in service.tags" :key="tag">
+    77	                  <ZTag>{{ tag }}</ZTag>
+    78	                </li>
+    79	              </ul>
+    80	              <div class="offer__price">
+    81	                <span>{{ service.price }}</span>
+    82	              </div>
+    83	              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+    84	                En savoir plus →
+    85	              </NuxtLink>
+    86	            </ZCard>
+    87	          </li>
+    88	        </ul>
+    89	      </div>
+    90	    </section>
+    91	
+    92	    <!-- Bloc différenciateur « Prototype → Production » (Story 12.3 / AC-2) -->
+    93	    <section class="section section--sunken diff-block">
+    94	      <div class="container">
+    95	        <p class="eyebrow"><span aria-hidden="true">// </span>au-delà de la démo</p>
+    96	        <h2 class="section__title diff-block__title">
+    97	          Un agent qui fonctionne trois fois n’est pas encore un système fiable.
+    98	        </h2>
+    99	        <p class="prose diff-block__lead">
+   100	          Mon background Full Stack et QA me permet de traiter ce qui arrive après le prototype : authentification,
+   101	          permissions, données, erreurs, retries, logs, tests, coûts, monitoring, sécurité et supervision humaine.
+   102	          L’objectif n’est pas de mettre de l’IA partout. L’objectif est de construire un workflow qui reste utile
+   103	          lorsqu’il rencontre la vraie vie.
+   104	        </p>
+   105	
+   106	        <ul class="pillars-grid">
+   107	          <li v-for="pillar in pillars" :key="pillar.id">
+   108	            <ZCard class="pillar" padded interactive tilt>
+   109	              <div class="pillar__icon">
+   110	                <ZIcon :name="pillar.icon" />
+   111	              </div>
+   112	              <h3 class="pillar__title">{{ pillar.title }}</h3>
+   113	              <p class="pillar__desc">{{ pillar.desc }}</p>
+   114	            </ZCard>
+   115	          </li>
+   116	        </ul>
+   117	      </div>
+   118	    </section>
+   119	
+   120	    <!-- Projets sélectionnés & Statistiques de réassurance (Story 11.4 / AC-1 & AC-2) -->
+   121	    <section class="section">
+   122	      <div class="container">
+   123	        <div class="block__head">
+   124	          <p class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</p>
+   125	          <h2 class="section__title">Des produits qui tournent en production</h2>
+   126	        </div>
+   127	
+   128	        <ul class="work">
+   129	          <li v-for="(project, index) in projects" :key="project.name">
+   130	            <component
+   131	              :is="project.url ? ZExternalLink : 'div'"
+   132	              :href="project.url"
+   133	              class="work__row"
+   134	              :class="{ 'work__row--link': Boolean(project.url) }"
+   135	              :data-hot="project.url ? '' : undefined"
+   136	              @mousemove="onProjectMouseMove"
+   137	              @mouseleave="onProjectMouseLeave"
+   138	            >
+   139	              <span class="work__no">{{ String(index + 1).padStart(2, "0") }}</span>
+   140	              <div class="work__main">
+   300	    return;
+   301	  }
+   302	  const target = event.currentTarget as HTMLElement | null;
+   303	  if (!target) {
+   304	    return;
+   305	  }
+   306	  const rect = target.getBoundingClientRect();
+   307	  if (rect.width <= 0 || rect.height <= 0) {
+   308	    return;
+   309	  }
+   310	  const px = (event.clientX - rect.left) / rect.width - 0.5;
+   311	  const py = (event.clientY - rect.top) / rect.height - 0.5;
+   312	  target.style.transform = `perspective(1000px) rotateX(${-py * 3.5}deg) rotateY(${px * 4.5}deg) translateY(-2px)`;
+   313	}
+   314	
+   315	function onProjectMouseLeave(event: MouseEvent) {
+   316	  const target = event.currentTarget as HTMLElement | null;
+   317	  if (target) {
+   318	    target.style.transform = "";
+   319	  }
+   320	}
+   321	
+   322	interface HomeServiceOffer {
+   323	  id: string;
+   324	  no: string;
+   325	  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+   326	  title: string;
+   327	  desc: string;
+   328	  points: string[];
+   329	  tags: string[];
+   330	  price: string;
+   331	  featured: boolean;
+   332	}
+   333	
+   334	interface ProductionPillar {
+   335	  id: string;
+   336	  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+   337	  title: string;
+   338	  desc: string;
+   339	}
+   340	
+   341	// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1).
+   342	const services: HomeServiceOffer[] = [
+   343	  {
+   344	    id: "automation",
+   345	    no: "01 / 03",
+   346	    icon: "layers",
+   347	    title: "Automatisation de processus métier",
+   348	    desc: "Cartographie d'un workflow existant, identification des tâches répétitives et construction du système qui automatise ce qui mérite réellement de l'être.",
+   349	    points: [
+   350	      "Cartographie de flux & connecteurs d'APIs",
+   351	      "Ingestion, enrichissement et traitement de données",
+   352	      "Synchronisation d'outils métier & reporting",
+   353	    ],
+   354	    tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
+   355	    price: "À partir de 3 500 € HT",
+   356	    featured: false,
+   357	  },
+   358	  {
+   359	    id: "agents",
+   360	    no: "02 / 03",
+   361	    icon: "bot",
+   362	    title: "Agents IA intégrés à vos outils",
+   363	    desc: "Intégration d'agents outillés dans vos flux existants pour lire, interpréter, synthétiser et décider sans casser vos habitudes de travail.",
+   364	    points: [
+   365	      "Agents outillés (Tool Calling) & serveurs MCP",
+   366	      "Extraction structurée & analyse documentaire",
+   367	      "Supervision humaine obligatoire (Human-in-the-loop)",
+   368	    ],
+   369	    tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
+   370	    price: "À partir de 3 500 € HT",
+   371	    featured: true,
+   372	  },
+   373	  {
+   374	    id: "apps",
+   375	    no: "03 / 03",
+   376	    icon: "code",
+   377	    title: "Applications IA sur mesure",
+   378	    desc: "Développement complet de solutions logicielles dédiées quand le workflow nécessite une interface, un backend robuste et une base de données sur mesure.",
+   379	    points: [
+   380	      "Applications web complètes Nuxt & NestJS",
+   381	      "Applications desktop sécurisées Tauri (IA locale)",
+   382	      "Architecture PostgreSQL, tests QA & déploiement",
+   383	    ],
+   384	    tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
+   385	    price: "Sur mesure / Sprint",
+   386	    featured: false,
+   387	  },
+   388	];
+   389	
+   390	// 4 Piliers d'industrialisation « Prototype → Production » (Story 12.3 / AC-2).
+   720	  color: var(--accent);
+   721	}
+   722	
+   723	.offer__more {
+   724	  margin-top: var(--space-3);
+   725	  font-family: var(--font-mono);
+   726	  font-size: var(--fs-sm);
+   727	  color: var(--accent);
+   728	  text-decoration: none;
+   729	
+   730	  &:hover {
+   731	    text-decoration: underline;
+   732	  }
+   733	
+   734	  &:focus-visible {
+   735	    // Outline transparent : rendu en couleur système sous forced-colors.
+   736	    outline: 2px solid transparent;
+   737	    outline-offset: 2px;
+   738	    box-shadow: var(--ring-accent);
+   739	    border-radius: var(--radius-xs);
+   740	  }
+   741	}
+   742	
+   743	// ---- Bloc Différenciateur « Prototype → Production » (Story 12.3 / AC-2) ----
+   744	.diff-block__title {
+   745	  max-width: 28ch;
+   746	  margin-bottom: var(--space-4);
+   747	}
+   748	
+   749	.diff-block__lead {
+   750	  max-width: 72ch;
+   751	  margin: 0 0 var(--space-8);
+   752	  font-size: var(--fs-md);
+   753	  line-height: var(--lh-relaxed);
+   754	  color: var(--text-body);
+   755	}
+   756	
+   757	.pillars-grid {
+   758	  display: grid;
+   759	  grid-template-columns: repeat(4, 1fr);
+   760	  gap: var(--space-5);
+   761	  margin: 0;
+   762	  padding: 0;
+   763	  list-style: none;
+   764	
+   765	  > li {
+   766	    display: flex;
+   767	  }
+   768	}
+   769	
+   770	.pillar {
+   771	  display: flex;
+   772	  flex-direction: column;
+   773	  width: 100%;
+   774	}
+   775	
+   776	.pillar__icon {
+   777	  display: flex;
+   778	  align-items: center;
+   779	  justify-content: center;
+   780	  width: var(--space-10);
+   781	  height: var(--space-10);
+   782	  margin-bottom: var(--space-4);
+   783	  font-size: var(--fs-xl);
+   784	  color: var(--accent);
+   785	  background: var(--accent-soft);
+   786	  border-radius: var(--radius-md);
+   787	}
+   788	
+   789	.pillar__title {
+   790	  margin: 0 0 var(--space-2);
+  1188	
+  1189	  .hero__title {
+  1190	    font-size: var(--fs-4xl);
+  1191	  }
+  1192	
+  1193	  .grid-3,
+  1194	  .journal {
+  1195	    grid-template-columns: 1fr;
+  1196	  }
+  1197	
+  1198	  .pillars-grid {
+  1199	    grid-template-columns: repeat(2, 1fr);
+  1200	  }
+  1201	
+  1202	  .block__head--row {
+  1203	    flex-direction: column;
+  1204	    align-items: flex-start;
+  1205	  }
+  1206	}
+  1207	
+  1208	@media (width <= 680px) {
+  1209	  .work__row {
+  1210	    grid-template-columns: 1fr;
+  1211	    gap: var(--space-3);
+  1212	  }
+  1213	
+  1214	  .work__no,
+  1215	  .work__go {
+  1216	    display: none;
+  1217	  }
+  1218	
+  1219	  .pillars-grid,
+  1220	  .stats {
+  1221	    grid-template-columns: 1fr;
+  1222	  }
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '390,430p' && nl -ba app/components/ui/ZCard.vue | sed -n '1,220p' && nl -ba app/components/ui/ZIcon.vue | sed -n '1,120p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   390	// 4 Piliers d'industrialisation « Prototype → Production » (Story 12.3 / AC-2).
+   391	const pillars: ProductionPillar[] = [
+   392	  {
+   393	    id: "data",
+   394	    icon: "layers",
+   395	    title: "Données",
+   396	    desc: "Provenance, structuration, stockage, rétention, secrets.",
+   397	  },
+   398	  {
+   399	    id: "reliability",
+   400	    icon: "zap",
+   401	    title: "Fiabilité",
+   402	    desc: "Cas limites, retries, fallbacks, tests, observabilité.",
+   403	  },
+   404	  {
+   405	    id: "ai",
+   406	    icon: "bot",
+   407	    title: "IA",
+   408	    desc: "Sorties structurées, versionnage, évaluations, contrôle humain.",
+   409	  },
+   410	  {
+   411	    id: "ops",
+   412	    icon: "terminal",
+   413	    title: "Exploitation",
+   414	    desc: "Monitoring, coûts, support, maintenance, évolution.",
+   415	  },
+   416	];
+   417	
+   418	// Projets sélectionnés — source unique `app/data/site.ts` (Story 11.4 / AC-1).
+   419	const projects = SITE.projects;
+   420	
+   421	// Chiffres clés de réassurance (Story 11.4 / AC-2).
+   422	const stats = [
+   423	  { id: "stat-1", value: "11", label: "années d'expérience web" },
+   424	  { id: "stat-2", value: "100%", label: "TypeScript & SaaS de bout en bout" },
+   425	  { id: "stat-3", value: "QA", label: "culture d'automatisation & zéro régression" },
+   426	];
+   427	
+   428	// Récupération des 3 derniers articles du journal technique (Story 11.4 / AC-3).
+   429	const { data: articles } = await useAsyncData("home-articles", () =>
+   430	  queryCollection("blog").order("date", "DESC").limit(3).all(),
+     1	<template>
+     2	  <component
+     3	    :is="as"
+     4	    ref="cardRef"
+     5	    v-bind="rootAttrs"
+     6	    class="zcard"
+     7	    :class="{
+     8	      'zcard--pad': padded,
+     9	      'zcard--interactive': interactive,
+    10	      'zcard--accent': accent,
+    11	      'zcard--featured': featured,
+    12	      'zcard--tilt': tilt,
+    13	    }"
+    14	    @mousemove="onMouseMove"
+    15	    @mouseleave="onMouseLeave"
+    16	  >
+    17	    <slot />
+    18	  </component>
+    19	</template>
+    20	
+    21	<script setup lang="ts">
+    22	// Primitive carte du DS — surface discrète, 3D tilt interactif optionnel.
+    23	// Porté de docs/design_system/components/core/Card.jsx et Home - Awwwards.html.
+    24	import type { Component, ComponentPublicInstance } from "vue";
+    25	import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
+    26	
+    27	defineOptions({
+    28	  inheritAttrs: false,
+    29	});
+    30	
+    31	interface Props {
+    32	  /** Rendre la carte interactive (hover state, clickable). @default false */
+    33	  interactive?: boolean;
+    34	  /** Filet supérieur dégradé accent (story 2.4). @default false */
+    35	  accent?: boolean;
+    36	  /** Variante mise en valeur (bordure accent, glow). @default false */
+    37	  featured?: boolean;
+    38	  /** Padding interne (var(--space-6)). Désactivable pour cartes média. @default true */
+    39	  padded?: boolean;
+    40	  /** Élément rendu (polymorphe). @default "div" */
+    41	  as?: string | Component;
+    42	  /** Activer l'effet 3D tilt sur mousemove. @default false */
+    43	  tilt?: boolean;
+    44	}
+    45	
+    46	const props = withDefaults(defineProps<Props>(), {
+    47	  interactive: false,
+    48	  accent: false,
+    49	  featured: false,
+    50	  padded: true,
+    51	  as: "div",
+    52	  tilt: false,
+    53	});
+    54	
+    55	const attrs = useAttrs();
+    56	const cardRef = ref<Element | ComponentPublicInstance | null>(null);
+    57	const isReducedMotion = ref(false);
+    58	let motionMq: MediaQueryList | null = null;
+    59	
+    60	function onMotionChange(e: MediaQueryListEvent) {
+    61	  isReducedMotion.value = e.matches;
+    62	  if (e.matches) {
+    63	    onMouseLeave();
+    64	  }
+    65	}
+    66	
+    67	onMounted(() => {
+    68	  motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    69	  isReducedMotion.value = motionMq.matches;
+    70	  motionMq.addEventListener("change", onMotionChange);
+    71	});
+    72	
+    73	onBeforeUnmount(() => {
+    74	  motionMq?.removeEventListener("change", onMotionChange);
+    75	});
+    76	
+    77	function onMouseMove(event: MouseEvent) {
+    78	  if (!props.tilt || isReducedMotion.value || !cardRef.value) {
+    79	    return;
+    80	  }
+    81	  if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
+    82	    return;
+    83	  }
+    84	  const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
+    85	  if (!el || !(el instanceof HTMLElement)) {
+    86	    return;
+    87	  }
+    88	  const rect = el.getBoundingClientRect();
+    89	  if (rect.width <= 0 || rect.height <= 0) {
+    90	    return;
+    91	  }
+    92	  const px = (event.clientX - rect.left) / rect.width - 0.5;
+    93	  const py = (event.clientY - rect.top) / rect.height - 0.5;
+    94	  el.style.transform = `perspective(800px) rotateX(${-py * 6}deg) rotateY(${px * 8}deg) translateY(-4px)`;
+    95	}
+    96	
+    97	function onMouseLeave() {
+    98	  if (cardRef.value) {
+    99	    const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
+   100	    if (el instanceof HTMLElement) {
+   101	      el.style.transform = "";
+   102	    }
+   103	  }
+   104	}
+   105	
+   106	watch(
+   107	  () => props.tilt,
+   108	  (newVal) => {
+   109	    if (!newVal) {
+   110	      onMouseLeave();
+   111	    }
+   112	  },
+   113	);
+   114	
+   115	// `as` accepte une balise native ("div", "article") ou une référence de composant
+   116	// (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.
+   117	const isNativeButton = computed(() => props.as === "button");
+   118	const rootAttrs = computed(() => {
+   119	  if (!isNativeButton.value) {
+   120	    return attrs;
+   121	  }
+   122	
+   123	  return {
+   124	    ...attrs,
+   125	    type: typeof attrs.type === "string" ? attrs.type : "button",
+   126	  };
+   127	});
+   128	</script>
+   129	
+   130	<style lang="scss" scoped>
+   131	/* stylelint-disable selector-class-pattern -- convention DS BEM (block--modifier) portée depuis Card.jsx */
+   132	.zcard {
+   133	  position: relative;
+   134	  overflow: hidden;
+   135	  background: var(--bg-card);
+   136	  color: var(--text-body);
+   137	  border: 1px solid var(--border-subtle);
+   138	  border-radius: var(--radius-md);
+   139	  box-shadow: var(--shadow-2), var(--shadow-hairline);
+   140	  transition:
+   141	    border-color var(--dur-base) var(--ease-standard),
+   142	    transform var(--dur-base) var(--ease-out),
+   143	    box-shadow var(--dur-base) var(--ease-standard);
+   144	}
+   145	
+   146	.zcard--tilt {
+   147	  transform-style: preserve-3d;
+   148	  will-change: transform;
+   149	}
+   150	
+   151	.zcard--pad {
+   152	  padding: var(--space-6);
+   153	}
+   154	
+   155	.zcard--interactive {
+   156	  cursor: pointer;
+   157	
+   158	  &:hover {
+   159	    border-color: var(--border-strong);
+   160	    transform: translateY(-2px);
+   161	    box-shadow: var(--shadow-3), var(--shadow-hairline);
+   162	  }
+   163	
+   164	  &:focus-visible {
+   165	    outline: 2px solid transparent;
+   166	    outline-offset: 2px;
+   167	    box-shadow: var(--ring-accent);
+   168	  }
+   169	}
+   170	
+   171	.zcard--accent::before {
+   172	  content: "";
+   173	  position: absolute;
+   174	  inset: 0 0 auto;
+   175	  height: 2px;
+   176	  background: linear-gradient(90deg, var(--accent), var(--aubergine-light));
+   177	}
+   178	
+   179	.zcard--featured {
+   180	  border-color: var(--accent-ring);
+   181	  box-shadow: var(--glow-accent), var(--shadow-hairline);
+   182	}
+   183	
+   184	@media (prefers-reduced-motion: reduce) {
+   185	  .zcard {
+   186	    transition: none;
+   187	    transform: none !important;
+   188	  }
+   189	
+   190	  .zcard--interactive:hover {
+   191	    transform: none;
+   192	  }
+   193	}
+   194	</style>
+     1	<template>
+     2	  <!-- eslint-disable vue/no-v-html -->
+     3	  <svg
+     4	    class="zicon"
+     5	    :viewBox="def.box"
+     6	    :fill="def.fill ? 'currentColor' : 'none'"
+     7	    :stroke="def.fill ? undefined : 'currentColor'"
+     8	    :stroke-width="def.fill ? undefined : 2"
+     9	    stroke-linecap="round"
+    10	    stroke-linejoin="round"
+    11	    :role="label ? 'img' : undefined"
+    12	    :aria-label="label || undefined"
+    13	    :aria-hidden="label ? undefined : 'true'"
+    14	    v-html="def.body"
+    15	  />
+    16	  <!-- eslint-enable vue/no-v-html -->
+    17	</template>
+    18	
+    19	<script setup lang="ts">
+    20	// Système d'icônes du DS — SVG inline, `currentColor` (héritent de la couleur du texte),
+    21	// taille en `em`. Choix prerender-safe : set inline (pas de script Lucide CDN qui muterait
+    22	// le DOM client et laisserait un trou au `nuxi generate`). Aucune police d'icône (AC #2).
+    23	// Icônes au trait = style Lucide ; glyphes de marque (github/twitter/linkedin/wp) + logo
+    24	// diamant (gem) = fill. Porté de docs/design_system/ui_kits/jouan-site/icons.jsx.
+    25	// Le `v-html` du template injecte uniquement ces chaînes internes statiques.
+    26	import { computed } from "vue";
+    27	
+    28	type IconDef = { box: string; fill: boolean; body: string };
+    29	
+    30	// Icônes au trait (viewBox 24, stroke currentColor).
+    31	const STROKE: Record<string, string> = {
+    32	  arrow: '<path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>',
+    33	  terminal: '<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>',
+    34	  code: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+    35	  layers: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+    36	  bot: '<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 4v4"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M2 14h2M20 14h2"/>',
+    37	  spark:
+    38	    '<path d="M12 3l1.8 5.6L19.5 10l-5.7 1.4L12 17l-1.8-5.6L4.5 10l5.7-1.4z"/><path d="M19 15l.7 2.1L22 18l-2.3.9L19 21l-.7-2.1L16 18l2.3-.9z"/>',
+    39	  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/>',
+    40	  pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+    41	  check: '<polyline points="20 6 9 17 4 12"/>',
+    42	  zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+    43	  phone:
+    44	    '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+    45	  qr: '<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/>',
+    46	  download:
+    47	    '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+    48	};
+    49	
+    50	// Glyphes de marque (fill currentColor). viewBox 16 pour les réseaux, 24 pour wp/gem.
+    51	const GITHUB =
+    52	  '<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>';
+    53	const TWITTER =
+    54	  '<path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/>';
+    55	const LINKEDIN =
+    56	  '<path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>';
+    57	const WP =
+    58	  '<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 1.5a8.5 8.5 0 0 1 4.9 1.55h-.34c-.62 0-1.06.54-1.06 1.12 0 .52.3.96.62 1.48.24.42.52.96.52 1.74 0 .54-.2 1.18-.48 2.06l-.64 2.12-2.3-6.84c.38-.02.72-.06.72-.06.34-.04.3-.54-.04-.52 0 0-1.02.08-1.68.08-.62 0-1.66-.08-1.66-.08-.34-.02-.38.5-.04.52 0 0 .32.04.66.06l.96 2.62-1.34 4.02L7.2 7.34c.38-.02.72-.06.72-.06.34-.04.3-.54-.04-.52 0 0-1.02.08-1.68.08-.12 0-.26 0-.4-.01A8.5 8.5 0 0 1 12 3.5zM3.6 8.7l3.7 10.16A8.5 8.5 0 0 1 3.6 8.7zm8.76 3.18 2.34 6.4c.02.04.04.08.06.1a8.5 8.5 0 0 1-5.04.16l2.64-6.66zm5.96-3.4a8.5 8.5 0 0 1-2.16 9.42l2.58-7.46c.24-.6.4-1.18.48-1.7l.06.04c.24.46.42 1.02.42 1.64 0 .8-.16 1.7-.62 2.86z"/>';
+    59	
+    60	// Logo diamant (gem) : carré pivoté en currentColor + facette haute éclairée
+    61	// (overlay blanc très léger, esprit "lit from above" du logo de marque).
+    62	const GEM =
+    63	  '<path d="M12 1.5 22.5 12 12 22.5 1.5 12z" fill="currentColor"/>' +
+    64	  '<path d="M12 1.5 22.5 12 12 12z" fill="#fff" fill-opacity="0.12"/>';
+    65	
+    66	const ICONS: Record<string, IconDef> = {
+    67	  ...Object.fromEntries(Object.entries(STROKE).map(([k, body]) => [k, { box: "0 0 24 24", fill: false, body }])),
+    68	  github: { box: "0 0 16 16", fill: true, body: GITHUB },
+    69	  x: { box: "0 0 16 16", fill: true, body: TWITTER },
+    70	  twitter: { box: "0 0 16 16", fill: true, body: TWITTER },
+    71	  linkedin: { box: "0 0 16 16", fill: true, body: LINKEDIN },
+    72	  wp: { box: "0 0 24 24", fill: true, body: WP },
+    73	  gem: { box: "0 0 24 24", fill: true, body: GEM },
+    74	};
+    75	
+    76	const EMPTY: IconDef = { box: "0 0 24 24", fill: false, body: "" };
+    77	
+    78	interface Props {
+    79	  /** Nom de l'icône dans le set (arrow, terminal, github, gem…). */
+    80	  name: string;
+    81	  /** Libellé accessible : si fourni, l'icône devient `role="img"` ; sinon décorative (`aria-hidden`). */
+    82	  label?: string;
+    83	}
+    84	
+    85	const props = withDefaults(defineProps<Props>(), {
+    86	  label: undefined,
+    87	});
+    88	
+    89	const def = computed<IconDef>(() => ICONS[props.name] ?? EMPTY);
+    90	</script>
+    91	
+    92	<style scoped>
+    93	.zicon {
+    94	  display: inline-block;
+    95	  flex: none;
+    96	  width: 1em;
+    97	  height: 1em;
+    98	  vertical-align: middle;
+    99	}
+   100	</style>
+
+codex
+[
+  {
+    "location": "app/pages/index.vue:14-17",
+    "trigger_condition": "Heading navigation reaches h2 before page h1",
+    "guard_snippet": "<p class=\"eyebrow\"><span aria-hidden=\"true\">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA &amp; AUTOMATISATION</p>",
+    "potential_consequence": "Assistive heading outline starts with a skipped level"
+  },
+  {
+    "location": "app/pages/index.vue:108",
+    "trigger_condition": "Pillar card is interactive but has no action",
+    "guard_snippet": "<ZCard class=\"pillar\" padded>",
+    "potential_consequence": "Users perceive clickable cards that do nothing"
+  }
+]
+tokens used
+26 691
+[
+  {
+    "location": "app/pages/index.vue:14-17",
+    "trigger_condition": "Heading navigation reaches h2 before page h1",
+    "guard_snippet": "<p class=\"eyebrow\"><span aria-hidden=\"true\">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA &amp; AUTOMATISATION</p>",
+    "potential_consequence": "Assistive heading outline starts with a skipped level"
+  },
+  {
+    "location": "app/pages/index.vue:108",
+    "trigger_condition": "Pillar card is interactive but has no action",
+    "guard_snippet": "<ZCard class=\"pillar\" padded>",
+    "potential_consequence": "Users perceive clickable cards that do nothing"
+  }
+]

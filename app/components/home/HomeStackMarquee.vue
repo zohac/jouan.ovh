@@ -29,15 +29,17 @@ import { SITE } from "~/data/site";
 
 const SKILL_LABEL_MAP: Record<string, string> = {
   typescript: "TypeScript",
+  "node.js": "Node.js",
+  "nest.js": "NestJS",
   nuxt: "Nuxt 4",
   vue: "Vue.js",
-  "nest.js": "NestJS",
-  "node.js": "Node.js",
   postgresql: "PostgreSQL",
-  typeorm: "TypeORM",
-  stripe: "Stripe Connect",
-  testcafe: "TestCafé",
+  mcp: "MCP",
   docker: "Docker",
+  "whisper.cpp": "whisper.cpp",
+  "sherpa-onnx": "sherpa-onnx",
+  "llama.cpp": "llama.cpp",
+  bullmq: "BullMQ",
   "rest-api": "REST API",
   vitest: "Vitest",
 };

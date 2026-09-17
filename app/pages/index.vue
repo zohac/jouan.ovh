@@ -11,16 +11,21 @@
         <div class="hero__grid">
           <!-- Colonne gauche : accroche commerciale, badge dispo, CTAs -->
           <div class="anim hero__text">
-            <p class="eyebrow"><span aria-hidden="true">// </span>DÉVELOPPEUR FREELANCE · NUXT &amp; NESTJS</p>
-            <h1 class="hero__title">Développeur Full Stack <em>TypeScript</em></h1>
+            <h2 class="eyebrow">
+              <span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA &amp; AUTOMATISATION
+            </h2>
+            <h1 class="hero__title">Automatisez les workflows qui freinent votre équipe.</h1>
             <p class="hero__sub">
-              Je conçois et développe des applications web et SaaS modernes avec Nuxt, NestJS et PostgreSQL. De
-              l'architecture au déploiement, j'interviens sur des produits neufs comme sur des applications existantes.
+              Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants —
+              de l’identification du problème jusqu’à la mise en production.
+            </p>
+            <p class="hero__credibility">
+              Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA
             </p>
 
             <div class="hero__badge-wrap">
               <span class="hero__pulse-dot" aria-hidden="true" />
-              <span>Disponible pour missions freelance</span>
+              <span>Disponible pour nouvelles missions freelance</span>
               <template v-if="SITE.profile.maltUrl">
                 <span aria-hidden="true"> · </span>
                 <ZExternalLink :href="SITE.profile.maltUrl"> Profil Malt vérifié </ZExternalLink>
@@ -29,10 +34,10 @@
 
             <div class="hero__cta">
               <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
-                Discuter de votre projet
+                Identifier un workflow à automatiser
                 <template #iconRight><ZIcon name="arrow" /></template>
               </ZButton>
-              <ZButton :as="NuxtLink" to="/about" variant="secondary" size="lg"> Voir le parcours &amp; CV </ZButton>
+              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir mes systèmes IA </ZButton>
             </div>
           </div>
 
@@ -47,11 +52,11 @@
       </div>
     </section>
 
-    <!-- Vitrine des 3 services cibles (Story 11.3 / AC-2) -->
+    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1) -->
     <section class="section">
       <div class="container">
         <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
-        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos applications</h2>
+        <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos systèmes</h2>
         <ul class="grid-3">
           <li v-for="service in services" :key="service.id">
             <ZCard class="offer" interactive tilt :accent="service.featured" :featured="service.featured">
@@ -84,7 +89,35 @@
       </div>
     </section>
 
-    <!-- Projets sélectionnés & Statistiques de réassurance (Story 11.4 / AC-1 & AC-2) -->
+    <!-- Bloc différenciateur « Prototype → Production » (Story 12.3 / AC-2) -->
+    <section class="section section--sunken diff-block">
+      <div class="container">
+        <p class="eyebrow"><span aria-hidden="true">// </span>au-delà de la démo</p>
+        <h2 class="section__title diff-block__title">
+          Un agent qui fonctionne trois fois n’est pas encore un système fiable.
+        </h2>
+        <p class="prose diff-block__lead">
+          Mon background Full Stack et QA me permet de traiter ce qui arrive après le prototype : authentification,
+          permissions, données, erreurs, retries, logs, tests, coûts, monitoring, sécurité et supervision humaine.
+          L’objectif n’est pas de mettre de l’IA partout. L’objectif est de construire un workflow qui reste utile
+          lorsqu’il rencontre la vraie vie.
+        </p>
+
+        <ul class="pillars-grid">
+          <li v-for="pillar in pillars" :key="pillar.id">
+            <ZCard class="pillar" padded>
+              <div class="pillar__icon">
+                <ZIcon :name="pillar.icon" />
+              </div>
+              <h3 class="pillar__title">{{ pillar.title }}</h3>
+              <p class="pillar__desc">{{ pillar.desc }}</p>
+            </ZCard>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Projets sélectionnés & Statistiques de réassurance (Story 12.4 / AC-1, AC-2, AC-3) -->
     <section class="section">
       <div class="container">
         <div class="block__head">
@@ -92,35 +125,67 @@
           <h2 class="section__title">Des produits qui tournent en production</h2>
         </div>
 
-        <ul class="work">
-          <li v-for="(project, index) in projects" :key="project.name">
-            <component
-              :is="project.url ? ZExternalLink : 'div'"
-              :href="project.url"
-              class="work__row"
-              :class="{ 'work__row--link': Boolean(project.url) }"
-              :data-hot="project.url ? '' : undefined"
-              @mousemove="onProjectMouseMove"
-              @mouseleave="onProjectMouseLeave"
-            >
-              <span class="work__no">{{ String(index + 1).padStart(2, "0") }}</span>
-              <div class="work__main">
-                <div class="work__topline">
-                  <h3 class="work__name">{{ project.name }}</h3>
-                  <span v-if="project.status" class="work__status">{{ project.status }}</span>
+        <ul class="projects-grid">
+          <li v-for="(project, index) in projects" :key="project.name" class="projects-grid__item">
+            <ZCard class="project-card" tilt :padded="false">
+              <div v-if="project.image" class="project-card__media">
+                <NuxtImg
+                  :src="project.image"
+                  :alt="project.imageAlt || `Capture d'écran du projet ${project.name}`"
+                  width="720"
+                  height="405"
+                  sizes="(max-width: 900px) 100vw, (max-width: 1200px) 50vw, 380px"
+                  format="webp"
+                  loading="lazy"
+                  class="project-card__img"
+                />
+              </div>
+              <div v-else class="project-card__media project-card__media--schematic">
+                <div
+                  class="project-card__blueprint"
+                  role="img"
+                  aria-label="Schéma d'architecture du pipeline documentaire Devis-Assist : Mistral OCR 3 vers BullMQ et Redis, puis matching flou PostgreSQL pg_trgm"
+                >
+                  <div class="project-card__blueprint-grid">
+                    <div class="project-card__node">
+                      <ZIcon name="layers" class="project-card__node-icon" />
+                      <span class="project-card__node-label">Mistral OCR 3</span>
+                    </div>
+                    <span class="project-card__node-flow">→</span>
+                    <div class="project-card__node">
+                      <ZIcon name="zap" class="project-card__node-icon" />
+                      <span class="project-card__node-label">BullMQ / Redis</span>
+                    </div>
+                    <span class="project-card__node-flow">→</span>
+                    <div class="project-card__node">
+                      <ZIcon name="code" class="project-card__node-icon" />
+                      <span class="project-card__node-label">pg_trgm Match</span>
+                    </div>
+                  </div>
+                  <div class="project-card__blueprint-sub">Pipeline documentaire &amp; extraction tabulaire</div>
                 </div>
-                <p class="work__role">{{ project.role }}</p>
-                <p class="prose work__desc">{{ project.desc }}</p>
-                <ul class="hero__tags work__tags">
-                  <li v-for="(tag, tagIndex) in project.tags" :key="`${tag}-${tagIndex}`">
+              </div>
+
+              <div class="project-card__body">
+                <div class="project-card__header">
+                  <span class="project-card__no"
+                    >{{ String(index + 1).padStart(2, "0") }} / {{ String(projects.length).padStart(2, "0") }}</span
+                  >
+                  <ZBadge v-if="project.badge" tone="neutral">{{ project.badge }}</ZBadge>
+                </div>
+                <div class="project-card__title-wrap">
+                  <h3 class="project-card__title">{{ project.name }}</h3>
+                  <span v-if="project.status" class="project-card__status">{{ project.status }}</span>
+                </div>
+                <p v-if="project.hook" class="project-card__hook">{{ project.hook }}</p>
+                <p class="project-card__desc prose">{{ project.desc }}</p>
+                <ul class="hero__tags project-card__tags">
+                  <li v-for="tag in project.tags" :key="tag">
                     <ZTag>{{ tag }}</ZTag>
                   </li>
                 </ul>
               </div>
-              <span v-if="project.url" class="work__go" aria-hidden="true">
-                <ZIcon name="arrow" />
-              </span>
-            </component>
+            </ZCard>
           </li>
         </ul>
 
@@ -194,35 +259,26 @@
       </div>
     </section>
 
-    <!-- Bloc CTA final de conversion (Story 11.4 / AC-4) -->
+    <!-- Bloc CTA final de conversion (Story 12.6 / AC-2) -->
     <section class="section">
       <div class="container">
         <div class="cta">
-          <p class="eyebrow cta__eyebrow"><span aria-hidden="true">$ </span>./contact --start</p>
+          <p class="eyebrow cta__eyebrow"><span aria-hidden="true">$ </span>./workflow --inspect</p>
           <h2 class="cta__title">
-            Un projet en tête ?<br />
-            Mettons-le <span class="cta__highlight">en production</span>.
+            Quel process vous fait perdre du temps <span class="cta__highlight">chaque semaine</span> ?
           </h2>
           <p class="cta__subtitle">
-            Que ce soit pour concevoir un nouveau SaaS, accélérer votre roadmap ou fiabiliser votre stack TypeScript,
-            parlons-en.
+            Décrivez-moi simplement comment il fonctionne aujourd’hui. Je vous dirai ce qui mérite d’être automatisé, ce
+            qui doit rester humain et si l’IA apporte réellement quelque chose.
           </p>
           <div class="cta__actions">
             <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg" data-hot>
-              Discuter de votre projet
+              Identifier un workflow à automatiser
               <template #iconRight><ZIcon name="arrow" /></template>
             </ZButton>
-            <ZButton
-              v-if="SITE.profile.maltUrl"
-              :as="ZExternalLink"
-              :href="SITE.profile.maltUrl"
-              variant="secondary"
-              size="lg"
-              data-hot
-            >
-              Me contacter sur Malt
+            <ZButton as="a" :href="`mailto:${SITE.profile.email}`" variant="secondary" size="lg" data-hot>
+              M’écrire directement
             </ZButton>
-            <ZButton :as="NuxtLink" to="/about" variant="ghost" size="lg" data-hot> Voir le parcours &amp; CV </ZButton>
           </div>
         </div>
       </div>
@@ -259,37 +315,10 @@ function onBootComplete() {
   isBootFinished.value = true;
 }
 
-function onProjectMouseMove(event: MouseEvent) {
-  if (isReducedMotion.value) {
-    return;
-  }
-  if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
-    return;
-  }
-  const target = event.currentTarget as HTMLElement | null;
-  if (!target) {
-    return;
-  }
-  const rect = target.getBoundingClientRect();
-  if (rect.width <= 0 || rect.height <= 0) {
-    return;
-  }
-  const px = (event.clientX - rect.left) / rect.width - 0.5;
-  const py = (event.clientY - rect.top) / rect.height - 0.5;
-  target.style.transform = `perspective(1000px) rotateX(${-py * 3.5}deg) rotateY(${px * 4.5}deg) translateY(-2px)`;
-}
-
-function onProjectMouseLeave(event: MouseEvent) {
-  const target = event.currentTarget as HTMLElement | null;
-  if (target) {
-    target.style.transform = "";
-  }
-}
-
 interface HomeServiceOffer {
   id: string;
   no: string;
-  icon: "code" | "layers" | "spark";
+  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
   title: string;
   desc: string;
   points: string[];
@@ -298,52 +327,87 @@ interface HomeServiceOffer {
   featured: boolean;
 }
 
-// Vitrine des 3 offres ciblées Full Stack TS (Story 11.3 / AC-2).
+interface ProductionPillar {
+  id: string;
+  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+  title: string;
+  desc: string;
+}
+
+// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1).
 const services: HomeServiceOffer[] = [
   {
-    id: "creation",
+    id: "automation",
     no: "01 / 03",
-    icon: "code",
-    title: "Création d'applications web & SaaS",
-    desc: "De l'idée à la production : architecture, développement front & back, base de données, authentification et paiements Stripe.",
+    icon: "layers",
+    title: "Automatisation de processus métier",
+    desc: "Cartographie d'un workflow existant, identification des tâches répétitives et construction du système qui automatise ce qui mérite réellement de l'être.",
     points: [
-      "Architecture logicielle & APIs REST",
-      "Applications Vue 3 / Nuxt 4 & NestJS",
-      "Intégration Stripe & PostgreSQL",
+      "Cartographie de flux & connecteurs d'APIs",
+      "Ingestion, enrichissement et traitement de données",
+      "Synchronisation d'outils métier & reporting",
     ],
-    tags: ["Nuxt", "NestJS", "PostgreSQL", "Stripe Connect"],
-    price: "Sur devis / au sprint",
+    tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
+    price: "À partir de 3 500 € HT",
     featured: false,
   },
   {
-    id: "fullstack",
+    id: "agents",
     no: "02 / 03",
-    icon: "layers",
-    title: "Développement Full Stack TypeScript",
-    desc: "Renfort d'équipe produit ou développement de modules complexes avec une stack moderne unifiée de bout en bout.",
+    icon: "bot",
+    title: "Agents IA intégrés à vos outils",
+    desc: "Intégration d'agents outillés dans vos flux existants pour lire, interpréter, synthétiser et décider sans casser vos habitudes de travail.",
     points: [
-      "Composants Vue 3 / Nuxt avec TypeScript strict",
-      "Microservices & backend modulaire NestJS",
-      "Fiabilisation et optimisation des performances",
+      "Agents outillés (Tool Calling) & serveurs MCP",
+      "Extraction structurée & analyse documentaire",
+      "Supervision humaine obligatoire (Human-in-the-loop)",
     ],
-    tags: ["TypeScript", "Vue 3", "Nuxt", "NestJS", "Node.js"],
-    price: "Sur devis / TJM",
+    tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
+    price: "À partir de 3 500 € HT",
     featured: true,
   },
   {
-    id: "evolution",
+    id: "apps",
     no: "03 / 03",
-    icon: "spark",
-    title: "Évolution & Architecture applicative",
-    desc: "Modernisation de codebase, refactoring, ajout de fonctionnalités critiques et fiabilisation par les tests automatisés (culture QA).",
+    icon: "code",
+    title: "Applications IA sur mesure",
+    desc: "Développement complet de solutions logicielles dédiées quand le workflow nécessite une interface, un backend robuste et une base de données sur mesure.",
     points: [
-      "Audits techniques de code & migrations de versions",
-      "Tests E2E TestCafé & tests unitaires Vitest",
-      "Pipelines CI/CD & conteneurisation Docker",
+      "Applications web complètes Nuxt & NestJS",
+      "Applications desktop sécurisées Tauri (IA locale)",
+      "Architecture PostgreSQL, tests QA & déploiement",
     ],
-    tags: ["TestCafé", "Vitest", "Docker", "CI/CD"],
-    price: "Au forfait / audit",
+    tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
+    price: "Sur mesure / Sprint",
     featured: false,
+  },
+];
+
+// 4 Piliers d'industrialisation « Prototype → Production » (Story 12.3 / AC-2).
+const pillars: ProductionPillar[] = [
+  {
+    id: "data",
+    icon: "layers",
+    title: "Données",
+    desc: "Provenance, structuration, stockage, rétention, secrets.",
+  },
+  {
+    id: "reliability",
+    icon: "zap",
+    title: "Fiabilité",
+    desc: "Cas limites, retries, fallbacks, tests, observabilité.",
+  },
+  {
+    id: "ai",
+    icon: "bot",
+    title: "IA",
+    desc: "Sorties structurées, versionnage, évaluations, contrôle humain.",
+  },
+  {
+    id: "ops",
+    icon: "terminal",
+    title: "Exploitation",
+    desc: "Monitoring, coûts, support, maintenance, évolution.",
   },
 ];
 
@@ -367,7 +431,7 @@ const homeJsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Simon Jouan — Développeur Full Stack TypeScript",
+    name: "Simon Jouan — Systèmes IA, agents & automatisation métier",
     url: siteUrl,
     description: SITE.profile.role,
   },
@@ -388,9 +452,9 @@ const homeJsonLd = [
 ];
 
 usePageSeo({
-  title: "Simon Jouan — Développeur Full Stack TypeScript · Nuxt & NestJS",
+  title: "Simon Jouan — Systèmes IA, agents & automatisation métier",
   description:
-    "Développeur Full Stack TypeScript freelance : création d'applications web et plateformes SaaS modernes avec Nuxt, NestJS et PostgreSQL.",
+    "Développeur Full Stack spécialisé en systèmes IA et automatisation métier. Agents IA, intégrations, applications sur mesure et workflows mis en production.",
   path: "/",
   image: "/images/portrait.jpeg",
   type: "website",
@@ -464,12 +528,20 @@ usePageSeo({
 
 .hero__sub {
   max-width: 46ch;
-  margin: var(--space-5) 0 var(--space-6);
+  margin: var(--space-5) 0 var(--space-4);
   font-family: var(--font-sans);
   font-size: var(--fs-lg);
   line-height: var(--lh-relaxed);
   color: var(--text-body);
   text-shadow: 0 1px 8px color-mix(in srgb, var(--surface-0) 70%, transparent);
+}
+
+.hero__credibility {
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-muted);
 }
 
 .hero__cta {
@@ -651,6 +723,12 @@ usePageSeo({
   color: var(--accent);
   text-decoration: none;
 
+  &::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+  }
+
   &:hover {
     text-decoration: underline;
   }
@@ -664,136 +742,250 @@ usePageSeo({
   }
 }
 
-// ---- Section Projets sélectionnés (porté de Home - Awwwards.html .work) ----
-.work {
-  display: flex;
-  flex-direction: column;
+// ---- Bloc Différenciateur « Prototype → Production » (Story 12.3 / AC-2) ----
+.diff-block__title {
+  max-width: 28ch;
+  margin-bottom: var(--space-4);
+}
+
+.diff-block__lead {
+  max-width: 72ch;
+  margin: 0 0 var(--space-8);
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
   margin: 0;
   padding: 0;
   list-style: none;
 
   > li {
-    display: block;
-    width: 100%;
+    display: flex;
   }
 }
 
-.work__row {
-  position: relative;
-  display: grid;
-  grid-template-columns: var(--fs-6xl) 1fr auto;
-  gap: var(--space-6);
+.pillar {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pillar__icon {
+  display: flex;
   align-items: center;
-  padding: var(--space-8) var(--space-3);
-  border-top: 1px solid var(--border-subtle);
-  text-decoration: none;
-  color: inherit;
-  transition:
-    padding-left var(--dur-slow) var(--ease-out),
-    background var(--dur-slow) var(--ease-standard),
-    transform var(--dur-fast) var(--ease-standard);
+  justify-content: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  margin-bottom: var(--space-4);
+  font-size: var(--fs-xl);
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-md);
+}
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, var(--accent-soft), transparent 60%);
-    opacity: 0;
-    transition: opacity var(--dur-slow) var(--ease-standard);
+.pillar__title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-regular);
+  color: var(--text-strong);
+}
+
+.pillar__desc {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-normal);
+  color: var(--text-muted);
+}
+
+// ---- Section Projets sélectionnés (Story 12.4 / AC-1 & AC-3) ----
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
   }
 }
 
-li:last-child .work__row {
+.project-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.project-card__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface-0);
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.work__row--link {
-  cursor: pointer;
-
-  &:hover {
-    padding-left: var(--space-6);
-
-    &::before {
-      opacity: 1;
-    }
-
-    .work__name {
-      color: var(--accent);
-    }
-
-    .work__go {
-      color: var(--accent);
-      transform: translate(6px, -6px);
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    box-shadow: var(--ring-accent);
-    border-radius: var(--radius-xs);
-  }
+.project-card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform var(--dur-slow) var(--ease-out);
 }
 
-.work__no {
-  position: relative;
+.project-card:hover .project-card__img {
+  transform: scale(1.03);
+}
+
+.project-card__media--schematic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+    var(--surface-0);
+}
+
+.project-card__blueprint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-3);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-1) 60%, transparent);
+}
+
+.project-card__blueprint-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.project-card__node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-1);
+}
+
+.project-card__node-icon {
+  font-size: var(--fs-md);
+  color: var(--accent);
+}
+
+.project-card__node-label {
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+
+.project-card__node-flow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
+.project-card__blueprint-sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-align: center;
+  letter-spacing: var(--ls-wide);
+}
+
+.project-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: var(--space-6);
+}
+
+.project-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.project-card__no {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wider);
   color: var(--text-faint);
 }
 
-.work__main {
-  position: relative;
-}
-
-.work__topline {
+.project-card__title-wrap {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-3);
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
 }
 
-.work__name {
+.project-card__title {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: clamp(1.4rem, 2.8vw, 2rem);
+  font-size: var(--fs-xl);
   font-weight: var(--fw-regular);
-  letter-spacing: var(--ls-tight);
   color: var(--text-strong);
-  transition: color var(--dur-base) var(--ease-standard);
+  transition: color var(--dur-fast) var(--ease-standard);
 }
 
-.work__status {
+.project-card:hover .project-card__title {
+  color: var(--accent);
+}
+
+.project-card__status {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--accent);
   letter-spacing: var(--ls-wide);
 }
 
-.work__role {
-  margin: var(--space-1) 0 0;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
+.project-card__hook {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  font-style: italic;
+  color: var(--text-body);
+  line-height: var(--lh-snug);
+}
+
+.project-card__desc {
+  margin: 0 0 var(--space-5);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
   color: var(--text-muted);
 }
 
-.work__desc {
-  max-width: 65ch;
-  margin: var(--space-3) 0 0;
-  font-size: var(--fs-sm);
-}
-
-.work__tags {
-  margin-top: var(--space-4);
-}
-
-.work__go {
-  position: relative;
-  font-size: var(--fs-xl);
-  color: var(--text-faint);
-  transition:
-    transform var(--dur-base) var(--ease-out),
-    color var(--dur-base) var(--ease-standard);
+.project-card__tags {
+  margin-top: auto;
 }
 
 // ---- Stats (porté de .stats) ----
@@ -1053,8 +1245,13 @@ li:last-child .work__row {
   }
 
   .grid-3,
+  .projects-grid,
   .journal {
     grid-template-columns: 1fr;
+  }
+
+  .pillars-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .block__head--row {
@@ -1064,16 +1261,7 @@ li:last-child .work__row {
 }
 
 @media (width <= 680px) {
-  .work__row {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
-  }
-
-  .work__no,
-  .work__go {
-    display: none;
-  }
-
+  .pillars-grid,
   .stats {
     grid-template-columns: 1fr;
   }
@@ -1084,8 +1272,8 @@ li:last-child .work__row {
     animation: none;
   }
 
-  .work__row,
-  .work__go,
+  .project-card__img,
+  .project-card__title,
   .jpost__arrow,
   .seeall {
     transition: none;
@@ -1099,22 +1287,20 @@ li:last-child .work__row {
     }
   }
 
-  .work__row {
-    transform: none !important;
-  }
-
-  .work__row--link:hover {
-    padding-left: var(--space-3);
-
-    .work__go {
-      transform: none;
-    }
+  .project-card:hover .project-card__img {
+    transform: none;
   }
 
   .jpost:hover {
     .jpost__arrow {
       transform: none;
     }
+  }
+}
+
+@media (hover: none) {
+  .project-card:hover .project-card__img {
+    transform: none;
   }
 }
 </style>

@@ -1,0 +1,740 @@
+diff --git a/app/pages/about.vue b/app/pages/about.vue
+index 0fbfd92..e7a44e6 100644
+--- a/app/pages/about.vue
++++ b/app/pages/about.vue
+@@ -21,26 +21,42 @@
+             </div>
+           </div>
+ 
+-          <!-- Colonne droite : eyebrow + bio (1re personne, emphases sur les technologies) + stack -->
++          <!-- Colonne droite : eyebrow + bio (1re personne, emphases sur les technologies) + bloc philosophie + stack -->
+           <div class="about__bio">
+-            <h2 class="eyebrow">// à propos</h2>
++            <h2 class="eyebrow"><span aria-hidden="true">// </span>à propos</h2>
+             <p class="prose about__para">
+-              Développeur Full Stack freelance basé en <strong>France (Remote)</strong>, je viens d'un parcours
+-              technique (métrologie, instrumentation) avant de basculer avec passion dans le code. Aujourd'hui, je
+-              conçois et développe des applications web et produits SaaS modernes avec <strong>Vue 3 / Nuxt 4</strong>,
+-              <strong>NestJS</strong> et <strong>PostgreSQL</strong>.
++              Je développe des produits et applications depuis plusieurs années, avec un parcours un peu atypique :
++              <strong>douze ans dans la métrologie industrielle</strong> avant de passer au logiciel.
+             </p>
+             <p class="prose about__para">
+-              Je suis également co-fondateur de la plateforme SaaS
+-              <ZExternalLink :href="keovaUrl">{{ keovaHostname }}</ZExternalLink
+-              >, et j'intègre l'automatisation, l'exigence QA et l'IA au service du code — tests automatisés,
+-              architecture modulaire et intégrations d'APIs.
++              Cette première carrière m’a donné des réflexes qui me suivent encore aujourd’hui :
++              <strong>mesurer, tracer, vérifier</strong> et ne pas considérer qu’un système est fiable simplement parce
++              qu’il fonctionne une fois.
+             </p>
++            <p class="prose about__para">
++              Aujourd’hui, je combine <strong>développement Full Stack</strong>, <strong>culture QA</strong> et
++              <strong>IA appliquée</strong> pour transformer des processus métier manuels en systèmes logiciels
++              réellement exploitables.
++            </p>
++
++            <!-- Bloc philosophie d'intervention (AC-1) -->
++            <div class="about__philosophy">
++              <p class="about__philo-intro">Je ne pars pas de « où mettre de l'IA ? ».</p>
++              <p class="about__philo-lead">Je pars de :</p>
++              <ul class="about__philo-list">
++                <li>qu’est-ce qui prend du temps ?</li>
++                <li>qu’est-ce qui se répète ?</li>
++                <li>où l’information se perd-elle ?</li>
++                <li>où une personne doit-elle recopier, rechercher ou interpréter ?</li>
++                <li>qu’est-ce qui doit absolument rester sous contrôle humain ?</li>
++              </ul>
++              <p class="about__philo-outro">Ensuite seulement vient la solution technique.</p>
++            </div>
+ 
+             <!-- Stack technique (story 5.2) — sous la bio, conforme à About.jsx. ZTag = pill.
+                  Liste sémantique (<ul>/<li>) pour annonce « liste de N éléments » aux lecteurs d'écran. -->
+             <div class="about__stack">
+-              <h2 class="eyebrow eyebrow--muted">// stack</h2>
++              <h2 class="eyebrow eyebrow--muted"><span aria-hidden="true">// </span>stack</h2>
+               <ul class="hero__tags">
+                 <li v-for="skill in skills" :key="skill">
+                   <ZTag>{{ skill }}</ZTag>
+@@ -60,7 +76,7 @@
+           <!-- Colonne gauche : timeline d'expériences (la plus récente en haut).
+                <ol> : séquence chronologique annoncée comme liste ordonnée aux lecteurs d'écran. -->
+           <div>
+-            <h2 class="eyebrow">// expériences</h2>
++            <h2 class="eyebrow"><span aria-hidden="true">// </span>expériences</h2>
+             <ol class="tl">
+               <li v-for="xp in experiences" :key="xp.org" class="tl__item">
+                 <div class="tl__date">{{ xp.date }}</div>
+@@ -73,7 +89,7 @@
+ 
+           <!-- Colonne droite : formation (une ZCard par diplôme), liste sémantique <ul>/<li>. -->
+           <div>
+-            <h2 class="eyebrow">// formation</h2>
++            <h2 class="eyebrow"><span aria-hidden="true">// </span>formation</h2>
+             <ul class="about__degrees">
+               <li v-for="degree in degrees" :key="degree.name">
+                 <ZCard padded>
+@@ -101,12 +117,6 @@ import { SITE } from "~/data/site";
+ // Identité + stack — source unique `app/data/site.ts`.
+ const profile = SITE.profile;
+ const skills = SITE.skills;
+-const city = profile.city.split(",")[0]?.trim() ?? profile.city;
+-const keovaProject =
+-  SITE.legacyProjects.find((p) => p.name.toLowerCase().includes("keova") && p.url) ??
+-  SITE.projects.find((p) => p.name.toLowerCase().includes("keova") && p.url);
+-const keovaUrl = keovaProject?.url ?? "";
+-const keovaHostname = keovaUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+ 
+ // Expériences (de la plus récente à la plus ancienne).
+ // `org` sert de clé v-for stable (unique).
+@@ -115,7 +125,7 @@ const experiences = [
+     date: "02/2021 — aujourd'hui",
+     role: "Testeur QA & Développeur TypeScript",
+     org: "Linkizz",
+-    desc: "Tests automatisés et fiabilisation applicative — Node.js, TypeScript, TestCafé.",
++    desc: "Tests automatisés, fiabilisation applicative et conception de systèmes résilients — Node.js, TypeScript, TestCafé. L'expérience QA influence directement la conception d'agents fiables : reproductibilité, cas limites, observabilité.",
+   },
+   {
+     date: "05/2020 — 12/2021",
+@@ -127,7 +137,7 @@ const experiences = [
+     date: "07/2007 — 05/2019",
+     role: "Métrologue",
+     org: "A+ Métrologie / Trescal",
+-    desc: "Technicien métrologue multi-grandeur, suppléant COFRAC électricité-magnétisme.",
++    desc: "Technicien métrologue multi-grandeur, suppléant COFRAC électricité-magnétisme. 12 ans de métrologie industrielle : rigueur de mesure, traçabilité et validation méthodologique.",
+   },
+ ];
+ 
+@@ -138,8 +148,9 @@ const degrees = [
+ ];
+ 
+ // Métadonnées de la page. Voix 1re personne cohérente (cf. contrainte Langue & voix).
+-const pageTitle = "À propos — jouan.ovh";
+-const pageDescription = `Développeur web freelance à ${city}, je conçois des applications web et plateformes SaaS modernes avec Nuxt, NestJS et PostgreSQL — découvrez mon parcours.`;
++const pageTitle = "À propos — Simon Jouan";
++const pageDescription =
++  "Développeur Full Stack spécialisé en systèmes IA et automatisation métier. Parcours métrologie, culture QA et ingénierie logicielle au service de la fiabilité.";
+ 
+ const siteUrl = useSiteUrl();
+ const aboutJsonLd = {
+@@ -265,6 +276,64 @@ usePageSeo({
+   }
+ }
+ 
++// ---- Bloc Philosophie ----
++.about__philosophy {
++  margin: var(--space-6) 0;
++  padding: var(--space-5);
++  border: 1px solid var(--border-subtle);
++  border-left: 3px solid var(--accent);
++  border-radius: var(--radius-md);
++  background: var(--surface-1);
++}
++
++.about__philo-intro {
++  margin: 0 0 var(--space-2);
++  font-family: var(--font-mono);
++  font-size: var(--fs-sm);
++  font-weight: var(--fw-medium);
++  color: var(--text-strong);
++}
++
++.about__philo-lead {
++  margin: 0 0 var(--space-3);
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  color: var(--text-muted);
++}
++
++.about__philo-list {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-2);
++  margin: 0 0 var(--space-4);
++  padding: 0;
++  list-style: none;
++
++  li {
++    position: relative;
++    padding-left: var(--space-5);
++    font-family: var(--font-mono);
++    font-size: var(--fs-xs);
++    line-height: var(--lh-normal);
++    color: var(--text-body);
++
++    &::before {
++      content: "→";
++      position: absolute;
++      left: 0;
++      color: var(--accent);
++    }
++  }
++}
++
++.about__philo-outro {
++  margin: 0;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  font-style: italic;
++  color: var(--accent);
++}
++
+ // ---- Stack (porté de About.jsx : bloc sous la bio) ----
+ // .hero__tags (rangée de chips) = primitive de layout globale (base/_layout.scss).
+ .about__stack {
+diff --git a/app/pages/blog/[...slug].vue b/app/pages/blog/[...slug].vue
+index 0668f84..e803f07 100644
+--- a/app/pages/blog/[...slug].vue
++++ b/app/pages/blog/[...slug].vue
+@@ -42,11 +42,11 @@
+             <ContentRenderer :value="page" />
+           </div>
+ 
+-          <!-- Bloc CTA de fin (porté de Blog.jsx) -->
++          <!-- Bloc CTA de fin (porté de Blog.jsx / Story 12.6) -->
+           <div class="article__cta">
+-            <span class="article__cta-label">Un projet en tête ?</span>
++            <span class="article__cta-label">Un process vous fait perdre du temps ?</span>
+             <ZButton :as="NuxtLink" to="/contact" variant="primary">
+-              Démarrer un projet
++              Identifier un workflow
+               <template #iconRight><ZIcon name="arrow" /></template>
+             </ZButton>
+           </div>
+@@ -147,7 +147,7 @@ usePageSeo(() => {
+   };
+ 
+   return {
+-    title: `${article.title} — jouan.ovh`,
++    title: `${article.title} — Simon Jouan`,
+     ogTitle: article.title,
+     description: article.description,
+     path: article.path,
+diff --git a/app/pages/blog/index.vue b/app/pages/blog/index.vue
+index 63903b5..6bbacb6 100644
+--- a/app/pages/blog/index.vue
++++ b/app/pages/blog/index.vue
+@@ -3,10 +3,10 @@
+     <section class="section">
+       <div class="container">
+         <!-- En-tête (porté de Blog.jsx : eyebrow + titre + sous-titre prose) -->
+-        <p class="eyebrow">// ~/blog</p>
++        <p class="eyebrow"><span aria-hidden="true">// </span>~/blog</p>
+         <h1 class="blog__title">Notes de dev</h1>
+         <p class="prose blog__subtitle">
+-          WordPress, architecture, IA appliquée — ce que j'apprends en construisant des choses.
++          Systèmes IA, agents, architecture et automatisation métier — ce que j'apprends en construisant des choses.
+         </p>
+ 
+         <!-- Liste des articles (triés par date décroissante), cartes interactives -->
+@@ -100,9 +100,9 @@ const { data: articles, error } = await useAsyncData("blog-list", () =>
+ // Métadonnées de la page. URL de prod lue depuis runtimeConfig via useSiteUrl()
+ // (swappable staging/prod, sans domaine en dur). Inchangée en staging.
+ const siteUrl = useSiteUrl();
+-const pageTitle = "Blog — jouan.ovh";
++const pageTitle = "Blog — Simon Jouan";
+ const pageDescription =
+-  "Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web.";
++  "Notes de dev, architecture, agents IA et automatisation métier : retours d'expérience et apprentissages concrets sur le terrain.";
+ const pageUrl = `${siteUrl}/blog`;
+ 
+ // JSON-LD : flux d'articles (Blog → BlogPosting) pour les moteurs / agrégateurs.
+@@ -110,7 +110,7 @@ const pageUrl = `${siteUrl}/blog`;
+ const blogJsonLd = {
+   "@context": "https://schema.org",
+   "@type": "Blog",
+-  name: "Notes de dev",
++  name: pageTitle,
+   description: pageDescription,
+   url: pageUrl,
+   blogPost: (articles.value ?? []).map((article) => ({
+diff --git a/app/pages/confidentialite.vue b/app/pages/confidentialite.vue
+index d86e33e..c61beaa 100644
+--- a/app/pages/confidentialite.vue
++++ b/app/pages/confidentialite.vue
+@@ -27,11 +27,13 @@
+             <p>Le site <strong>jouan.ovh</strong> limite la collecte des données personnelles au strict nécessaire :</p>
+             <ul>
+               <li>
+-                <strong>Formulaire de contact :</strong> lorsque vous envoyez un message via la page
++                <strong>Formulaire de contact :</strong> lorsque vous envoyez une demande via la page
+                 <NuxtLink to="/contact" class="legal__link">Contact</NuxtLink>, je collecte votre <strong>nom</strong>,
+-                votre <strong>adresse email</strong>, ainsi que le <strong>sujet</strong> (facultatif) et le
+-                <strong>contenu de votre message</strong>. Les champs nom, email et message sont obligatoires pour me
+-                permettre de vous répondre.
++                votre <strong>adresse email</strong>, le nom de votre <strong>entreprise</strong> (facultatif), la
++                <strong>fréquence</strong> du processus (facultatif), ainsi que la description de votre workflow
++                (<strong>processus à améliorer</strong> et <strong>fonctionnement actuel</strong>). Les champs nom,
++                email, processus et fonctionnement actuel sont obligatoires pour me permettre de qualifier votre besoin
++                et vous répondre.
+               </li>
+               <li>
+                 <strong>Finalité :</strong> ces informations sont utilisées exclusivement pour traiter votre demande, y
+@@ -155,7 +157,7 @@ import { usePageSeo } from "~/composables/usePageSeo";
+ const profile = SITE.profile;
+ 
+ usePageSeo({
+-  title: "Politique de confidentialité — jouan.ovh",
++  title: "Politique de confidentialité — Simon Jouan",
+   description:
+     "Politique de confidentialité et protection des données personnelles (RGPD) du site jouan.ovh — Simon Jouan.",
+   path: "/confidentialite",
+diff --git a/app/pages/contact/card.vue b/app/pages/contact/card.vue
+index 0fb22a4..060472f 100644
+--- a/app/pages/contact/card.vue
++++ b/app/pages/contact/card.vue
+@@ -102,7 +102,8 @@ const cardJsonLd = {
+ 
+ usePageSeo({
+   title: "Carte de visite — Simon Jouan",
+-  description: "Fiche contact et QR code vCard de Simon Jouan, Développeur Full Stack TypeScript.",
++  description:
++    "Fiche contact et QR code vCard de Simon Jouan, Développeur Full Stack spécialisé en systèmes IA et automatisation métier.",
+   path: "/contact/card",
+   image: "/images/portrait.jpeg",
+   type: "profile",
+diff --git a/app/pages/contact/index.vue b/app/pages/contact/index.vue
+index 77e0ece..972f6ef 100644
+--- a/app/pages/contact/index.vue
++++ b/app/pages/contact/index.vue
+@@ -3,13 +3,13 @@
+     <section class="section">
+       <div class="container">
+         <div class="contact__grid">
+-          <!-- Colonne gauche : en-tête + formulaire (story 7.1) -->
++          <!-- Colonne gauche : en-tête + formulaire (story 7.1 / story 12.6) -->
+           <div class="contact__main">
+             <p class="eyebrow"><span aria-hidden="true">// </span>contact</p>
+-            <h1 class="contact__title">Parlons de votre projet</h1>
++            <h1 class="contact__title">Parlons de votre workflow</h1>
+             <p class="prose contact__intro">
+-              Une idée, un site à refaire, une automatisation à mettre en place ? Décrivez-moi le besoin — je réponds
+-              sous 48h.
++              Décrivez-moi simplement le processus qui vous ralentit ou vous fait perdre du temps au quotidien. Je vous
++              réponds sous 48h avec une première analyse de faisabilité.
+             </p>
+ 
+             <!-- État « envoyé » : carte accent + ligne mono verte. role="status" + focus
+@@ -43,29 +43,49 @@
+                 />
+                 <ZInput
+                   v-model="form.email"
+-                  label="Email"
++                  label="Email professionnel"
+                   type="email"
+-                  placeholder="vous@exemple.com"
++                  placeholder="vous@entreprise.com"
+                   required
+                   autocomplete="email"
+                   :error="Boolean(errors.email)"
+                   :hint="errors.email"
+                 />
+               </div>
++
++              <div class="contact__row">
++                <ZInput
++                  v-model="form.company"
++                  label="Entreprise"
++                  placeholder="Nom de votre structure"
++                  autocomplete="organization"
++                />
++                <ZInput
++                  v-model="form.frequency"
++                  label="Combien de fois ce process se répète-t-il ?"
++                  placeholder="Ex : quotidien, 10x par semaine…"
++                  autocomplete="off"
++                />
++              </div>
++
+               <ZInput
+-                v-model="form.subject"
+-                label="Sujet"
+-                placeholder="Site WordPress, application, IA…"
++                v-model="form.workflow"
++                label="Quel processus souhaitez-vous améliorer ?"
++                placeholder="Ex : qualification des leads, devis BTP, extraction de factures…"
++                required
+                 autocomplete="off"
++                :error="Boolean(errors.workflow)"
++                :hint="errors.workflow"
+               />
++
+               <ZInput
+-                v-model="form.message"
+-                label="Message"
++                v-model="form.currentState"
++                label="Comment fonctionne-t-il aujourd’hui ?"
+                 multiline
+-                placeholder="Parlez-moi de votre projet…"
++                placeholder="Outils utilisés, étapes manuelles, qui intervient, où l’information se perd…"
+                 required
+-                :error="Boolean(errors.message)"
+-                :hint="errors.message"
++                :error="Boolean(errors.currentState)"
++                :hint="errors.currentState"
+               />
+ 
+               <!-- Erreur d'envoi réseau (distincte des erreurs de validation par champ). -->
+@@ -73,14 +93,14 @@
+ 
+               <div>
+                 <ZButton type="submit" variant="primary" size="lg" :disabled="sending">
+-                  {{ sending ? "Envoi en cours…" : "Envoyer le message" }}
++                  {{ sending ? "Envoi en cours…" : "Décrire mon workflow" }}
+                   <template #iconRight><ZIcon name="arrow" /></template>
+                 </ZButton>
+               </div>
+ 
+               <p class="contact__rgpd">
+-                En envoyant ce formulaire, vos nom, email, sujet et message sont transmis via Web3Forms à seule fin de
+-                traiter votre demande. Consultez la
++                En envoyant ce formulaire, vos coordonnées et la description de votre workflow sont transmises via
++                Web3Forms à seule fin de qualifier votre besoin et vous répondre. Consultez la
+                 <NuxtLink to="/confidentialite" class="contact__rgpd-link">politique de confidentialité</NuxtLink>.
+               </p>
+             </form>
+@@ -146,7 +166,7 @@
+ <script setup lang="ts">
+ // Page Contact — colonne gauche : en-tête + formulaire (story 7.1, envoi Web3Forms,
+ // service tiers SANS serveur). Colonne droite : infos + CTA terminal + socials (story 7.2).
+-import { nextTick } from "vue";
++import { nextTick, reactive, ref, watch } from "vue";
+ import { NuxtLink } from "#components";
+ import { SITE } from "~/data/site";
+ 
+@@ -160,8 +180,10 @@ const { open: openTerminal } = useTerminal();
+ interface ContactForm {
+   name: string;
+   email: string;
+-  subject: string;
+-  message: string;
++  company: string;
++  workflow: string;
++  currentState: string;
++  frequency: string;
+ }
+ 
+ interface Web3FormsResponse {
+@@ -174,9 +196,23 @@ const ERROR_MESSAGE = `L'envoi a échoué. Réessayez, ou écrivez-moi directeme
+ // Clé Web3Forms injectée par l'env (NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY) — jamais en dur.
+ const accessKey = useRuntimeConfig().public.web3formsAccessKey;
+ 
+-const form = reactive<ContactForm>({ name: "", email: "", subject: "", message: "" });
++const form = reactive<ContactForm>({
++  name: "",
++  email: "",
++  company: "",
++  workflow: "",
++  currentState: "",
++  frequency: "",
++});
++
+ // Message d'erreur par champ requis ("" = valide). Rendu sous le champ via ZInput.
+-const errors = reactive({ name: "", email: "", message: "" });
++const errors = reactive({
++  name: "",
++  email: "",
++  workflow: "",
++  currentState: "",
++});
++
+ const honeypot = ref("");
+ const sent = ref(false);
+ const sending = ref(false);
+@@ -198,14 +234,15 @@ function validate(): boolean {
+     : EMAIL_RE.test(form.email.trim())
+       ? ""
+       : "Cet email ne semble pas valide.";
+-  errors.message = form.message.trim() ? "" : "Un message est requis.";
+-  return !errors.name && !errors.email && !errors.message;
++  errors.workflow = form.workflow.trim() ? "" : "Veuillez préciser le processus à améliorer.";
++  errors.currentState = form.currentState.trim() ? "" : "Veuillez décrire le fonctionnement actuel.";
++  return !errors.name && !errors.email && !errors.workflow && !errors.currentState;
+ }
+ 
+ // Après un 1er envoi, re-valider à la saisie : corriger un champ lève son message d'erreur
+ // sans attendre une nouvelle soumission.
+ watch(
+-  () => [form.name, form.email, form.message],
++  () => [form.name, form.email, form.workflow, form.currentState],
+   () => {
+     if (submitted.value) {
+       validate();
+@@ -244,8 +281,12 @@ async function onSubmit(): Promise<void> {
+         access_key: accessKey,
+         name: form.name.trim(),
+         email: form.email.trim(),
+-        subject: form.subject.trim() || "Nouveau message depuis jouan.ovh",
+-        message: form.message.trim(),
++        company: form.company.trim(),
++        subject: `Qualification de workflow : ${form.workflow.trim() || "Nouveau projet"}`,
++        workflow: form.workflow.trim(),
++        current_state: form.currentState.trim(),
++        frequency: form.frequency.trim(),
++        message: `Processus à améliorer : ${form.workflow.trim()}\n\nFonctionnement actuel :\n${form.currentState.trim()}\n\nFréquence : ${form.frequency.trim() || "Non spécifiée"}\nEntreprise : ${form.company.trim() || "Non spécifiée"}`,
+         botcheck: "",
+       },
+     });
+@@ -267,9 +308,9 @@ const siteUrl = useSiteUrl();
+ const contactJsonLd = {
+   "@context": "https://schema.org",
+   "@type": "ContactPage",
+-  name: "Contact — jouan.ovh",
++  name: "Contact — Simon Jouan",
+   description:
+-    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
++    "Parlons de votre workflow : décrivez le processus métier qui vous ralentit pour identifier les opportunités d'automatisation et d'agents IA adaptés.",
+   url: `${siteUrl}/contact`,
+   mainEntity: {
+     "@type": "Person",
+@@ -284,9 +325,9 @@ const contactJsonLd = {
+ };
+ 
+ usePageSeo({
+-  title: "Contact — jouan.ovh",
++  title: "Contact — Simon Jouan",
+   description:
+-    "Parlons de votre projet — décrivez-moi votre besoin (site WordPress, application web, IA). Je réponds sous 48h.",
++    "Parlons de votre workflow : décrivez le processus métier qui vous ralentit pour identifier les opportunités d'automatisation et d'agents IA adaptés.",
+   path: "/contact",
+   image: "/images/portrait.jpeg",
+   type: "website",
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index 7f84950..bd728b5 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -259,35 +259,26 @@
+       </div>
+     </section>
+ 
+-    <!-- Bloc CTA final de conversion (Story 11.4 / AC-4) -->
++    <!-- Bloc CTA final de conversion (Story 12.6 / AC-2) -->
+     <section class="section">
+       <div class="container">
+         <div class="cta">
+-          <p class="eyebrow cta__eyebrow"><span aria-hidden="true">$ </span>./contact --start</p>
++          <p class="eyebrow cta__eyebrow"><span aria-hidden="true">$ </span>./workflow --inspect</p>
+           <h2 class="cta__title">
+-            Un projet en tête ?<br />
+-            Mettons-le <span class="cta__highlight">en production</span>.
++            Quel process vous fait perdre du temps <span class="cta__highlight">chaque semaine</span> ?
+           </h2>
+           <p class="cta__subtitle">
+-            Que ce soit pour concevoir un nouveau SaaS, accélérer votre roadmap ou fiabiliser votre stack TypeScript,
+-            parlons-en.
++            Décrivez-moi simplement comment il fonctionne aujourd’hui. Je vous dirai ce qui mérite d’être automatisé, ce
++            qui doit rester humain et si l’IA apporte réellement quelque chose.
+           </p>
+           <div class="cta__actions">
+             <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg" data-hot>
+-              Discuter de votre projet
++              Identifier un workflow à automatiser
+               <template #iconRight><ZIcon name="arrow" /></template>
+             </ZButton>
+-            <ZButton
+-              v-if="SITE.profile.maltUrl"
+-              :as="ZExternalLink"
+-              :href="SITE.profile.maltUrl"
+-              variant="secondary"
+-              size="lg"
+-              data-hot
+-            >
+-              Me contacter sur Malt
++            <ZButton as="a" :href="`mailto:${SITE.profile.email}`" variant="secondary" size="lg" data-hot>
++              M’écrire directement
+             </ZButton>
+-            <ZButton :as="NuxtLink" to="/about" variant="ghost" size="lg" data-hot> Voir le parcours &amp; CV </ZButton>
+           </div>
+         </div>
+       </div>
+@@ -440,7 +431,7 @@ const homeJsonLd = [
+   {
+     "@context": "https://schema.org",
+     "@type": "WebSite",
+-    name: "Simon Jouan — Développeur Full Stack TypeScript",
++    name: "Simon Jouan — Systèmes IA, agents & automatisation métier",
+     url: siteUrl,
+     description: SITE.profile.role,
+   },
+@@ -461,9 +452,9 @@ const homeJsonLd = [
+ ];
+ 
+ usePageSeo({
+-  title: "Simon Jouan — Développeur Full Stack TypeScript · Nuxt & NestJS",
++  title: "Simon Jouan — Systèmes IA, agents & automatisation métier",
+   description:
+-    "Développeur Full Stack TypeScript freelance : création d'applications web et plateformes SaaS modernes avec Nuxt, NestJS et PostgreSQL.",
++    "Développeur Full Stack spécialisé en systèmes IA et automatisation métier. Agents IA, intégrations, applications sur mesure et workflows mis en production.",
+   path: "/",
+   image: "/images/portrait.jpeg",
+   type: "website",
+diff --git a/app/pages/mentions-legales.vue b/app/pages/mentions-legales.vue
+index baf3a9c..1990a55 100644
+--- a/app/pages/mentions-legales.vue
++++ b/app/pages/mentions-legales.vue
+@@ -95,7 +95,7 @@ import { usePageSeo } from "~/composables/usePageSeo";
+ const profile = SITE.profile;
+ 
+ usePageSeo({
+-  title: "Mentions légales — jouan.ovh",
++  title: "Mentions légales — Simon Jouan",
+   description: "Mentions légales, informations éditeur et hébergement du site jouan.ovh — Simon Jouan.",
+   path: "/mentions-legales",
+   type: "website",
+diff --git a/docs/implementation-artifacts/12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide.md b/docs/implementation-artifacts/12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide.md
+index e445d7b..c6c8864 100644
+--- a/docs/implementation-artifacts/12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide.md
++++ b/docs/implementation-artifacts/12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide.md
+@@ -4,7 +4,7 @@ baseline_commit: c1b8a200419751d2817144be71e60d508b413626
+ 
+ # Story 12.6: Page À propos, CTA d'inspection de workflow, formulaire & SEO site-wide
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -77,51 +77,84 @@ so that j'envoie une demande précise et pertinente (FR33, FR34, FR35, FR36, NFR
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Refonte de la page À propos (`app/pages/about.vue`) (AC: 1, 4, 5)
+-  - [ ] Mettre à jour la biographie hero en intégrant les paragraphes officiels sur les 12 ans de métrologie, la bascule dans le code et la culture QA.
+-  - [ ] Insérer le bloc philosophie d'intervention sous forme de carte ou bloc stylisé (`ZCard` ou section typographique BEM).
+-  - [ ] Mettre en valeur l'expérience Linkizz dans la timeline des expériences en explicitant l'apport de la QA à la conception d'agents fiables.
+-  - [ ] Vérifier la consommation de `SITE.profile.role` et `SITE.profile.city`.
+-  - [ ] Aligner les métadonnées SEO et le JSON-LD `aboutJsonLd` (`addressLocality: "France · Remote"`).
++- [x] Tâche 1 — Refonte de la page À propos (`app/pages/about.vue`) (AC: 1, 4, 5)
++  - [x] Mettre à jour la biographie hero en intégrant les paragraphes officiels sur les 12 ans de métrologie, la bascule dans le code et la culture QA.
++  - [x] Insérer le bloc philosophie d'intervention sous forme de carte ou bloc stylisé (`ZCard` ou section typographique BEM).
++  - [x] Mettre en valeur l'expérience Linkizz dans la timeline des expériences en explicitant l'apport de la QA à la conception d'agents fiables.
++  - [x] Vérifier la consommation de `SITE.profile.role` et `SITE.profile.city`.
++  - [x] Aligner les métadonnées SEO et le JSON-LD `aboutJsonLd` (`addressLocality: "France · Remote"`).
+ 
+-- [ ] Tâche 2 — Mise à jour du CTA final global sur la Homepage et le Blog (AC: 2, 5)
+-  - [ ] Dans `app/pages/index.vue`, remplacer le bloc CTA final actuel par la formulation officielle :
++- [x] Tâche 2 — Mise à jour du CTA final global sur la Homepage et le Blog (AC: 2, 5)
++  - [x] Dans `app/pages/index.vue`, remplacer le bloc CTA final actuel par la formulation officielle :
+     - Eyebrow : `<span aria-hidden="true">$ </span>./workflow --inspect`
+     - H2 : `Quel process vous fait perdre du temps chaque semaine ?`
+     - Sous-titre : `Décrivez-moi simplement comment il fonctionne aujourd’hui. Je vous dirai ce qui mérite d’être automatisé, ce qui doit rester humain et si l’IA apporte réellement quelque chose.`
+     - CTA 1 : `Identifier un workflow à automatiser` (vers `/contact`) avec icône flèche droite
+     - CTA 2 : `M’écrire directement` (vers `mailto:simon@jouan.ovh`)
+-  - [ ] Dans `app/pages/blog/[...slug].vue`, harmoniser le CTA de fin d'article pour orienter vers la qualification de workflow.
++  - [x] Dans `app/pages/blog/[...slug].vue`, harmoniser le CTA de fin d'article pour orienter vers la qualification de workflow.
+ 
+-- [ ] Tâche 3 — Réorientation du formulaire de contact vers la qualification de workflow (`app/pages/contact/index.vue`) (AC: 3, 5)
+-  - [ ] Adapter l'en-tête et l'introduction de la page : `Parlons de votre workflow` et message d'accueil orienté gain de temps/process.
+-  - [ ] Mettre à jour l'interface `ContactForm` :
++- [x] Tâche 3 — Réorientation du formulaire de contact vers la qualification de workflow (`app/pages/contact/index.vue`) (AC: 3, 5)
++  - [x] Adapter l'en-tête et l'introduction de la page : `Parlons de votre workflow` et message d'accueil orienté gain de temps/process.
++  - [x] Mettre à jour l'interface `ContactForm` :
+     - `name: string`
+     - `email: string`
+     - `company: string`
+     - `workflow: string` (Quel processus souhaitez-vous améliorer ?)
+     - `currentState: string` (Comment fonctionne-t-il aujourd’hui ?)
+     - `frequency?: string` (Combien de fois ce process se répète-t-il ?)
+-  - [ ] Adapter le template du formulaire avec les composants `ZInput` (champs texte et multiligne) et les attributs d'accessibilité.
+-  - [ ] Modifier le bouton de soumission : `Décrire mon workflow`.
+-  - [ ] Adapter la fonction de validation `validate()` et l'envoi vers l'API Web3Forms (`body` avec clés explicites `name`, `email`, `company`, `workflow`, `current_state`, `frequency`, `message`).
+-  - [ ] Mettre à jour le texte RGPD d'information sous le formulaire.
+-
+-- [ ] Tâche 4 — Harmonisation SEO transverse site-wide (`usePageSeo`) (AC: 4)
+-  - [ ] Mettre à jour le titre et la description dans `app/pages/index.vue` : `Simon Jouan — Systèmes IA, agents & automatisation métier`.
+-  - [ ] Mettre à jour le titre et la description dans `app/pages/about.vue`.
+-  - [ ] Mettre à jour le titre et la description dans `app/pages/contact/index.vue` : `Contact — Simon Jouan`.
+-  - [ ] Mettre à jour le titre dans `app/pages/blog/index.vue` : `Blog — Simon Jouan`.
+-  - [ ] Vérifier et unifier les métadonnées dans `app/pages/confidentialite.vue` et `app/pages/mentions-legales.vue`.
+-
+-- [ ] Tâche 5 — Styles SCSS, responsive et accessibilité (AC: 5)
+-  - [ ] Styliser le bloc philosophie sur `/about` en utilisant les tokens du Design System (`--bg-surface`, `--border-subtle`, `--accent`).
+-  - [ ] Vérifier la disposition responsive du formulaire de contact sur mobile et desktop.
+-  - [ ] Contrôler les contrastes, le focus visible (`:focus-visible`) et l'absence totale d'emoji.
+-
+-- [ ] Tâche 6 — Validation qualité Docker (AC: 6)
+-  - [ ] Exécuter la gate de validation complète : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
+-  - [ ] Vérifier 0 erreur ESLint / Stylelint, 0 erreur vue-tsc et la génération SSG Nitro sans avertissement.
++  - [x] Adapter le template du formulaire avec les composants `ZInput` (champs texte et multiligne) et les attributs d'accessibilité.
++  - [x] Modifier le bouton de soumission : `Décrire mon workflow`.
++  - [x] Adapter la fonction de validation `validate()` et l'envoi vers l'API Web3Forms (`body` avec clés explicites `name`, `email`, `company`, `workflow`, `current_state`, `frequency`, `message`).
++  - [x] Mettre à jour le texte RGPD d'information sous le formulaire.
++
++- [x] Tâche 4 — Harmonisation SEO transverse site-wide (`usePageSeo`) (AC: 4)
++  - [x] Mettre à jour le titre et la description dans `app/pages/index.vue` : `Simon Jouan — Systèmes IA, agents & automatisation métier`.
++  - [x] Mettre à jour le titre et la description dans `app/pages/about.vue`.
++  - [x] Mettre à jour le titre et la description dans `app/pages/contact/index.vue` : `Contact — Simon Jouan`.
++  - [x] Mettre à jour le titre dans `app/pages/blog/index.vue` : `Blog — Simon Jouan`.
++  - [x] Vérifier et unifier les métadonnées dans `app/pages/confidentialite.vue` et `app/pages/mentions-legales.vue`.
++
++- [x] Tâche 5 — Styles SCSS, responsive et accessibilité (AC: 5)
++  - [x] Styliser le bloc philosophie sur `/about` en utilisant les tokens du Design System (`--bg-surface`, `--border-subtle`, `--accent`).
++  - [x] Vérifier la disposition responsive du formulaire de contact sur mobile et desktop.
++  - [x] Contrôler les contrastes, le focus visible (`:focus-visible`) et l'absence totale d'emoji.
++
++- [x] Tâche 6 — Validation qualité Docker (AC: 6)
++  - [x] Exécuter la gate de validation complète : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
++  - [x] Vérifier 0 erreur ESLint / Stylelint, 0 erreur vue-tsc et la génération SSG Nitro sans avertissement.
++
++## Dev Agent Record
++
++### Implementation Plan
++- **Tâche 1 (Page À propos) :** Refonte de la bio (`about.vue`) avec mise en avant du parcours métrologie industrielle (12 ans) et culture QA au service de la robustesse des systèmes IA. Insertion du bloc philosophie d'intervention stylisé avec les tokens DS. Mise à jour de la timeline d'expériences (Linkizz et A+ Métrologie / Trescal) et alignement de `aboutJsonLd.addressLocality`.
++- **Tâche 2 (CTA final global) :** Refonte du CTA final sur `index.vue` avec le prompt `./workflow --inspect`, le H2 ciblant le gain de temps hebdomadaire et les boutons d'action. Harmonisation du CTA de fin d'article dans `blog/[...slug].vue`.
++- **Tâche 3 (Formulaire de contact) :** Transformation du formulaire sur `contact/index.vue` en formulaire de qualification de workflow métier (Nom, Email pro, Entreprise, Processus à améliorer, Fonctionnement actuel, Fréquence). Validation reactive et payload Web3Forms enrichi.
++- **Tâche 4 (SEO site-wide) :** Harmonisation des titres, méta-descriptions et JSON-LD Schema.org sur toutes les pages (`/`, `/about`, `/contact`, `/blog`, `/blog/[...slug]`, `/confidentialite`, `/mentions-legales`, `/contact/card`).
++- **Tâche 5 & 6 (Styles, a11y & Validation) :** Validation rigoureuse des tokens DS, de l'accessibilité a11y et exécution de la gate complète Docker (0 erreur ESLint, 0 erreur vue-tsc, build statique SSG Nitro de 24 routes / assets réussi).
++
++### Completion Notes
++- Page À propos (`about.vue`) refondue conformément à la charte et au brief : bio officielle, bloc philosophie d'intervention, valorisation de la QA (Linkizz) et de la métrologie dans la timeline.
++- CTA final sur `index.vue` et `blog/[...slug].vue` aligné sur `./workflow --inspect` et l'orientation gain de temps opérationnel.
++- Formulaire de contact (`contact/index.vue`) adapté pour la qualification de flux avec conservation du honeypot, focus accessible sur erreurs et transmission des champs détaillés à Web3Forms.
++- Titres SEO, descriptions et données structurées unifiés sur toutes les routes du site.
++- Validation Docker 100% verte : ESLint/Stylelint sans erreur, vérification de types TypeScript vue-tsc validée, pré-rendu statique SSG Nitro réussi.
++
++## File List
++
++- [MODIFY] [app/pages/about.vue](file:///Users/simon/dev/jouan.ovh/app/pages/about.vue)
++- [MODIFY] [app/pages/contact/index.vue](file:///Users/simon/dev/jouan.ovh/app/pages/contact/index.vue)
++- [MODIFY] [app/pages/contact/card.vue](file:///Users/simon/dev/jouan.ovh/app/pages/contact/card.vue)
++- [MODIFY] [app/pages/index.vue](file:///Users/simon/dev/jouan.ovh/app/pages/index.vue)
++- [MODIFY] [app/pages/blog/index.vue](file:///Users/simon/dev/jouan.ovh/app/pages/blog/index.vue)
++- [MODIFY] [app/pages/blog/[...slug].vue](file:///Users/simon/dev/jouan.ovh/app/pages/blog/%5B...slug%5D.vue)
++- [MODIFY] [app/pages/confidentialite.vue](file:///Users/simon/dev/jouan.ovh/app/pages/confidentialite.vue)
++- [MODIFY] [app/pages/mentions-legales.vue](file:///Users/simon/dev/jouan.ovh/app/pages/mentions-legales.vue)
++- [MODIFY] [docs/implementation-artifacts/sprint-status.yaml](file:///Users/simon/dev/jouan.ovh/docs/implementation-artifacts/sprint-status.yaml)
++- [MODIFY] [docs/implementation-artifacts/12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide.md](file:///Users/simon/dev/jouan.ovh/docs/implementation-artifacts/12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide.md)
++
++## Change Log
++
++- 2026-09-16 : Implémentation complète de la Story 12.6 — Refonte de la page À propos avec bloc philosophie et timeline métrologie/QA, CTA d'inspection de workflow sur la Homepage et le Blog, formulaire de qualification de workflow sur Contact, et harmonisation transverse du SEO et des données structurées Schema.org sur l'ensemble des 13 routes statiques. Gate Docker (lint, typecheck, SSG) verte à 100%.
+ 
+ ## Dev Notes
+ 
+@@ -133,15 +166,6 @@ so that j'envoie une demande précise et pertinente (FR33, FR34, FR35, FR36, NFR
+ - **Zéro Emoji :** Règle stricte NFR6 / NFR13.
+ - **Formulaire Web3Forms :** Conserve la clé injectée via `useRuntimeConfig().public.web3formsAccessKey`. Web3Forms accepte n'importe quelles propriétés additionnelles dans le corps JSON et les retransmet dans le corps du courriel.
+ 
+-### Fichiers concernés
+-- [MODIFY] [app/pages/about.vue](file:///Users/simon/dev/jouan.ovh/app/pages/about.vue)
+-- [MODIFY] [app/pages/contact/index.vue](file:///Users/simon/dev/jouan.ovh/app/pages/contact/index.vue)
+-- [MODIFY] [app/pages/index.vue](file:///Users/simon/dev/jouan.ovh/app/pages/index.vue)
+-- [MODIFY] [app/pages/blog/index.vue](file:///Users/simon/dev/jouan.ovh/app/pages/blog/index.vue)
+-- [MODIFY] [app/pages/blog/[...slug].vue](file:///Users/simon/dev/jouan.ovh/app/pages/blog/%5B...slug%5D.vue)
+-- [MODIFY] [app/pages/confidentialite.vue](file:///Users/simon/dev/jouan.ovh/app/pages/confidentialite.vue)
+-- [MODIFY] [app/pages/mentions-legales.vue](file:///Users/simon/dev/jouan.ovh/app/pages/mentions-legales.vue)
+-
+ ### Ce qui doit être préservé
+ - Le fonctionnement du honeypot anti-spam (`honeypot` invisible pour les humains) sur le formulaire de contact.
+ - L'annonce accessible `role="status"` et le focus sur la confirmation d'envoi.
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index d241058..78a6268 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -134,5 +134,5 @@ development_status:
+   12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur: done
+   12-4-homepage-vitrine-des-3-projets-phares: done
+   12-5-page-services-restructuration-des-offres-et-process-4-etapes: done
+-  12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide: ready-for-dev
++  12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide: review
+   epic-12-retrospective: optional

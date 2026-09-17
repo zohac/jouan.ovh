@@ -1,0 +1,1280 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0ac16-74d3-77b2-9e9d-9269ce2b2654
+--------
+user
+# Edge Case Hunter Prompt — Story 12.4
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/12-4/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+exec
+/bin/zsh -lc "sed -n '1,260p' docs/implementation-artifacts/code-reviews/12-4/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+diff --git a/app/data/site.ts b/app/data/site.ts
+index 6292fdc..0e9a314 100644
+--- a/app/data/site.ts
++++ b/app/data/site.ts
+@@ -27,6 +27,10 @@ export interface IProject {
+   name: string;
+   role: string;
+   desc: string;
++  hook?: string;
++  image?: string;
++  imageAlt?: string;
++  badge?: string;
+   url?: string;
+   status?: string;
+   tags: string[];
+@@ -67,22 +71,32 @@ const projects: IProject[] = [
+   {
+     name: "Keova Signal",
+     role: "Concepteur & Développeur Full Stack",
+-    desc: "Moteur d'acquisition B2B & qualification de leads par ingestion Open Data Insee, scraping éthique et serveur MCP natif.",
+-    status: "● Système interne / Dépôt privé",
++    hook: "Détecter le bon prospect au bon moment",
++    desc: "Moteur d'acquisition B2B & qualification de leads par ingestion Open Data Insee, scraping éthique, double étage de scoring Zod et serveur MCP natif (10 outils).",
++    image: "/images/projects/keova-signal-dashboard.png",
++    imageAlt: "Tableau de bord de qualification de prospects Keova Signal",
++    badge: "Projet interne / Dépôt privé",
++    status: "● Système interne / En développement actif",
+     tags: ["Node.js 22", "TypeScript", "MCP Server", "PostgreSQL", "Cheerio", "Docker"],
+   },
+   {
+     name: "Debrief",
+     role: "Concepteur & Développeur Full Stack",
+-    desc: "Application desktop privacy-first de synthèse commerciale 100 % locale (ASR whisper.cpp, diarisation sherpa-onnx, LLM Gemma 4).",
+-    status: "◐ R&D / Dépôt privé",
++    hook: "Transformer un rendez-vous commercial en apprentissage exploitable",
++    desc: "Application desktop privacy-first (100 % on-device) de synthèse commerciale et analyse d'appels, sans fuite réseau ni dépendance cloud externe.",
++    image: "/images/projects/debrief-dashboard.png",
++    imageAlt: "Interface desktop de synthèse d'appels Debrief",
++    badge: "Dépôt privé",
++    status: "◐ R&D / En développement",
+     tags: ["Tauri", "Rust", "whisper.cpp", "sherpa-onnx", "llama.cpp", "Gemma 4"],
+   },
+   {
+     name: "Devis-Assist",
+     role: "Architecte & Développeur Full Stack",
+-    desc: "Solution d'ingestion et d'analyse de devis artisans BTP combinant Mistral OCR 3, file asynchrone BullMQ et matching flou PostgreSQL.",
+-    status: "○ Architecture validée / Dépôt privé",
++    hook: "Transformer un historique de devis BTP en aide au chiffrage",
++    desc: "Solution d'ingestion et d'analyse de devis artisans BTP combinant Mistral OCR 3, file asynchrone BullMQ/Redis et matching flou PostgreSQL pg_trgm.",
++    badge: "Dépôt privé",
++    status: "○ Produit / Architecture BMM validée",
+     tags: ["NestJS", "Nuxt UI 4", "PostgreSQL pg_trgm", "Mistral OCR", "BullMQ"],
+   },
+ ];
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index ee2f388..911a337 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -117,7 +117,7 @@
+       </div>
+     </section>
+ 
+-    <!-- Projets sélectionnés & Statistiques de réassurance (Story 11.4 / AC-1 & AC-2) -->
++    <!-- Projets sélectionnés & Statistiques de réassurance (Story 12.4 / AC-1, AC-2, AC-3) -->
+     <section class="section">
+       <div class="container">
+         <div class="block__head">
+@@ -125,35 +125,61 @@
+           <h2 class="section__title">Des produits qui tournent en production</h2>
+         </div>
+ 
+-        <ul class="work">
+-          <li v-for="(project, index) in projects" :key="project.name">
+-            <component
+-              :is="project.url ? ZExternalLink : 'div'"
+-              :href="project.url"
+-              class="work__row"
+-              :class="{ 'work__row--link': Boolean(project.url) }"
+-              :data-hot="project.url ? '' : undefined"
+-              @mousemove="onProjectMouseMove"
+-              @mouseleave="onProjectMouseLeave"
+-            >
+-              <span class="work__no">{{ String(index + 1).padStart(2, "0") }}</span>
+-              <div class="work__main">
+-                <div class="work__topline">
+-                  <h3 class="work__name">{{ project.name }}</h3>
+-                  <span v-if="project.status" class="work__status">{{ project.status }}</span>
++        <ul class="projects-grid">
++          <li v-for="(project, index) in projects" :key="project.name" class="projects-grid__item">
++            <ZCard class="project-card" interactive tilt :padded="false">
++              <div v-if="project.image" class="project-card__media">
++                <NuxtImg
++                  :src="project.image"
++                  :alt="project.imageAlt || `Capture d'écran du projet ${project.name}`"
++                  width="720"
++                  height="405"
++                  sizes="(max-width: 900px) 100vw, (max-width: 1200px) 50vw, 380px"
++                  format="webp"
++                  loading="lazy"
++                  class="project-card__img"
++                />
++              </div>
++              <div v-else class="project-card__media project-card__media--schematic">
++                <div class="project-card__blueprint" aria-hidden="true">
++                  <div class="project-card__blueprint-grid">
++                    <div class="project-card__node">
++                      <ZIcon name="layers" class="project-card__node-icon" />
++                      <span class="project-card__node-label">Mistral OCR 3</span>
++                    </div>
++                    <span class="project-card__node-flow">→</span>
++                    <div class="project-card__node">
++                      <ZIcon name="zap" class="project-card__node-icon" />
++                      <span class="project-card__node-label">BullMQ / Redis</span>
++                    </div>
++                    <span class="project-card__node-flow">→</span>
++                    <div class="project-card__node">
++                      <ZIcon name="code" class="project-card__node-icon" />
++                      <span class="project-card__node-label">pg_trgm Match</span>
++                    </div>
++                  </div>
++                  <div class="project-card__blueprint-sub">Pipeline documentaire &amp; extraction tabulaire</div>
++                </div>
++              </div>
++
++              <div class="project-card__body">
++                <div class="project-card__header">
++                  <span class="project-card__no">{{ String(index + 1).padStart(2, "0") }} / 03</span>
++                  <ZBadge v-if="project.badge" tone="neutral">{{ project.badge }}</ZBadge>
+                 </div>
+-                <p class="work__role">{{ project.role }}</p>
+-                <p class="prose work__desc">{{ project.desc }}</p>
+-                <ul class="hero__tags work__tags">
+-                  <li v-for="(tag, tagIndex) in project.tags" :key="`${tag}-${tagIndex}`">
++                <div class="project-card__title-wrap">
++                  <h3 class="project-card__title">{{ project.name }}</h3>
++                  <span v-if="project.status" class="project-card__status">{{ project.status }}</span>
++                </div>
++                <p v-if="project.hook" class="project-card__hook">{{ project.hook }}</p>
++                <p class="project-card__desc prose">{{ project.desc }}</p>
++                <ul class="hero__tags project-card__tags">
++                  <li v-for="tag in project.tags" :key="tag">
+                     <ZTag>{{ tag }}</ZTag>
+                   </li>
+                 </ul>
+               </div>
+-              <span v-if="project.url" class="work__go" aria-hidden="true">
+-                <ZIcon name="arrow" />
+-              </span>
+-            </component>
++            </ZCard>
+           </li>
+         </ul>
+ 
+@@ -292,33 +318,6 @@ function onBootComplete() {
+   isBootFinished.value = true;
+ }
+ 
+-function onProjectMouseMove(event: MouseEvent) {
+-  if (isReducedMotion.value) {
+-    return;
+-  }
+-  if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
+-    return;
+-  }
+-  const target = event.currentTarget as HTMLElement | null;
+-  if (!target) {
+-    return;
+-  }
+-  const rect = target.getBoundingClientRect();
+-  if (rect.width <= 0 || rect.height <= 0) {
+-    return;
+-  }
+-  const px = (event.clientX - rect.left) / rect.width - 0.5;
+-  const py = (event.clientY - rect.top) / rect.height - 0.5;
+-  target.style.transform = `perspective(1000px) rotateX(${-py * 3.5}deg) rotateY(${px * 4.5}deg) translateY(-2px)`;
+-}
+-
+-function onProjectMouseLeave(event: MouseEvent) {
+-  const target = event.currentTarget as HTMLElement | null;
+-  if (target) {
+-    target.style.transform = "";
+-  }
+-}
+-
+ interface HomeServiceOffer {
+   id: string;
+   no: string;
+@@ -808,136 +807,187 @@ usePageSeo({
+   color: var(--text-muted);
+ }
+ 
+-// ---- Section Projets sélectionnés (porté de Home - Awwwards.html .work) ----
+-.work {
+-  display: flex;
+-  flex-direction: column;
++// ---- Section Projets sélectionnés (Story 12.4 / AC-1 & AC-3) ----
++.projects-grid {
++  display: grid;
++  grid-template-columns: repeat(3, 1fr);
++  gap: var(--space-6);
+   margin: 0;
+   padding: 0;
+   list-style: none;
+ 
+   > li {
+-    display: block;
+-    width: 100%;
++    display: flex;
+   }
+ }
+ 
+-.work__row {
++.project-card {
++  display: flex;
++  flex-direction: column;
++  width: 100%;
++}
++
++.project-card__media {
+   position: relative;
+-  display: grid;
+-  grid-template-columns: var(--fs-6xl) 1fr auto;
+-  gap: var(--space-6);
+-  align-items: center;
+-  padding: var(--space-8) var(--space-3);
+-  border-top: 1px solid var(--border-subtle);
+-  text-decoration: none;
+-  color: inherit;
+-  transition:
+-    padding-left var(--dur-slow) var(--ease-out),
+-    background var(--dur-slow) var(--ease-standard),
+-    transform var(--dur-fast) var(--ease-standard);
++  width: 100%;
++  aspect-ratio: 16 / 9;
++  overflow: hidden;
++  background: var(--surface-0);
++  border-bottom: 1px solid var(--border-subtle);
++}
+ 
+-  &::before {
+-    content: "";
+-    position: absolute;
+-    inset: 0;
+-    background: linear-gradient(90deg, var(--accent-soft), transparent 60%);
+-    opacity: 0;
+-    transition: opacity var(--dur-slow) var(--ease-standard);
+-  }
++.project-card__img {
++  display: block;
++  width: 100%;
++  height: 100%;
++  object-fit: cover;
++  object-position: top center;
++  transition: transform var(--dur-slow) var(--ease-out);
+ }
+ 
+-li:last-child .work__row {
+-  border-bottom: 1px solid var(--border-subtle);
++.project-card:hover .project-card__img {
++  transform: scale(1.03);
+
+exec
+/bin/zsh -lc 'wc -l docs/implementation-artifacts/code-reviews/12-4/full.diff' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     630 docs/implementation-artifacts/code-reviews/12-4/full.diff
+
+exec
+/bin/zsh -lc "sed -n '261,630p' docs/implementation-artifacts/code-reviews/12-4/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+ }
+ 
+-.work__row--link {
+-  cursor: pointer;
++.project-card__media--schematic {
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  padding: var(--space-4);
++  background:
++    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
++    var(--surface-0);
++}
+ 
+-  &:hover {
+-    padding-left: var(--space-6);
++.project-card__blueprint {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  justify-content: center;
++  gap: var(--space-3);
++  width: 100%;
++  height: 100%;
++  padding: var(--space-3);
++  border: 1px dashed var(--border-default);
++  border-radius: var(--radius-sm);
++  background: color-mix(in srgb, var(--surface-1) 60%, transparent);
++}
+ 
+-    &::before {
+-      opacity: 1;
+-    }
++.project-card__blueprint-grid {
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  gap: var(--space-2);
++  width: 100%;
++}
+ 
+-    .work__name {
+-      color: var(--accent);
+-    }
++.project-card__node {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  gap: var(--space-1);
++  padding: var(--space-2);
++  border: 1px solid var(--border-subtle);
++  border-radius: var(--radius-xs);
++  background: var(--surface-2);
++  box-shadow: var(--shadow-1);
++}
+ 
+-    .work__go {
+-      color: var(--accent);
+-      transform: translate(6px, -6px);
+-    }
+-  }
++.project-card__node-icon {
++  font-size: var(--fs-md);
++  color: var(--accent);
++}
+ 
+-  &:focus-visible {
+-    outline: 2px solid transparent;
+-    outline-offset: 2px;
+-    box-shadow: var(--ring-accent);
+-    border-radius: var(--radius-xs);
+-  }
++.project-card__node-label {
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  font-weight: var(--fw-medium);
++  color: var(--text-strong);
++  white-space: nowrap;
+ }
+ 
+-.work__no {
+-  position: relative;
++.project-card__node-flow {
+   font-family: var(--font-mono);
+-  font-size: var(--fs-sm);
+-  color: var(--text-faint);
++  font-size: var(--fs-xs);
++  color: var(--accent);
+ }
+ 
+-.work__main {
+-  position: relative;
++.project-card__blueprint-sub {
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  color: var(--text-muted);
++  text-align: center;
++  letter-spacing: var(--ls-wide);
+ }
+ 
+-.work__topline {
++.project-card__body {
+   display: flex;
+-  flex-wrap: wrap;
+-  align-items: baseline;
+-  gap: var(--space-3);
++  flex: 1;
++  flex-direction: column;
++  padding: var(--space-6);
++}
++
++.project-card__header {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: var(--space-2);
++  margin-bottom: var(--space-3);
++}
++
++.project-card__no {
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  letter-spacing: var(--ls-wider);
++  color: var(--text-faint);
++}
++
++.project-card__title-wrap {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-1);
++  margin-bottom: var(--space-2);
+ }
+ 
+-.work__name {
++.project-card__title {
+   margin: 0;
+   font-family: var(--font-mono);
+-  font-size: clamp(1.4rem, 2.8vw, 2rem);
++  font-size: var(--fs-xl);
+   font-weight: var(--fw-regular);
+-  letter-spacing: var(--ls-tight);
+   color: var(--text-strong);
+-  transition: color var(--dur-base) var(--ease-standard);
++  transition: color var(--dur-fast) var(--ease-standard);
+ }
+ 
+-.work__status {
+-  font-family: var(--font-mono);
+-  font-size: var(--fs-xs);
++.project-card:hover .project-card__title {
+   color: var(--accent);
+-  letter-spacing: var(--ls-wide);
+ }
+ 
+-.work__role {
+-  margin: var(--space-1) 0 0;
++.project-card__status {
+   font-family: var(--font-mono);
+   font-size: var(--fs-xs);
+-  color: var(--text-muted);
++  color: var(--accent);
++  letter-spacing: var(--ls-wide);
+ }
+ 
+-.work__desc {
+-  max-width: 65ch;
+-  margin: var(--space-3) 0 0;
++.project-card__hook {
++  margin: 0 0 var(--space-3);
++  font-family: var(--font-sans);
+   font-size: var(--fs-sm);
++  font-weight: var(--fw-medium);
++  font-style: italic;
++  color: var(--text-body);
++  line-height: var(--lh-snug);
+ }
+ 
+-.work__tags {
+-  margin-top: var(--space-4);
++.project-card__desc {
++  margin: 0 0 var(--space-5);
++  font-size: var(--fs-sm);
++  line-height: var(--lh-relaxed);
++  color: var(--text-muted);
+ }
+ 
+-.work__go {
+-  position: relative;
+-  font-size: var(--fs-xl);
+-  color: var(--text-faint);
+-  transition:
+-    transform var(--dur-base) var(--ease-out),
+-    color var(--dur-base) var(--ease-standard);
++.project-card__tags {
++  margin-top: auto;
+ }
+ 
+ // ---- Stats (porté de .stats) ----
+@@ -1197,6 +1247,7 @@ li:last-child .work__row {
+   }
+ 
+   .grid-3,
++  .projects-grid,
+   .journal {
+     grid-template-columns: 1fr;
+   }
+@@ -1212,16 +1263,6 @@ li:last-child .work__row {
+ }
+ 
+ @media (width <= 680px) {
+-  .work__row {
+-    grid-template-columns: 1fr;
+-    gap: var(--space-3);
+-  }
+-
+-  .work__no,
+-  .work__go {
+-    display: none;
+-  }
+-
+   .pillars-grid,
+   .stats {
+     grid-template-columns: 1fr;
+@@ -1233,8 +1274,7 @@ li:last-child .work__row {
+     animation: none;
+   }
+ 
+-  .work__row,
+-  .work__go,
++  .project-card__img,
+   .jpost__arrow,
+   .seeall {
+     transition: none;
+@@ -1248,16 +1288,12 @@ li:last-child .work__row {
+     }
+   }
+ 
+-  .work__row {
+-    transform: none !important;
++  .project-card:hover .project-card__img {
++    transform: none;
+   }
+ 
+-  .work__row--link:hover {
+-    padding-left: var(--space-3);
+-
+-    .work__go {
+-      transform: none;
+-    }
++  .project-card:hover .project-card__title {
++    transition: none;
+   }
+ 
+   .jpost:hover {
+diff --git a/docs/implementation-artifacts/12-4-homepage-vitrine-des-3-projets-phares.md b/docs/implementation-artifacts/12-4-homepage-vitrine-des-3-projets-phares.md
+index 90607d2..6013c56 100644
+--- a/docs/implementation-artifacts/12-4-homepage-vitrine-des-3-projets-phares.md
++++ b/docs/implementation-artifacts/12-4-homepage-vitrine-des-3-projets-phares.md
+@@ -4,7 +4,7 @@ baseline_commit: c7136c64cd1a9dd3de9b7a6689a26000a217af56
+ 
+ # Story 12.4: Page d'accueil — Vitrine des 3 projets phares (Keova Signal, Debrief, Devis-Assist)
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -62,38 +62,38 @@ so that je sois convaincu de la faisabilité de mon propre projet sans être tro
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Modélisation et enrichissement des métadonnées de projets dans `app/data/site.ts` (AC: 1, 2)
+-  - [ ] Mettre à jour l'interface `IProject` pour supporter optionnellement `hook?: string`, `image?: string`, `badge?: string`, `statusVariant?: string` sans casser la compatibilité existante (`FooterComponent`, `HomeHeroTerminal`, `About.ts`).
+-  - [ ] Aligner les entrées de `SITE.projects` avec les libellés officiels de `projects-showcase.md` :
++- [x] Tâche 1 — Modélisation et enrichissement des métadonnées de projets dans `app/data/site.ts` (AC: 1, 2)
++  - [x] Mettre à jour l'interface `IProject` pour supporter optionnellement `hook?: string`, `image?: string`, `imageAlt?: string`, `badge?: string`, `statusVariant?: string` sans casser la compatibilité existante (`FooterComponent`, `HomeHeroTerminal`, `About.ts`).
++  - [x] Aligner les entrées de `SITE.projects` avec les libellés officiels de `projects-showcase.md` :
+     - Keova Signal : accroche, statut `● Système interne / En développement actif`, image `/images/projects/keova-signal-dashboard.png`, badge `Projet interne / Dépôt privé`
+     - Debrief : accroche, statut `◐ R&D / En développement`, image `/images/projects/debrief-dashboard.png`, badge `Dépôt privé`
+     - Devis-Assist : accroche, statut `○ Produit / Architecture BMM validée`, badge `Dépôt privé`
+ 
+-- [ ] Tâche 2 — Intégration du composant et de la grille de cartes riches dans `app/pages/index.vue` (AC: 1, 2, 3)
+-  - [ ] Remplacer l'ancienne liste linéaire `.work` par une grille de cartes riches mettant en scène les 3 démonstrateurs techniques.
+-  - [ ] Utiliser `<ZCard>` (ou structure dédiée conforme au Design System) avec :
++- [x] Tâche 2 — Intégration du composant et de la grille de cartes riches dans `app/pages/index.vue` (AC: 1, 2, 3)
++  - [x] Remplacer l'ancienne liste linéaire `.work` par une grille de cartes riches mettant en scène les 3 démonstrateurs techniques.
++  - [x] Utiliser `<ZCard>` (ou structure dédiée conforme au Design System) avec :
+     - En-tête de carte : numéro de projet, badge de confidentialité `<ZBadge>`, pastille de statut
+     - Visuel projet optimisé avec `<NuxtImg>` (lazy-loading, format webp, fallback visuel soigné pour Devis-Assist)
+     - Titre du projet et accroche métier mise en avant
+     - Description technique mettant en valeur la résolution du problème concret
+     - Liste des tags technologiques avec `<ZTag>`
+-  - [ ] S'assurer de l'absence de lien mort (pas de balise `<a>` vide ou `href="#"`).
++  - [x] S'assurer de l'absence de lien mort (pas de balise `<a>` vide ou `href="#"`).
+ 
+-- [ ] Tâche 3 — Styles SCSS, responsive et design tokens (AC: 3)
+-  - [ ] Développer les styles SCSS scopés pour la vitrine de projets dans `app/pages/index.vue`.
+-  - [ ] Définir les adaptations responsive sous 900px et 680px (bascule fluide en 1 colonne sur mobile).
+-  - [ ] Intégrer les styles pour les visuels d'écran (ombrage discret, liseré de démarcation `--border-subtle`, arrondi `--radius-md`).
+-  - [ ] Vérifier que tous les styles consomment les custom properties (`--space-*`, `--radius-*`, `--color-*`, `--text-*`).
++- [x] Tâche 3 — Styles SCSS, responsive et design tokens (AC: 3)
++  - [x] Développer les styles SCSS scopés pour la vitrine de projets dans `app/pages/index.vue`.
++  - [x] Définir les adaptations responsive sous 900px et 680px (bascule fluide en 1 colonne sur mobile).
++  - [x] Intégrer les styles pour les visuels d'écran (ombrage discret, liseré de démarcation `--border-subtle`, arrondi `--radius-md`).
++  - [x] Vérifier que tous les styles consomment les custom properties (`--space-*`, `--radius-*`, `--color-*`, `--text-*`).
+ 
+-- [ ] Tâche 4 — Accessibilité, vérification sans emoji et respect motion (AC: 2, 3)
+-  - [ ] Vérifier les attributs `alt` pertinents sur chaque image `<NuxtImg>`.
+-  - [ ] Valider l'ordre de tabulation clavier et le focus visible (`:focus-visible`).
+-  - [ ] Valider le respect strict de `prefers-reduced-motion: reduce`.
+-  - [ ] Vérifier l'absence absolue de tout emoji dans le DOM et les textes.
++- [x] Tâche 4 — Accessibilité, vérification sans emoji et respect motion (AC: 2, 3)
++  - [x] Vérifier les attributs `alt` pertinents sur chaque image `<NuxtImg>`.
++  - [x] Valider l'ordre de tabulation clavier et le focus visible (`:focus-visible`).
++  - [x] Valider le respect strict de `prefers-reduced-motion: reduce`.
++  - [x] Vérifier l'absence absolue de tout emoji dans le DOM et les textes.
+ 
+-- [ ] Tâche 5 — Validation qualité Docker (AC: 4)
+-  - [ ] Exécuter la gate de validation complète : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
+-  - [ ] S'assurer de 0 erreur ESLint / Stylelint, 0 erreur vue-tsc, et génération SSG Nitro réussie.
++- [x] Tâche 5 — Validation qualité Docker (AC: 4)
++  - [x] Exécuter la gate de validation complète : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`.
++  - [x] S'assurer de 0 erreur ESLint / Stylelint, 0 erreur vue-tsc, et génération SSG Nitro réussie.
+ 
+ ## Dev Notes
+ 
+@@ -123,9 +123,21 @@ so that je sois convaincu de la faisabilité de mon propre projet sans être tro
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++- Gemini 3.7 Flash (Antigravity Dev Agent)
+ 
+ ### Debug Log References
++- Exécution Docker de validation gate: `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 erreur ESLint / Stylelint, 0 erreur vue-tsc, 24 routes et assets statiques pré-rendus par Nitro.
+ 
+ ### Completion Notes List
++- Modélisation enrichie de `IProject` et de `SITE.projects` dans `app/data/site.ts` avec les métadonnées officielles (accroches, badges de confidentialité, visuels HD, statuts précis, tags technologiques).
++- Remplacement de l'ancienne liste linéaire `.work` par la grille de cartes riches `.projects-grid` et `.project-card` utilisant `<ZCard>` (3D tilt interactif préservé), `<NuxtImg>` pour les captures Keova Signal et Debrief, et un schéma visuel de pipeline documentaire pour Devis-Assist.
++- Intégration complète des badges `<ZBadge>`, tags `<ZTag>`, titres, accroches métier et descriptions techniques sans aucun lien sortant mort.
++- Préservation intégrale du bloc de chiffres clés de réassurance `ul.stats`.
++- Respect strict des tokens CSS, du responsive (grille 3 col desktop -> 1 col mobile < 900px), de `prefers-reduced-motion: reduce`, de l'accessibilité a11y et de la règle zéro emoji.
++- Gate Docker 100% verte validée.
+ 
+ ### File List
++- `app/data/site.ts`
++- `app/pages/index.vue`
++- `docs/implementation-artifacts/12-4-homepage-vitrine-des-3-projets-phares.md`
++- `docs/implementation-artifacts/sprint-status.yaml`
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 29eb79a..e4c5dcf 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-16 (Story 12.4 initialisée en ready-for-dev)"
++last_updated: "2026-09-16 (Story 12.4 terminée et passée en review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -132,7 +132,7 @@ development_status:
+   12-1-source-unique-de-donnees-sitets-et-coherence-globale: done
+   12-2-homepage-hero-commercial-cinetique-et-terminal-interactif: done
+   12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur: done
+-  12-4-homepage-vitrine-des-3-projets-phares: ready-for-dev
++  12-4-homepage-vitrine-des-3-projets-phares: review
+   12-5-page-services-restructuration-des-offres-et-process-4-etapes: backlog
+   12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide: backlog
+   epic-12-retrospective: optional
+
+exec
+/bin/zsh -lc "test -f public/images/projects/keova-signal-dashboard.png; printf 'keova:%s\\n' "'$?' in /Users/simon/dev/jouan.ovh
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '130,190p;800,880p;1238,1295p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+keova:0
+
+ succeeded in 0ms:
+   130	            <ZCard class="project-card" interactive tilt :padded="false">
+   131	              <div v-if="project.image" class="project-card__media">
+   132	                <NuxtImg
+   133	                  :src="project.image"
+   134	                  :alt="project.imageAlt || `Capture d'écran du projet ${project.name}`"
+   135	                  width="720"
+   136	                  height="405"
+   137	                  sizes="(max-width: 900px) 100vw, (max-width: 1200px) 50vw, 380px"
+   138	                  format="webp"
+   139	                  loading="lazy"
+   140	                  class="project-card__img"
+   141	                />
+   142	              </div>
+   143	              <div v-else class="project-card__media project-card__media--schematic">
+   144	                <div class="project-card__blueprint" aria-hidden="true">
+   145	                  <div class="project-card__blueprint-grid">
+   146	                    <div class="project-card__node">
+   147	                      <ZIcon name="layers" class="project-card__node-icon" />
+   148	                      <span class="project-card__node-label">Mistral OCR 3</span>
+   149	                    </div>
+   150	                    <span class="project-card__node-flow">→</span>
+   151	                    <div class="project-card__node">
+   152	                      <ZIcon name="zap" class="project-card__node-icon" />
+   153	                      <span class="project-card__node-label">BullMQ / Redis</span>
+   154	                    </div>
+   155	                    <span class="project-card__node-flow">→</span>
+   156	                    <div class="project-card__node">
+   157	                      <ZIcon name="code" class="project-card__node-icon" />
+   158	                      <span class="project-card__node-label">pg_trgm Match</span>
+   159	                    </div>
+   160	                  </div>
+   161	                  <div class="project-card__blueprint-sub">Pipeline documentaire &amp; extraction tabulaire</div>
+   162	                </div>
+   163	              </div>
+   164	
+   165	              <div class="project-card__body">
+   166	                <div class="project-card__header">
+   167	                  <span class="project-card__no">{{ String(index + 1).padStart(2, "0") }} / 03</span>
+   168	                  <ZBadge v-if="project.badge" tone="neutral">{{ project.badge }}</ZBadge>
+   169	                </div>
+   170	                <div class="project-card__title-wrap">
+   171	                  <h3 class="project-card__title">{{ project.name }}</h3>
+   172	                  <span v-if="project.status" class="project-card__status">{{ project.status }}</span>
+   173	                </div>
+   174	                <p v-if="project.hook" class="project-card__hook">{{ project.hook }}</p>
+   175	                <p class="project-card__desc prose">{{ project.desc }}</p>
+   176	                <ul class="hero__tags project-card__tags">
+   177	                  <li v-for="tag in project.tags" :key="tag">
+   178	                    <ZTag>{{ tag }}</ZTag>
+   179	                  </li>
+   180	                </ul>
+   181	              </div>
+   182	            </ZCard>
+   183	          </li>
+   184	        </ul>
+   185	
+   186	        <!-- Statistiques clés de réassurance (Story 11.4 / AC-2) -->
+   187	        <ul class="stats">
+   188	          <li v-for="stat in stats" :key="stat.id" class="stat">
+   189	            <b>{{ stat.value }}</b>
+   190	            <span>{{ stat.label }}</span>
+   800	}
+   801	
+   802	.pillar__desc {
+   803	  margin: 0;
+   804	  font-family: var(--font-mono);
+   805	  font-size: var(--fs-xs);
+   806	  line-height: var(--lh-normal);
+   807	  color: var(--text-muted);
+   808	}
+   809	
+   810	// ---- Section Projets sélectionnés (Story 12.4 / AC-1 & AC-3) ----
+   811	.projects-grid {
+   812	  display: grid;
+   813	  grid-template-columns: repeat(3, 1fr);
+   814	  gap: var(--space-6);
+   815	  margin: 0;
+   816	  padding: 0;
+   817	  list-style: none;
+   818	
+   819	  > li {
+   820	    display: flex;
+   821	  }
+   822	}
+   823	
+   824	.project-card {
+   825	  display: flex;
+   826	  flex-direction: column;
+   827	  width: 100%;
+   828	}
+   829	
+   830	.project-card__media {
+   831	  position: relative;
+   832	  width: 100%;
+   833	  aspect-ratio: 16 / 9;
+   834	  overflow: hidden;
+   835	  background: var(--surface-0);
+   836	  border-bottom: 1px solid var(--border-subtle);
+   837	}
+   838	
+   839	.project-card__img {
+   840	  display: block;
+   841	  width: 100%;
+   842	  height: 100%;
+   843	  object-fit: cover;
+   844	  object-position: top center;
+   845	  transition: transform var(--dur-slow) var(--ease-out);
+   846	}
+   847	
+   848	.project-card:hover .project-card__img {
+   849	  transform: scale(1.03);
+   850	}
+   851	
+   852	.project-card__media--schematic {
+   853	  display: flex;
+   854	  align-items: center;
+   855	  justify-content: center;
+   856	  padding: var(--space-4);
+   857	  background:
+   858	    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+   859	    var(--surface-0);
+   860	}
+   861	
+   862	.project-card__blueprint {
+   863	  display: flex;
+   864	  flex-direction: column;
+   865	  align-items: center;
+   866	  justify-content: center;
+   867	  gap: var(--space-3);
+   868	  width: 100%;
+   869	  height: 100%;
+   870	  padding: var(--space-3);
+   871	  border: 1px dashed var(--border-default);
+   872	  border-radius: var(--radius-sm);
+   873	  background: color-mix(in srgb, var(--surface-1) 60%, transparent);
+   874	}
+   875	
+   876	.project-card__blueprint-grid {
+   877	  display: flex;
+   878	  align-items: center;
+   879	  justify-content: center;
+   880	  gap: var(--space-2);
+  1238	
+  1239	// ---- Responsive ----
+  1240	@media (width <= 900px) {
+  1241	  .hero__grid {
+  1242	    grid-template-columns: 1fr;
+  1243	  }
+  1244	
+  1245	  .hero__title {
+  1246	    font-size: var(--fs-4xl);
+  1247	  }
+  1248	
+  1249	  .grid-3,
+  1250	  .projects-grid,
+  1251	  .journal {
+  1252	    grid-template-columns: 1fr;
+  1253	  }
+  1254	
+  1255	  .pillars-grid {
+  1256	    grid-template-columns: repeat(2, 1fr);
+  1257	  }
+  1258	
+  1259	  .block__head--row {
+  1260	    flex-direction: column;
+  1261	    align-items: flex-start;
+  1262	  }
+  1263	}
+  1264	
+  1265	@media (width <= 680px) {
+  1266	  .pillars-grid,
+  1267	  .stats {
+  1268	    grid-template-columns: 1fr;
+  1269	  }
+  1270	}
+  1271	
+  1272	@media (prefers-reduced-motion: reduce) {
+  1273	  .anim {
+  1274	    animation: none;
+  1275	  }
+  1276	
+  1277	  .project-card__img,
+  1278	  .jpost__arrow,
+  1279	  .seeall {
+  1280	    transition: none;
+  1281	  }
+  1282	
+  1283	  .stat {
+  1284	    transition: none;
+  1285	
+  1286	    &:hover {
+  1287	      transform: none;
+  1288	    }
+  1289	  }
+  1290	
+  1291	  .project-card:hover .project-card__img {
+  1292	    transform: none;
+  1293	  }
+  1294	
+  1295	  .project-card:hover .project-card__title {
+
+exec
+/bin/zsh -lc "test -f public/images/projects/debrief-dashboard.png; printf 'debrief:%s\\n' "'$?' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+debrief:0
+
+exec
+/bin/zsh -lc "nl -ba app/data/site.ts | sed -n '20,105p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    20	  available: boolean;
+    21	  maltUrl?: string;
+    22	  phone?: string;
+    23	  phoneRaw?: string;
+    24	}
+    25	
+    26	export interface IProject {
+    27	  name: string;
+    28	  role: string;
+    29	  desc: string;
+    30	  hook?: string;
+    31	  image?: string;
+    32	  imageAlt?: string;
+    33	  badge?: string;
+    34	  url?: string;
+    35	  status?: string;
+    36	  tags: string[];
+    37	}
+    38	
+    39	const profile: IProfile = {
+    40	  name: "Simon Jouan",
+    41	  role: "Développeur Full Stack spécialisé en systèmes IA & automatisation métier",
+    42	  shortRole: "Développeur Full Stack spécialisé IA & automatisation",
+    43	  bio: "Conception et industrialisation d'applications web, agents IA et pipelines d'automatisation métier de bout en bout.",
+    44	  email: "simon@jouan.ovh",
+    45	  city: "France · Remote",
+    46	  available: true,
+    47	  maltUrl: "https://www.malt.fr/profile/simonjouan",
+    48	  phone: "+33 6 58 96 90 20",
+    49	  phoneRaw: "+33658969020",
+    50	};
+    51	
+    52	// Stack technique moderne prioritaire ordonnée.
+    53	const skills: string[] = [
+    54	  "typescript",
+    55	  "node.js",
+    56	  "nest.js",
+    57	  "nuxt",
+    58	  "vue",
+    59	  "postgresql",
+    60	  "mcp",
+    61	  "docker",
+    62	  "whisper.cpp",
+    63	  "sherpa-onnx",
+    64	  "llama.cpp",
+    65	  "bullmq",
+    66	  "rest-api",
+    67	  "vitest",
+    68	];
+    69	
+    70	const projects: IProject[] = [
+    71	  {
+    72	    name: "Keova Signal",
+    73	    role: "Concepteur & Développeur Full Stack",
+    74	    hook: "Détecter le bon prospect au bon moment",
+    75	    desc: "Moteur d'acquisition B2B & qualification de leads par ingestion Open Data Insee, scraping éthique, double étage de scoring Zod et serveur MCP natif (10 outils).",
+    76	    image: "/images/projects/keova-signal-dashboard.png",
+    77	    imageAlt: "Tableau de bord de qualification de prospects Keova Signal",
+    78	    badge: "Projet interne / Dépôt privé",
+    79	    status: "● Système interne / En développement actif",
+    80	    tags: ["Node.js 22", "TypeScript", "MCP Server", "PostgreSQL", "Cheerio", "Docker"],
+    81	  },
+    82	  {
+    83	    name: "Debrief",
+    84	    role: "Concepteur & Développeur Full Stack",
+    85	    hook: "Transformer un rendez-vous commercial en apprentissage exploitable",
+    86	    desc: "Application desktop privacy-first (100 % on-device) de synthèse commerciale et analyse d'appels, sans fuite réseau ni dépendance cloud externe.",
+    87	    image: "/images/projects/debrief-dashboard.png",
+    88	    imageAlt: "Interface desktop de synthèse d'appels Debrief",
+    89	    badge: "Dépôt privé",
+    90	    status: "◐ R&D / En développement",
+    91	    tags: ["Tauri", "Rust", "whisper.cpp", "sherpa-onnx", "llama.cpp", "Gemma 4"],
+    92	  },
+    93	  {
+    94	    name: "Devis-Assist",
+    95	    role: "Architecte & Développeur Full Stack",
+    96	    hook: "Transformer un historique de devis BTP en aide au chiffrage",
+    97	    desc: "Solution d'ingestion et d'analyse de devis artisans BTP combinant Mistral OCR 3, file asynchrone BullMQ/Redis et matching flou PostgreSQL pg_trgm.",
+    98	    badge: "Dépôt privé",
+    99	    status: "○ Produit / Architecture BMM validée",
+   100	    tags: ["NestJS", "Nuxt UI 4", "PostgreSQL pg_trgm", "Mistral OCR", "BullMQ"],
+   101	  },
+   102	];
+   103	
+   104	const legacyProjects: IProject[] = [
+   105	  {
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '1290,1310p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+  1290	
+  1291	  .project-card:hover .project-card__img {
+  1292	    transform: none;
+  1293	  }
+  1294	
+  1295	  .project-card:hover .project-card__title {
+  1296	    transition: none;
+  1297	  }
+  1298	
+  1299	  .jpost:hover {
+  1300	    .jpost__arrow {
+  1301	      transform: none;
+  1302	    }
+  1303	  }
+  1304	}
+  1305	</style>
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '876,925p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   876	.project-card__blueprint-grid {
+   877	  display: flex;
+   878	  align-items: center;
+   879	  justify-content: center;
+   880	  gap: var(--space-2);
+   881	  width: 100%;
+   882	}
+   883	
+   884	.project-card__node {
+   885	  display: flex;
+   886	  flex-direction: column;
+   887	  align-items: center;
+   888	  gap: var(--space-1);
+   889	  padding: var(--space-2);
+   890	  border: 1px solid var(--border-subtle);
+   891	  border-radius: var(--radius-xs);
+   892	  background: var(--surface-2);
+   893	  box-shadow: var(--shadow-1);
+   894	}
+   895	
+   896	.project-card__node-icon {
+   897	  font-size: var(--fs-md);
+   898	  color: var(--accent);
+   899	}
+   900	
+   901	.project-card__node-label {
+   902	  font-family: var(--font-mono);
+   903	  font-size: var(--fs-xs);
+   904	  font-weight: var(--fw-medium);
+   905	  color: var(--text-strong);
+   906	  white-space: nowrap;
+   907	}
+   908	
+   909	.project-card__node-flow {
+   910	  font-family: var(--font-mono);
+   911	  font-size: var(--fs-xs);
+   912	  color: var(--accent);
+   913	}
+   914	
+   915	.project-card__blueprint-sub {
+   916	  font-family: var(--font-mono);
+   917	  font-size: var(--fs-xs);
+   918	  color: var(--text-muted);
+   919	  text-align: center;
+   920	  letter-spacing: var(--ls-wide);
+   921	}
+   922	
+   923	.project-card__body {
+   924	  display: flex;
+   925	  flex: 1;
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '936,955p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   936	}
+   937	
+   938	.project-card__no {
+   939	  font-family: var(--font-mono);
+   940	  font-size: var(--fs-xs);
+   941	  letter-spacing: var(--ls-wider);
+   942	  color: var(--text-faint);
+   943	}
+   944	
+   945	.project-card__title-wrap {
+   946	  display: flex;
+   947	  flex-direction: column;
+   948	  gap: var(--space-1);
+   949	  margin-bottom: var(--space-2);
+   950	}
+   951	
+   952	.project-card__title {
+   953	  margin: 0;
+   954	  font-family: var(--font-mono);
+   955	  font-size: var(--fs-xl);
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '952,970p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   952	.project-card__title {
+   953	  margin: 0;
+   954	  font-family: var(--font-mono);
+   955	  font-size: var(--fs-xl);
+   956	  font-weight: var(--fw-regular);
+   957	  color: var(--text-strong);
+   958	  transition: color var(--dur-fast) var(--ease-standard);
+   959	}
+   960	
+   961	.project-card:hover .project-card__title {
+   962	  color: var(--accent);
+   963	}
+   964	
+   965	.project-card__status {
+   966	  font-family: var(--font-mono);
+   967	  font-size: var(--fs-xs);
+   968	  color: var(--accent);
+   969	  letter-spacing: var(--ls-wide);
+   970	}
+
+exec
+/bin/zsh -lc 'rg -n "const projects|projects =" app/pages/index.vue' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+418:const projects = SITE.projects;
+
+codex
+[
+  {
+    "location": "app/pages/index.vue:132-141",
+    "trigger_condition": "Configured project image fails to load",
+    "guard_snippet": "@error=\"failedProjectImages.add(project.name)\"",
+    "potential_consequence": "Broken image icon replaces showcase visual"
+  },
+  {
+    "location": "app/pages/index.vue:143-162",
+    "trigger_condition": "Another project lacks image metadata",
+    "guard_snippet": "v-else-if=\"project.schematic\"; v-else render generic placeholder",
+    "potential_consequence": "Wrong Devis-Assist schematic appears for unrelated project"
+  },
+  {
+    "location": "app/pages/index.vue:167",
+    "trigger_condition": "Project count differs from three",
+    "guard_snippet": "{{ String(index + 1).padStart(2, \"0\") }} / {{ projects.length }}",
+    "potential_consequence": "Card counter displays an incorrect total"
+  },
+  {
+    "location": "app/pages/index.vue:177",
+    "trigger_condition": "A project repeats the same tag",
+    "guard_snippet": "v-for=\"(tag, tagIndex) in project.tags\" :key=\"`${tag}-${tagIndex}`\"",
+    "potential_consequence": "Vue reuses duplicate-key tag nodes incorrectly"
+  },
+  {
+    "location": "app/pages/index.vue:130-182",
+    "trigger_condition": "A project defines a url",
+    "guard_snippet": "<component :is=\"project.url ? ZExternalLink : 'div'\" :href=\"project.url\">",
+    "potential_consequence": "Valid project link becomes inaccessible"
+  },
+  {
+    "location": "app/pages/index.vue:848-849",
+    "trigger_condition": "Touch device applies sticky hover state",
+    "guard_snippet": "@media (hover: none) { .project-card:hover .project-card__img { transform: none; } }",
+    "potential_consequence": "Image remains zoomed after touch interaction"
+  },
+  {
+    "location": "app/pages/index.vue:876-907",
+    "trigger_condition": "Very narrow viewport renders schematic fallback",
+    "guard_snippet": "@media (width <= 420px) { .project-card__blueprint-grid { flex-direction: column; } }",
+    "potential_consequence": "Schematic nodes overflow card horizontally"
+  },
+  {
+    "location": "app/pages/index.vue:952-958",
+    "trigger_condition": "Reduced-motion user leaves card hover",
+    "guard_snippet": "@media (prefers-reduced-motion: reduce) { .project-card__title { transition: none; } }",
+    "potential_consequence": "Title color still animates on hover exit"
+  }
+]
+tokens used
+42 649
+[
+  {
+    "location": "app/pages/index.vue:132-141",
+    "trigger_condition": "Configured project image fails to load",
+    "guard_snippet": "@error=\"failedProjectImages.add(project.name)\"",
+    "potential_consequence": "Broken image icon replaces showcase visual"
+  },
+  {
+    "location": "app/pages/index.vue:143-162",
+    "trigger_condition": "Another project lacks image metadata",
+    "guard_snippet": "v-else-if=\"project.schematic\"; v-else render generic placeholder",
+    "potential_consequence": "Wrong Devis-Assist schematic appears for unrelated project"
+  },
+  {
+    "location": "app/pages/index.vue:167",
+    "trigger_condition": "Project count differs from three",
+    "guard_snippet": "{{ String(index + 1).padStart(2, \"0\") }} / {{ projects.length }}",
+    "potential_consequence": "Card counter displays an incorrect total"
+  },
+  {
+    "location": "app/pages/index.vue:177",
+    "trigger_condition": "A project repeats the same tag",
+    "guard_snippet": "v-for=\"(tag, tagIndex) in project.tags\" :key=\"`${tag}-${tagIndex}`\"",
+    "potential_consequence": "Vue reuses duplicate-key tag nodes incorrectly"
+  },
+  {
+    "location": "app/pages/index.vue:130-182",
+    "trigger_condition": "A project defines a url",
+    "guard_snippet": "<component :is=\"project.url ? ZExternalLink : 'div'\" :href=\"project.url\">",
+    "potential_consequence": "Valid project link becomes inaccessible"
+  },
+  {
+    "location": "app/pages/index.vue:848-849",
+    "trigger_condition": "Touch device applies sticky hover state",
+    "guard_snippet": "@media (hover: none) { .project-card:hover .project-card__img { transform: none; } }",
+    "potential_consequence": "Image remains zoomed after touch interaction"
+  },
+  {
+    "location": "app/pages/index.vue:876-907",
+    "trigger_condition": "Very narrow viewport renders schematic fallback",
+    "guard_snippet": "@media (width <= 420px) { .project-card__blueprint-grid { flex-direction: column; } }",
+    "potential_consequence": "Schematic nodes overflow card horizontally"
+  },
+  {
+    "location": "app/pages/index.vue:952-958",
+    "trigger_condition": "Reduced-motion user leaves card hover",
+    "guard_snippet": "@media (prefers-reduced-motion: reduce) { .project-card__title { transition: none; } }",
+    "potential_consequence": "Title color still animates on hover exit"
+  }
+]

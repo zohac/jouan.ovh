@@ -21,26 +21,42 @@
             </div>
           </div>
 
-          <!-- Colonne droite : eyebrow + bio (1re personne, emphases sur les technologies) + stack -->
+          <!-- Colonne droite : eyebrow + bio (1re personne, emphases sur les technologies) + bloc philosophie + stack -->
           <div class="about__bio">
-            <h2 class="eyebrow">// à propos</h2>
+            <h2 class="eyebrow"><span aria-hidden="true">// </span>à propos</h2>
             <p class="prose about__para">
-              Développeur web freelance basé à <strong>{{ city }}</strong
-              >, je viens d'un parcours technique (métrologie, instrumentation) avant de basculer avec passion dans le
-              code. Aujourd'hui, je conçois et développe des applications web et produits SaaS modernes avec
-              <strong>Vue 3 / Nuxt 4</strong>, <strong>NestJS</strong> et <strong>PostgreSQL</strong>.
+              Je développe des produits et applications depuis plusieurs années, avec un parcours un peu atypique :
+              <strong>douze ans dans la métrologie industrielle</strong> avant de passer au logiciel.
             </p>
             <p class="prose about__para">
-              Je suis également co-fondateur de la plateforme SaaS
-              <ZExternalLink :href="keovaUrl">{{ keovaHostname }}</ZExternalLink
-              >, et j'intègre l'automatisation, l'exigence QA et l'IA au service du code — tests automatisés,
-              architecture modulaire et intégrations d'APIs.
+              Cette première carrière m’a donné des réflexes qui me suivent encore aujourd’hui :
+              <strong>mesurer, tracer, vérifier</strong> et ne pas considérer qu’un système est fiable simplement parce
+              qu’il fonctionne une fois.
             </p>
+            <p class="prose about__para">
+              Aujourd’hui, je combine <strong>développement Full Stack</strong>, <strong>culture QA</strong> et
+              <strong>IA appliquée</strong> pour transformer des processus métier manuels en systèmes logiciels
+              réellement exploitables.
+            </p>
+
+            <!-- Bloc philosophie d'intervention (AC-1) -->
+            <div class="about__philosophy">
+              <p class="about__philo-intro">Je ne pars pas de « où mettre de l'IA ? ».</p>
+              <p class="about__philo-lead">Je pars de :</p>
+              <ul class="about__philo-list">
+                <li>qu’est-ce qui prend du temps ?</li>
+                <li>qu’est-ce qui se répète ?</li>
+                <li>où l’information se perd-elle ?</li>
+                <li>où une personne doit-elle recopier, rechercher ou interpréter ?</li>
+                <li>qu’est-ce qui doit absolument rester sous contrôle humain ?</li>
+              </ul>
+              <p class="about__philo-outro">Ensuite seulement vient la solution technique.</p>
+            </div>
 
             <!-- Stack technique (story 5.2) — sous la bio, conforme à About.jsx. ZTag = pill.
                  Liste sémantique (<ul>/<li>) pour annonce « liste de N éléments » aux lecteurs d'écran. -->
             <div class="about__stack">
-              <h2 class="eyebrow eyebrow--muted">// stack</h2>
+              <h2 class="eyebrow eyebrow--muted"><span aria-hidden="true">// </span>stack</h2>
               <ul class="hero__tags">
                 <li v-for="skill in skills" :key="skill">
                   <ZTag>{{ skill }}</ZTag>
@@ -60,7 +76,7 @@
           <!-- Colonne gauche : timeline d'expériences (la plus récente en haut).
                <ol> : séquence chronologique annoncée comme liste ordonnée aux lecteurs d'écran. -->
           <div>
-            <h2 class="eyebrow">// expériences</h2>
+            <h2 class="eyebrow"><span aria-hidden="true">// </span>expériences</h2>
             <ol class="tl">
               <li v-for="xp in experiences" :key="xp.org" class="tl__item">
                 <div class="tl__date">{{ xp.date }}</div>
@@ -73,7 +89,7 @@
 
           <!-- Colonne droite : formation (une ZCard par diplôme), liste sémantique <ul>/<li>. -->
           <div>
-            <h2 class="eyebrow">// formation</h2>
+            <h2 class="eyebrow"><span aria-hidden="true">// </span>formation</h2>
             <ul class="about__degrees">
               <li v-for="degree in degrees" :key="degree.name">
                 <ZCard padded>
@@ -101,10 +117,6 @@ import { SITE } from "~/data/site";
 // Identité + stack — source unique `app/data/site.ts`.
 const profile = SITE.profile;
 const skills = SITE.skills;
-const city = profile.city.split(",")[0]?.trim() ?? profile.city;
-const keovaProject = SITE.projects.find((p) => p.name.toLowerCase().includes("keova") || p.url?.includes("keova"));
-const keovaUrl = keovaProject?.url ?? "";
-const keovaHostname = keovaUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
 
 // Expériences (de la plus récente à la plus ancienne).
 // `org` sert de clé v-for stable (unique).
@@ -113,7 +125,7 @@ const experiences = [
     date: "02/2021 — aujourd'hui",
     role: "Testeur QA & Développeur TypeScript",
     org: "Linkizz",
-    desc: "Tests automatisés et fiabilisation applicative — Node.js, TypeScript, TestCafé.",
+    desc: "Tests automatisés, fiabilisation applicative et conception de systèmes résilients — Node.js, TypeScript, TestCafé. L'expérience QA influence directement la conception d'agents fiables : reproductibilité, cas limites, observabilité.",
   },
   {
     date: "05/2020 — 12/2021",
@@ -125,7 +137,7 @@ const experiences = [
     date: "07/2007 — 05/2019",
     role: "Métrologue",
     org: "A+ Métrologie / Trescal",
-    desc: "Technicien métrologue multi-grandeur, suppléant COFRAC électricité-magnétisme.",
+    desc: "Technicien métrologue multi-grandeur, suppléant COFRAC électricité-magnétisme. 12 ans de métrologie industrielle : rigueur de mesure, traçabilité et validation méthodologique.",
   },
 ];
 
@@ -136,8 +148,9 @@ const degrees = [
 ];
 
 // Métadonnées de la page. Voix 1re personne cohérente (cf. contrainte Langue & voix).
-const pageTitle = "À propos — jouan.ovh";
-const pageDescription = `Développeur web freelance à ${city}, je conçois des applications web et plateformes SaaS modernes avec Nuxt, NestJS et PostgreSQL — découvrez mon parcours.`;
+const pageTitle = "À propos — Simon Jouan";
+const pageDescription =
+  "Développeur Full Stack spécialisé en systèmes IA et automatisation métier. Parcours métrologie, culture QA et ingénierie logicielle au service de la fiabilité.";
 
 const siteUrl = useSiteUrl();
 const aboutJsonLd = {
@@ -261,6 +274,64 @@ usePageSeo({
       box-shadow: var(--ring-accent);
     }
   }
+}
+
+// ---- Bloc Philosophie ----
+.about__philosophy {
+  margin: var(--space-6) 0;
+  padding: var(--space-5);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+.about__philo-intro {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-strong);
+}
+
+.about__philo-lead {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.about__philo-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: var(--space-5);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-normal);
+    color: var(--text-body);
+
+    &::before {
+      content: "→" / "";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+  }
+}
+
+.about__philo-outro {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-style: italic;
+  color: var(--accent);
 }
 
 // ---- Stack (porté de About.jsx : bloc sous la bio) ----

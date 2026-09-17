@@ -40,7 +40,18 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 9. ~~**Déploiement gh-pages réel**~~ — ✅ **Résolu en 10.7** : premier merge sur `main` et déploiement réel `gh-pages` exécuté et validé. Site servi en production avec HTTPS sur `https://jouan.ovh`.
 
----
+## Deferred from: code review of 12-5-page-services-restructuration-des-offres-et-process-4-etapes (2026-09-16)
+
+- **Ajustement responsive de la grille du process à 4 colonnes entre 900px et 1100px** (`app/pages/services.vue:401`) — La grille passe de 4 colonnes à 1 colonne sous le breakpoint 900px. Entre 900px et 1100px, les 4 colonnes rendent des descriptions d'étapes relativement denses. Un palier intermédiaire à 2 colonnes (ex. sous 1050px) pourra être introduit lors d'une passe de polissage responsive globale.
+
+## Deferred from: code review of 12-4-homepage-vitrine-des-3-projets-phares (2026-09-16)
+
+- **Rendu d'un lien dynamique si `project.url` est défini** (`app/pages/index.vue:130`) — Si un projet définit une URL publique ultérieurement, la carte ne dispose pas actuellement d'un composant de lien englobant (`<ZExternalLink>` ou `<NuxtLink>`). Délibéré pour le MVP car les 3 projets phares actuels sont des dépôts privés sans lien sortant. À prévoir si des projets publics sont intégrés à la vitrine.
+
+## Deferred from: code review of 12-1-source-unique-de-donnees-sitets-et-coherence-globale (2026-09-16)
+
+- **Description SEO `/about` non encore repositionnée sur les systèmes IA** (`app/pages/about.vue:142`) — la description de la page mentionne encore le profil antérieur Nuxt/NestJS/SaaS. Prévu au scope de la Story 12.6 (refonte page À propos & SEO site-wide).
+- **Format de `addressLocality` Schema.org sur `/about`** (`app/pages/about.vue:159`) — `addressLocality` hérite de `"France · Remote"`. Prévu pour révision et ajustement structuré dans la Story 12.6.
 
 ## Deferred from: code review of 9-2-motion-reduit-contraste-et-clavier (2026-06-29)
 
