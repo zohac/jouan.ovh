@@ -27,11 +27,13 @@
             <p>Le site <strong>jouan.ovh</strong> limite la collecte des données personnelles au strict nécessaire :</p>
             <ul>
               <li>
-                <strong>Formulaire de contact :</strong> lorsque vous envoyez un message via la page
+                <strong>Formulaire de contact :</strong> lorsque vous envoyez une demande via la page
                 <NuxtLink to="/contact" class="legal__link">Contact</NuxtLink>, je collecte votre <strong>nom</strong>,
-                votre <strong>adresse email</strong>, ainsi que le <strong>sujet</strong> (facultatif) et le
-                <strong>contenu de votre message</strong>. Les champs nom, email et message sont obligatoires pour me
-                permettre de vous répondre.
+                votre <strong>adresse email</strong>, le nom de votre <strong>entreprise</strong> (facultatif), la
+                <strong>fréquence</strong> du processus (facultatif), ainsi que la description de votre workflow
+                (<strong>processus à améliorer</strong> et <strong>fonctionnement actuel</strong>). Les champs nom,
+                email, processus et fonctionnement actuel sont obligatoires pour me permettre de qualifier votre besoin
+                et vous répondre.
               </li>
               <li>
                 <strong>Finalité :</strong> ces informations sont utilisées exclusivement pour traiter votre demande, y
@@ -155,7 +157,7 @@ import { usePageSeo } from "~/composables/usePageSeo";
 const profile = SITE.profile;
 
 usePageSeo({
-  title: "Politique de confidentialité — jouan.ovh",
+  title: "Politique de confidentialité — Simon Jouan",
   description:
     "Politique de confidentialité et protection des données personnelles (RGPD) du site jouan.ovh — Simon Jouan.",
   path: "/confidentialite",

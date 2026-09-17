@@ -3,10 +3,10 @@
     <section class="section">
       <div class="container">
         <!-- En-tête (porté de Blog.jsx : eyebrow + titre + sous-titre prose) -->
-        <p class="eyebrow">// ~/blog</p>
+        <p class="eyebrow"><span aria-hidden="true">// </span>~/blog</p>
         <h1 class="blog__title">Notes de dev</h1>
         <p class="prose blog__subtitle">
-          WordPress, architecture, IA appliquée — ce que j'apprends en construisant des choses.
+          Systèmes IA, agents, architecture et automatisation métier — ce que j'apprends en construisant des choses.
         </p>
 
         <!-- Liste des articles (triés par date décroissante), cartes interactives -->
@@ -100,9 +100,9 @@ const { data: articles, error } = await useAsyncData("blog-list", () =>
 // Métadonnées de la page. URL de prod lue depuis runtimeConfig via useSiteUrl()
 // (swappable staging/prod, sans domaine en dur). Inchangée en staging.
 const siteUrl = useSiteUrl();
-const pageTitle = "Blog — jouan.ovh";
+const pageTitle = "Blog — Simon Jouan";
 const pageDescription =
-  "Notes de dev — WordPress, architecture et IA appliquée : ce que j'apprends en construisant des produits web.";
+  "Notes de dev, architecture, agents IA et automatisation métier : retours d'expérience et apprentissages concrets sur le terrain.";
 const pageUrl = `${siteUrl}/blog`;
 
 // JSON-LD : flux d'articles (Blog → BlogPosting) pour les moteurs / agrégateurs.

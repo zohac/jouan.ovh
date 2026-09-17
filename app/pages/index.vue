@@ -259,35 +259,26 @@
       </div>
     </section>
 
-    <!-- Bloc CTA final de conversion (Story 11.4 / AC-4) -->
+    <!-- Bloc CTA final de conversion (Story 12.6 / AC-2) -->
     <section class="section">
       <div class="container">
         <div class="cta">
-          <p class="eyebrow cta__eyebrow"><span aria-hidden="true">$ </span>./contact --start</p>
+          <p class="eyebrow cta__eyebrow"><span aria-hidden="true">$ </span>./workflow --inspect</p>
           <h2 class="cta__title">
-            Un projet en tête ?<br />
-            Mettons-le <span class="cta__highlight">en production</span>.
+            Quel process vous fait perdre du temps <span class="cta__highlight">chaque semaine</span> ?
           </h2>
           <p class="cta__subtitle">
-            Que ce soit pour concevoir un nouveau SaaS, accélérer votre roadmap ou fiabiliser votre stack TypeScript,
-            parlons-en.
+            Décrivez-moi simplement comment il fonctionne aujourd’hui. Je vous dirai ce qui mérite d’être automatisé, ce
+            qui doit rester humain et si l’IA apporte réellement quelque chose.
           </p>
           <div class="cta__actions">
             <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg" data-hot>
-              Discuter de votre projet
+              Identifier un workflow à automatiser
               <template #iconRight><ZIcon name="arrow" /></template>
             </ZButton>
-            <ZButton
-              v-if="SITE.profile.maltUrl"
-              :as="ZExternalLink"
-              :href="SITE.profile.maltUrl"
-              variant="secondary"
-              size="lg"
-              data-hot
-            >
-              Me contacter sur Malt
+            <ZButton as="a" :href="`mailto:${SITE.profile.email}`" variant="secondary" size="lg" data-hot>
+              M’écrire directement
             </ZButton>
-            <ZButton :as="NuxtLink" to="/about" variant="ghost" size="lg" data-hot> Voir le parcours &amp; CV </ZButton>
           </div>
         </div>
       </div>
@@ -440,7 +431,7 @@ const homeJsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Simon Jouan — Développeur Full Stack TypeScript",
+    name: "Simon Jouan — Systèmes IA, agents & automatisation métier",
     url: siteUrl,
     description: SITE.profile.role,
   },
@@ -461,9 +452,9 @@ const homeJsonLd = [
 ];
 
 usePageSeo({
-  title: "Simon Jouan — Développeur Full Stack TypeScript · Nuxt & NestJS",
+  title: "Simon Jouan — Systèmes IA, agents & automatisation métier",
   description:
-    "Développeur Full Stack TypeScript freelance : création d'applications web et plateformes SaaS modernes avec Nuxt, NestJS et PostgreSQL.",
+    "Développeur Full Stack spécialisé en systèmes IA et automatisation métier. Agents IA, intégrations, applications sur mesure et workflows mis en production.",
   path: "/",
   image: "/images/portrait.jpeg",
   type: "website",

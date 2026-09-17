@@ -42,13 +42,23 @@
             <ContentRenderer :value="page" />
           </div>
 
-          <!-- Bloc CTA de fin (porté de Blog.jsx) -->
+          <!-- Bloc CTA final de conversion (Story 12.6 / AC-2) -->
           <div class="article__cta">
-            <span class="article__cta-label">Un projet en tête ?</span>
-            <ZButton :as="NuxtLink" to="/contact" variant="primary">
-              Démarrer un projet
-              <template #iconRight><ZIcon name="arrow" /></template>
-            </ZButton>
+            <p class="eyebrow article__cta-eyebrow"><span aria-hidden="true">$ </span>./workflow --inspect</p>
+            <h2 class="article__cta-title">Quel process vous fait perdre du temps chaque semaine ?</h2>
+            <p class="article__cta-subtitle">
+              Décrivez-moi simplement comment il fonctionne aujourd’hui. Je vous dirai ce qui mérite d’être automatisé,
+              ce qui doit rester humain et si l’IA apporte réellement quelque chose.
+            </p>
+            <div class="article__cta-actions">
+              <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+                Identifier un workflow à automatiser
+                <template #iconRight><ZIcon name="arrow" /></template>
+              </ZButton>
+              <ZButton as="a" :href="`mailto:${SITE.profile.email}`" variant="secondary" size="lg">
+                M’écrire directement
+              </ZButton>
+            </div>
           </div>
         </article>
       </div>
@@ -147,7 +157,7 @@ usePageSeo(() => {
   };
 
   return {
-    title: `${article.title} — jouan.ovh`,
+    title: `${article.title} — Simon Jouan`,
     ogTitle: article.title,
     description: article.description,
     path: article.path,
@@ -383,21 +393,42 @@ usePageSeo(() => {
   }
 }
 
-// ---- Bloc CTA de fin (porté de Blog.jsx) ----
+// ---- Bloc CTA de fin (Story 12.6 / AC-2) ----
 .article__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: var(--space-12);
+  padding: var(--space-8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+}
+
+.article__cta-eyebrow {
+  margin-bottom: var(--space-3);
+}
+
+.article__cta-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+  color: var(--text-strong);
+}
+
+.article__cta-subtitle {
+  margin: 0 0 var(--space-6);
+  font-size: var(--fs-base);
+  line-height: var(--lh-relaxed);
+  color: var(--text-muted);
+}
+
+.article__cta-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
   align-items: center;
-  justify-content: space-between;
-  margin-top: var(--space-10);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--border-subtle);
-}
-
-.article__cta-label {
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  color: var(--text-muted);
 }
 </style>

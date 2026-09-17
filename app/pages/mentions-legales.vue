@@ -95,7 +95,7 @@ import { usePageSeo } from "~/composables/usePageSeo";
 const profile = SITE.profile;
 
 usePageSeo({
-  title: "Mentions légales — jouan.ovh",
+  title: "Mentions légales — Simon Jouan",
   description: "Mentions légales, informations éditeur et hébergement du site jouan.ovh — Simon Jouan.",
   path: "/mentions-legales",
   type: "website",

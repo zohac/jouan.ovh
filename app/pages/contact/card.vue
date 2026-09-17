@@ -102,7 +102,8 @@ const cardJsonLd = {
 
 usePageSeo({
   title: "Carte de visite — Simon Jouan",
-  description: "Fiche contact et QR code vCard de Simon Jouan, Développeur Full Stack TypeScript.",
+  description:
+    "Fiche contact et QR code vCard de Simon Jouan, Développeur Full Stack spécialisé en systèmes IA et automatisation métier.",
   path: "/contact/card",
   image: "/images/portrait.jpeg",
   type: "profile",
