@@ -5,7 +5,14 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from "vue";
 import { SITE } from "~/data/site";
+
+const { initTheme } = useTheme();
+
+onMounted(() => {
+  initTheme();
+});
 
 // Métadonnées Schema.org globales (Organization / publisher du site).
 // Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).

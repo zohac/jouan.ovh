@@ -4,7 +4,14 @@
       <div class="ftr__in">
         <div class="ftr__brand-col">
           <NuxtLink to="/" class="ftr__brand">
-            <NuxtImg src="/images/logo_white.png" alt="" class="ftr__logo" width="22" height="22" />
+            <NuxtImg src="/images/logo_white.png" alt="" class="ftr__logo ftr__logo--dark" width="22" height="22" />
+            <NuxtImg
+              src="/images/logo_black_256x256.png"
+              alt=""
+              class="ftr__logo ftr__logo--light"
+              width="22"
+              height="22"
+            />
             <span><b>jouan</b><span class="dim">.ovh</span></span>
           </NuxtLink>
           <p class="ftr__tagline">{{ profile.role }}. {{ profile.city }}.</p>

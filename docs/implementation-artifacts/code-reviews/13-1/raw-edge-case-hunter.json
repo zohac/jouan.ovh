@@ -1,0 +1,377 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0b4c6-5fec-7d63-ad97-22b51a2683af
+--------
+user
+# Edge Case Hunter Prompt — Story 13.1
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/13-1/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’m using `bmad-review-edge-case-hunter` to mechanically enumerate unhandled branches in the supplied diff.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md && printf '\\n---DIFF---\\n' && sed -n '1,260p' docs/implementation-artifacts/code-reviews/13-1/full.diff" in /Users/simon/dev/jouan.ovh
+ exited 1 in 0ms:
+sed: /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md: No such file or directory
+
+exec
+/bin/zsh -lc "sed -n '1,280p' .agents/skills/bmad-review-edge-case-hunter/SKILL.md && printf '\\n---DIFF---\\n' && sed -n '1,320p' docs/implementation-artifacts/code-reviews/13-1/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+---DIFF---
+diff --git a/app/assets/scss/abstract/_root.scss b/app/assets/scss/abstract/_root.scss
+index 16c78d3..5e92f5f 100644
+--- a/app/assets/scss/abstract/_root.scss
++++ b/app/assets/scss/abstract/_root.scss
+@@ -202,6 +202,57 @@
+   --ease-standard: ease-in-out;
+ }
+ 
++// ============================================================
++//  Surcharge Thème Clair — Palette « Papier technique / Crème solaire »
++// ============================================================
++[data-theme="light"] {
++  // Surfaces claires
++  --bg-page: hsl(38deg 25% 97%);
++  --bg-sunken: hsl(38deg 20% 93%);
++  --bg-card: hsl(0deg 0% 100%);
++  --bg-elevated: hsl(38deg 30% 99%);
++  --bg-input: hsl(38deg 15% 95%);
++
++  // Encres aubergine (contrastes WCAG AAA)
++  --text-strong: hsl(320deg 30% 12%);
++  --text-body: hsl(320deg 18% 26%);
++  --text-muted: hsl(320deg 10% 44%);
++  --text-faint: hsl(320deg 8% 58%);
++  --ink-on-accent: hsl(0deg 0% 100%);
++
++  // Bordures douces
++  --border-subtle: hsl(35deg 15% 88%);
++  --border-default: hsl(35deg 12% 80%);
++  --border-strong: hsl(35deg 12% 68%);
++
++  // Accent & sélections
++  --accent: hsl(24deg 95% 44%);
++  --accent-soft: hsl(24deg 94% 53% / 10%);
++  --accent-ring: hsl(24deg 94% 53% / 35%);
++  --selection: hsl(24deg 94% 53% / 22%);
++  --overlay: hsl(320deg 30% 10% / 40%);
++
++  // Ombres adaptées
++  --shadow-1: 0 1px 3px hsl(35deg 20% 40% / 8%);
++  --shadow-2: 0 3px 10px hsl(35deg 20% 40% / 10%);
++  --shadow-3: 0 8px 24px hsl(35deg 20% 40% / 12%);
++  --shadow-hairline: inset 0 1px 0 hsl(0deg 0% 100% / 80%);
++}
++
++// Sanctuarisation absolue du terminal sombre
++.home-hero-terminal,
++.hero-term,
++.terminal-window,
++.terminal {
++  --bg-terminal: hsl(319deg 100% 9%);
++  --text-strong: var(--ink-1);
++  --text-body: var(--ink-2);
++  --text-muted: var(--ink-3);
++  --border-subtle: var(--line-subtle);
++  --border-default: var(--line);
++  --border-terminal: hsl(319deg 40% 30% / 40%);
++}
++
+ ::selection {
+   background: var(--selection);
+ }
+diff --git a/docs/implementation-artifacts/13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal.md b/docs/implementation-artifacts/13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal.md
+index 88e70d4..b25f23b 100644
+--- a/docs/implementation-artifacts/13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal.md
++++ b/docs/implementation-artifacts/13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal.md
+@@ -4,7 +4,7 @@ baseline_commit: f077f9b563bcef69bc61b9f28913f6db071e8b36
+ 
+ # Story 13.1: Fondations des Tokens SCSS Thème Clair et Sanctuarisation du Terminal
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -65,21 +65,21 @@ so that l'application s'adapte sans rupture de style ni dénaturation de l'immer
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Déclaration des tokens de surface et d'encre clairs dans `app/assets/scss/abstract/_root.scss` (AC: 1, 2)
+-  - [ ] Ajouter le sélecteur `[data-theme="light"]` à la suite du bloc `:root`.
+-  - [ ] Déclarer la rampe des surfaces claires (`--bg-page`, `--bg-sunken`, `--bg-card`, `--bg-elevated`, `--bg-input`).
+-  - [ ] Déclarer la rampe d'encres aubergine (`--text-strong`, `--text-body`, `--text-muted`, `--text-faint`).
+-  - [ ] Déclarer les bordures douces (`--border-subtle`, `--border-default`, `--border-strong`), les ombres claires et l'accent orange contrasté AA.
+-  - [ ] Vérifier la conformité de la notation CSS (angles `deg`, pourcentages sans virgules non standard).
++- [x] Tâche 1 — Déclaration des tokens de surface et d'encre clairs dans `app/assets/scss/abstract/_root.scss` (AC: 1, 2)
++  - [x] Ajouter le sélecteur `[data-theme="light"]` à la suite du bloc `:root`.
++  - [x] Déclarer la rampe des surfaces claires (`--bg-page`, `--bg-sunken`, `--bg-card`, `--bg-elevated`, `--bg-input`).
++  - [x] Déclarer la rampe d'encres aubergine (`--text-strong`, `--text-body`, `--text-muted`, `--text-faint`).
++  - [x] Déclarer les bordures douces (`--border-subtle`, `--border-default`, `--border-strong`), les ombres claires et l'accent orange contrasté AA.
++  - [x] Vérifier la conformité de la notation CSS (angles `deg`, pourcentages sans virgules non standard).
+ 
+-- [ ] Tâche 2 — Sanctuarisation du Terminal Hero et des fenêtres CLI (AC: 3)
+-  - [ ] Déclarer dans `_root.scss` (ou dans une section dédiée) la réinitialisation locale des tokens pour les sélecteurs `.hero-term`, `.home-hero-terminal`, `.terminal-window`, `.terminal`.
+-  - [ ] Forcer les variables internes de surface et de texte (`--bg-terminal`, `--text-strong`, `--text-body`, `--text-muted`, `--border-subtle`, `--border-terminal`).
+-  - [ ] Vérifier qu'aucun composant terminal n'est pollué par les encres sombres du mode clair.
++- [x] Tâche 2 — Sanctuarisation du Terminal Hero et des fenêtres CLI (AC: 3)
++  - [x] Déclarer dans `_root.scss` (ou dans une section dédiée) la réinitialisation locale des tokens pour les sélecteurs `.hero-term`, `.home-hero-terminal`, `.terminal-window`, `.terminal`.
++  - [x] Forcer les variables internes de surface et de texte (`--bg-terminal`, `--text-strong`, `--text-body`, `--text-muted`, `--border-subtle`, `--border-default`, `--border-terminal`).
++  - [x] Vérifier qu'aucun composant terminal n'est pollué par les encres sombres du mode clair.
+ 
+-- [ ] Tâche 3 — Vérification visuelle locale et conformité Stylelint / Docker (AC: 4)
+-  - [ ] Tester temporairement l'application de `data-theme="light"` sur la balise `<html>` pour vérifier le rendu des cartes blanches sur fond crème.
+-  - [ ] Lancer `docker compose run --rm web sh -c "corepack enable && pnpm lint"` et corriger tout avertissement Stylelint.
++- [x] Tâche 3 — Vérification visuelle locale et conformité Stylelint / Docker (AC: 4)
++  - [x] Tester temporairement l'application de `data-theme="light"` sur la balise `<html>` pour vérifier le rendu des cartes blanches sur fond crème.
++  - [x] Lancer `docker compose run --rm web sh -c "corepack enable && pnpm lint"` et corriger tout avertissement Stylelint.
+ 
+ ## Dev Notes
+ 
+@@ -157,11 +157,19 @@ so that l'application s'adapte sans rupture de style ni dénaturation de l'immer
+ 
+ ### Agent Model Used
+ 
+-Gemini 3.8 Flash (High)
++Gemini 3.7 Flash (Medium)
+ 
+ ### Debug Log References
+ 
++- Validation Gate Docker exécutée avec succès (`pnpm lint`, `pnpm typecheck`, `pnpm generate`).
++- 0 erreur ESLint, 0 erreur Stylelint.
++- 24 routes SSG pré-rendues sans anomalie.
++
+ ### Completion Notes List
+ 
++- Déclaration de la palette claire « Papier technique / Crème solaire » sous `[data-theme="light"]` dans `app/assets/scss/abstract/_root.scss`.
++- Redéfinition des alias sémantiques de surfaces (`--bg-page`, `--bg-sunken`, `--bg-card`, `--bg-elevated`, `--bg-input`), encres aubergine WCAG AAA (`--text-strong`, `--text-body`, `--text-muted`, `--text-faint`, `--ink-on-accent`), bordures chaudes, ombres et accents orange contrastés.
++- Sanctuarisation stricte des composants terminaux (`.home-hero-terminal`, `.hero-term`, `.terminal-window`, `.terminal`) avec préservation du fond sombre, encres claires et bordures terminales.
++
+ ### File List
+ - `app/assets/scss/abstract/_root.scss`
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 7ec2bf6..aa2eec1 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-18 (Story 13.1 prête pour le dev)"
++last_updated: "2026-09-18 (Story 13.1 prête pour code-review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -139,7 +139,7 @@ development_status:
+ 
+   # Epic 13 — Thème Light & Dark et Bascule Utilisateur
+   epic-13: in-progress
+-  13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: ready-for-dev
++  13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: review
+   13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: backlog
+   13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile: backlog
+   13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: backlog
+
+exec
+/bin/zsh -lc "nl -ba app/assets/scss/abstract/_root.scss | sed -n '195,270p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   195	  // ============================================================
+   196	  --dur-fast: 120ms;
+   197	  --dur-base: 180ms;
+   198	  --dur-slow: 320ms;
+   199	  --dur-slower: 600ms;
+   200	  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+   201	  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+   202	  --ease-standard: ease-in-out;
+   203	}
+   204	
+   205	// ============================================================
+   206	//  Surcharge Thème Clair — Palette « Papier technique / Crème solaire »
+   207	// ============================================================
+   208	[data-theme="light"] {
+   209	  // Surfaces claires
+   210	  --bg-page: hsl(38deg 25% 97%);
+   211	  --bg-sunken: hsl(38deg 20% 93%);
+   212	  --bg-card: hsl(0deg 0% 100%);
+   213	  --bg-elevated: hsl(38deg 30% 99%);
+   214	  --bg-input: hsl(38deg 15% 95%);
+   215	
+   216	  // Encres aubergine (contrastes WCAG AAA)
+   217	  --text-strong: hsl(320deg 30% 12%);
+   218	  --text-body: hsl(320deg 18% 26%);
+   219	  --text-muted: hsl(320deg 10% 44%);
+   220	  --text-faint: hsl(320deg 8% 58%);
+   221	  --ink-on-accent: hsl(0deg 0% 100%);
+   222	
+   223	  // Bordures douces
+   224	  --border-subtle: hsl(35deg 15% 88%);
+   225	  --border-default: hsl(35deg 12% 80%);
+   226	  --border-strong: hsl(35deg 12% 68%);
+   227	
+   228	  // Accent & sélections
+   229	  --accent: hsl(24deg 95% 44%);
+   230	  --accent-soft: hsl(24deg 94% 53% / 10%);
+   231	  --accent-ring: hsl(24deg 94% 53% / 35%);
+   232	  --selection: hsl(24deg 94% 53% / 22%);
+   233	  --overlay: hsl(320deg 30% 10% / 40%);
+   234	
+   235	  // Ombres adaptées
+   236	  --shadow-1: 0 1px 3px hsl(35deg 20% 40% / 8%);
+   237	  --shadow-2: 0 3px 10px hsl(35deg 20% 40% / 10%);
+   238	  --shadow-3: 0 8px 24px hsl(35deg 20% 40% / 12%);
+   239	  --shadow-hairline: inset 0 1px 0 hsl(0deg 0% 100% / 80%);
+   240	}
+   241	
+   242	// Sanctuarisation absolue du terminal sombre
+   243	.home-hero-terminal,
+   244	.hero-term,
+   245	.terminal-window,
+   246	.terminal {
+   247	  --bg-terminal: hsl(319deg 100% 9%);
+   248	  --text-strong: var(--ink-1);
+   249	  --text-body: var(--ink-2);
+   250	  --text-muted: var(--ink-3);
+   251	  --border-subtle: var(--line-subtle);
+   252	  --border-default: var(--line);
+   253	  --border-terminal: hsl(319deg 40% 30% / 40%);
+   254	}
+   255	
+   256	::selection {
+   257	  background: var(--selection);
+   258	}
+   259	
+   260	// Keyframes globaux (hors :root). Seul caret-blink est une boucle UI (caret terminal).
+   261	@keyframes caret-blink {
+   262	  0%,
+   263	  49% {
+   264	    opacity: 1;
+   265	  }
+   266	
+   267	  50%,
+   268	  100% {
+   269	    opacity: 0;
+   270	  }
+
+codex
+[
+  {
+    "location": "app/assets/scss/abstract/_root.scss:242-254",
+    "trigger_condition": "Text selection occurs inside a terminal under light theme",
+    "guard_snippet": ".terminal { --selection: var(--selection-terminal); }",
+    "potential_consequence": "Terminal selection uses the light-theme highlight color"
+  },
+  {
+    "location": "app/assets/scss/abstract/_root.scss:242-254",
+    "trigger_condition": "Terminal descendants consume light-theme tokens not overridden locally",
+    "guard_snippet": ".terminal { --bg-card: var(--bg-terminal); --bg-input: var(--bg-terminal); --accent: var(--accent-terminal); }",
+    "potential_consequence": "Terminal descendants retain light surfaces or accent styling"
+  }
+]
+tokens used
+34 913
+[
+  {
+    "location": "app/assets/scss/abstract/_root.scss:242-254",
+    "trigger_condition": "Text selection occurs inside a terminal under light theme",
+    "guard_snippet": ".terminal { --selection: var(--selection-terminal); }",
+    "potential_consequence": "Terminal selection uses the light-theme highlight color"
+  },
+  {
+    "location": "app/assets/scss/abstract/_root.scss:242-254",
+    "trigger_condition": "Terminal descendants consume light-theme tokens not overridden locally",
+    "guard_snippet": ".terminal { --bg-card: var(--bg-terminal); --bg-input: var(--bg-terminal); --accent: var(--accent-terminal); }",
+    "potential_consequence": "Terminal descendants retain light surfaces or accent styling"
+  }
+]

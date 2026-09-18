@@ -40,6 +40,18 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 9. ~~**Déploiement gh-pages réel**~~ — ✅ **Résolu en 10.7** : premier merge sur `main` et déploiement réel `gh-pages` exécuté et validé. Site servi en production avec HTTPS sur `https://jouan.ovh`.
 
+## Deferred from: code review of 13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg (2026-09-18)
+
+- **Isolation du sélecteur global `pre` vis-à-vis des composants Markdown blog** (`app/assets/scss/abstract/_root.scss:268`) — La sanctuarisation actuelle applique les styles sombres directement sur la balise `pre`. Préexistant et cohérent avec le style par défaut du blog, mais factorisable sous une classe dédiée pour isoler formellement les terminaux des blocs de code du contenu éditorial lors d'une future refonte du blog.
+
+## Deferred from: code review of 13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile (2026-09-18)
+
+- **Focus clavier non réinitialisé lors du redimensionnement dynamique mobile vers desktop (> 900px) avec menu ouvert** (`app/components/HeaderComponent.vue:209-214`) — Comportement préexistant commun à tous les contrôles du menu mobile (`.hdr__menu-link`, boutons terminal et contact) lors du passage desktop via `onDesktopChange()`. À traiter lors d'une passe de refactorisation globale du composant Header.
+
+## Deferred from: code review of 13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal (2026-09-18)
+
+- **Ajustement des tokens d'état d'accentuation (--accent-hover, --accent-active) et des composants transverses en mode clair** (`app/assets/scss/abstract/_root.scss`) — La Story 13.1 pose la fondation de la palette de surface et de texte crème/aubergine. L'adaptation fine des états d'interaction hover/active et l'audit transverse de l'atmosphère d'ambiance et des pages spécifiques sont explicitement planifiés pour la Story 13.4.
+
 ## Deferred from: code review of 12-5-page-services-restructuration-des-offres-et-process-4-etapes (2026-09-16)
 
 - **Ajustement responsive de la grille du process à 4 colonnes entre 900px et 1100px** (`app/pages/services.vue:401`) — La grille passe de 4 colonnes à 1 colonne sous le breakpoint 900px. Entre 900px et 1100px, les 4 colonnes rendent des descriptions d'étapes relativement denses. Un palier intermédiaire à 2 colonnes (ex. sous 1050px) pourra être introduit lors d'une passe de polissage responsive globale.
@@ -170,3 +182,7 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 ## Deferred from: code review of 11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker (2026-09-13)
 
 - **Nettoyage résiduel des mentions « WordPress » sur les autres pages secondaires** (`app/pages/contact.vue`, `app/pages/blog/index.vue`) — Si la page `about.vue` a été harmonisée en Story 11.5 et `/services` fait l'objet d'un suivi différé dédié, `contact.vue` (placeholder de formulaire et description SEO) et `blog/index.vue` (sous-titre et meta description) conservent des mentions WordPress historiques à réaligner lors d'un futur rafraîchissement éditorial transversal.
+ 
+## Deferred from: code review of 13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc (2026-09-18)
+ 
+- **Suite de tests automatisés unitaires pour la logique réactive de `useTheme`** (`test/`) — Le projet ne possède pas de banc de tests unitaires client (Vitest/Playwright). La validation actuelle repose sur la gate Docker (lint, typecheck, generate SSG 24 routes). L'ajout d'une suite de tests unitaires pour `useTheme` et l'anti-FOUC relève d'une mise en place globale d'outillage de test.

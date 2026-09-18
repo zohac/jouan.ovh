@@ -200,11 +200,148 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-standard: ease-in-out;
+
+  // Ambiance & contrastes héro
+  --atmos-opacity: 0.52;
+  --atmos-fallback-accent: var(--accent-soft);
+  --atmos-fallback-accent-2: var(--accent-2-soft);
+  --hero-title-shadow: 0 2px 14px color-mix(in srgb, var(--surface-0) 80%, transparent);
+  --hero-sub-shadow: 0 1px 8px color-mix(in srgb, var(--surface-0) 70%, transparent);
 }
+
+// ============================================================
+//  Surcharge Thème Clair — Palette « Papier technique / Crème solaire »
+// ============================================================
+[data-theme="light"] {
+  // ---- Rampe de surfaces neutres primitives ----
+  --surface-0: hsl(38deg 25% 97%);
+  --surface-1: hsl(38deg 20% 93%);
+  --surface-2: hsl(0deg 0% 100%);
+  --surface-3: hsl(38deg 30% 99%);
+  --surface-4: hsl(38deg 15% 95%);
+
+  // ---- Bordures / hairlines primitives ----
+  --line-subtle: hsl(35deg 15% 88%);
+  --line: hsl(35deg 12% 80%);
+  --line-strong: hsl(35deg 12% 68%);
+
+  // ---- Texte encres primitives (contrastes WCAG AAA) ----
+  --ink-1: hsl(320deg 30% 12%);
+  --ink-2: hsl(320deg 18% 26%);
+  --ink-3: hsl(320deg 10% 44%);
+  --ink-4: hsl(320deg 8% 58%);
+  --ink-on-accent: hsl(0deg 0% 100%);
+
+  // ---- Alias sémantiques ----
+  --bg-page: var(--surface-0);
+  --bg-sunken: var(--surface-1);
+  --bg-card: var(--surface-2);
+  --bg-elevated: var(--surface-3);
+  --bg-input: var(--surface-4);
+  --text-strong: var(--ink-1);
+  --text-body: var(--ink-2);
+  --text-muted: var(--ink-3);
+  --text-faint: var(--ink-4);
+  --accent-text: var(--ink-on-accent);
+  --border-subtle: var(--line-subtle);
+  --border-default: var(--line);
+  --border-strong: var(--line-strong);
+
+  // ---- Accentuation & interactions ----
+  --accent: hsl(24deg 95% 44%);
+  --accent-hover: hsl(24deg 95% 48%);
+  --accent-active: hsl(24deg 95% 40%);
+  --accent-soft: hsl(24deg 94% 53% / 10%);
+  --accent-ring: hsl(24deg 94% 53% / 35%);
+  --accent-2: hsl(319deg 33% 40%);
+  --accent-2-soft: hsl(319deg 40% 40% / 15%);
+  --selection: hsl(24deg 94% 53% / 22%);
+  --overlay: hsl(320deg 30% 10% / 40%);
+
+  // ---- Ombres adaptées ----
+  --shadow-1: 0 1px 3px hsl(35deg 20% 40% / 8%);
+  --shadow-2: 0 3px 10px hsl(35deg 20% 40% / 10%);
+  --shadow-3: 0 8px 24px hsl(35deg 20% 40% / 12%);
+  --shadow-hairline: inset 0 1px 0 hsl(0deg 0% 100% / 80%);
+
+  // Ambiance & contrastes héro en thème clair (visibilité rehaussée)
+  --atmos-opacity: 0.46;
+  --atmos-fallback-accent: color-mix(in srgb, var(--accent) 22%, transparent);
+  --atmos-fallback-accent-2: color-mix(in srgb, var(--accent-2) 20%, transparent);
+  --hero-title-shadow: none;
+  --hero-sub-shadow: none;
+}
+
+/* stylelint-disable selector-class-pattern -- sanctuarisation classes terminal et blocs code */
+// Sanctuarisation absolue du terminal sombre
+.home-hero-terminal,
+.hero-term,
+.terminal-window,
+.terminal,
+.contact__term,
+pre {
+  --surface-0: hsl(320deg 30% 6%);
+  --surface-1: hsl(319deg 22% 9%);
+  --surface-2: hsl(318deg 18% 12%);
+  --surface-3: hsl(317deg 16% 16%);
+  --surface-4: hsl(316deg 14% 21%);
+  --ink-1: hsl(30deg 18% 95%);
+  --ink-2: hsl(28deg 10% 74%);
+  --ink-3: hsl(25deg 7% 54%);
+  --ink-4: hsl(22deg 6% 40%);
+  --line-subtle: hsl(316deg 14% 18%);
+  --line: hsl(315deg 12% 25%);
+  --line-strong: hsl(314deg 11% 34%);
+  --bg-page: var(--surface-0);
+  --bg-sunken: var(--surface-1);
+  --bg-card: var(--surface-2);
+  --bg-elevated: var(--surface-3);
+  --bg-input: var(--surface-4);
+  --bg-terminal: var(--aubergine-deep);
+  --text-strong: hsl(30deg 18% 95%);
+  --text-body: hsl(28deg 10% 74%);
+  --text-muted: hsl(25deg 7% 54%);
+  --text-faint: hsl(22deg 6% 40%);
+  --border-subtle: hsl(316deg 14% 18%);
+  --border-default: hsl(315deg 12% 25%);
+  --border-terminal: hsl(319deg 40% 30% / 40%);
+  --accent: var(--orange-500);
+  --accent-hover: hsl(24deg 100% 60%);
+  --accent-active: var(--orange-600);
+  --accent-soft: hsl(24deg 94% 53% / 13%);
+  --accent-ring: hsl(24deg 94% 53% / 45%);
+  --accent-2: var(--aubergine-light);
+  --accent-2-soft: hsl(319deg 40% 30% / 28%);
+  --ink-on-accent: hsl(320deg 60% 5%);
+  --accent-text: var(--ink-on-accent);
+  --link: var(--term-blue);
+  --prompt: var(--term-green);
+  --selection: hsl(24deg 94% 53% / 30%);
+}
+/* stylelint-enable selector-class-pattern */
 
 ::selection {
   background: var(--selection);
 }
+
+/* stylelint-disable selector-class-pattern -- bascule logos header & footer selon theme */
+.hdr__logo--light,
+.ftr__logo--light {
+  display: none !important;
+}
+
+[data-theme="light"] {
+  .hdr__logo--dark,
+  .ftr__logo--dark {
+    display: none !important;
+  }
+
+  .hdr__logo--light,
+  .ftr__logo--light {
+    display: block !important;
+  }
+}
+/* stylelint-enable selector-class-pattern */
 
 // Keyframes globaux (hors :root). Seul caret-blink est une boucle UI (caret terminal).
 @keyframes caret-blink {

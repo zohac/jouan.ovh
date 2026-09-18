@@ -381,8 +381,8 @@ onBeforeUnmount(() => {
 .atmos--fallback {
   background-color: var(--surface-0);
   background-image:
-    radial-gradient(at 80% 30%, var(--accent-soft) 0, transparent 62%),
-    radial-gradient(at 21% 68%, var(--accent-2-soft) 0, transparent 62%);
+    radial-gradient(at 80% 30%, var(--atmos-fallback-accent, var(--accent-soft)) 0, transparent 62%),
+    radial-gradient(at 21% 68%, var(--atmos-fallback-accent-2, var(--accent-2-soft)) 0, transparent 62%);
 }
 
 .atmos__canvas {
@@ -391,7 +391,7 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   display: block;
-  opacity: 0.52;
+  opacity: var(--atmos-opacity, 0.52);
 }
 
 .grid-dots {

@@ -3,7 +3,14 @@
     <div class="hdr__progress" :style="{ width: `${scrollProgress}%` }" aria-hidden="true" />
     <div class="hdr__in">
       <NuxtLink to="/" class="hdr__brand" @click="onBrandClick">
-        <NuxtImg src="/images/logo_white.png" alt="" class="hdr__logo" width="24" height="24" />
+        <NuxtImg src="/images/logo_white.png" alt="" class="hdr__logo hdr__logo--dark" width="24" height="24" />
+        <NuxtImg
+          src="/images/logo_black_256x256.png"
+          alt=""
+          class="hdr__logo hdr__logo--light"
+          width="24"
+          height="24"
+        />
         <span class="hdr__brand-text"><b>jouan</b><span class="dim">.ovh</span></span>
       </NuxtLink>
 
@@ -46,6 +53,7 @@
 
     <!-- Dock d'état tout à droite de l'écran (hors container centré) -->
     <div class="hdr__dock-right" aria-label="Statut et heure">
+      <ThemeToggle class="hdr__dock-theme" />
       <div class="hdr__status-badge">
         <span class="hdr__status-dot" aria-hidden="true" />
         <span class="hdr__status-text">Disponible</span>
@@ -72,6 +80,7 @@
 
       <div class="hdr__menu-actions">
         <div class="hdr__menu-status">
+          <ThemeToggle class="hdr__menu-theme" />
           <div class="hdr__status-badge">
             <span class="hdr__status-dot" aria-hidden="true" />
             <span class="hdr__status-text">Disponible</span>
@@ -527,7 +536,8 @@ onBeforeUnmount(() => {
 
 // Dégradé progressif pour le dock droit sur largeurs moyennes (évite la collision avec le CTA à 1440px)
 @media (width <= 1650px) {
-  .hdr__dock-right {
+  .hdr__dock-right .hdr__status-badge,
+  .hdr__dock-clock {
     display: none;
   }
 }
