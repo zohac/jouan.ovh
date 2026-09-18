@@ -1,7 +1,7 @@
 ---
 project_name: "jouan.ovh"
 user_name: "Simon"
-date: "2026-09-14"
+date: "2026-09-18"
 sections_completed: ["technology_stack", "language_framework", "code_quality", "workflow_testing", "critical_rules"]
 status: "complete"
 optimized_for_llm: true
@@ -284,4 +284,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-09-14 (post-Epic 11 : refonte d'accueil Awwwards & repositionnement commercial Full Stack TS livrés — epics 1→11 done ; shader WebGL Flow Chrome avec repli CSS pur automatique ; boot overlay jouan.os ; header transparent/flouté au scroll avec barre de progression ; boutons magnétiques et 3D tilt ; 17 routes/assets statiques pré-rendus ; accords d'équipe rétro 11 sur la revue visuelle comparative et les ACs spatiaux).
+Dernière mise à jour : 2026-09-18 (post-Epic 12 : repositionnement commercial V1 « Systèmes IA & Automatisation Métier » livré et déployé en production — epics 1→12 done ; refonte du Hero commercial, vitrine des 3 services et bloc différenciateur Prototype → Production ; 3 projets phares V1 Keova Signal, Debrief, Devis-Assist ; page Services avec offres Sprint, Blueprint, AI Care et process 4 étapes ; page À propos avec trajectoire métrologie/QA ; formulaire de contact avec qualification de workflow ; CTA inspecteur workflow ; SEO et Schema.org site-wide ; patch layout z-index .section stabilisé ; PR #7 mergée sur main et déploiement gh-pages actif sur https://jouan.ovh).

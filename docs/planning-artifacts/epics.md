@@ -18,6 +18,10 @@ inputDocuments:
   - docs/specs/spec-repositionnement-ia/projects-showcase.md
   - docs/jouan-ovh-offre-v1-brief-codex.md
   - AGENTS.md
+  - docs/specs/spec-theme-light-dark/SPEC.md
+  - docs/specs/spec-theme-light-dark/technical-architecture.md
+  - docs/planning-artifacts/ux-designs/ux-jouan.ovh-2026-09-18/DESIGN.md
+  - docs/planning-artifacts/ux-designs/ux-jouan.ovh-2026-09-18/EXPERIENCE.md
 ---
 
 # jouan.ovh - Epic Breakdown
@@ -74,6 +78,14 @@ FR34: CTA global inspecteur de workflow (`$ ./workflow --inspect`) et formulaire
 FR35: SEO centralisé, OpenGraph et Schema.org/JSON-LD alignés sur « Systèmes IA, agents & automatisation métier ». _(CAP-8)_
 FR36: Préservation de la DA terminal dark-first, accessibilité WCAG AA, conformité motion réduit et validation de la gate Docker 100% verte. _(CAP-9)_
 
+#### Epic 13 — Thème Light & Dark (SPEC-theme-light-dark)
+FR37: Palette de thèmes et tokens sémantiques complets (mode sombre aubergine par défaut et mode clair « Papier technique / Crème solaire », sanctuarisation du terminal sombre, contrastes WCAG AAA/AA). _(CAP-1)_
+FR38: Détection automatique et synchronisation réactive de la préférence système (`prefers-color-scheme`) en temps réel sans rechargement de page. _(CAP-2)_
+FR39: Surcharge utilisateur et persistance locale sous `localStorage` (`jouan_theme_mode`) conservant le choix d'une visite à l'autre. _(CAP-3)_
+FR40: Composant de bascule ternaire `ThemeToggle` dans le Header desktop (`hdr__dock-right` à gauche de « Disponible ») et dans le tiroir mobile, avec cycle `Système → Sombre → Clair → Système`, icônes vectorielles et 0 emoji. _(CAP-4)_
+FR41: Prévention absolue du flash au premier paint (script inline synchrone anti-FOUC dans le `<head>` avant le montage client). _(CAP-5)_
+FR42: Accessibilité, focus visible, navigation clavier et support de `forced-colors` Windows High Contrast. _(CAP-6)_
+
 ### NonFunctional Requirements
 
 NFR1: Dark-first uniquement — aucun thème clair ; orange Ubuntu = unique accent héros.
@@ -92,6 +104,10 @@ NFR13: Sobriété & Zéro Emoji — aucun emoji dans les contenus et composants 
 NFR14: Confidentialité & Propriété intellectuelle — respect strict des dépôts privés (`zohac/*`), aucun lien sortant 404, mention transparente des statuts réels.
 NFR15: Exécution Docker stricte — toute compilation et validation de gate s'effectue dans le conteneur Docker.
 NFR16: Performance SSG & Zéro régression — génération statique Nitro préservée avec 13 routes pré-rendues.
+NFR17: Exécution stricte de la suite de validation dans l'environnement Docker (`pnpm lint`, `pnpm typecheck`, `pnpm generate`).
+NFR18: Zéro emoji dans les libellés, composants ou infobulles du sélecteur de thème (règle NFR6).
+NFR19: Sanctuarisation absolue du terminal (Terminal Hero et fenêtres flottantes conservent impérativement leur fond sombre aubergine `#2E0024` et leurs couleurs syntaxiques).
+NFR20: Compatibilité SSG totale sous GitHub Pages sans dépendance dynamique serveur.
 
 ### Additional Requirements
 
@@ -103,6 +119,7 @@ NFR16: Performance SSG & Zéro régression — génération statique Nitro prés
 - Lint : ESLint 10 (`@nuxt/eslint`), Prettier 3, Stylelint 17 (`stylelint-scss`).
 - **Epic 11 — Données centralisées dans `app/data/site.ts`** : mise à jour de `SITE.profile` (titre Full Stack TS, localisation Rouen/remote), `SITE.skills` (TypeScript, Nuxt, NestJS, etc.) et `SITE.projects` (Keova, TryOn, Nodium), consommées sans duplication locale.
 - **Epic 11 — Compatibilité statique SSG (Nitro)** : tout accès direct à `window`, `document`, `sessionStorage` strictement encapsulé dans `onMounted()` ou sous `import.meta.client`.
+- **Epic 13 — Cascade SCSS & Composable `useTheme`** : Déclaration des tokens de thème clair sous le sélecteur `[data-theme="light"]` dans `app/assets/scss/abstract/_root.scss`, script synchrone anti-FOUC injecté via `app.head.script` dans `nuxt.config.ts`, et gestion d'état réactive via `app/composables/useTheme.ts`.
 
 ### UX Design Requirements
 
@@ -135,6 +152,10 @@ UX-DR28: Intégration des captures d'écran réelles HD de Keova Signal et Debri
 UX-DR29: Grille modulaire pour le bloc différenciateur « Prototype → Production » (4 piliers Données, Fiabilité, IA, Exploitation).
 UX-DR30: Grille tarifaire transparente sur `/services` dissociant honoraires forfaitaires et coûts variables d'APIs/tokens tiers.
 UX-DR31: Formulaire `/contact` allégé et orienté description textuelle de workflow sans questions invasives de budget au premier contact.
+UX-DR32: Implémentation de la palette de tokens clairs `--surface-*-light` (fond crème `#FAF8F4`, cartes blanches `#FFFFFF`, encres aubergine `#271524` et `#473644`, orange contrasté `#D94F00`).
+UX-DR33: Composant `ThemeToggle.vue` compact (36x36px desktop, 40x40px mobile), 3 icônes vectorielles inline (`monitor`, `moon`, `sun`) déclarées dans `ZIcon.vue`, animations d'icônes débrayées sous `prefers-reduced-motion`.
+UX-DR34: Placement dans `HeaderComponent.vue` immédiatement à gauche du badge d'état `.hdr__status-badge` dans `.hdr__dock-right` et dans `.hdr__menu-status`.
+UX-DR35: Attributs d'accessibilité dynamiques (`aria-label` descriptif de l'état et de la prochaine action, `title` sans emoji, live region).
 
 ### FR Coverage Map
 
@@ -174,6 +195,12 @@ FR33: Epic 12 — Page À propos, trajectoire métrologie / QA & systèmes IA
 FR34: Epic 12 — CTA final inspecteur de workflow & formulaire de contact
 FR35: Epic 12 — SEO centralisé, OpenGraph & Schema.org
 FR36: Epic 12 — Préservation DA terminal, a11y & non-régression gate Docker
+FR37: Epic 13 — Palette de thèmes et tokens sémantiques complets (mode clair crème, terminal sombre)
+FR38: Epic 13 — Détection et synchronisation réactive de la préférence système (prefers-color-scheme)
+FR39: Epic 13 — Surcharge utilisateur et persistance locale (localStorage)
+FR40: Epic 13 — Bouton de bascule ternaire ThemeToggle dans le Header (desktop et mobile)
+FR41: Epic 13 — Prévention absolue du flash au premier paint (script inline synchrone anti-FOUC)
+FR42: Epic 13 — Accessibilité, focus visible, navigation clavier et mode forced-colors
 
 ## Epic List
 
@@ -224,6 +251,10 @@ Le visiteur arrivant sur la page d'accueil de `jouan.ovh` découvre une vitrine 
 ### Epic 12: Repositionnement Commercial V1 — Systèmes IA & Automatisation Métier
 Le visiteur arrivant sur `jouan.ovh` (prospect ou client) comprend en moins de 15 secondes que Simon Jouan automatise les workflows métier des entreprises grâce à des systèmes IA robustes et industriels, validés par des réalisations concrètes (Keova Signal, Debrief, Devis-Assist) et une culture QA éprouvée, avec une grille tarifaire claire (Sprint à partir de 3 500 € HT) et un appel direct à qualifier son processus sans friction.
 **FRs covered:** FR28, FR29, FR30, FR31, FR32, FR33, FR34, FR35, FR36 _(NFR13 à NFR16, UX-DR28 à UX-DR31)_
+
+### Epic 13: Thème Light & Dark et Bascule Utilisateur
+Le visiteur peut consulter l'ensemble du site dans un thème clair « Papier technique / Crème solaire » reposant et contrasté tout en profitant de l'authenticité des terminaux sombres sanctuarisés. Il bénéficie d'une synchronisation automatique avec son OS, d'une bascule manuelle rapide dans le header (desktop et tiroir mobile) et d'une persistance locale sans aucun clignotement visuel (anti-FOUC) au rechargement statique.
+**FRs covered:** FR37, FR38, FR39, FR40, FR41, FR42 _(NFR17 à NFR20, UX-DR32 à UX-DR35)_
 
 ---
 
@@ -980,6 +1011,95 @@ So that j'envoie une demande précise et pertinente (FR33, FR34, FR35, FR36, NFR
 **And** le formulaire de contact (`/contact`) est orienté qualification de workflow (champs processus à améliorer, fonctionnement actuel, répétition)
 **And** `usePageSeo` met à jour les balises de titres (`Simon Jouan — Systèmes IA, agents & automatisation métier`), descriptions et métadonnées canoniques/OpenGraph sur l'ensemble des 13 routes
 **And** la suite de validation Docker complète (`pnpm lint && pnpm typecheck && pnpm generate`) réussit avec 0 erreur (0 ESLint/Stylelint, 0 typecheck TypeScript, 13 routes statiques pré-rendues).
+
+## Epic 13: Thème Light & Dark et Bascule Utilisateur
+
+Le visiteur peut consulter l'ensemble du site dans un thème clair « Papier technique / Crème solaire » reposant et contrasté tout en profitant de l'authenticité des terminaux sombres sanctuarisés. Il bénéficie d'une synchronisation automatique avec son OS, d'une bascule manuelle rapide dans le header (desktop et tiroir mobile) et d'une persistance locale sans aucun clignotement visuel (anti-FOUC) au rechargement statique.
+
+### Story 13.1: Fondations des Tokens SCSS Thème Clair et Sanctuarisation du Terminal
+
+As a visiteur préférant un environnement d'affichage clair,
+I want que les variables CSS du design system exposent une palette claire « Papier technique / Crème solaire » tout en préservant le terminal sombre,
+So that l'application s'adapte sans rupture de style ni dénaturation de l'immersion CLI (FR37, UX-DR32, NFR17, NFR19).
+
+**Acceptance Criteria:**
+
+**Given** le fichier `app/assets/scss/abstract/_root.scss`
+**When** on déclare le sélecteur `[data-theme="light"]`
+**Then** les alias sémantiques de surfaces sont surchargés :
+  - `--bg-page: hsl(38deg 25% 97%)` (`#FAF8F4`)
+  - `--bg-sunken: hsl(38deg 20% 93%)` (`#F1EDE6`)
+  - `--bg-card: hsl(0deg 0% 100%)` (`#FFFFFF`)
+  - `--bg-elevated: hsl(38deg 30% 99%)` (`#FFFEFB`)
+  - `--bg-input: hsl(38deg 15% 95%)` (`#F5F3EE`)
+**And** les alias sémantiques d'encre garantissent un contraste WCAG AAA :
+  - `--text-strong: hsl(320deg 30% 12%)` (`#271524`, ratio > 14:1)
+  - `--text-body: hsl(320deg 18% 26%)` (`#473644`, ratio > 8:1)
+  - `--text-muted: hsl(320deg 10% 44%)` (`#756773`, ratio > 4.5:1)
+**And** l'accent orange est adapté au contraste sur fond clair (`--accent: hsl(24deg 95% 44%)`, `#DA5207`, ratio AA > 4.5:1)
+**And** les conteneurs de terminal (`.home-hero-terminal`, `.terminal-window`, `.terminal`) forcent localement leurs variables de surface (`--bg-terminal: var(--aubergine-deep)`, `#2E0024`) et leurs couleurs de texte clair, restant insensibles au mode clair global
+**And** la suite `docker compose run --rm web sh -c "corepack enable && pnpm lint"` est validée avec 0 erreur.
+
+### Story 13.2: Composable réactif useTheme, écoute système et script synchrone anti-FOUC
+
+As a visiteur naviguant sur `jouan.ovh`,
+I want que mon thème s'adapte automatiquement à mon OS par défaut, qu'une surcharge soit conservée en mémoire locale et que la page s'affiche sans clignotement noir/blanc,
+So that mon confort de lecture soit immédiat et persistant à chaque visite (FR38, FR39, FR41, NFR20).
+
+**Acceptance Criteria:**
+
+**Given** l'infrastructure client Nuxt 4
+**When** on initialise le thème dans l'application
+**Then** le composable `app/composables/useTheme.ts` expose l'état réactif (`preference`, `resolvedTheme`, `cycleTheme()`, `setTheme()`)
+**And** par défaut, `preference` vaut `'system'` et `resolvedTheme` écoute réactivement `window.matchMedia('(prefers-color-scheme: dark)')`
+**And** tout appel à `setTheme('dark' | 'light' | 'system')` met à jour `localStorage.getItem('jouan_theme_mode')` et positionne les attributs `data-theme` et `data-theme-source` sur `document.documentElement`
+**And** un micro-script synchrone pur JS est injecté dans le `<head>` via `app.head.script` dans `nuxt.config.ts`, résolvant et appliquant `data-theme` avant le premier paint du navigateur (zéro FOUC en SSG)
+**And** aucune discordance d'hydratation Vue (hydration mismatch) n'apparaît en console.
+
+### Story 13.3: Composant ThemeToggle, icônes vectorielles et intégration Header / Mobile
+
+As a utilisateur sur desktop ou smartphone,
+I want disposer d'un bouton de bascule compact placé à gauche du statut « Disponible » dans le dock d'état et dans le menu mobile,
+So that je puisse cycler en un clic entre Système, Sombre et Clair avec une annonce accessible claire (FR40, FR42, NFR18, UX-DR33, UX-DR34, UX-DR35).
+
+**Acceptance Criteria:**
+
+**Given** le composant `HeaderComponent.vue` et `ZIcon.vue`
+**When** on affiche la barre de navigation
+**Then** 3 icônes vectorielles inline sans emoji (`monitor`, `moon`, `sun`) sont déclarées dans `app/components/ui/ZIcon.vue`
+**And** le composant `app/components/ui/ThemeToggle.vue` est créé :
+  - Format compact (36x36px desktop, 40x40px mobile) avec bordure subtile
+  - Clic / activation clavier cycle l'état : `system → dark → light → system`
+  - Affiche l'icône correspondant au mode courant
+  - Dispose d'un `aria-label` dynamique décrivant l'état actif et la prochaine action
+  - Supporte le focus visible (`--ring-accent`), la navigation clavier (`Tab`, `Entrée`, `Espace`), le mode `forced-colors: active` et désactive toute rotation d'icône sous `prefers-reduced-motion: reduce`
+**And** le composant est intégré dans `HeaderComponent.vue` :
+  1. Desktop : dans `.hdr__dock-right`, immédiatement à gauche de `.hdr__status-badge` (« Disponible »)
+  2. Mobile : dans `.hdr__menu-status`, aligné avec le badge de statut
+**And** la suite de lint et typecheck passe avec 0 erreur.
+
+### Story 13.4: Validation transverse, atmosphère d'ambiance et gate Docker Nitro SSG
+
+As a développeur garantissant la robustesse de production,
+I want vérifier le rendu esthétique des pages sous le thème clair et exécuter la gate Docker complète,
+So that le déploiement sur GitHub Pages soit certifié à 100 % vert sans régressions (FR37–FR42, NFR17, NFR19).
+
+**Acceptance Criteria:**
+
+**Given** l'ensemble des routes statiques de `jouan.ovh`
+**When** on bascule le thème sur `light`
+**Then** toutes les pages (Accueil, Services, À propos, Blog, Contact) affichent un rendu harmonieux :
+  - Les cartes blanches (`#FFFFFF`) se détachent nettement du fond crème (`#FAF8F4`)
+  - Les encres aubergine et les liens orange offrent une lisibilité contrastée conforme WCAG AA/AAA
+  - L'arrière-plan atmosphérique d'accueil (`.atmos`) atténue son opacité pour éviter toute interférence de lecture
+  - Le Terminal Hero et le terminal flottant demeurent en mode sombre permanent avec leur prompt vert
+**And** le changement de thème est persistant après rechargement de page ou changement d'URL
+**And** la suite de validation Docker complète réussit avec 0 erreur :
+  ```sh
+  docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
+  ```
+  *(0 erreur ESLint/Stylelint, 0 erreur TypeScript vue-tsc, 13 routes statiques pré-rendues avec succès).*
+
 
 
 

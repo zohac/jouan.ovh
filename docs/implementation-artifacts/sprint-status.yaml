@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-17 (Story 12.6 soldée suite à la revue de code contradictoire)"
+last_updated: "2026-09-18 (Story 13.1 prête pour le dev)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -128,11 +128,20 @@ development_status:
   epic-11-retrospective: done
 
   # Epic 12 — Repositionnement Commercial V1 : Systèmes IA & Automatisation Métier
-  epic-12: in-progress
+  epic-12: done
   12-1-source-unique-de-donnees-sitets-et-coherence-globale: done
   12-2-homepage-hero-commercial-cinetique-et-terminal-interactif: done
   12-3-homepage-vitrine-des-3-services-et-bloc-differenciateur: done
   12-4-homepage-vitrine-des-3-projets-phares: done
   12-5-page-services-restructuration-des-offres-et-process-4-etapes: done
   12-6-page-a-propos-cta-inspecteur-formulaire-et-seo-site-wide: done
-  epic-12-retrospective: optional
+  epic-12-retrospective: done
+
+  # Epic 13 — Thème Light & Dark et Bascule Utilisateur
+  epic-13: in-progress
+  13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: ready-for-dev
+  13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: backlog
+  13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile: backlog
+  13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: backlog
+  epic-13-retrospective: optional
+

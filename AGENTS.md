@@ -6,9 +6,9 @@ Ce document constitue la **source de vérité universelle** pour tout agent IA (
 
 ## 1. Identité & État du Projet
 
-- **Projet :** `jouan.ovh` — Portfolio, vitrine de services et blog de **Simon Jouan** (développeur web freelance).
+- **Projet :** `jouan.ovh` — Portfolio, vitrine de services et blog de **Simon Jouan** (développeur Full Stack spécialisé en systèmes IA & automatisation métier).
 - **URL de production :** [`https://jouan.ovh`](https://jouan.ovh) (déployé sur **GitHub Pages**, domaine custom, HTTPS Let's Encrypt forcé, DNS OVH).
-- **Statut actuel :** **Refonte complète et page d'accueil Awwwards livrées** (Epics 1 à 11 validés et clôturés). Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
+- **Statut actuel :** **Refonte complète et repositionnement commercial Systèmes IA & Automatisation Métier livrés** (Epics 1 à 12 validés, clôturés et déployés en production). Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
 - **Langue & Voix (NFR6) :** 
   - Interface et contenu en **FRANÇAIS** (`lang="fr"`).
   - Voix : **1re personne (« je »)** pour Simon, **vouvoiement** pour le visiteur/client.
@@ -179,5 +179,5 @@ Avant de soumettre tout changement ou de clore une tâche, l'agent IA doit exéc
 
 - [`docs/project-context.md`](file:///Users/simon/dev/jouan.ovh/docs/project-context.md) : Historique détaillé, leçons apprises par épic et règles fines.
 - [`docs/implementation-artifacts/sprint-status.yaml`](file:///Users/simon/dev/jouan.ovh/docs/implementation-artifacts/sprint-status.yaml) : Registre officiel des stories et de leur statut.
-- [`docs/planning-artifacts/epics.md`](file:///Users/simon/dev/jouan.ovh/docs/planning-artifacts/epics.md) : Cahier des charges et critères d'acceptation des Epics 1 à 11.
+- [`docs/planning-artifacts/epics.md`](file:///Users/simon/dev/jouan.ovh/docs/planning-artifacts/epics.md) : Cahier des charges et critères d'acceptation des Epics 1 à 12.
 - [`docs/implementation-artifacts/deferred-work.md`](file:///Users/simon/dev/jouan.ovh/docs/implementation-artifacts/deferred-work.md) : Inventaire des arbitrages et améliorations futures optionnelles.
