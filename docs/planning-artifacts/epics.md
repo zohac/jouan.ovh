@@ -22,6 +22,10 @@ inputDocuments:
   - docs/specs/spec-theme-light-dark/technical-architecture.md
   - docs/planning-artifacts/ux-designs/ux-jouan.ovh-2026-09-18/DESIGN.md
   - docs/planning-artifacts/ux-designs/ux-jouan.ovh-2026-09-18/EXPERIENCE.md
+  - docs/specs/spec-analytics-search-console/SPEC.md
+  - docs/specs/spec-analytics-search-console/tracking-plan.md
+  - docs/specs/spec-analytics-search-console/compliance-gdpr.md
+  - docs/specs/spec-analytics-search-console/seo-verification.md
 ---
 
 # jouan.ovh - Epic Breakdown
@@ -85,6 +89,14 @@ FR39: Surcharge utilisateur et persistance locale sous `localStorage` (`jouan_th
 FR40: Composant de bascule ternaire `ThemeToggle` dans le Header desktop (`hdr__dock-right` à gauche de « Disponible ») et dans le tiroir mobile, avec cycle `Système → Sombre → Clair → Système`, icônes vectorielles et 0 emoji. _(CAP-4)_
 FR41: Prévention absolue du flash au premier paint (script inline synchrone anti-FOUC dans le `<head>` avant le montage client). _(CAP-5)_
 FR42: Accessibilité, focus visible, navigation clavier et support de `forced-colors` Windows High Contrast. _(CAP-6)_
+
+#### Epic 14 — Analytics Privacy-First, RGPD & Google Search Console (SPEC-analytics-search-console)
+FR43: Initialisation asynchrone et isolée de PostHog Cloud EU (`https://eu.i.posthog.com`) côté client via Nuxt runtimeConfig et respect strict de Do Not Track. _(CAP-1)_
+FR44: Session Replay sécurisé avec masquage systématique des champs d'entrée (`mask_all_inputs: true`, exclusion native `ph-no-capture`). _(CAP-2)_
+FR45: Bandeau / toast de consentement RGPD sobre inspiré du terminal (`// telemetry:`), opt-in explicite, persistance locale et lien de révocation permanent au footer. _(CAP-4)_
+FR46: Plan de taggage exhaustif des interactions métier (navigation, scroll depth, clics CTA offres IA, formulaire contact Web3Forms, terminal interactif, blog, liens externes). _(CAP-3)_
+FR47: Observabilité SEO via vérification DNS TXT chez OVH, génération dynamique du `sitemap.xml` et déclaration conforme dans `robots.txt`. _(CAP-5, CAP-6)_
+FR48: Outillage agentic MCP PostHog et validation Docker sans régression (`lint`, `typecheck`, `generate`). _(CAP-7, CAP-8)_
 
 ### NonFunctional Requirements
 
@@ -201,6 +213,12 @@ FR39: Epic 13 — Surcharge utilisateur et persistance locale (localStorage)
 FR40: Epic 13 — Bouton de bascule ternaire ThemeToggle dans le Header (desktop et mobile)
 FR41: Epic 13 — Prévention absolue du flash au premier paint (script inline synchrone anti-FOUC)
 FR42: Epic 13 — Accessibilité, focus visible, navigation clavier et mode forced-colors
+FR43: Epic 14 — Initialisation PostHog Cloud EU asynchrone côté client et respect DNT
+FR44: Epic 14 — Session Replay sécurisé et masquage strict des données de formulaire
+FR45: Epic 14 — Toast de consentement RGPD inspiré du terminal et gestion des cookies
+FR46: Epic 14 — Plan de taggage exhaustif (parcours IA, formulaire, terminal, blog, liens)
+FR47: Epic 14 — Observabilité SEO, vérification DNS OVH, sitemap.xml et robots.txt
+FR48: Epic 14 — Intégration MCP PostHog et validation Docker complète
 
 ## Epic List
 
@@ -255,6 +273,10 @@ Le visiteur arrivant sur `jouan.ovh` (prospect ou client) comprend en moins de 1
 ### Epic 13: Thème Light & Dark et Bascule Utilisateur
 Le visiteur peut consulter l'ensemble du site dans un thème clair « Papier technique / Crème solaire » reposant et contrasté tout en profitant de l'authenticité des terminaux sombres sanctuarisés. Il bénéficie d'une synchronisation automatique avec son OS, d'une bascule manuelle rapide dans le header (desktop et tiroir mobile) et d'une persistance locale sans aucun clignotement visuel (anti-FOUC) au rechargement statique.
 **FRs covered:** FR37, FR38, FR39, FR40, FR41, FR42 _(NFR17 à NFR20, UX-DR32 à UX-DR35)_
+
+### Epic 14: Analytics Privacy-First (PostHog EU), Consentement RGPD & Google Search Console
+Le visiteur bénéficie d'un contrôle transparent sur sa vie privée via un toast de consentement sobre inspiré du terminal, tandis que Simon Jouan dispose d'une observabilité complète sur l'audience, la restitution de parcours (Session Replay sécurisé) et les conversions de l'offre IA, soutenue par l'indexation organique certifiée par Google Search Console (`sitemap.xml`, `robots.txt` et DNS OVH).
+**FRs covered:** FR43, FR44, FR45, FR46, FR47, FR48 _(CAP-1 à CAP-8)_
 
 ---
 
@@ -1099,6 +1121,100 @@ So that le déploiement sur GitHub Pages soit certifié à 100 % vert sans régr
   docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
   ```
   *(0 erreur ESLint/Stylelint, 0 erreur TypeScript vue-tsc, 13 routes statiques pré-rendues avec succès).*
+
+---
+
+## Epic 14: Analytics Privacy-First (PostHog EU), Consentement RGPD & Google Search Console
+
+Simon Jouan dispose d'un suivi précis et respectueux du trafic, du comportement des visiteurs (Session Replay masqué) et de la conversion de l'offre commerciale IA, tout en garantissant une conformité RGPD exemplaire (toast de consentement terminal) et une indexation certifiée par Google Search Console (`sitemap.xml`, `robots.txt`, vérification DNS).
+
+### Story 14.1: Fondations PostHog EU, Composable de Consentement & Toast Cookie Terminal
+
+As a visiteur du site `jouan.ovh`,
+I want être informé sobrement de la télémétrie de navigation et pouvoir accepter ou refuser les cookies/analytics via une invite terminal non intrusive,
+So that mes droits à la vie privée soient respectés sans dégrader l'expérience esthétique du portfolio (FR43, FR45, NFR6, CAP-1, CAP-4).
+
+**Acceptance Criteria:**
+
+**Given** l'infrastructure client Nuxt 4 et l'environnement Docker
+**When** on intègre la dépendance client PostHog
+**Then** le paquet `posthog-js` est installé dans le conteneur Docker sans altérer l'hôte
+**And** les variables `runtimeConfig.public.posthogKey` et `runtimeConfig.public.posthogHost` (défaut `https://eu.i.posthog.com`) sont déclarées dans `nuxt.config.ts`
+**And** le composable `app/composables/useConsent.ts` est créé :
+  - Gère l'état réactif (`consentState: 'unknown' | 'accepted' | 'declined'`)
+  - Mémorise le choix dans `localStorage` (`jouan_consent_telemetry`)
+  - Détecte le signal navigateur `navigator.doNotTrack === '1'` et bascule automatiquement en mode `declined`
+  - Expose `accept()`, `decline()` et `openConsentModal()`
+**And** le composant `app/components/ui/ConsentToast.vue` est créé :
+  - Présentation flottante en bas d'écran conforme au Design System sombre aubergine (`--surface-raised`, `--border-subtle`)
+  - Préfixe stylisé terminal `// telemetry:`
+  - Zéro emoji (NFR6)
+  - Bouton `Accepter` (active PostHog et Session Replay) et bouton `Refuser`
+  - Lien discret `En savoir plus` vers `/confidentialite`
+**And** le composant `FooterComponent.vue` intègre un lien discret « Gestion des cookies » permettant de rouvrir le sélecteur à tout moment
+**And** le plugin `app/plugins/posthog.client.ts` initialise PostHog uniquement côté navigateur (`import.meta.client`), en mode `opt_out_capturing_by_default: true` tant que le consentement n'est pas accordé, et s'exécute de façon non bloquante.
+
+### Story 14.2: Session Replay sécurisé, Masquage des Données Sensibles & Mise à Jour RGPD
+
+As a développeur et visiteur,
+I want que les sessions enregistrées ne capturent aucune donnée personnelle ou texte confidentiel,
+So that l'analyse UX s'effectue dans le respect absolu du RGPD et du secret des échanges (FR44, NFR14, CAP-2, CAP-3).
+
+**Acceptance Criteria:**
+
+**Given** le plugin `app/plugins/posthog.client.ts` et la page `/contact`
+**When** le visiteur accepte la télémétrie et navigue sur le site
+**Then** le Session Replay est initialisé avec les options strictes de protection de la vie privée :
+  - `mask_all_inputs: true`
+  - `mask_all_element_attributes: true`
+  - `mask_text_selector: ".ph-no-capture, input, textarea"`
+**And** tous les champs du formulaire de contact dans `app/pages/contact.vue` intègrent la classe CSS d'exclusion `ph-no-capture`
+**And** la page `app/pages/confidentialite.vue` est mise à jour pour expliciter :
+  - Le recours à PostHog Cloud EU et les finalités d'amélioration continue
+  - L'activation d'enregistrements de session anonymisés avec masquage intégral des inputs
+  - La prise en compte native du signal `Do Not Track`
+  - La durée de rétention maximale fixée à 14 mois
+**And** la validation Docker passe sans erreur.
+
+### Story 14.3: Implémentation du Plan de Taggage Exhaustif (Conversions IA & Interactions)
+
+As a Simon Jouan,
+I want collecter un spectre maximal d'événements comportementaux et de conversion sur le site,
+So that je dispose d'une visibilité granulaire sur l'attractivité de l'offre IA et les parcours prospects avant filtrage ultérieur (FR46, CAP-3).
+
+**Acceptance Criteria:**
+
+**Given** les composants d'interface de `jouan.ovh` et le routeur Nuxt
+**When** le visiteur interagit avec les différents éléments du site
+**Then** un helper partagé `useAnalytics()` ou `posthog.capture()` émet les événements du plan de taggage (`tracking-plan.md`) :
+  1. *Navigation :* `$pageview` à chaque transition de route Nuxt avec `path` et `title`
+  2. *Lecture & Scroll :* `scroll_depth_reached` aux seuils 25%, 50%, 75% et 100%
+  3. *Engagement Hero & Offres :* `hero_cta_clicked`, `service_card_clicked`, `pricing_cta_clicked`, `project_card_clicked`
+  4. *Tunnel de Contact :* `contact_field_focused`, `contact_form_submit_attempt`, `contact_form_success`, `contact_form_error`, `direct_email_copied`, `linkedin_profile_clicked`
+  5. *Terminal :* `terminal_window_opened`, `terminal_window_closed`, `terminal_command_executed`, `terminal_invalid_command`
+  6. *Blog & Liens sortants :* `blog_article_viewed`, `blog_code_copied`, `external_link_clicked` sur les composants `<ZExternalLink>`
+**And** aucun appel télémétrique n'est émis si l'utilisateur a refusé le consentement ou activé Do Not Track.
+
+### Story 14.4: Référencement Google Search Console (DNS TXT OVH), Sitemap XML & Robots.txt
+
+As a Simon Jouan,
+I want certifier la propriété de mon domaine apex et garantir l'exploration systématique de mes 13 routes par les moteurs de recherche,
+So that mon positionnement sur les systèmes IA et l'automatisation métier bénéficie d'une visibilité organique optimale (FR47, FR48, CAP-5, CAP-6, CAP-8).
+
+**Acceptance Criteria:**
+
+**Given** l'infrastructure statique Nitro et le domaine `jouan.ovh`
+**When** on génère le site statique (`pnpm generate`)
+**Then** la route `https://jouan.ovh/sitemap.xml` est autogénérée et liste l'intégralité des 13 routes canoniques du site et articles de blog
+**And** chaque URL du sitemap est absolue et générée dynamiquement via le composable `useSiteUrl()` (zéro hardcode)
+**And** le fichier `public/robots.txt` autorise l'exploration générale et référence la ligne `Sitemap: https://jouan.ovh/sitemap.xml`
+**And** la documentation de validation GSC par enregistrement DNS TXT chez OVH est formalisée dans `docs/specs/spec-analytics-search-console/seo-verification.md`
+**And** la configuration agentic MCP PostHog dans `.agents/mcp_config.json` et les variables de `.env.example` sont validées
+**And** la suite de validation Docker complète réussit avec 0 erreur :
+  ```sh
+  docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
+  ```
+
 
 
 

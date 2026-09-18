@@ -145,3 +145,11 @@ development_status:
   13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: backlog
   epic-13-retrospective: optional
 
+  # Epic 14 — Analytics Privacy-First (PostHog EU), Consentement RGPD & Google Search Console
+  epic-14: backlog
+  14-1-fondations-posthog-eu-composable-consentement-et-toast-cookie-terminal: backlog
+  14-2-session-replay-securise-masquage-donnees-et-politique-rgpd: backlog
+  14-3-implementation-plan-de-taggage-exhaustif-conversions-ia-et-interactions: backlog
+  14-4-referencement-google-search-console-sitemap-xml-et-robots-txt: backlog
+  epic-14-retrospective: optional
+
