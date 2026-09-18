@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-18 (Story 15.3 prête pour le dev)"
+last_updated: "2026-09-18 (Story 15.4 cadrée et prête pour le dev)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -157,8 +157,8 @@ development_status:
   epic-15: in-progress
   15-1-homepage-suppression-prix-dentree-liens-contextuels-et-reassurance: done
   15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint: done
-  15-3-page-services-section-dediee-ai-care-et-process-4-etapes: ready-for-dev
-  15-4-coherence-globale-seo-formulaire-contact-et-gate-docker: backlog
+  15-3-page-services-section-dediee-ai-care-et-process-4-etapes: done
+  15-4-coherence-globale-seo-formulaire-contact-et-gate-docker: ready-for-dev
   epic-15-retrospective: optional
 
 
