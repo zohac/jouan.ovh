@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-18 (Story 13.1 prête pour le dev)"
+last_updated: "2026-09-18 (Story 13.3 prête pour le dev)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -139,9 +139,9 @@ development_status:
 
   # Epic 13 — Thème Light & Dark et Bascule Utilisateur
   epic-13: in-progress
-  13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: ready-for-dev
-  13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: backlog
-  13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile: backlog
+  13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: done
+  13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: done
+  13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile: ready-for-dev
   13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: backlog
   epic-13-retrospective: optional
 

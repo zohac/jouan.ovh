@@ -1,0 +1,472 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0b4e9-262a-71d1-bd29-94bc2c6a9996
+--------
+user
+# Edge Case Hunter Prompt — Story 13.2
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/13-2/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+J’utilise `bmad-review-edge-case-hunter` pour parcourir exhaustivement les branches du diff et ne retenir que les cas non gérés.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md && printf '\\n---DIFF---\\n' && sed -n '1,260p' docs/implementation-artifacts/code-reviews/13-2/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+---DIFF---
+diff --git a/app/app.vue b/app/app.vue
+index 143c19e..de55fed 100644
+--- a/app/app.vue
++++ b/app/app.vue
+@@ -5,8 +5,15 @@
+ </template>
+ 
+ <script setup lang="ts">
++import { onMounted } from "vue";
+ import { SITE } from "~/data/site";
+ 
++const { initTheme } = useTheme();
++
++onMounted(() => {
++  initTheme();
++});
++
+ // Métadonnées Schema.org globales (Organization / publisher du site).
+ // Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).
+ const siteUrl = useSiteUrl();
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 7ec2bf6..7237ebe 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-18 (Story 13.1 prête pour le dev)"
++last_updated: "2026-09-18 (Story 13.2 terminée et prête pour revue)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -139,8 +139,8 @@ development_status:
+ 
+   # Epic 13 — Thème Light & Dark et Bascule Utilisateur
+   epic-13: in-progress
+-  13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: ready-for-dev
+-  13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: backlog
++  13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: done
++  13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: review
+   13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile: backlog
+   13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: backlog
+   epic-13-retrospective: optional
+diff --git a/nuxt.config.ts b/nuxt.config.ts
+index 3808249..3f435c2 100644
+--- a/nuxt.config.ts
++++ b/nuxt.config.ts
+@@ -27,6 +27,13 @@ export default defineNuxtConfig({
+             " Discutons de votre projet.",
+         },
+       ],
++      script: [
++        {
++          type: "text/javascript",
++          innerHTML:
++            "(function(){try{var pref=localStorage.getItem('jouan_theme_mode')||'system';var resolved=pref;if(pref==='system'){resolved=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',resolved);document.documentElement.setAttribute('data-theme-source',pref);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();",
++        },
++      ],
+     },
+   },
+   css: ["@/assets/scss/main.scss"],
+diff --git a/app/composables/useTheme.ts b/app/composables/useTheme.ts
+new file mode 100644
+index 0000000..91d808c
+--- /dev/null
++++ b/app/composables/useTheme.ts
+@@ -0,0 +1,99 @@
++export type ThemePreference = "system" | "dark" | "light";
++export type ResolvedTheme = "dark" | "light";
++
++const STORAGE_KEY = "jouan_theme_mode";
++
++/**
++ * Composable centralisant la gestion du theme de l'application (Dark / Light / System).
++ *
++ * Fournit l'etat reactif de la preference utilisateur et du theme effectif resolu,
++ * les methodes de mise a jour et de cycle ternaire, ainsi que la synchronisation
++ * avec localStorage et les preferences systeme de l'OS.
++ */
++export function useTheme() {
++  const preference = useState<ThemePreference>("theme-preference", () => "system");
++  const resolvedTheme = useState<ResolvedTheme>("theme-resolved", () => "dark");
++
++  const resolveSystemTheme = (): ResolvedTheme => {
++    if (!import.meta.client) {
++      return "dark";
++    }
++    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
++  };
++
++  const applyToDom = (resolved: ResolvedTheme, pref: ThemePreference) => {
++    if (!import.meta.client) {
++      return;
++    }
++    document.documentElement.setAttribute("data-theme", resolved);
++    document.documentElement.setAttribute("data-theme-source", pref);
++  };
++
++  const setTheme = (pref: ThemePreference) => {
++    preference.value = pref;
++    const resolved = pref === "system" ? resolveSystemTheme() : pref;
++    resolvedTheme.value = resolved;
++
++    if (import.meta.client) {
++      try {
++        localStorage.setItem(STORAGE_KEY, pref);
++      } catch {
++        // Ignorer en navigation privee restrictive
++      }
++      applyToDom(resolved, pref);
++    }
++  };
++
++  const cycleTheme = () => {
++    const nextMap: Record<ThemePreference, ThemePreference> = {
++      system: "dark",
++      dark: "light",
++      light: "system",
++    };
++    setTheme(nextMap[preference.value] || "system");
++  };
++
++  const initTheme = () => {
++    if (!import.meta.client) {
++      return;
++    }
++
++    let storedPref: ThemePreference = "system";
++    try {
++      const stored = localStorage.getItem(STORAGE_KEY);
++      if (stored === "dark" || stored === "light" || stored === "system") {
++        storedPref = stored;
++      }
++    } catch {
++      // Ignorer si localStorage inaccessible
++    }
++
++    preference.value = storedPref;
++    const resolved = storedPref === "system" ? resolveSystemTheme() : storedPref;
++    resolvedTheme.value = resolved;
++    applyToDom(resolved, storedPref);
++
++    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
++    const handleMediaChange = (e: MediaQueryListEvent) => {
++      if (preference.value === "system") {
++        const newResolved: ResolvedTheme = e.matches ? "dark" : "light";
++        resolvedTheme.value = newResolved;
++        applyToDom(newResolved, "system");
++      }
++    };
++
++    if (mediaQuery.addEventListener) {
++      mediaQuery.addEventListener("change", handleMediaChange);
++    } else {
++      mediaQuery.addListener(handleMediaChange);
++    }
++  };
++
++  return {
++    preference,
++    resolvedTheme,
++    setTheme,
++    cycleTheme,
++    initTheme,
++  };
++}
+
+exec
+/bin/zsh -lc "nl -ba nuxt.config.ts | sed -n '25,45p'; nl -ba app/composables/useTheme.ts | sed -n '1,115p'; nl -ba app/app.vue | sed -n '1,30p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    25	          content:
+    26	            "Développeur Fullstack et Testeur/QA freelance passionné par la création de solutions web performantes." +
+    27	            " Discutons de votre projet.",
+    28	        },
+    29	      ],
+    30	      script: [
+    31	        {
+    32	          type: "text/javascript",
+    33	          innerHTML:
+    34	            "(function(){try{var pref=localStorage.getItem('jouan_theme_mode')||'system';var resolved=pref;if(pref==='system'){resolved=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',resolved);document.documentElement.setAttribute('data-theme-source',pref);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();",
+    35	        },
+    36	      ],
+    37	    },
+    38	  },
+    39	  css: ["@/assets/scss/main.scss"],
+    40	  modules: ["@nuxt/content", "@nuxt/image", "@nuxt/eslint"],
+    41	  // @nuxt/content : coloration syntaxique Shiki désactivée. Le DS rend le code en
+    42	  // palette terminale UNIFORME (mono off-white sur fond aubergine, vert pour l'inline,
+    43	  // cf. kit.css .article .prose pre/code) — pas de multicolore par token, qui injecterait
+    44	  // des styles inline écrasant les tokens. Les blocs rendent en <pre><code> nu, stylés en SCSS.
+    45	  content: {
+     1	export type ThemePreference = "system" | "dark" | "light";
+     2	export type ResolvedTheme = "dark" | "light";
+     3	
+     4	const STORAGE_KEY = "jouan_theme_mode";
+     5	
+     6	/**
+     7	 * Composable centralisant la gestion du theme de l'application (Dark / Light / System).
+     8	 *
+     9	 * Fournit l'etat reactif de la preference utilisateur et du theme effectif resolu,
+    10	 * les methodes de mise a jour et de cycle ternaire, ainsi que la synchronisation
+    11	 * avec localStorage et les preferences systeme de l'OS.
+    12	 */
+    13	export function useTheme() {
+    14	  const preference = useState<ThemePreference>("theme-preference", () => "system");
+    15	  const resolvedTheme = useState<ResolvedTheme>("theme-resolved", () => "dark");
+    16	
+    17	  const resolveSystemTheme = (): ResolvedTheme => {
+    18	    if (!import.meta.client) {
+    19	      return "dark";
+    20	    }
+    21	    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    22	  };
+    23	
+    24	  const applyToDom = (resolved: ResolvedTheme, pref: ThemePreference) => {
+    25	    if (!import.meta.client) {
+    26	      return;
+    27	    }
+    28	    document.documentElement.setAttribute("data-theme", resolved);
+    29	    document.documentElement.setAttribute("data-theme-source", pref);
+    30	  };
+    31	
+    32	  const setTheme = (pref: ThemePreference) => {
+    33	    preference.value = pref;
+    34	    const resolved = pref === "system" ? resolveSystemTheme() : pref;
+    35	    resolvedTheme.value = resolved;
+    36	
+    37	    if (import.meta.client) {
+    38	      try {
+    39	        localStorage.setItem(STORAGE_KEY, pref);
+    40	      } catch {
+    41	        // Ignorer en navigation privee restrictive
+    42	      }
+    43	      applyToDom(resolved, pref);
+    44	    }
+    45	  };
+    46	
+    47	  const cycleTheme = () => {
+    48	    const nextMap: Record<ThemePreference, ThemePreference> = {
+    49	      system: "dark",
+    50	      dark: "light",
+    51	      light: "system",
+    52	    };
+    53	    setTheme(nextMap[preference.value] || "system");
+    54	  };
+    55	
+    56	  const initTheme = () => {
+    57	    if (!import.meta.client) {
+    58	      return;
+    59	    }
+    60	
+    61	    let storedPref: ThemePreference = "system";
+    62	    try {
+    63	      const stored = localStorage.getItem(STORAGE_KEY);
+    64	      if (stored === "dark" || stored === "light" || stored === "system") {
+    65	        storedPref = stored;
+    66	      }
+    67	    } catch {
+    68	      // Ignorer si localStorage inaccessible
+    69	    }
+    70	
+    71	    preference.value = storedPref;
+    72	    const resolved = storedPref === "system" ? resolveSystemTheme() : storedPref;
+    73	    resolvedTheme.value = resolved;
+    74	    applyToDom(resolved, storedPref);
+    75	
+    76	    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    77	    const handleMediaChange = (e: MediaQueryListEvent) => {
+    78	      if (preference.value === "system") {
+    79	        const newResolved: ResolvedTheme = e.matches ? "dark" : "light";
+    80	        resolvedTheme.value = newResolved;
+    81	        applyToDom(newResolved, "system");
+    82	      }
+    83	    };
+    84	
+    85	    if (mediaQuery.addEventListener) {
+    86	      mediaQuery.addEventListener("change", handleMediaChange);
+    87	    } else {
+    88	      mediaQuery.addListener(handleMediaChange);
+    89	    }
+    90	  };
+    91	
+    92	  return {
+    93	    preference,
+    94	    resolvedTheme,
+    95	    setTheme,
+    96	    cycleTheme,
+    97	    initTheme,
+    98	  };
+    99	}
+     1	<template>
+     2	  <NuxtLayout>
+     3	    <NuxtPage />
+     4	  </NuxtLayout>
+     5	</template>
+     6	
+     7	<script setup lang="ts">
+     8	import { onMounted } from "vue";
+     9	import { SITE } from "~/data/site";
+    10	
+    11	const { initTheme } = useTheme();
+    12	
+    13	onMounted(() => {
+    14	  initTheme();
+    15	});
+    16	
+    17	// Métadonnées Schema.org globales (Organization / publisher du site).
+    18	// Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).
+    19	const siteUrl = useSiteUrl();
+    20	
+    21	const organizationJsonLd = {
+    22	  "@context": "https://schema.org",
+    23	  "@type": "Organization",
+    24	  "@id": `${siteUrl}/#organization`,
+    25	  name: SITE.profile.name,
+    26	  url: siteUrl,
+    27	  logo: `${siteUrl}/images/logo.png`,
+    28	  email: SITE.profile.email,
+    29	  address: {
+    30	    "@type": "PostalAddress",
+
+codex
+[
+  {
+    "location": "nuxt.config.ts:34",
+    "trigger_condition": "localStorage contains an unsupported theme value",
+    "guard_snippet": "var pref=['system','dark','light'].includes(localStorage.getItem('jouan_theme_mode'))?localStorage.getItem('jouan_theme_mode'):'system';",
+    "potential_consequence": "Invalid data-theme value leaves the page without matching theme styles before hydration."
+  },
+  {
+    "location": "nuxt.config.ts:34",
+    "trigger_condition": "localStorage access throws while the system prefers light",
+    "guard_snippet": "catch(e){var resolved=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',resolved);}",
+    "potential_consequence": "Initial dark fallback causes a light-system user to see a flash of dark theme."
+  },
+  {
+    "location": "app/composables/useTheme.ts:56-89",
+    "trigger_condition": "initTheme is invoked repeatedly on the same client",
+    "guard_snippet": "if (mediaQueryListener) return; mediaQueryListener=handleMediaChange;",
+    "potential_consequence": "Each invocation registers another media listener, causing duplicated updates and retained handlers."
+  }
+]
+tokens used
+19 013
+[
+  {
+    "location": "nuxt.config.ts:34",
+    "trigger_condition": "localStorage contains an unsupported theme value",
+    "guard_snippet": "var pref=['system','dark','light'].includes(localStorage.getItem('jouan_theme_mode'))?localStorage.getItem('jouan_theme_mode'):'system';",
+    "potential_consequence": "Invalid data-theme value leaves the page without matching theme styles before hydration."
+  },
+  {
+    "location": "nuxt.config.ts:34",
+    "trigger_condition": "localStorage access throws while the system prefers light",
+    "guard_snippet": "catch(e){var resolved=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',resolved);}",
+    "potential_consequence": "Initial dark fallback causes a light-system user to see a flash of dark theme."
+  },
+  {
+    "location": "app/composables/useTheme.ts:56-89",
+    "trigger_condition": "initTheme is invoked repeatedly on the same client",
+    "guard_snippet": "if (mediaQueryListener) return; mediaQueryListener=handleMediaChange;",
+    "potential_consequence": "Each invocation registers another media listener, causing duplicated updates and retained handlers."
+  }
+]

@@ -1,0 +1,167 @@
+diff --git a/app/app.vue b/app/app.vue
+index 143c19e..de55fed 100644
+--- a/app/app.vue
++++ b/app/app.vue
+@@ -5,8 +5,15 @@
+ </template>
+ 
+ <script setup lang="ts">
++import { onMounted } from "vue";
+ import { SITE } from "~/data/site";
+ 
++const { initTheme } = useTheme();
++
++onMounted(() => {
++  initTheme();
++});
++
+ // Métadonnées Schema.org globales (Organization / publisher du site).
+ // Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).
+ const siteUrl = useSiteUrl();
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 7ec2bf6..7237ebe 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-18 (Story 13.1 prête pour le dev)"
++last_updated: "2026-09-18 (Story 13.2 terminée et prête pour revue)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -139,8 +139,8 @@ development_status:
+ 
+   # Epic 13 — Thème Light & Dark et Bascule Utilisateur
+   epic-13: in-progress
+-  13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: ready-for-dev
+-  13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: backlog
++  13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: done
++  13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: review
+   13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile: backlog
+   13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: backlog
+   epic-13-retrospective: optional
+diff --git a/nuxt.config.ts b/nuxt.config.ts
+index 3808249..3f435c2 100644
+--- a/nuxt.config.ts
++++ b/nuxt.config.ts
+@@ -27,6 +27,13 @@ export default defineNuxtConfig({
+             " Discutons de votre projet.",
+         },
+       ],
++      script: [
++        {
++          type: "text/javascript",
++          innerHTML:
++            "(function(){try{var pref=localStorage.getItem('jouan_theme_mode')||'system';var resolved=pref;if(pref==='system'){resolved=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',resolved);document.documentElement.setAttribute('data-theme-source',pref);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();",
++        },
++      ],
+     },
+   },
+   css: ["@/assets/scss/main.scss"],
+diff --git a/app/composables/useTheme.ts b/app/composables/useTheme.ts
+new file mode 100644
+index 0000000..91d808c
+--- /dev/null
++++ b/app/composables/useTheme.ts
+@@ -0,0 +1,99 @@
++export type ThemePreference = "system" | "dark" | "light";
++export type ResolvedTheme = "dark" | "light";
++
++const STORAGE_KEY = "jouan_theme_mode";
++
++/**
++ * Composable centralisant la gestion du theme de l'application (Dark / Light / System).
++ *
++ * Fournit l'etat reactif de la preference utilisateur et du theme effectif resolu,
++ * les methodes de mise a jour et de cycle ternaire, ainsi que la synchronisation
++ * avec localStorage et les preferences systeme de l'OS.
++ */
++export function useTheme() {
++  const preference = useState<ThemePreference>("theme-preference", () => "system");
++  const resolvedTheme = useState<ResolvedTheme>("theme-resolved", () => "dark");
++
++  const resolveSystemTheme = (): ResolvedTheme => {
++    if (!import.meta.client) {
++      return "dark";
++    }
++    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
++  };
++
++  const applyToDom = (resolved: ResolvedTheme, pref: ThemePreference) => {
++    if (!import.meta.client) {
++      return;
++    }
++    document.documentElement.setAttribute("data-theme", resolved);
++    document.documentElement.setAttribute("data-theme-source", pref);
++  };
++
++  const setTheme = (pref: ThemePreference) => {
++    preference.value = pref;
++    const resolved = pref === "system" ? resolveSystemTheme() : pref;
++    resolvedTheme.value = resolved;
++
++    if (import.meta.client) {
++      try {
++        localStorage.setItem(STORAGE_KEY, pref);
++      } catch {
++        // Ignorer en navigation privee restrictive
++      }
++      applyToDom(resolved, pref);
++    }
++  };
++
++  const cycleTheme = () => {
++    const nextMap: Record<ThemePreference, ThemePreference> = {
++      system: "dark",
++      dark: "light",
++      light: "system",
++    };
++    setTheme(nextMap[preference.value] || "system");
++  };
++
++  const initTheme = () => {
++    if (!import.meta.client) {
++      return;
++    }
++
++    let storedPref: ThemePreference = "system";
++    try {
++      const stored = localStorage.getItem(STORAGE_KEY);
++      if (stored === "dark" || stored === "light" || stored === "system") {
++        storedPref = stored;
++      }
++    } catch {
++      // Ignorer si localStorage inaccessible
++    }
++
++    preference.value = storedPref;
++    const resolved = storedPref === "system" ? resolveSystemTheme() : storedPref;
++    resolvedTheme.value = resolved;
++    applyToDom(resolved, storedPref);
++
++    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
++    const handleMediaChange = (e: MediaQueryListEvent) => {
++      if (preference.value === "system") {
++        const newResolved: ResolvedTheme = e.matches ? "dark" : "light";
++        resolvedTheme.value = newResolved;
++        applyToDom(newResolved, "system");
++      }
++    };
++
++    if (mediaQuery.addEventListener) {
++      mediaQuery.addEventListener("change", handleMediaChange);
++    } else {
++      mediaQuery.addListener(handleMediaChange);
++    }
++  };
++
++  return {
++    preference,
++    resolvedTheme,
++    setTheme,
++    cycleTheme,
++    initTheme,
++  };
++}

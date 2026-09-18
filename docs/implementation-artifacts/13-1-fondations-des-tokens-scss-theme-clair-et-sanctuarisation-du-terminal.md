@@ -4,7 +4,7 @@ baseline_commit: f077f9b563bcef69bc61b9f28913f6db071e8b36
 
 # Story 13.1: Fondations des Tokens SCSS Thème Clair et Sanctuarisation du Terminal
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -65,21 +65,27 @@ so that l'application s'adapte sans rupture de style ni dénaturation de l'immer
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Déclaration des tokens de surface et d'encre clairs dans `app/assets/scss/abstract/_root.scss` (AC: 1, 2)
-  - [ ] Ajouter le sélecteur `[data-theme="light"]` à la suite du bloc `:root`.
-  - [ ] Déclarer la rampe des surfaces claires (`--bg-page`, `--bg-sunken`, `--bg-card`, `--bg-elevated`, `--bg-input`).
-  - [ ] Déclarer la rampe d'encres aubergine (`--text-strong`, `--text-body`, `--text-muted`, `--text-faint`).
-  - [ ] Déclarer les bordures douces (`--border-subtle`, `--border-default`, `--border-strong`), les ombres claires et l'accent orange contrasté AA.
-  - [ ] Vérifier la conformité de la notation CSS (angles `deg`, pourcentages sans virgules non standard).
+- [x] Tâche 1 — Déclaration des tokens de surface et d'encre clairs dans `app/assets/scss/abstract/_root.scss` (AC: 1, 2)
+  - [x] Ajouter le sélecteur `[data-theme="light"]` à la suite du bloc `:root`.
+  - [x] Déclarer la rampe des surfaces claires (`--bg-page`, `--bg-sunken`, `--bg-card`, `--bg-elevated`, `--bg-input`).
+  - [x] Déclarer la rampe d'encres aubergine (`--text-strong`, `--text-body`, `--text-muted`, `--text-faint`).
+  - [x] Déclarer les bordures douces (`--border-subtle`, `--border-default`, `--border-strong`), les ombres claires et l'accent orange contrasté AA.
+  - [x] Vérifier la conformité de la notation CSS (angles `deg`, pourcentages sans virgules non standard).
 
-- [ ] Tâche 2 — Sanctuarisation du Terminal Hero et des fenêtres CLI (AC: 3)
-  - [ ] Déclarer dans `_root.scss` (ou dans une section dédiée) la réinitialisation locale des tokens pour les sélecteurs `.hero-term`, `.home-hero-terminal`, `.terminal-window`, `.terminal`.
-  - [ ] Forcer les variables internes de surface et de texte (`--bg-terminal`, `--text-strong`, `--text-body`, `--text-muted`, `--border-subtle`, `--border-terminal`).
-  - [ ] Vérifier qu'aucun composant terminal n'est pollué par les encres sombres du mode clair.
+- [x] Tâche 2 — Sanctuarisation du Terminal Hero et des fenêtres CLI (AC: 3)
+  - [x] Déclarer dans `_root.scss` (ou dans une section dédiée) la réinitialisation locale des tokens pour les sélecteurs `.hero-term`, `.home-hero-terminal`, `.terminal-window`, `.terminal`.
+  - [x] Forcer les variables internes de surface et de texte (`--bg-terminal`, `--text-strong`, `--text-body`, `--text-muted`, `--border-subtle`, `--border-default`, `--border-terminal`).
+  - [x] Vérifier qu'aucun composant terminal n'est pollué par les encres sombres du mode clair.
 
-- [ ] Tâche 3 — Vérification visuelle locale et conformité Stylelint / Docker (AC: 4)
-  - [ ] Tester temporairement l'application de `data-theme="light"` sur la balise `<html>` pour vérifier le rendu des cartes blanches sur fond crème.
-  - [ ] Lancer `docker compose run --rm web sh -c "corepack enable && pnpm lint"` et corriger tout avertissement Stylelint.
+- [x] Tâche 3 — Vérification visuelle locale et conformité Stylelint / Docker (AC: 4)
+  - [x] Tester temporairement l'application de `data-theme="light"` sur la balise `<html>` pour vérifier le rendu des cartes blanches sur fond crème.
+  - [x] Lancer `docker compose run --rm web sh -c "corepack enable && pnpm lint"` et corriger tout avertissement Stylelint.
+
+### Review Findings
+
+- [x] [Review][Patch] Utiliser les tokens déclarés (`var(--aubergine-deep)`, `var(--border-terminal)`) dans le bloc de sanctuarisation du terminal au lieu de valeurs HSL hardcodées [`app/assets/scss/abstract/_root.scss:247-253`]
+- [x] [Review][Patch] Sanctuariser explicitement `--selection` et `--accent` dans les fenêtres de terminal pour préserver l'orange vif éclatant et la sélection sombre [`app/assets/scss/abstract/_root.scss:246-254`]
+- [x] [Review][Defer] Ajustement des tokens d'interaction secondaires (--accent-hover, --accent-active) et validation des composants transverses en thème clair [`docs/planning-artifacts/epics.md`] — deferred, prévu en Story 13.4
 
 ## Dev Notes
 
@@ -157,11 +163,19 @@ so that l'application s'adapte sans rupture de style ni dénaturation de l'immer
 
 ### Agent Model Used
 
-Gemini 3.8 Flash (High)
+Gemini 3.7 Flash (Medium)
 
 ### Debug Log References
 
+- Validation Gate Docker exécutée avec succès (`pnpm lint`, `pnpm typecheck`, `pnpm generate`).
+- 0 erreur ESLint, 0 erreur Stylelint.
+- 24 routes SSG pré-rendues sans anomalie.
+
 ### Completion Notes List
+
+- Déclaration de la palette claire « Papier technique / Crème solaire » sous `[data-theme="light"]` dans `app/assets/scss/abstract/_root.scss`.
+- Redéfinition des alias sémantiques de surfaces (`--bg-page`, `--bg-sunken`, `--bg-card`, `--bg-elevated`, `--bg-input`), encres aubergine WCAG AAA (`--text-strong`, `--text-body`, `--text-muted`, `--text-faint`, `--ink-on-accent`), bordures chaudes, ombres et accents orange contrastés.
+- Sanctuarisation stricte des composants terminaux (`.home-hero-terminal`, `.hero-term`, `.terminal-window`, `.terminal`) avec préservation du fond sombre, encres claires et bordures terminales.
 
 ### File List
 - `app/assets/scss/abstract/_root.scss`
