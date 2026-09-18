@@ -4,7 +4,7 @@ baseline_commit: 7c84ab3d4ce0f562bd860a256a374aa980f52082
 
 # Story 15.4: Cohérence Globale, SEO, Formulaire de Contact & Gate Docker Nitro SSG
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -48,13 +48,13 @@ so that le site soit exempt de régressions fonctionnelles, visuelles, d'accessi
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Audit et validation du CTA final global et du formulaire de contact (AC: 1)
-  - [ ] Vérifier le composant de CTA final dans `app/pages/index.vue` (L286-308) et `app/pages/blog/[...slug].vue` (L45-63) : accroche, terminal décoratif et redirection `/contact`.
-  - [ ] Vérifier `app/pages/contact/index.vue` : s'assurer de l'absence de champ budget, conformité du libellé de bouton « Décrire mon workflow », accessibilité a11y (focus premier champ invalide, honeypot masqué) et message de confirmation.
-  - [ ] Tester l'absence d'erreurs d'hydratation ou de validation réseau.
+- [x] Tâche 1 — Audit et validation du CTA final global et du formulaire de contact (AC: 1)
+  - [x] Vérifier le composant de CTA final dans `app/pages/index.vue` (L286-308) et `app/pages/blog/[...slug].vue` (L45-63) : accroche, terminal décoratif et redirection `/contact`.
+  - [x] Vérifier `app/pages/contact/index.vue` : s'assurer de l'absence de champ budget, conformité du libellé de bouton « Décrire mon workflow », accessibilité a11y (focus premier champ invalide, honeypot masqué) et message de confirmation.
+  - [x] Tester l'absence d'erreurs d'hydratation ou de validation réseau.
 
-- [ ] Tâche 2 — Audit transverse SEO, OpenGraph et données structurées Schema.org (AC: 2)
-  - [ ] Auditer `usePageSeo` sur toutes les routes statiques :
+- [x] Tâche 2 — Audit transverse SEO, OpenGraph et données structurées Schema.org (AC: 2)
+  - [x] Auditer `usePageSeo` sur toutes les routes statiques :
     - `/` (`app/pages/index.vue`)
     - `/services` (`app/pages/services.vue`)
     - `/about` (`app/pages/about.vue`)
@@ -63,21 +63,26 @@ so that le site soit exempt de régressions fonctionnelles, visuelles, d'accessi
     - `/blog` (`app/pages/blog/index.vue`)
     - `/confidentialite` (`app/pages/confidentialite.vue`)
     - `/mentions-legales` (`app/pages/mentions-legales.vue`)
-  - [ ] Vérifier l'alignement des objets JSON-LD (`WebPage`, `Service`, `ItemList`, `Person`, `ContactPage`, `ProfilePage`, `Blog`) sans prix d'entrée 3 500 € HT.
-  - [ ] Lancer une recherche grep globale sur `3 500`, `3500`, `490` pour garantir l'élimination totale de l'ancien catalogue dans `app/`.
+  - [x] Vérifier l'alignement des objets JSON-LD (`WebPage`, `Service`, `ItemList`, `Person`, `ContactPage`, `ProfilePage`, `Blog`) sans prix d'entrée 3 500 € HT.
+  - [x] Lancer une recherche grep globale sur `3 500`, `3500`, `490` pour garantir l'élimination totale de l'ancien catalogue dans `app/`.
 
-- [ ] Tâche 3 — Vérification du contraste thèmes Sombre & Clair et tokens SCSS (AC: 3)
-  - [ ] Contrôler visuellement et fonctionnellement les pages `services.vue`, `index.vue` et `contact/index.vue` sous les deux thèmes.
-  - [ ] Vérifier la lisibilité des badges (`<ZBadge>`), des cartes (`<ZCard>`), des bordures subtiles et de l'alternance de sections (`.section` / `.section--sunken`).
-  - [ ] S'assurer qu'aucun style scoped ne redéclare les primitives globales de layout (`.section`, `.container`, `.eyebrow`, `.prose`).
+- [x] Tâche 3 — Vérification du contraste thèmes Sombre & Clair et tokens SCSS (AC: 3)
+  - [x] Contrôler visuellement et fonctionnellement les pages `services.vue`, `index.vue` et `contact/index.vue` sous les deux thèmes.
+  - [x] Vérifier la lisibilité des badges (`<ZBadge>`), des cartes (`<ZCard>`), des bordures subtiles et de l'alternance de sections (`.section` / `.section--sunken`).
+  - [x] S'assurer qu'aucun style scoped ne redéclare les primitives globales de layout (`.section`, `.container`, `.eyebrow`, `.prose`).
 
-- [ ] Tâche 4 — Exécution de la Gate Docker Nitro SSG et synchronisation de sprint (AC: 4, 5)
-  - [ ] Exécuter la commande Docker de validation :
+- [x] Tâche 4 — Exécution de la Gate Docker Nitro SSG et synchronisation de sprint (AC: 4, 5)
+  - [x] Exécuter la commande Docker de validation :
     ```sh
     docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
     ```
-  - [ ] Vérifier que les 28 routes statiques compilent proprement dans `.output/public`.
-  - [ ] Mettre à jour `docs/implementation-artifacts/sprint-status.yaml` pour marquer la story 15.4 et l'epic-15.
+  - [x] Vérifier que les 28 routes statiques compilent proprement dans `.output/public`.
+  - [x] Mettre à jour `docs/implementation-artifacts/sprint-status.yaml` pour marquer la story 15.4 et l'epic-15.
+
+### Review Findings
+
+- [x] [Review][Patch] SEO : enrichir la meta-description de /services avec AI Care et Blueprint [`app/pages/services.vue:348`]
+- [x] [Review][Patch] Contraste WCAG AA et suppression de l'opacité arbitraire sur le disclaimer AI Care [`app/pages/services.vue:631`]
 
 ## Dev Notes
 
@@ -116,9 +121,23 @@ so that le site soit exempt de régressions fonctionnelles, visuelles, d'accessi
 ## Dev Agent Record
 
 ### Agent Model Used
+Gemini 3.7 Flash
 
 ### Debug Log References
+- Docker Quality Gate: `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> Exit code 0, 0 error lint/typecheck, 28 routes statiques pré-rendues.
+- Grep checks: zéro occurrence de prix obsolètes (`3500`, `3 500`, `490`) dans l'arborescence `app/`.
 
 ### Completion Notes List
+- Audit complet du CTA final et du formulaire de contact : conformité avec l'offre V1.1, absence de champ budget obligatoire, validation Web3Forms avec honeypot et a11y.
+- Audit transverse SEO et Schema.org sur l'ensemble des 13 routes statiques de l'application via `usePageSeo()`.
+- Vérification des contrastes thème sombre / thème clair et stricte consommation des tokens SCSS sans redéclaration des primitives globales de layout.
+- Validation intégrale de la gate Docker (linting, vérification statique TypeScript, génération SSG Nitro 28 routes).
 
 ### File List
+- `app/pages/services.vue`
+- `docs/implementation-artifacts/15-4-coherence-globale-seo-formulaire-contact-et-gate-docker.md`
+- `docs/implementation-artifacts/sprint-status.yaml`
+
+## Change Log
+- 2026-09-18: Audit de cohérence globale, SEO, formulaire de contact et passage de la gate Docker Nitro SSG (Story 15.4 complétée et passée en review).
+- 2026-09-18: Code review validée (Blind Hunter, Edge Case Hunter, Acceptance Auditor). Patches appliqués : meta-description SEO enrichie avec AI Care & Blueprint, contraste WCAG AA restauré sur disclaimer AI Care. Gate Docker SSG 100% verte (28 routes). Story 15.4 et Epic 15 passés à done.

@@ -346,7 +346,7 @@ const servicesJsonLd = {
 usePageSeo({
   title: "Services & Systèmes IA — Simon Jouan",
   description:
-    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
+    "Conception, automatisation de processus métier et maintien en condition opérationnelle (AI Care) de systèmes IA sur mesure. Diagnostic gratuit, cadrage Blueprint dès 750 € HT.",
   path: "/services",
   image: "/images/portrait.jpeg",
   type: "website",
@@ -634,7 +634,6 @@ usePageSeo({
   font-size: var(--fs-xs);
   line-height: var(--lh-normal);
   color: var(--text-muted);
-  opacity: 0.85;
 }
 
 .care-card__cta {
