@@ -1,5 +1,5 @@
 # generated: 2026-06-18
-# last_updated: 2026-09-14 (Story 11.6 soldée suite à la revue de code contradictoire)
+# last_updated: 2026-09-18 (Story 15.2 créée et prête pour le dev)
 # project: jouan.ovh
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-18 (Story 13.4 prête pour le dev)"
+last_updated: "2026-09-18 (Story 15.2 prête pour le dev)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -152,4 +152,13 @@ development_status:
   14-3-implementation-plan-de-taggage-exhaustif-conversions-ia-et-interactions: backlog
   14-4-referencement-google-search-console-sitemap-xml-et-robots-txt: backlog
   epic-14-retrospective: optional
+
+  # Epic 15 — Repositionnement Commercial V1.1 : Désancrage Tarifaire & Offres par Niveaux d'Intervention
+  epic-15: in-progress
+  15-1-homepage-suppression-prix-dentree-liens-contextuels-et-reassurance: done
+  15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint: ready-for-dev
+  15-3-page-services-section-dediee-ai-care-et-process-4-etapes: backlog
+  15-4-coherence-globale-seo-formulaire-contact-et-gate-docker: backlog
+  epic-15-retrospective: optional
+
 

@@ -1,0 +1,476 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0b580-e9d0-7631-9c62-3f6d40cefebe
+--------
+user
+# Edge Case Hunter Prompt — Story 15.1
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/15-1/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every code path and identify what can break.
+Output format: Output findings as a JSON array of objects with fields:
+- `location`: file and line reference
+- `trigger_condition`: exact condition triggering the edge case
+- `guard_snippet`: suggested code guard
+- `potential_consequence`: what happens when triggered
+Output raw JSON only.
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+J’utilise `bmad-review-edge-case-hunter` pour parcourir exhaustivement les chemins conditionnels du diff et ne retenir que les cas limites non gérés.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.codex/skills/bmad-review-edge-case-hunter/SKILL.md && printf '\\n---DIFF---\\n' && sed -n '1,260p' docs/implementation-artifacts/code-reviews/15-1/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+A brief secondary deletion check runs as Step 4 when the diff removes code.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Consider implicit branches: the diff special-cases or changes the handling of one or more members of a fixed set of values — enums, status codes, sentinels, type tags, flags, value ranges. The rest of the set is implicit branches (e.g. the diff changes the `RED` and `YELLOW` cases of a `RED`/`YELLOW`/`GREEN` enum; `GREEN` is the implicit branch)
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Deletion Check
+
+If the diff removed or replaced meaningful code (ignore pure renames and whitespace): load `references/deletion-check.md` and follow it.
+
+### Step 5: Present Findings
+
+Output all findings as a single JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when nothing is found. Deletion findings from Step 4, if any, go in the same array with the extra fields defined in `references/deletion-check.md`.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+---DIFF---
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index 3c147fc..ce69ab7 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -52,7 +52,7 @@
+       </div>
+     </section>
+ 
+-    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1) -->
++    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2, AC-3) -->
+     <section class="section">
+       <div class="container">
+         <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
+@@ -77,15 +77,21 @@
+                   <ZTag>{{ tag }}</ZTag>
+                 </li>
+               </ul>
+-              <div class="offer__price">
+-                <span>{{ service.price }}</span>
+-              </div>
+-              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+-                En savoir plus →
++              <NuxtLink to="/services" class="offer__more" :aria-label="service.actionText">
++                {{ service.actionText }}
+               </NuxtLink>
+             </ZCard>
+           </li>
+         </ul>
++
++        <!-- Encart de réassurance désancrage tarifaire (Story 15.1 / AC-3) -->
++        <div class="services-reassurance">
++          <p class="services-reassurance__text">
++            <strong>Un besoin simple ne nécessite pas forcément un gros projet.</strong>
++            Je dimensionne la solution selon le workflow réel : parfois quelques automatisations suffisent ; parfois il
++            faut construire un système métier complet.
++          </p>
++        </div>
+       </div>
+     </section>
+ 
+@@ -323,7 +329,7 @@ interface HomeServiceOffer {
+   desc: string;
+   points: string[];
+   tags: string[];
+-  price: string;
++  actionText: string;
+   featured: boolean;
+ }
+ 
+@@ -334,7 +340,7 @@ interface ProductionPillar {
+   desc: string;
+ }
+ 
+-// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1).
++// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2).
+ const services: HomeServiceOffer[] = [
+   {
+     id: "automation",
+@@ -348,7 +354,7 @@ const services: HomeServiceOffer[] = [
+       "Synchronisation d'outils métier & reporting",
+     ],
+     tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
+-    price: "À partir de 3 500 € HT",
++    actionText: "Voir les types d'automatisation →",
+     featured: false,
+   },
+   {
+@@ -363,7 +369,7 @@ const services: HomeServiceOffer[] = [
+       "Supervision humaine obligatoire (Human-in-the-loop)",
+     ],
+     tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
+-    price: "À partir de 3 500 € HT",
++    actionText: "Voir quand utiliser un agent →",
+     featured: true,
+   },
+   {
+@@ -378,7 +384,7 @@ const services: HomeServiceOffer[] = [
+       "Architecture PostgreSQL, tests QA & déploiement",
+     ],
+     tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
+-    price: "Sur mesure / Sprint",
++    actionText: "Découvrir les projets sur mesure →",
+     featured: false,
+   },
+ ];
+@@ -707,18 +713,11 @@ usePageSeo({
+   margin-bottom: var(--space-4);
+ }
+ 
+-.offer__price {
++.offer__more {
+   margin-top: auto;
+   padding-top: var(--space-4);
+   border-top: 1px dashed var(--border-subtle);
+   font-family: var(--font-mono);
+-  font-size: var(--fs-xs);
+-  color: var(--accent);
+-}
+-
+-.offer__more {
+-  margin-top: var(--space-3);
+-  font-family: var(--font-mono);
+   font-size: var(--fs-sm);
+   color: var(--accent);
+   text-decoration: none;
+@@ -742,6 +741,30 @@ usePageSeo({
+   }
+ }
+ 
++// ---- Encart de Réassurance Désancrage Tarifaire (Story 15.1 / AC-3) ----
++.services-reassurance {
++  margin-top: var(--space-6);
++  padding: var(--space-5) var(--space-6);
++  background: var(--surface-1);
++  border: 1px solid var(--border-subtle);
++  border-radius: var(--radius-md);
++  box-shadow: var(--shadow-1);
++}
++
++.services-reassurance__text {
++  max-width: 80ch;
++  margin: 0;
++  font-family: var(--font-sans);
++  font-size: var(--fs-sm);
++  line-height: var(--lh-relaxed);
++  color: var(--text-body);
++
++  strong {
++    font-weight: var(--fw-medium);
++    color: var(--text-strong);
++  }
++}
++
+ // ---- Bloc Différenciateur « Prototype → Production » (Story 12.3 / AC-2) ----
+ .diff-block__title {
+   max-width: 28ch;
+
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.codex/skills/bmad-review-edge-case-hunter/references/deletion-check.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+# Deletion Check
+
+Secondary pass for the Edge Case Hunter — runs only when the diff removed meaningful code. Subordinate to the edge-case pass; findings are usually few or none.
+
+For each chunk of removed or replaced code (ignore pure renames and whitespace), ask: did it carry behavior or a contract that the change neither re-established nor intentionally retired? Add a finding for any resulting regression, orphaned reference, or newly-dead code. Skip anything already covered by your edge-case findings.
+
+Append each finding to the same JSON array as the edge-case findings, with the four standard fields plus:
+
+- `kind`: `"deletion"`
+- `confidence`: `"high"`, `"medium"`, or `"low"` — these are inferences; rate them
+
+For a deletion finding the standard fields read as: `location` = the removed item; `trigger_condition` = the behavior or contract it enforced; `guard_snippet` = where or how to re-establish it; `potential_consequence` = the regression or orphan.
+
+Add nothing if nothing qualifies.
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '60,115p;320,395p;705,775p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    60	        <ul class="grid-3">
+    61	          <li v-for="service in services" :key="service.id">
+    62	            <ZCard class="offer" interactive tilt :accent="service.featured" :featured="service.featured">
+    63	              <div class="offer__top">
+    64	                <div class="offer__icon"><ZIcon :name="service.icon" /></div>
+    65	                <span class="offer__no">{{ service.no }}</span>
+    66	              </div>
+    67	              <h3 class="offer__title">{{ service.title }}</h3>
+    68	              <p class="offer__desc">{{ service.desc }}</p>
+    69	              <ul class="offer__points">
+    70	                <li v-for="point in service.points" :key="point">
+    71	                  <ZIcon name="check" class="offer__check" />
+    72	                  <span>{{ point }}</span>
+    73	                </li>
+    74	              </ul>
+    75	              <ul class="hero__tags offer__tags">
+    76	                <li v-for="tag in service.tags" :key="tag">
+    77	                  <ZTag>{{ tag }}</ZTag>
+    78	                </li>
+    79	              </ul>
+    80	              <NuxtLink to="/services" class="offer__more" :aria-label="service.actionText">
+    81	                {{ service.actionText }}
+    82	              </NuxtLink>
+    83	            </ZCard>
+    84	          </li>
+    85	        </ul>
+    86	
+    87	        <!-- Encart de réassurance désancrage tarifaire (Story 15.1 / AC-3) -->
+    88	        <div class="services-reassurance">
+    89	          <p class="services-reassurance__text">
+    90	            <strong>Un besoin simple ne nécessite pas forcément un gros projet.</strong>
+    91	            Je dimensionne la solution selon le workflow réel : parfois quelques automatisations suffisent ; parfois il
+    92	            faut construire un système métier complet.
+    93	          </p>
+    94	        </div>
+    95	      </div>
+    96	    </section>
+    97	
+    98	    <!-- Bloc différenciateur « Prototype → Production » (Story 12.3 / AC-2) -->
+    99	    <section class="section diff-block">
+   100	      <div class="container">
+   101	        <p class="eyebrow"><span aria-hidden="true">// </span>au-delà de la démo</p>
+   102	        <h2 class="section__title diff-block__title">
+   103	          Un agent qui fonctionne trois fois n’est pas encore un système fiable.
+   104	        </h2>
+   105	        <p class="prose diff-block__lead">
+   106	          Mon background Full Stack et QA me permet de traiter ce qui arrive après le prototype : authentification,
+   107	          permissions, données, erreurs, retries, logs, tests, coûts, monitoring, sécurité et supervision humaine.
+   108	          L’objectif n’est pas de mettre de l’IA partout. L’objectif est de construire un workflow qui reste utile
+   109	          lorsqu’il rencontre la vraie vie.
+   110	        </p>
+   111	
+   112	        <ul class="pillars-grid">
+   113	          <li v-for="pillar in pillars" :key="pillar.id">
+   114	            <ZCard class="pillar" padded>
+   115	              <div class="pillar__icon">
+   320	function onBootComplete() {
+   321	  isBootFinished.value = true;
+   322	}
+   323	
+   324	interface HomeServiceOffer {
+   325	  id: string;
+   326	  no: string;
+   327	  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+   328	  title: string;
+   329	  desc: string;
+   330	  points: string[];
+   331	  tags: string[];
+   332	  actionText: string;
+   333	  featured: boolean;
+   334	}
+   335	
+   336	interface ProductionPillar {
+   337	  id: string;
+   338	  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+   339	  title: string;
+   340	  desc: string;
+   341	}
+   342	
+   343	// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2).
+   344	const services: HomeServiceOffer[] = [
+   345	  {
+   346	    id: "automation",
+   347	    no: "01 / 03",
+   348	    icon: "layers",
+   349	    title: "Automatisation de processus métier",
+   350	    desc: "Cartographie d'un workflow existant, identification des tâches répétitives et construction du système qui automatise ce qui mérite réellement de l'être.",
+   351	    points: [
+   352	      "Cartographie de flux & connecteurs d'APIs",
+   353	      "Ingestion, enrichissement et traitement de données",
+   354	      "Synchronisation d'outils métier & reporting",
+   355	    ],
+   356	    tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
+   357	    actionText: "Voir les types d'automatisation →",
+   358	    featured: false,
+   359	  },
+   360	  {
+   361	    id: "agents",
+   362	    no: "02 / 03",
+   363	    icon: "bot",
+   364	    title: "Agents IA intégrés à vos outils",
+   365	    desc: "Intégration d'agents outillés dans vos flux existants pour lire, interpréter, synthétiser et décider sans casser vos habitudes de travail.",
+   366	    points: [
+   367	      "Agents outillés (Tool Calling) & serveurs MCP",
+   368	      "Extraction structurée & analyse documentaire",
+   369	      "Supervision humaine obligatoire (Human-in-the-loop)",
+   370	    ],
+   371	    tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
+   372	    actionText: "Voir quand utiliser un agent →",
+   373	    featured: true,
+   374	  },
+   375	  {
+   376	    id: "apps",
+   377	    no: "03 / 03",
+   378	    icon: "code",
+   379	    title: "Applications IA sur mesure",
+   380	    desc: "Développement complet de solutions logicielles dédiées quand le workflow nécessite une interface, un backend robuste et une base de données sur mesure.",
+   381	    points: [
+   382	      "Applications web complètes Nuxt & NestJS",
+   383	      "Applications desktop sécurisées Tauri (IA locale)",
+   384	      "Architecture PostgreSQL, tests QA & déploiement",
+   385	    ],
+   386	    tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
+   387	    actionText: "Découvrir les projets sur mesure →",
+   388	    featured: false,
+   389	  },
+   390	];
+   391	
+   392	// 4 Piliers d'industrialisation « Prototype → Production » (Story 12.3 / AC-2).
+   393	const pillars: ProductionPillar[] = [
+   394	  {
+   395	    id: "data",
+   705	.offer__check {
+   706	  flex-shrink: 0;
+   707	  margin-top: calc(var(--space-1) / 2);
+   708	  font-size: var(--fs-sm);
+   709	  color: var(--term-green);
+   710	}
+   711	
+   712	.offer__tags {
+   713	  margin-bottom: var(--space-4);
+   714	}
+   715	
+   716	.offer__more {
+   717	  margin-top: auto;
+   718	  padding-top: var(--space-4);
+   719	  border-top: 1px dashed var(--border-subtle);
+   720	  font-family: var(--font-mono);
+   721	  font-size: var(--fs-sm);
+   722	  color: var(--accent);
+   723	  text-decoration: none;
+   724	
+   725	  &::after {
+   726	    position: absolute;
+   727	    inset: 0;
+   728	    content: "";
+   729	  }
+   730	
+   731	  &:hover {
+   732	    text-decoration: underline;
+   733	  }
+   734	
+   735	  &:focus-visible {
+   736	    // Outline transparent : rendu en couleur système sous forced-colors.
+   737	    outline: 2px solid transparent;
+   738	    outline-offset: 2px;
+   739	    box-shadow: var(--ring-accent);
+   740	    border-radius: var(--radius-xs);
+   741	  }
+   742	}
+   743	
+   744	// ---- Encart de Réassurance Désancrage Tarifaire (Story 15.1 / AC-3) ----
+   745	.services-reassurance {
+   746	  margin-top: var(--space-6);
+   747	  padding: var(--space-5) var(--space-6);
+   748	  background: var(--surface-1);
+   749	  border: 1px solid var(--border-subtle);
+   750	  border-radius: var(--radius-md);
+   751	  box-shadow: var(--shadow-1);
+   752	}
+   753	
+   754	.services-reassurance__text {
+   755	  max-width: 80ch;
+   756	  margin: 0;
+   757	  font-family: var(--font-sans);
+   758	  font-size: var(--fs-sm);
+   759	  line-height: var(--lh-relaxed);
+   760	  color: var(--text-body);
+   761	
+   762	  strong {
+   763	    font-weight: var(--fw-medium);
+   764	    color: var(--text-strong);
+   765	  }
+   766	}
+   767	
+   768	// ---- Bloc Différenciateur « Prototype → Production » (Story 12.3 / AC-2) ----
+   769	.diff-block__title {
+   770	  max-width: 28ch;
+   771	  margin-bottom: var(--space-4);
+   772	}
+   773	
+   774	.diff-block__lead {
+   775	  max-width: 72ch;
+
+codex
+[]
+tokens used
+32 768
+[]

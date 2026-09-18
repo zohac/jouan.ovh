@@ -26,6 +26,8 @@ inputDocuments:
   - docs/specs/spec-analytics-search-console/tracking-plan.md
   - docs/specs/spec-analytics-search-console/compliance-gdpr.md
   - docs/specs/spec-analytics-search-console/seo-verification.md
+  - docs/jouan-ovh-offre-commerciale-v1.1-updated.md
+  - docs/planning-artifacts/sprint-change-proposal-2026-09-18.md
 ---
 
 # jouan.ovh - Epic Breakdown
@@ -97,6 +99,12 @@ FR45: Bandeau / toast de consentement RGPD sobre inspiré du terminal (`// telem
 FR46: Plan de taggage exhaustif des interactions métier (navigation, scroll depth, clics CTA offres IA, formulaire contact Web3Forms, terminal interactif, blog, liens externes). _(CAP-3)_
 FR47: Observabilité SEO via vérification DNS TXT chez OVH, génération dynamique du `sitemap.xml` et déclaration conforme dans `robots.txt`. _(CAP-5, CAP-6)_
 FR48: Outillage agentic MCP PostHog et validation Docker sans régression (`lint`, `typecheck`, `generate`). _(CAP-7, CAP-8)_
+
+#### Epic 15 — Repositionnement Commercial V1.1 : Désancrage Tarifaire & Offres par Niveaux d'Intervention (Offre V1.1)
+FR49: Page d'accueil — Retrait de toute mention « À partir de 3 500 € HT », intégration des liens contextuels vers les types de systèmes et insertion de la phrase de réassurance sur le dimensionnement selon le workflow réel. _(CAP-1)_
+FR50: Page Services — Restructuration complète des offres de build en 3 niveaux d'intervention sur devis (Automatisation ciblée, Workflow métier, Système métier sur mesure) et relégation du Blueprint en cadrage préalable optionnel. _(CAP-2)_
+FR51: Page Services — Section dédiée AI Care après mise en production (à partir de 250 € HT / mois) et réalignement du déroulé d'intervention en 4 étapes (Diagnostic gratuit 20-30 min, Cadrage, Construction & intégration, Exploitation & mesure). _(CAP-3)_
+FR52: Cohérence globale, SEO, accessibilité et validation transversale — Formulaire de contact sans budget imposé, alignement des métadonnées SEO, parité des thèmes clair/sombre et validation de la gate Docker 100% verte. _(CAP-4)_
 
 ### NonFunctional Requirements
 
@@ -1214,6 +1222,93 @@ So that mon positionnement sur les systèmes IA et l'automatisation métier bén
   ```sh
   docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
   ```
+
+---
+
+## Epic 15: Repositionnement Commercial V1.1 — Désancrage Tarifaire & Niveaux d'Intervention
+
+Simon Jouan souhaite supprimer l'affichage récurrent du prix d'entrée public de 3 500 € HT qui freinait les prospects ayant des besoins d'automatisation ciblée, et restructurer l'offre en 3 niveaux d'intervention sur devis, tout en conservant le Workflow métier comme offre cœur, AI Care isolé après mise en production à partir de 250 € HT/mois, et le Blueprint en cadrage optionnel.
+
+### Story 15.1: Homepage — Suppression des Prix d'Entrée, Liens Contextuels & Phrase de Réassurance
+
+As a visiteur découvrant la page d'accueil,
+I want comprendre que Simon intervient aussi bien sur une automatisation ciblée que sur un workflow complet sans imposer un ticket d'entrée public à 3 500 € HT,
+So that je me sente libre de le contacter pour qualifier mon besoin réel (FR49, NFR6, CAP-1).
+
+**Acceptance Criteria:**
+
+**Given** la section expertises de `app/pages/index.vue`
+**When** le visiteur consulte les 3 cartes de services
+**Then** la mention `À partir de 3 500 € HT` est intégralement retirée des cartes *Automatisation de processus métier* et *Agents IA intégrés à vos outils*
+**And** chaque carte intègre un lien d'exploration contextuel ciblant `/services` :
+  - *Automatisation :* « Voir les types d'automatisation → »
+  - *Agents IA :* « Voir quand utiliser un agent → »
+  - *Applications sur mesure :* « Découvrir les projets sur mesure → »
+**And** la phrase de réassurance officielle est insérée à proximité des expertises ou du CTA intermédiaire :
+  > *« Un besoin simple ne nécessite pas forcément un gros projet. Je dimensionne la solution selon le workflow réel : parfois quelques automatisations suffisent ; parfois il faut construire un système métier complet. »*
+**And** le style est strictement conforme aux tokens du design system (`var(--token)`), responsive et sans régression visuelle.
+
+### Story 15.2: Page Services — Restructuration des 3 Offres de Build sur Devis & Relégation du Blueprint
+
+As a prospect consultant la page `/services`,
+I want apprécier immédiatement les 3 niveaux d'intervention possibles et comprendre le positionnement sans prix plancher bloquant,
+So that je puisse identifier le format adapté à mon organisation (FR50, CAP-2).
+
+**Acceptance Criteria:**
+
+**Given** la route `/services` (`app/pages/services.vue`)
+**When** la page est affichée
+**Then** le Hero présente le H1 officiel :
+  > *« Le bon niveau de système pour le bon problème. »*
+  avec le texte d'introduction centré sur le workflow plutôt que sur la technologie
+**And** la grille principale présente les 3 offres de build :
+  1. *Automatisation ciblée :* (Eyebrow `BESOIN PRÉCIS`, titre, accroche « Supprimer une tâche répétitive sans reconstruire tout le processus », prix `Sur devis`, CTA « Décrire mon besoin »)
+  2. *Workflow métier :* (Eyebrow `OFFRE CŒUR`, titre, accroche « Transformer un processus complet en système opérationnel », prix `Sur devis`, carte visuellement mise en avant / featured, CTA « Identifier un workflow »)
+  3. *Système métier sur mesure :* (Eyebrow `PROJET COMPLEXE`, titre, accroche « Construire l'application lorsque l'automatisation devient un vrai produit », prix `Sur devis`, CTA « Parler du projet »)
+**And** l'offre *AI Workflow Blueprint* est retirée des cartes de build principales pour devenir une option de cadrage dans la section process.
+
+### Story 15.3: Page Services — Section Dédiée AI Care Après Mise en Production & Process 4 Étapes
+
+As a client ayant déployé un système,
+I want comprendre comment Simon garantit la fiabilité et la maintenance de la capacité dans la durée,
+So that mon investissement reste opérationnel et maîtrisé en coûts (FR51, CAP-3).
+
+**Acceptance Criteria:**
+
+**Given** la page `/services` (`app/pages/services.vue`)
+**When** l'utilisateur parcourt la page sous la grille des offres de build
+**Then** une section autonome est créée spécifiquement pour l'exploitation post-déploiement :
+  - Eyebrow : `<h2 class="eyebrow"><span aria-hidden="true">// </span>APRÈS LA MISE EN PRODUCTION</h2>`
+  - Titre : `Le système doit continuer à fonctionner.`
+  - Carte ou bloc dédié `AI Care` affichant `À partir de 250 € HT / mois`
+  - Descriptif axé sur le monitoring, la maintenance corrective, le suivi des coûts d'inférence et les adaptations mineures d'APIs
+  - Mention explicite des coûts variables d'infrastructures et tokens tiers non inclus
+  - CTA orienté « Découvrir AI Care »
+**And** la section du déroulé en 4 étapes (`steps`) est mise à jour :
+  - *01 — Diagnostic :* Gratuit — 20 à 30 minutes
+  - *02 — Cadrage :* Cadrage du workflow cible, avec mention explicite du Blueprint facturable optionnel (à partir de 750 € HT) pour les sujets complexes
+  - *03 — Construction & intégration :* Développement uniquement du niveau de système nécessaire
+  - *04 — Exploitation & mesure :* Mise en production, mesure initiale et maintien opérationnel.
+
+### Story 15.4: Cohérence Globale, SEO, Formulaire de Contact & Gate Docker Nitro SSG
+
+As a développeur garantissant la qualité du projet,
+I want auditer l'ensemble des parcours et formulaires et valider la compilation statique,
+So that le site soit exempt de régressions fonctionnelles, visuelles ou d'accessibilité (FR52, NFR4, NFR6, CAP-4).
+
+**Acceptance Criteria:**
+
+**Given** l'ensemble des routes statiques de `jouan.ovh`
+**When** on audite le CTA final global et la page `/contact`
+**Then** le CTA global maintient la question « Quel process vous fait perdre du temps chaque semaine ? » avec le terminal `$ ./workflow --inspect`
+**And** le formulaire de contact dans `app/pages/contact.vue` qualifie le processus sans champ de budget obligatoire
+**And** les méta-descriptions SEO et OpenGraph gérées par `usePageSeo()` sont alignées sur l'Offre V1.1 sans référence obsolète aux 3 500 €
+**And** les thèmes clair et sombre s'affichent avec un contraste conforme WCAG AA
+**And** la suite de validation Docker s'exécute avec un succès complet à 100% :
+  ```sh
+  docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
+  ```
+
 
 
 

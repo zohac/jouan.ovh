@@ -1,0 +1,136 @@
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index 3c147fc..ce69ab7 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -52,7 +52,7 @@
+       </div>
+     </section>
+ 
+-    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1) -->
++    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2, AC-3) -->
+     <section class="section">
+       <div class="container">
+         <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
+@@ -77,15 +77,21 @@
+                   <ZTag>{{ tag }}</ZTag>
+                 </li>
+               </ul>
+-              <div class="offer__price">
+-                <span>{{ service.price }}</span>
+-              </div>
+-              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
+-                En savoir plus →
++              <NuxtLink to="/services" class="offer__more" :aria-label="service.actionText">
++                {{ service.actionText }}
+               </NuxtLink>
+             </ZCard>
+           </li>
+         </ul>
++
++        <!-- Encart de réassurance désancrage tarifaire (Story 15.1 / AC-3) -->
++        <div class="services-reassurance">
++          <p class="services-reassurance__text">
++            <strong>Un besoin simple ne nécessite pas forcément un gros projet.</strong>
++            Je dimensionne la solution selon le workflow réel : parfois quelques automatisations suffisent ; parfois il
++            faut construire un système métier complet.
++          </p>
++        </div>
+       </div>
+     </section>
+ 
+@@ -323,7 +329,7 @@ interface HomeServiceOffer {
+   desc: string;
+   points: string[];
+   tags: string[];
+-  price: string;
++  actionText: string;
+   featured: boolean;
+ }
+ 
+@@ -334,7 +340,7 @@ interface ProductionPillar {
+   desc: string;
+ }
+ 
+-// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1).
++// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2).
+ const services: HomeServiceOffer[] = [
+   {
+     id: "automation",
+@@ -348,7 +354,7 @@ const services: HomeServiceOffer[] = [
+       "Synchronisation d'outils métier & reporting",
+     ],
+     tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
+-    price: "À partir de 3 500 € HT",
++    actionText: "Voir les types d'automatisation →",
+     featured: false,
+   },
+   {
+@@ -363,7 +369,7 @@ const services: HomeServiceOffer[] = [
+       "Supervision humaine obligatoire (Human-in-the-loop)",
+     ],
+     tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
+-    price: "À partir de 3 500 € HT",
++    actionText: "Voir quand utiliser un agent →",
+     featured: true,
+   },
+   {
+@@ -378,7 +384,7 @@ const services: HomeServiceOffer[] = [
+       "Architecture PostgreSQL, tests QA & déploiement",
+     ],
+     tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
+-    price: "Sur mesure / Sprint",
++    actionText: "Découvrir les projets sur mesure →",
+     featured: false,
+   },
+ ];
+@@ -707,18 +713,11 @@ usePageSeo({
+   margin-bottom: var(--space-4);
+ }
+ 
+-.offer__price {
++.offer__more {
+   margin-top: auto;
+   padding-top: var(--space-4);
+   border-top: 1px dashed var(--border-subtle);
+   font-family: var(--font-mono);
+-  font-size: var(--fs-xs);
+-  color: var(--accent);
+-}
+-
+-.offer__more {
+-  margin-top: var(--space-3);
+-  font-family: var(--font-mono);
+   font-size: var(--fs-sm);
+   color: var(--accent);
+   text-decoration: none;
+@@ -742,6 +741,30 @@ usePageSeo({
+   }
+ }
+ 
++// ---- Encart de Réassurance Désancrage Tarifaire (Story 15.1 / AC-3) ----
++.services-reassurance {
++  margin-top: var(--space-6);
++  padding: var(--space-5) var(--space-6);
++  background: var(--surface-1);
++  border: 1px solid var(--border-subtle);
++  border-radius: var(--radius-md);
++  box-shadow: var(--shadow-1);
++}
++
++.services-reassurance__text {
++  max-width: 80ch;
++  margin: 0;
++  font-family: var(--font-sans);
++  font-size: var(--fs-sm);
++  line-height: var(--lh-relaxed);
++  color: var(--text-body);
++
++  strong {
++    font-weight: var(--fw-medium);
++    color: var(--text-strong);
++  }
++}
++
+ // ---- Bloc Différenciateur « Prototype → Production » (Story 12.3 / AC-2) ----
+ .diff-block__title {
+   max-width: 28ch;
