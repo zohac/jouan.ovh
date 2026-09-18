@@ -52,7 +52,7 @@
       </div>
     </section>
 
-    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1) -->
+    <!-- Vitrine des 3 services cibles (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2, AC-3) -->
     <section class="section">
       <div class="container">
         <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
@@ -77,15 +77,39 @@
                   <ZTag>{{ tag }}</ZTag>
                 </li>
               </ul>
-              <div class="offer__price">
-                <span>{{ service.price }}</span>
-              </div>
-              <NuxtLink to="/services" class="offer__more" :aria-label="`En savoir plus sur ${service.title}`">
-                En savoir plus →
+              <NuxtLink
+                :to="service.to"
+                class="offer__more"
+                :aria-label="`${service.actionText.replace(' →', '')} - ${service.title}`"
+              >
+                <span>{{ service.actionText.replace(" →", "") }}</span>
+                <span class="offer__arrow" aria-hidden="true">→</span>
               </NuxtLink>
             </ZCard>
           </li>
         </ul>
+
+        <!-- Encart de réassurance désancrage tarifaire (Story 15.1 / AC-3) -->
+        <div class="services-reassurance">
+          <div class="services-reassurance__bar" aria-hidden="true">
+            <span class="services-reassurance__dots">
+              <span class="services-reassurance__dot services-reassurance__dot--close" />
+              <span class="services-reassurance__dot services-reassurance__dot--min" />
+              <span class="services-reassurance__dot services-reassurance__dot--max" />
+            </span>
+            <span class="services-reassurance__cmd">anon.@jouan.ovh: ~ / note.txt</span>
+          </div>
+          <div class="services-reassurance__body">
+            <p class="services-reassurance__lead">
+              <span class="services-reassurance__prompt" aria-hidden="true">&gt; </span>
+              <strong>Un besoin simple ne nécessite pas forcément un gros projet.</strong>
+            </p>
+            <p class="services-reassurance__text">
+              Je dimensionne la solution selon le workflow réel : parfois quelques automatisations suffisent ; parfois
+              il faut construire un système métier complet.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -323,7 +347,8 @@ interface HomeServiceOffer {
   desc: string;
   points: string[];
   tags: string[];
-  price: string;
+  actionText: string;
+  to: string;
   featured: boolean;
 }
 
@@ -334,7 +359,7 @@ interface ProductionPillar {
   desc: string;
 }
 
-// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1).
+// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2 & Story 15.2 / AC-4).
 const services: HomeServiceOffer[] = [
   {
     id: "automation",
@@ -348,7 +373,8 @@ const services: HomeServiceOffer[] = [
       "Synchronisation d'outils métier & reporting",
     ],
     tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
-    price: "À partir de 3 500 € HT",
+    actionText: "Voir les types d'automatisation →",
+    to: "/services#automatisation",
     featured: false,
   },
   {
@@ -363,7 +389,8 @@ const services: HomeServiceOffer[] = [
       "Supervision humaine obligatoire (Human-in-the-loop)",
     ],
     tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
-    price: "À partir de 3 500 € HT",
+    actionText: "Voir quand utiliser un agent →",
+    to: "/services#workflow",
     featured: true,
   },
   {
@@ -378,7 +405,8 @@ const services: HomeServiceOffer[] = [
       "Architecture PostgreSQL, tests QA & déploiement",
     ],
     tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
-    price: "Sur mesure / Sprint",
+    actionText: "Découvrir les projets sur mesure →",
+    to: "/services#sur-mesure",
     featured: false,
   },
 ];
@@ -707,21 +735,19 @@ usePageSeo({
   margin-bottom: var(--space-4);
 }
 
-.offer__price {
+.offer__more {
   margin-top: auto;
   padding-top: var(--space-4);
-  border-top: 1px dashed var(--border-subtle);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--accent);
-}
-
-.offer__more {
-  margin-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   color: var(--accent);
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  transition: color var(--transition-fast);
 
   &::after {
     position: absolute;
@@ -729,8 +755,18 @@ usePageSeo({
     content: "";
   }
 
+  .offer__arrow {
+    display: inline-block;
+    transition: transform var(--transition-fast);
+  }
+
   &:hover {
-    text-decoration: underline;
+    text-decoration: none;
+    color: var(--accent-hover);
+
+    .offer__arrow {
+      transform: translateX(4px);
+    }
   }
 
   &:focus-visible {
@@ -739,6 +775,97 @@ usePageSeo({
     outline-offset: 2px;
     box-shadow: var(--ring-accent);
     border-radius: var(--radius-xs);
+  }
+}
+
+// ---- Encart de Réassurance Désancrage Tarifaire (Story 15.1 / AC-3) ----
+.services-reassurance {
+  max-width: 800px;
+  margin: var(--space-10) auto 0;
+  overflow: hidden;
+  border: 1px solid var(--border-terminal);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-1);
+}
+
+.services-reassurance__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 30px;
+  padding: 0 var(--space-3);
+  background: var(--aubergine-black);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.services-reassurance__dots {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.services-reassurance__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: var(--radius-circle);
+
+  &--close {
+    background: var(--term-red);
+  }
+
+  &--min {
+    background: var(--term-yellow);
+  }
+
+  &--max {
+    background: var(--term-green);
+  }
+}
+
+.services-reassurance__cmd {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-muted);
+}
+
+.services-reassurance__body {
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-1);
+}
+
+.services-reassurance__lead {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--text-strong);
+
+  .services-reassurance__prompt {
+    font-weight: var(--fw-bold);
+    color: var(--accent);
+  }
+
+  strong {
+    font-weight: var(--fw-medium);
+  }
+}
+
+.services-reassurance__text {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+@media (width <= 680px) {
+  .services-reassurance {
+    margin-top: var(--space-8);
+  }
+
+  .services-reassurance__body {
+    padding: var(--space-4);
   }
 }
 

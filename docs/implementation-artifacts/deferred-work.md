@@ -40,6 +40,16 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 9. ~~**Déploiement gh-pages réel**~~ — ✅ **Résolu en 10.7** : premier merge sur `main` et déploiement réel `gh-pages` exécuté et validé. Site servi en production avec HTTPS sur `https://jouan.ovh`.
 
+## Deferred from: code review of 15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint (2026-09-18)
+
+- ~~**Nuancer la mention du Blueprint dans l'étape Cadrage** (`app/pages/services.vue`)~~ — ✅ **Résolu en 15.3** : étape 02 Cadrage mise à jour avec mention du Blueprint facturable optionnel à partir de 750 € HT pour sujets complexes.
+- ~~**Enrichir les entités Service de `servicesJsonLd` avec leur URL d'ancrage respective** (`app/pages/services.vue`)~~ — ✅ **Résolu en 15.3** : attributs `url` pointant vers `#automatisation`, `#workflow`, `#sur-mesure` et `#ai-care` intégrés dans Schema.org `servicesJsonLd`.
+
+## Deferred from: code review of 15-1-homepage-suppression-prix-dentree-liens-contextuels-et-reassurance (2026-09-18)
+
+- ~~**Ancrage direct des 3 liens contextuels de la homepage vers les offres `/services`**~~ — ✅ **Résolu en 15.2** (`app/pages/index.vue` : ancres `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`).
+- ~~**Désancrage tarifaire résiduel sur la page catalogue `/services`**~~ — ✅ **Résolu en 15.2** (`app/pages/services.vue` : 3 offres sur devis, élimination définitive du prix d'entrée 3 500 € HT et restructuration du catalogue de build).
+
 ## Deferred from: code review of 13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg (2026-09-18)
 
 - **Isolation du sélecteur global `pre` vis-à-vis des composants Markdown blog** (`app/assets/scss/abstract/_root.scss:268`) — La sanctuarisation actuelle applique les styles sombres directement sur la balise `pre`. Préexistant et cohérent avec le style par défaut du blog, mais factorisable sous une classe dédiée pour isoler formellement les terminaux des blocs de code du contenu éditorial lors d'une future refonte du blog.

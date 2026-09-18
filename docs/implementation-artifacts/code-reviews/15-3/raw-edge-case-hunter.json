@@ -1,0 +1,1271 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0b63f-9005-7fe0-a3a6-229b068ae9b6
+--------
+user
+# Edge Case Hunter Prompt — Story 15.3
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/15-3/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every code path and identify what can break.
+Output format: Output findings as a JSON array of objects with fields:
+- `location`: file and line reference
+- `trigger_condition`: exact condition triggering the edge case
+- `guard_snippet`: suggested code guard
+- `potential_consequence`: what happens when triggered
+Output raw JSON only.
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+J’utilise `bmad-review-edge-case-hunter` pour examiner exhaustivement le diff fourni et ne retenir que les cas limites non gérés.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md && printf '\\n--- DIFF ---\\n' && sed -n '1,260p' docs/implementation-artifacts/code-reviews/15-3/full.diff" in /Users/simon/dev/jouan.ovh
+ exited 1 in 0ms:
+sed: /Users/simon/.agents/skills/bmad-review-edge-case-hunter/SKILL.md: No such file or directory
+
+exec
+/bin/zsh -lc "sed -n '1,260p' .agents/skills/bmad-review-edge-case-hunter/SKILL.md && printf '\\n--- DIFF ---\\n' && sed -n '1,320p' docs/implementation-artifacts/code-reviews/15-3/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+--- DIFF ---
+diff --git a/app/pages/services.vue b/app/pages/services.vue
+index 0c6e1e1..13111e5 100644
+--- a/app/pages/services.vue
++++ b/app/pages/services.vue
+@@ -1,6 +1,6 @@
+ <template>
+   <main class="services">
+-    <!-- En-tête + grille d'offres (story 12.5 & story 15.2) -->
++    <!-- En-tête + grille d'offres de build (story 12.5 & story 15.2) -->
+     <section class="section">
+       <div class="container">
+         <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
+@@ -49,8 +49,59 @@
+       </div>
+     </section>
+ 
+-    <!-- Section process : 4 étapes ordonnées + CTA (story 12.5) -->
+-    <section class="section section--sunken">
++    <!-- Section AI Care : Maintien en condition opérationnelle (story 15.3) -->
++    <section class="section section--sunken care-section">
++      <div class="container">
++        <p class="eyebrow"><span aria-hidden="true">// </span>après la mise en production</p>
++        <h2 class="care-section__title">Le système doit continuer à fonctionner.</h2>
++        <p class="prose care-section__intro">
++          Une automatisation utile doit continuer à fonctionner après sa mise en production. AI Care couvre le maintien
++          en condition opérationnelle du système : monitoring, maintenance, support, suivi des coûts et adaptations
++          mineures liées aux APIs ou aux modèles.
++        </p>
++
++        <ZCard :id="careOffer.id" class="care-card">
++          <div class="care-card__info">
++            <div class="care-card__badge">
++              <ZBadge tone="neutral">{{ careOffer.badge }}</ZBadge>
++            </div>
++            <div class="care-card__icon"><ZIcon name="bot" /></div>
++            <h3 class="care-card__title">{{ careOffer.title }}</h3>
++            <p class="care-card__desc">{{ careOffer.desc }}</p>
++
++            <div class="care-card__footer">
++              <div class="care-card__price">
++                <b>{{ careOffer.price }}</b>
++              </div>
++              <p v-if="careOffer.disclaimer" class="care-card__disclaimer">
++                {{ careOffer.disclaimer }}
++              </p>
++              <div class="care-card__cta">
++                <ZButton
++                  :as="NuxtLink"
++                  to="/contact"
++                  variant="secondary"
++                  :aria-label="careOffer.ctaAriaLabel"
++                  class="care-card__btn"
++                >
++                  {{ careOffer.ctaText }}
++                </ZButton>
++              </div>
++            </div>
++          </div>
++
++          <div class="care-card__details">
++            <h4 class="care-card__points-title">Inclus dans l’accompagnement :</h4>
++            <ul class="care-card__points">
++              <li v-for="point in careOffer.points" :key="point">{{ point }}</li>
++            </ul>
++          </div>
++        </ZCard>
++      </div>
++    </section>
++
++    <!-- Section process : 4 étapes ordonnées + CTA (story 12.5 & story 15.3) -->
++    <section class="section">
+       <div class="container">
+         <p class="eyebrow"><span aria-hidden="true">// </span>comment ça se passe</p>
+         <h2 class="process__title">Un déroulé simple en quatre temps</h2>
+@@ -80,8 +131,8 @@
+ </template>
+ 
+ <script setup lang="ts">
+-// Page Services : catalogue d'offres de build sur devis (3 niveaux d'intervention) + process 4 étapes + CTA contact.
+-// Données statiques (3 offres, 4 étapes) déclarées localement. Prerender-safe, dark-first.
++// Page Services : catalogue d'offres de build sur devis + section dédiée AI Care + process 4 étapes + CTA contact.
++// Données statiques (3 offres de build, 1 offre de care, 4 étapes) déclarées localement. Prerender-safe, dark-first.
+ import { NuxtLink } from "#components";
+ import { SITE } from "~/data/site";
+ 
+@@ -104,6 +155,18 @@ interface Offer {
+   ctaAriaLabel: string;
+ }
+ 
++interface CareOffer {
++  id: string;
++  badge: string;
++  title: string;
++  price: string;
++  desc: string;
++  points: string[];
++  disclaimer: string;
++  ctaText: string;
++  ctaAriaLabel: string;
++}
++
+ interface Step {
+   n: string;
+   title: string;
+@@ -178,12 +241,32 @@ const offers: Offer[] = [
+   },
+ ];
+ 
+-// Étapes du process en 4 temps. L'ordre du tableau garantit l'affichage 01 → 04.
++// Offre de maintien en condition opérationnelle V1.1 (AI Care).
++const careOffer: CareOffer = {
++  id: "ai-care",
++  badge: "MAINTIEN EN CONDITION OPÉRATIONNELLE",
++  title: "AI Care",
++  price: "À partir de 250 € HT / mois",
++  desc: "Pour les systèmes qui ont besoin d'être exploités, surveillés et adaptés dans la durée.",
++  points: [
++    "Monitoring proactif, détection d'erreurs & alertes d'anomalies",
++    "Maintenance corrective & adaptation aux évolutions d'APIs tierces",
++    "Suivi fin de consommation des tokens & ajustements de prompts",
++    "Support technique réactif & veille sur les nouveaux modèles",
++    "Mesure factuelle des KPI et optimisation continue du flux",
++  ],
++  disclaimer:
++    "Consommations tierces d'APIs et tokens (LLM, OCR, scraping...) refacturées au réel ou prises en charge directement par le client. Pas d'engagement imposé au build.",
++  ctaText: "Découvrir AI Care",
++  ctaAriaLabel: "Découvrir l'accompagnement AI Care",
++};
++
++// Étapes du process en 4 temps (Offre V1.1). L'ordre du tableau garantit l'affichage 01 → 04.
+ const steps: Step[] = [
+   {
+     n: "01",
+     title: "Diagnostic",
+-    desc: "Échange de 20 à 30 minutes pour qualifier le problème, comprendre le workflow existant et identifier les goulots d'étranglement.",
++    desc: "Échange gratuit de 20 à 30 minutes pour qualifier le problème, comprendre le workflow existant, ses volumes, ses outils et identifier la friction réelle.",
+     inlineCta: {
+       to: "/contact",
+       label: "Identifier un workflow →",
+@@ -192,17 +275,17 @@ const steps: Step[] = [
+   {
+     n: "02",
+     title: "Cadrage",
+-    desc: "Formalisation du workflow cible, des étapes manuelles à conserver sous contrôle humain, des connecteurs API requis et des KPI de mesure. Fait l'objet d'un Blueprint pour les sujets complexes.",
++    desc: "Définir la cible, ce qui doit être automatisé, ce qui reste humain et comment mesurer le résultat. Pour les sujets complexes, un Blueprint facturable (à partir de 750 € HT) peut être proposé lorsque le cadrage nécessite un travail approfondi avant devis.",
+   },
+   {
+     n: "03",
+     title: "Construction & intégration",
+-    desc: "Développement logiciel du système, connexion aux outils métiers (CRM, ERP, messagerie...), couverture de tests automatisés et mise à l'épreuve sur cas réels avant livraison.",
++    desc: "Développer uniquement le niveau de système nécessaire (automatisation ciblée, workflow métier ou application sur mesure) et le tester sur des cas réels avant livraison.",
+   },
+   {
+     n: "04",
+-    title: "Suivi & amélioration",
+-    desc: "Monitoring en production, maintenance préventive/corrective, ajustements aux évolutions d'APIs tierces ou modèles d'IA, mesure factuelle des résultats.",
++    title: "Exploitation & mesure",
++    desc: "Mise en production, mesure initiale de performance et maintien en condition opérationnelle lorsque le workflow le justifie (via AI Care).",
+   },
+ ];
+ 
+@@ -217,24 +300,46 @@ const servicesJsonLd = {
+   url: `${siteUrl}/services`,
+   mainEntity: {
+     "@type": "ItemList",
+-    itemListElement: offers.map((offer, index) => ({
+-      "@type": "ListItem",
+-      position: index + 1,
+-      item: {
+-        "@type": "Service",
+-        name: offer.title,
+-        description: offer.desc,
+-        provider: {
+-          "@type": "Organization",
+-          "@id": `${siteUrl}/#organization`,
+-          name: SITE.profile.name,
++    itemListElement: [
++      ...offers.map((offer, index) => ({
++        "@type": "ListItem",
++        position: index + 1,
++        item: {
++          "@type": "Service",
++          name: offer.title,
++          description: offer.desc,
++          url: `${siteUrl}/services#${offer.id}`,
++          provider: {
++            "@type": "Organization",
++            "@id": `${siteUrl}/#organization`,
++            name: SITE.profile.name,
++          },
++          offers: {
++            "@type": "Offer",
++            description: offer.price,
++          },
+         },
+-        offers: {
+-          "@type": "Offer",
+-          description: offer.price,
++      })),
++      {
++        "@type": "ListItem",
++        position: offers.length + 1,
++        item: {
++          "@type": "Service",
++          name: careOffer.title,
++          description: careOffer.desc,
++          url: `${siteUrl}/services#${careOffer.id}`,
++          provider: {
++            "@type": "Organization",
++            "@id": `${siteUrl}/#organization`,
++            name: SITE.profile.name,
++          },
++          offers: {
++            "@type": "Offer",
++            description: careOffer.price,
++          },
+         },
+       },
+-    })),
++    ],
+   },
+ };
+ 
+@@ -399,6 +504,144 @@ usePageSeo({
+   width: 100%;
+ }
+ 
++// ---- Section AI Care (.care-section / .care-card*) ----
++.care-section__title {
++  max-width: 26ch;
++  margin-bottom: var(--space-3);
++  font-family: var(--font-mono);
++  font-size: var(--fs-3xl);
++  font-weight: var(--fw-regular);
++  line-height: var(--lh-tight);
++  color: var(--text-strong);
++}
++
++.care-section__intro {
++  max-width: 62ch;
++  margin-bottom: var(--space-8);
++  color: var(--text-muted);
++}
++
++.care-card {
++  display: grid;
++  grid-template-columns: 1fr 1fr;
++  gap: var(--space-8);
++  align-items: start;
++  scroll-margin-top: var(--space-16);
++}
++
++.care-card__info {
++  display: flex;
++  flex-direction: column;
++}
++
++.care-card__badge {
++  margin-bottom: var(--space-3);
++}
++
++.care-card__icon {
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  width: var(--space-10); // 40px
++  height: var(--space-10);
++  margin-bottom: var(--space-4);
++  font-size: 22px;
++  color: var(--accent);
++  background: var(--accent-soft);
++  border-radius: var(--radius-md);
++}
++
++.care-card__title {
++  margin-bottom: var(--space-2);
++  font-family: var(--font-mono);
++  font-size: var(--fs-2xl);
++  font-weight: var(--fw-regular);
++  color: var(--text-strong);
++}
++
++.care-card__desc {
++  margin: 0 0 var(--space-5);
++  font-family: var(--font-sans);
++  font-size: var(--fs-sm);
++  line-height: var(--lh-relaxed);
++  color: var(--text-body);
++}
++
++.care-card__details {
++  display: flex;
++  flex-direction: column;
++  padding-left: var(--space-6);
++  border-left: 1px solid var(--border-subtle);
++}
++
++.care-card__points-title {
++  margin: 0 0 var(--space-3);
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  font-weight: var(--fw-medium);
++  letter-spacing: var(--ls-wide);
++  color: var(--accent);
++  text-transform: uppercase;
++}
++
++.care-card__points {
++  margin: 0;
++  padding: 0;
++  list-style: none;
++
++  li {
++    position: relative;
++    padding: var(--space-2) 0 var(--space-2) var(--space-5);
++    font-family: var(--font-mono);
++    font-size: var(--fs-sm);
++    color: var(--text-muted);
++  }
++
+
+exec
+/bin/zsh -lc "sed -n '321,700p' docs/implementation-artifacts/code-reviews/15-3/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
++  li::before {
++    content: "→";
++    position: absolute;
++    left: 0;
++    color: var(--accent);
++  }
++}
++
++.care-card__footer {
++  display: flex;
++  flex-direction: column;
++  margin-top: var(--space-4);
++  padding-top: var(--space-4);
++  border-top: 1px solid var(--border-subtle);
++}
++
++.care-card__price {
++  font-family: var(--font-mono);
++  font-size: var(--fs-sm);
++  color: var(--text-muted);
++
++  b {
++    font-size: var(--fs-lg);
++    font-weight: var(--fw-bold);
++    color: var(--text-strong);
++  }
++}
++
++.care-card__disclaimer {
++  margin: var(--space-2) 0 0;
++  font-family: var(--font-mono);
++  font-size: var(--fs-xs);
++  line-height: var(--lh-normal);
++  color: var(--text-muted);
++  opacity: 0.85;
++}
++
++.care-card__cta {
++  margin-top: var(--space-4);
++}
++
++.care-card__btn {
++  width: 100%;
++}
++
+ // ---- Section process ----
+ .process__title {
+   margin-bottom: var(--space-8);
+@@ -482,5 +725,17 @@ usePageSeo({
+   .process {
+     grid-template-columns: 1fr;
+   }
++
++  .care-card {
++    grid-template-columns: 1fr;
++    gap: var(--space-6);
++  }
++
++  .care-card__details {
++    padding-top: var(--space-4);
++    padding-left: 0;
++    border-top: 1px solid var(--border-subtle);
++    border-left: none;
++  }
+ }
+ </style>
+diff --git a/docs/implementation-artifacts/15-3-page-services-section-dediee-ai-care-et-process-4-etapes.md b/docs/implementation-artifacts/15-3-page-services-section-dediee-ai-care-et-process-4-etapes.md
+index 3b2a14b..94bf1ef 100644
+--- a/docs/implementation-artifacts/15-3-page-services-section-dediee-ai-care-et-process-4-etapes.md
++++ b/docs/implementation-artifacts/15-3-page-services-section-dediee-ai-care-et-process-4-etapes.md
+@@ -4,7 +4,7 @@ baseline_commit: 7162f14595e42399d234c534fd88d78a7360cbb8
+ 
+ # Story 15.3: Page Services — Section Dédiée AI Care Après Mise en Production & Process 4 Étapes
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -80,39 +80,39 @@ so that mon investissement reste opérationnel, adapté aux évolutions d'APIs e
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Création de la section dédiée « AI Care » dans `app/pages/services.vue` (AC: 1, 3)
+-  - [ ] Structurer la section avec `.section.section--sunken.care-section` insérée entre la grille de build et la section process.
+-  - [ ] Insérer l'eyebrow standard `<p class="eyebrow"><span aria-hidden="true">// </span>après la mise en production</p>`.
+-  - [ ] Insérer le titre `h2.care-section__title` : `Le système doit continuer à fonctionner.`
+-  - [ ] Rédiger le texte de cadrage d'exploitation en 2 phrases (prose).
+-  - [ ] Intégrer une carte `<ZCard>` dédiée (ou layout horizontal adapté) avec badge `MAINTIEN EN CONDITION OPÉRATIONNELLE`, icône `bot`, prix `À partir de 250 € HT / mois`, les 5 points de livrables et le disclaimer des consommations tierces d'APIs/tokens.
+-  - [ ] Ajouter le bouton `<ZButton>` vers `/contact` avec `:aria-label="Découvrir l'accompagnement AI Care"`.
+-  - [ ] Configurer l'ancre `id="ai-care"` et la règle `scroll-margin-top: var(--space-16)`.
+-
+-- [ ] Tâche 2 — Réalignement des 4 étapes du process et intégration Blueprint (AC: 2)
+-  - [ ] Mettre à jour l'étape `01` : Diagnostic gratuit 20 à 30 min.
+-  - [ ] Mettre à jour l'étape `02` : Cadrage avec mention explicite du Blueprint facturable optionnel à partir de 750 € HT pour sujets complexes.
+-  - [ ] Mettre à jour l'étape `03` : Construction & intégration centrée sur le bon niveau de système.
+-  - [ ] Mettre à jour l'étape `04` : Renommer en `Exploitation & mesure` avec mention de la transition vers AI Care.
+-  - [ ] Marquer comme résolu le point de dette différé correspondant dans `docs/implementation-artifacts/deferred-work.md`.
+-
+-- [ ] Tâche 3 — Intégration SCSS, tokens et responsive (AC: 1, 3)
+-  - [ ] Déclarer les styles scoped de la carte AI Care dans `app/pages/services.vue` en utilisant exclusivement les tokens de spacing, border, typography et color.
+-  - [ ] S'assurer d'un rendu soigné en desktop et mobile (< 900px).
+-  - [ ] Tester le contraste et l'alternance visuelle sur les thèmes sombre et clair.
+-
+-- [ ] Tâche 4 — Synchronisation Schema.org JSON-LD (AC: 4)
+-  - [ ] Ajouter AI Care dans l'objet `servicesJsonLd` comme service d'exploitation (`@type: "Service"`).
+-  - [ ] Enrichir les 3 services de build avec leur attribut `url` (`${siteUrl}/services#automatisation`, etc.).
+-  - [ ] Marquer comme résolu le point de dette différé Schema.org dans `docs/implementation-artifacts/deferred-work.md`.
+-
+-- [ ] Tâche 5 — Validation transverse, accessibilité et Gate Docker Nitro SSG (AC: 5)
+-  - [ ] Vérifier la navigation clavier, le focus visible et les attributs ARIA des nouveaux éléments interactifs.
+-  - [ ] Exécuter la commande de validation Docker :
++- [x] Tâche 1 — Création de la section dédiée « AI Care » dans `app/pages/services.vue` (AC: 1, 3)
++  - [x] Structurer la section avec `.section.section--sunken.care-section` insérée entre la grille de build et la section process.
++  - [x] Insérer l'eyebrow standard `<p class="eyebrow"><span aria-hidden="true">// </span>après la mise en production</p>`.
++  - [x] Insérer le titre `h2.care-section__title` : `Le système doit continuer à fonctionner.`
++  - [x] Rédiger le texte de cadrage d'exploitation en 2 phrases (prose).
++  - [x] Intégrer une carte `<ZCard>` dédiée (ou layout horizontal adapté) avec badge `MAINTIEN EN CONDITION OPÉRATIONNELLE`, icône `bot`, prix `À partir de 250 € HT / mois`, les 5 points de livrables et le disclaimer des consommations tierces d'APIs/tokens.
++  - [x] Ajouter le bouton `<ZButton>` vers `/contact` avec `:aria-label="careOffer.ctaAriaLabel"`.
++  - [x] Configurer l'ancre `id="ai-care"` et la règle `scroll-margin-top: var(--space-16)`.
++
++- [x] Tâche 2 — Réalignement des 4 étapes du process et intégration Blueprint (AC: 2)
++  - [x] Mettre à jour l'étape `01` : Diagnostic gratuit 20 à 30 min.
++  - [x] Mettre à jour l'étape `02` : Cadrage avec mention explicite du Blueprint facturable optionnel à partir de 750 € HT pour sujets complexes.
++  - [x] Mettre à jour l'étape `03` : Construction & intégration centrée sur le bon niveau de système.
++  - [x] Mettre à jour l'étape `04` : Renommer en `Exploitation & mesure` avec mention de la transition vers AI Care.
++  - [x] Marquer comme résolu le point de dette différé correspondant dans `docs/implementation-artifacts/deferred-work.md`.
++
++- [x] Tâche 3 — Intégration SCSS, tokens et responsive (AC: 1, 3)
++  - [x] Déclarer les styles scoped de la carte AI Care dans `app/pages/services.vue` en utilisant exclusivement les tokens de spacing, border, typography et color.
++  - [x] S'assurer d'un rendu soigné en desktop et mobile (< 900px).
++  - [x] Tester le contraste et l'alternance visuelle sur les thèmes sombre et clair.
++
++- [x] Tâche 4 — Synchronisation Schema.org JSON-LD (AC: 4)
++  - [x] Ajouter AI Care dans l'objet `servicesJsonLd` comme service d'exploitation (`@type: "Service"`).
++  - [x] Enrichir les 3 services de build avec leur attribut `url` (`${siteUrl}/services#${offer.id}`, etc.).
++  - [x] Marquer comme résolu le point de dette différé Schema.org dans `docs/implementation-artifacts/deferred-work.md`.
++
++- [x] Tâche 5 — Validation transverse, accessibilité et Gate Docker Nitro SSG (AC: 5)
++  - [x] Vérifier la navigation clavier, le focus visible et les attributs ARIA des nouveaux éléments interactifs.
++  - [x] Exécuter la commande de validation Docker :
+     ```sh
+     docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
+     ```
+-  - [ ] Vérifier que les 28 routes statiques compilent sans erreur.
++  - [x] Vérifier que les 28 routes statiques compilent sans erreur.
+ 
+ ## Dev Notes
+ 
+@@ -198,9 +198,20 @@ const steps: Step[] = [
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++- Gemini 3.7 Flash
+ 
+ ### Debug Log References
++- `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> Gate 100% verte (0 erreurs lint, 0 erreurs types, 28 routes statiques pré-rendues).
+ 
+ ### Completion Notes List
++- Création de la section dédiée AI Care (`.section.section--sunken.care-section`) dans `app/pages/services.vue` avec titre, prose de cadrage, badge « MAINTIEN EN CONDITION OPÉRATIONNELLE », icône `bot`, prix « À partir de 250 € HT / mois », 5 livrables et clause de transparence.
++- Réalignement des 4 étapes du process avec mention du Blueprint facturable (à partir de 750 € HT) pour l'étape 02 Cadrage et renommage de l'étape 04 en « Exploitation & mesure » avec mention de transition vers AI Care.
++- Alternance visuelle des sections en 3 temps : Build (`.section`), AI Care (`.section.section--sunken`), Process (`.section`).
++- Synchronisation complète de Schema.org `servicesJsonLd` avec ajout d'AI Care et des attributs `url` pour les 4 offres.
++- Résolution des deux dettes techniques différées de la story 15.2 dans `docs/implementation-artifacts/deferred-work.md`.
+ 
+ ### File List
++- `app/pages/services.vue` (modifié)
++- `docs/implementation-artifacts/deferred-work.md` (modifié)
++- `docs/implementation-artifacts/sprint-status.yaml` (modifié)
++- `docs/implementation-artifacts/15-3-page-services-section-dediee-ai-care-et-process-4-etapes.md` (modifié)
+diff --git a/docs/implementation-artifacts/deferred-work.md b/docs/implementation-artifacts/deferred-work.md
+index 1c06aeb..cba069e 100644
+--- a/docs/implementation-artifacts/deferred-work.md
++++ b/docs/implementation-artifacts/deferred-work.md
+@@ -42,8 +42,8 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
+ 
+ ## Deferred from: code review of 15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint (2026-09-18)
+ 
+-- **Nuancer la mention du Blueprint dans l'étape Cadrage** (`app/pages/services.vue:195`) — L'étape Cadrage indique « Fait l'objet d'un Blueprint pour les sujets complexes », alors que l'Offre Commerciale V1.1 et l'AC-3 prévoient qu'un Blueprint peut être proposé lorsque le cadrage nécessite un travail approfondi. Ce texte est préexistant (story 12.5) et son refactoring complet fait l'objet de la Story 15.3 dédiée au déroulé en 4 étapes.
+-- **Enrichir les entités Service de `servicesJsonLd` avec leur URL d'ancrage respective** (`app/pages/services.vue:224`) — Les 3 offres de build ont désormais des ancres HTML stables (`#automatisation`, `#workflow`, `#sur-mesure`). L'ajout explicite du champ `url: `${siteUrl}/services#${offer.id}`` au sein de chaque `Service` du Schema.org ItemList améliorera la précision machine-readable lors de la consolidation transverse SEO (Story 15.4).
++- ~~**Nuancer la mention du Blueprint dans l'étape Cadrage** (`app/pages/services.vue`)~~ — ✅ **Résolu en 15.3** : étape 02 Cadrage mise à jour avec mention du Blueprint facturable optionnel à partir de 750 € HT pour sujets complexes.
++- ~~**Enrichir les entités Service de `servicesJsonLd` avec leur URL d'ancrage respective** (`app/pages/services.vue`)~~ — ✅ **Résolu en 15.3** : attributs `url` pointant vers `#automatisation`, `#workflow`, `#sur-mesure` et `#ai-care` intégrés dans Schema.org `servicesJsonLd`.
+ 
+ ## Deferred from: code review of 15-1-homepage-suppression-prix-dentree-liens-contextuels-et-reassurance (2026-09-18)
+ 
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 0b0e021..03d7d64 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-18 (Story 15.3 prête pour le dev)"
++last_updated: "2026-09-18 (Story 15.3 terminée et prête pour review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -157,7 +157,7 @@ development_status:
+   epic-15: in-progress
+   15-1-homepage-suppression-prix-dentree-liens-contextuels-et-reassurance: done
+   15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint: done
+-  15-3-page-services-section-dediee-ai-care-et-process-4-etapes: ready-for-dev
++  15-3-page-services-section-dediee-ai-care-et-process-4-etapes: review
+   15-4-coherence-globale-seo-formulaire-contact-et-gate-docker: backlog
+   epic-15-retrospective: optional
+ 
+
+exec
+/bin/zsh -lc "nl -ba app/pages/services.vue | sed -n '1,360p'; nl -ba app/pages/services.vue | sed -n '480,760p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+     1	<template>
+     2	  <main class="services">
+     3	    <!-- En-tête + grille d'offres de build (story 12.5 & story 15.2) -->
+     4	    <section class="section">
+     5	      <div class="container">
+     6	        <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
+     7	        <h1 class="services__title">Le bon niveau de système pour le bon problème.</h1>
+     8	        <p class="prose services__intro">
+     9	          Je pars d’un workflow existant, pas d’une technologie à placer. Certaines frictions se règlent avec une
+    10	          automatisation simple. D’autres nécessitent plusieurs intégrations, de l’IA ou une véritable application
+    11	          métier. Le rôle du diagnostic est justement de déterminer jusqu’où il est utile d’aller.
+    12	        </p>
+    13	
+    14	        <ul class="grid-3">
+    15	          <li v-for="offer in offers" :key="offer.id">
+    16	            <ZCard :id="offer.id" class="offer" :accent="offer.featured" :featured="offer.featured">
+    17	              <div v-if="offer.badge" class="offer__badge">
+    18	                <ZBadge :tone="offer.badgeTone || 'neutral'">{{ offer.badge }}</ZBadge>
+    19	              </div>
+    20	              <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+    21	              <h2 class="offer__title">{{ offer.title }}</h2>
+    22	              <p v-if="offer.hook" class="offer__hook">{{ offer.hook }}</p>
+    23	              <p class="offer__desc">{{ offer.desc }}</p>
+    24	              <ul class="offer__points">
+    25	                <li v-for="point in offer.points" :key="point">{{ point }}</li>
+    26	              </ul>
+    27	              <div class="offer__footer">
+    28	                <div class="offer__price">
+    29	                  <b>{{ offer.price }}</b>
+    30	                </div>
+    31	                <p v-if="offer.disclaimer" class="offer__disclaimer">
+    32	                  {{ offer.disclaimer }}
+    33	                </p>
+    34	                <div class="offer__cta">
+    35	                  <ZButton
+    36	                    :as="NuxtLink"
+    37	                    to="/contact"
+    38	                    :variant="offer.featured ? 'primary' : 'secondary'"
+    39	                    :aria-label="offer.ctaAriaLabel"
+    40	                    class="offer__btn"
+    41	                  >
+    42	                    {{ offer.ctaText }}
+    43	                  </ZButton>
+    44	                </div>
+    45	              </div>
+    46	            </ZCard>
+    47	          </li>
+    48	        </ul>
+    49	      </div>
+    50	    </section>
+    51	
+    52	    <!-- Section AI Care : Maintien en condition opérationnelle (story 15.3) -->
+    53	    <section class="section section--sunken care-section">
+    54	      <div class="container">
+    55	        <p class="eyebrow"><span aria-hidden="true">// </span>après la mise en production</p>
+    56	        <h2 class="care-section__title">Le système doit continuer à fonctionner.</h2>
+    57	        <p class="prose care-section__intro">
+    58	          Une automatisation utile doit continuer à fonctionner après sa mise en production. AI Care couvre le maintien
+    59	          en condition opérationnelle du système : monitoring, maintenance, support, suivi des coûts et adaptations
+    60	          mineures liées aux APIs ou aux modèles.
+    61	        </p>
+    62	
+    63	        <ZCard :id="careOffer.id" class="care-card">
+    64	          <div class="care-card__info">
+    65	            <div class="care-card__badge">
+    66	              <ZBadge tone="neutral">{{ careOffer.badge }}</ZBadge>
+    67	            </div>
+    68	            <div class="care-card__icon"><ZIcon name="bot" /></div>
+    69	            <h3 class="care-card__title">{{ careOffer.title }}</h3>
+    70	            <p class="care-card__desc">{{ careOffer.desc }}</p>
+    71	
+    72	            <div class="care-card__footer">
+    73	              <div class="care-card__price">
+    74	                <b>{{ careOffer.price }}</b>
+    75	              </div>
+    76	              <p v-if="careOffer.disclaimer" class="care-card__disclaimer">
+    77	                {{ careOffer.disclaimer }}
+    78	              </p>
+    79	              <div class="care-card__cta">
+    80	                <ZButton
+    81	                  :as="NuxtLink"
+    82	                  to="/contact"
+    83	                  variant="secondary"
+    84	                  :aria-label="careOffer.ctaAriaLabel"
+    85	                  class="care-card__btn"
+    86	                >
+    87	                  {{ careOffer.ctaText }}
+    88	                </ZButton>
+    89	              </div>
+    90	            </div>
+    91	          </div>
+    92	
+    93	          <div class="care-card__details">
+    94	            <h4 class="care-card__points-title">Inclus dans l’accompagnement :</h4>
+    95	            <ul class="care-card__points">
+    96	              <li v-for="point in careOffer.points" :key="point">{{ point }}</li>
+    97	            </ul>
+    98	          </div>
+    99	        </ZCard>
+   100	      </div>
+   101	    </section>
+   102	
+   103	    <!-- Section process : 4 étapes ordonnées + CTA (story 12.5 & story 15.3) -->
+   104	    <section class="section">
+   105	      <div class="container">
+   106	        <p class="eyebrow"><span aria-hidden="true">// </span>comment ça se passe</p>
+   107	        <h2 class="process__title">Un déroulé simple en quatre temps</h2>
+   108	
+   109	        <ol class="process">
+   110	          <li v-for="step in steps" :key="step.n" class="process__step">
+   111	            <div class="process__num" aria-hidden="true">{{ step.n }}</div>
+   112	            <h3 class="process__step-title">{{ step.title }}</h3>
+   113	            <p class="prose process__desc">{{ step.desc }}</p>
+   114	            <div v-if="step.inlineCta" class="process__cta-inline-wrapper">
+   115	              <NuxtLink :to="step.inlineCta.to" class="process__inline-cta">
+   116	                {{ step.inlineCta.label }}
+   117	              </NuxtLink>
+   118	            </div>
+   119	          </li>
+   120	        </ol>
+   121	
+   122	        <div class="process__cta">
+   123	          <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+   124	            Me parler de votre besoin
+   125	            <template #iconRight><ZIcon name="arrow" /></template>
+   126	          </ZButton>
+   127	        </div>
+   128	      </div>
+   129	    </section>
+   130	  </main>
+   131	</template>
+   132	
+   133	<script setup lang="ts">
+   134	// Page Services : catalogue d'offres de build sur devis + section dédiée AI Care + process 4 étapes + CTA contact.
+   135	// Données statiques (3 offres de build, 1 offre de care, 4 étapes) déclarées localement. Prerender-safe, dark-first.
+   136	import { NuxtLink } from "#components";
+   137	import { SITE } from "~/data/site";
+   138	
+   139	interface Offer {
+   140	  /** Clé v-for et ancre HTML stable (indépendante du contenu affiché). */
+   141	  id: string;
+   142	  /** Nom d'icône dans le set ZIcon. */
+   143	  icon: string;
+   144	  badge: string;
+   145	  badgeTone?: "accent" | "neutral";
+   146	  title: string;
+   147	  hook?: string;
+   148	  desc: string;
+   149	  points: string[];
+   150	  price: string;
+   151	  disclaimer?: string;
+   152	  /** Offre mise en avant : carte accent + glow. */
+   153	  featured: boolean;
+   154	  ctaText: string;
+   155	  ctaAriaLabel: string;
+   156	}
+   157	
+   158	interface CareOffer {
+   159	  id: string;
+   160	  badge: string;
+   161	  title: string;
+   162	  price: string;
+   163	  desc: string;
+   164	  points: string[];
+   165	  disclaimer: string;
+   166	  ctaText: string;
+   167	  ctaAriaLabel: string;
+   168	}
+   169	
+   170	interface Step {
+   171	  n: string;
+   172	  title: string;
+   173	  desc: string;
+   174	  inlineCta?: {
+   175	    to: string;
+   176	    label: string;
+   177	  };
+   178	}
+   179	
+   180	// Les 3 offres de build officielles V1.1 — 1re personne, vouvoiement, zéro emoji.
+   181	const offers: Offer[] = [
+   182	  {
+   183	    id: "automatisation",
+   184	    icon: "zap",
+   185	    badge: "BESOIN PRÉCIS",
+   186	    badgeTone: "neutral",
+   187	    title: "Automatisation ciblée",
+   188	    hook: "Supprimer une tâche répétitive sans reconstruire tout le processus.",
+   189	    desc: "Pour les besoins bien délimités : données, emails, documents, CRM, synchronisation, génération ou traitement automatisé.",
+   190	    points: [
+   191	      "Cartographie rapide du flux & cadrage du besoin",
+   192	      "Automatisation logicielle & connecteurs API / webhooks",
+   193	      "Traitement de données ou IA ciblée si pertinent",
+   194	      "Contrôle ou validation humaine si requis",
+   195	      "Tests, mise en production & documentation courte",
+   196	    ],
+   197	    price: "Sur devis",
+   198	    featured: false,
+   199	    ctaText: "Décrire mon besoin",
+   200	    ctaAriaLabel: "Décrire mon besoin pour une automatisation ciblée",
+   201	  },
+   202	  {
+   203	    id: "workflow",
+   204	    icon: "layers",
+   205	    badge: "OFFRE CŒUR",
+   206	    badgeTone: "accent",
+   207	    title: "Workflow métier",
+   208	    hook: "Transformer un processus complet en système opérationnel.",
+   209	    desc: "Pour les workflows qui traversent plusieurs étapes ou outils : cartographie, intégrations, automatisation, IA ciblée, contrôle humain, tests et mise en production.",
+   210	    points: [
+   211	      "Diagnostic approfondi & cartographie avant/après",
+   212	      "Architecture système & connecteurs API métier",
+   213	      "Modèles d'IA & prompt engineering avec sorties typées",
+   214	      "Tests automatisés sur cas réels & boucle de validation humaine",
+   215	      "Déploiement en production, documentation & mesure initiale",
+   216	    ],
+   217	    price: "Sur devis",
+   218	    featured: true,
+   219	    ctaText: "Identifier un workflow",
+   220	    ctaAriaLabel: "Identifier un workflow métier",
+   221	  },
+   222	  {
+   223	    id: "sur-mesure",
+   224	    icon: "terminal",
+   225	    badge: "PROJET COMPLEXE",
+   226	    badgeTone: "neutral",
+   227	    title: "Système métier sur mesure",
+   228	    hook: "Construire l'application lorsque l'automatisation devient un vrai produit.",
+   229	    desc: "Interface, backend, base de données, authentification, intégrations, IA, rôles, supervision et déploiement.",
+   230	    points: [
+   231	      "Interface web ou desktop adaptée aux opérateurs",
+   232	      "Backend, base de données relationnelle & gestion des rôles",
+   233	      "Orchestration multi-modèles & pipelines de données",
+   234	      "Intégration profonde au SI (CRM, ERP, APIs métier)",
+   235	      "Supervision avancée, tests automatisés & déploiement souverain",
+   236	    ],
+   237	    price: "Sur devis",
+   238	    featured: false,
+   239	    ctaText: "Parler du projet",
+   240	    ctaAriaLabel: "Parler d'un projet de système métier sur mesure",
+   241	  },
+   242	];
+   243	
+   244	// Offre de maintien en condition opérationnelle V1.1 (AI Care).
+   245	const careOffer: CareOffer = {
+   246	  id: "ai-care",
+   247	  badge: "MAINTIEN EN CONDITION OPÉRATIONNELLE",
+   248	  title: "AI Care",
+   249	  price: "À partir de 250 € HT / mois",
+   250	  desc: "Pour les systèmes qui ont besoin d'être exploités, surveillés et adaptés dans la durée.",
+   251	  points: [
+   252	    "Monitoring proactif, détection d'erreurs & alertes d'anomalies",
+   253	    "Maintenance corrective & adaptation aux évolutions d'APIs tierces",
+   254	    "Suivi fin de consommation des tokens & ajustements de prompts",
+   255	    "Support technique réactif & veille sur les nouveaux modèles",
+   256	    "Mesure factuelle des KPI et optimisation continue du flux",
+   257	  ],
+   258	  disclaimer:
+   259	    "Consommations tierces d'APIs et tokens (LLM, OCR, scraping...) refacturées au réel ou prises en charge directement par le client. Pas d'engagement imposé au build.",
+   260	  ctaText: "Découvrir AI Care",
+   261	  ctaAriaLabel: "Découvrir l'accompagnement AI Care",
+   262	};
+   263	
+   264	// Étapes du process en 4 temps (Offre V1.1). L'ordre du tableau garantit l'affichage 01 → 04.
+   265	const steps: Step[] = [
+   266	  {
+   267	    n: "01",
+   268	    title: "Diagnostic",
+   269	    desc: "Échange gratuit de 20 à 30 minutes pour qualifier le problème, comprendre le workflow existant, ses volumes, ses outils et identifier la friction réelle.",
+   270	    inlineCta: {
+   271	      to: "/contact",
+   272	      label: "Identifier un workflow →",
+   273	    },
+   274	  },
+   275	  {
+   276	    n: "02",
+   277	    title: "Cadrage",
+   278	    desc: "Définir la cible, ce qui doit être automatisé, ce qui reste humain et comment mesurer le résultat. Pour les sujets complexes, un Blueprint facturable (à partir de 750 € HT) peut être proposé lorsque le cadrage nécessite un travail approfondi avant devis.",
+   279	  },
+   280	  {
+   281	    n: "03",
+   282	    title: "Construction & intégration",
+   283	    desc: "Développer uniquement le niveau de système nécessaire (automatisation ciblée, workflow métier ou application sur mesure) et le tester sur des cas réels avant livraison.",
+   284	  },
+   285	  {
+   286	    n: "04",
+   287	    title: "Exploitation & mesure",
+   288	    desc: "Mise en production, mesure initiale de performance et maintien en condition opérationnelle lorsque le workflow le justifie (via AI Care).",
+   289	  },
+   290	];
+   291	
+   292	const siteUrl = useSiteUrl();
+   293	
+   294	const servicesJsonLd = {
+   295	  "@context": "https://schema.org",
+   296	  "@type": "WebPage",
+   297	  name: "Services & Systèmes IA — Simon Jouan",
+   298	  description:
+   299	    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
+   300	  url: `${siteUrl}/services`,
+   301	  mainEntity: {
+   302	    "@type": "ItemList",
+   303	    itemListElement: [
+   304	      ...offers.map((offer, index) => ({
+   305	        "@type": "ListItem",
+   306	        position: index + 1,
+   307	        item: {
+   308	          "@type": "Service",
+   309	          name: offer.title,
+   310	          description: offer.desc,
+   311	          url: `${siteUrl}/services#${offer.id}`,
+   312	          provider: {
+   313	            "@type": "Organization",
+   314	            "@id": `${siteUrl}/#organization`,
+   315	            name: SITE.profile.name,
+   316	          },
+   317	          offers: {
+   318	            "@type": "Offer",
+   319	            description: offer.price,
+   320	          },
+   321	        },
+   322	      })),
+   323	      {
+   324	        "@type": "ListItem",
+   325	        position: offers.length + 1,
+   326	        item: {
+   327	          "@type": "Service",
+   328	          name: careOffer.title,
+   329	          description: careOffer.desc,
+   330	          url: `${siteUrl}/services#${careOffer.id}`,
+   331	          provider: {
+   332	            "@type": "Organization",
+   333	            "@id": `${siteUrl}/#organization`,
+   334	            name: SITE.profile.name,
+   335	          },
+   336	          offers: {
+   337	            "@type": "Offer",
+   338	            description: careOffer.price,
+   339	          },
+   340	        },
+   341	      },
+   342	    ],
+   343	  },
+   344	};
+   345	
+   346	usePageSeo({
+   347	  title: "Services & Systèmes IA — Simon Jouan",
+   348	  description:
+   349	    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
+   350	  path: "/services",
+   351	  image: "/images/portrait.jpeg",
+   352	  type: "website",
+   353	  jsonLd: servicesJsonLd,
+   354	});
+   355	</script>
+   356	
+   357	<style lang="scss" scoped>
+   358	/* stylelint-disable selector-class-pattern -- convention DS BEM (block__element / block--modifier) */
+   359	.services {
+   360	  display: block;
+   480	  font-size: var(--fs-sm);
+   481	  color: var(--text-muted);
+   482	
+   483	  b {
+   484	    font-size: var(--fs-lg);
+   485	    font-weight: var(--fw-bold);
+   486	    color: var(--text-strong);
+   487	  }
+   488	}
+   489	
+   490	.offer__disclaimer {
+   491	  margin: var(--space-2) 0 0;
+   492	  font-family: var(--font-mono);
+   493	  font-size: var(--fs-xs);
+   494	  line-height: var(--lh-normal);
+   495	  color: var(--text-muted);
+   496	  opacity: 0.85;
+   497	}
+   498	
+   499	.offer__cta {
+   500	  margin-top: var(--space-4);
+   501	}
+   502	
+   503	.offer__btn {
+   504	  width: 100%;
+   505	}
+   506	
+   507	// ---- Section AI Care (.care-section / .care-card*) ----
+   508	.care-section__title {
+   509	  max-width: 26ch;
+   510	  margin-bottom: var(--space-3);
+   511	  font-family: var(--font-mono);
+   512	  font-size: var(--fs-3xl);
+   513	  font-weight: var(--fw-regular);
+   514	  line-height: var(--lh-tight);
+   515	  color: var(--text-strong);
+   516	}
+   517	
+   518	.care-section__intro {
+   519	  max-width: 62ch;
+   520	  margin-bottom: var(--space-8);
+   521	  color: var(--text-muted);
+   522	}
+   523	
+   524	.care-card {
+   525	  display: grid;
+   526	  grid-template-columns: 1fr 1fr;
+   527	  gap: var(--space-8);
+   528	  align-items: start;
+   529	  scroll-margin-top: var(--space-16);
+   530	}
+   531	
+   532	.care-card__info {
+   533	  display: flex;
+   534	  flex-direction: column;
+   535	}
+   536	
+   537	.care-card__badge {
+   538	  margin-bottom: var(--space-3);
+   539	}
+   540	
+   541	.care-card__icon {
+   542	  display: flex;
+   543	  align-items: center;
+   544	  justify-content: center;
+   545	  width: var(--space-10); // 40px
+   546	  height: var(--space-10);
+   547	  margin-bottom: var(--space-4);
+   548	  font-size: 22px;
+   549	  color: var(--accent);
+   550	  background: var(--accent-soft);
+   551	  border-radius: var(--radius-md);
+   552	}
+   553	
+   554	.care-card__title {
+   555	  margin-bottom: var(--space-2);
+   556	  font-family: var(--font-mono);
+   557	  font-size: var(--fs-2xl);
+   558	  font-weight: var(--fw-regular);
+   559	  color: var(--text-strong);
+   560	}
+   561	
+   562	.care-card__desc {
+   563	  margin: 0 0 var(--space-5);
+   564	  font-family: var(--font-sans);
+   565	  font-size: var(--fs-sm);
+   566	  line-height: var(--lh-relaxed);
+   567	  color: var(--text-body);
+   568	}
+   569	
+   570	.care-card__details {
+   571	  display: flex;
+   572	  flex-direction: column;
+   573	  padding-left: var(--space-6);
+   574	  border-left: 1px solid var(--border-subtle);
+   575	}
+   576	
+   577	.care-card__points-title {
+   578	  margin: 0 0 var(--space-3);
+   579	  font-family: var(--font-mono);
+   580	  font-size: var(--fs-xs);
+   581	  font-weight: var(--fw-medium);
+   582	  letter-spacing: var(--ls-wide);
+   583	  color: var(--accent);
+   584	  text-transform: uppercase;
+   585	}
+   586	
+   587	.care-card__points {
+   588	  margin: 0;
+   589	  padding: 0;
+   590	  list-style: none;
+   591	
+   592	  li {
+   593	    position: relative;
+   594	    padding: var(--space-2) 0 var(--space-2) var(--space-5);
+   595	    font-family: var(--font-mono);
+   596	    font-size: var(--fs-sm);
+   597	    color: var(--text-muted);
+   598	  }
+   599	
+   600	  li::before {
+   601	    content: "→";
+   602	    position: absolute;
+   603	    left: 0;
+   604	    color: var(--accent);
+   605	  }
+   606	}
+   607	
+   608	.care-card__footer {
+   609	  display: flex;
+   610	  flex-direction: column;
+   611	  margin-top: var(--space-4);
+   612	  padding-top: var(--space-4);
+   613	  border-top: 1px solid var(--border-subtle);
+   614	}
+   615	
+   616	.care-card__price {
+   617	  font-family: var(--font-mono);
+   618	  font-size: var(--fs-sm);
+   619	  color: var(--text-muted);
+   620	
+   621	  b {
+   622	    font-size: var(--fs-lg);
+   623	    font-weight: var(--fw-bold);
+   624	    color: var(--text-strong);
+   625	  }
+   626	}
+   627	
+   628	.care-card__disclaimer {
+   629	  margin: var(--space-2) 0 0;
+   630	  font-family: var(--font-mono);
+   631	  font-size: var(--fs-xs);
+   632	  line-height: var(--lh-normal);
+   633	  color: var(--text-muted);
+   634	  opacity: 0.85;
+   635	}
+   636	
+   637	.care-card__cta {
+   638	  margin-top: var(--space-4);
+   639	}
+   640	
+   641	.care-card__btn {
+   642	  width: 100%;
+   643	}
+   644	
+   645	// ---- Section process ----
+   646	.process__title {
+   647	  margin-bottom: var(--space-8);
+   648	  font-family: var(--font-mono);
+   649	  font-size: var(--fs-3xl);
+   650	  font-weight: var(--fw-regular);
+   651	  color: var(--text-strong);
+   652	}
+   653	
+   654	.process {
+   655	  display: grid;
+   656	  grid-template-columns: repeat(4, 1fr);
+   657	  gap: var(--space-5);
+   658	  margin: 0;
+   659	  padding: 0;
+   660	  list-style: none;
+   661	}
+   662	
+   663	.process__step {
+   664	  display: flex;
+   665	  flex-direction: column;
+   666	}
+   667	
+   668	.process__num {
+   669	  font-family: var(--font-mono);
+   670	  font-size: var(--fs-3xl);
+   671	  font-weight: var(--fw-light);
+   672	  color: var(--accent);
+   673	}
+   674	
+   675	.process__step-title {
+   676	  margin: var(--space-2) 0;
+   677	  font-family: var(--font-mono);
+   678	  font-size: var(--fs-lg);
+   679	  font-weight: var(--fw-regular);
+   680	  color: var(--text-strong);
+   681	}
+   682	
+   683	.process__desc {
+   684	  font-size: var(--fs-sm);
+   685	  color: var(--text-muted);
+   686	}
+   687	
+   688	.process__cta-inline-wrapper {
+   689	  margin-top: auto;
+   690	  padding-top: var(--space-3);
+   691	}
+   692	
+   693	.process__inline-cta {
+   694	  display: inline-flex;
+   695	  align-items: center;
+   696	  font-family: var(--font-mono);
+   697	  font-size: var(--fs-sm);
+   698	  color: var(--accent);
+   699	  text-decoration: none;
+   700	  transition:
+   701	    color var(--dur-base) var(--ease-standard),
+   702	    text-decoration-color var(--dur-base) var(--ease-standard);
+   703	
+   704	  &:hover {
+   705	    color: var(--accent-hover);
+   706	    text-decoration: underline;
+   707	  }
+   708	
+   709	  &:focus-visible {
+   710	    outline: 2px solid transparent;
+   711	    outline-offset: 2px;
+   712	    box-shadow: var(--ring-accent);
+   713	    border-radius: var(--radius-xs);
+   714	  }
+   715	}
+   716	
+   717	.process__cta {
+   718	  margin-top: var(--space-12);
+   719	  text-align: center;
+   720	}
+   721	
+   722	// ---- Responsive ----
+   723	@media (width <= 900px) {
+   724	  .grid-3,
+   725	  .process {
+   726	    grid-template-columns: 1fr;
+   727	  }
+   728	
+   729	  .care-card {
+   730	    grid-template-columns: 1fr;
+   731	    gap: var(--space-6);
+   732	  }
+   733	
+   734	  .care-card__details {
+   735	    padding-top: var(--space-4);
+   736	    padding-left: 0;
+   737	    border-top: 1px solid var(--border-subtle);
+   738	    border-left: none;
+   739	  }
+   740	}
+   741	</style>
+
+codex
+[]
+tokens used
+29 476
+[]

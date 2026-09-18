@@ -1,0 +1,403 @@
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index d8ed24f..d3c20e2 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -78,7 +78,7 @@
+                 </li>
+               </ul>
+               <NuxtLink
+-                to="/services"
++                :to="service.to"
+                 class="offer__more"
+                 :aria-label="`${service.actionText.replace(' →', '')} - ${service.title}`"
+               >
+@@ -348,6 +348,7 @@ interface HomeServiceOffer {
+   points: string[];
+   tags: string[];
+   actionText: string;
++  to: string;
+   featured: boolean;
+ }
+ 
+@@ -358,7 +359,7 @@ interface ProductionPillar {
+   desc: string;
+ }
+ 
+-// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2).
++// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2 & Story 15.2 / AC-4).
+ const services: HomeServiceOffer[] = [
+   {
+     id: "automation",
+@@ -373,6 +374,7 @@ const services: HomeServiceOffer[] = [
+     ],
+     tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
+     actionText: "Voir les types d'automatisation →",
++    to: "/services#automatisation",
+     featured: false,
+   },
+   {
+@@ -388,6 +390,7 @@ const services: HomeServiceOffer[] = [
+     ],
+     tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
+     actionText: "Voir quand utiliser un agent →",
++    to: "/services#workflow",
+     featured: true,
+   },
+   {
+@@ -403,6 +406,7 @@ const services: HomeServiceOffer[] = [
+     ],
+     tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
+     actionText: "Découvrir les projets sur mesure →",
++    to: "/services#sur-mesure",
+     featured: false,
+   },
+ ];
+diff --git a/app/pages/services.vue b/app/pages/services.vue
+index f92678b..e7d4d91 100644
+--- a/app/pages/services.vue
++++ b/app/pages/services.vue
+@@ -1,20 +1,21 @@
+ <template>
+   <main class="services">
+-    <!-- En-tête + grille d'offres (story 12.5) -->
++    <!-- En-tête + grille d'offres (story 12.5 & story 15.2) -->
+     <section class="section">
+       <div class="container">
+         <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
+-        <h1 class="services__title">Des systèmes IA construits autour de vos vrais processus métier.</h1>
++        <h1 class="services__title">Le bon niveau de système pour le bon problème.</h1>
+         <p class="prose services__intro">
+-          Je pars d’un workflow existant, pas d’une technologie à placer. Du cadrage initial jusqu'au maintien en
+-          condition opérationnelle, l’IA intervient uniquement là où elle apporte réellement quelque chose.
++          Je pars d’un workflow existant, pas d’une technologie à placer. Certaines frictions se règlent avec une
++          automatisation simple. D’autres nécessitent plusieurs intégrations, de l’IA ou une véritable application
++          métier. Le rôle du diagnostic est justement de déterminer jusqu’où il est utile d’aller.
+         </p>
+ 
+         <ul class="grid-3">
+           <li v-for="offer in offers" :key="offer.id">
+-            <ZCard class="offer" :accent="offer.featured" :featured="offer.featured">
+-              <div v-if="offer.featured" class="offer__badge">
+-                <ZBadge tone="accent">Format cœur</ZBadge>
++            <ZCard :id="offer.id" class="offer" :accent="offer.featured" :featured="offer.featured">
++              <div v-if="offer.badge" class="offer__badge">
++                <ZBadge :tone="offer.badgeTone || 'neutral'">{{ offer.badge }}</ZBadge>
+               </div>
+               <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+               <h2 class="offer__title">{{ offer.title }}</h2>
+@@ -85,17 +86,19 @@ import { NuxtLink } from "#components";
+ import { SITE } from "~/data/site";
+ 
+ interface Offer {
+-  /** Clé v-for stable (indépendante du contenu affiché). */
++  /** Clé v-for et ancre HTML stable (indépendante du contenu affiché). */
+   id: string;
+   /** Nom d'icône dans le set ZIcon. */
+   icon: string;
++  badge: string;
++  badgeTone?: "accent" | "neutral";
+   title: string;
+   hook?: string;
+   desc: string;
+   points: string[];
+   price: string;
+   disclaimer?: string;
+-  /** Offre mise en avant : carte accent + glow + badge. */
++  /** Offre mise en avant : carte accent + glow. */
+   featured: boolean;
+   ctaText: string;
+   ctaAriaLabel: string;
+@@ -111,62 +114,67 @@ interface Step {
+   };
+ }
+ 
+-// Les 3 offres officielles V1 — 1re personne, vouvoiement, zéro emoji.
++// Les 3 offres de build officielles V1.1 — 1re personne, vouvoiement, zéro emoji.
+ const offers: Offer[] = [
+   {
+-    id: "sprint",
++    id: "automatisation",
+     icon: "zap",
+-    title: "AI Workflow Sprint",
+-    hook: "Un Sprint = un workflow prioritaire",
+-    desc: "Conception, intégration logicielle et mise en production d'un workflow métier complet avec IA ciblée et supervision humaine.",
++    badge: "BESOIN PRÉCIS",
++    badgeTone: "neutral",
++    title: "Automatisation ciblée",
++    hook: "Supprimer une tâche répétitive sans reconstruire tout le processus.",
++    desc: "Pour les besoins bien délimités : données, emails, documents, CRM, synchronisation, génération ou traitement automatisé.",
+     points: [
+-      "Diagnostic approfondi & cartographie avant/après",
+-      "Architecture système, connecteurs API & intégrations métier",
+-      "Modèles d'IA & prompt engineering avec sorties typées",
+-      "Tests automatisés sur cas réels & boucle de validation humaine",
+-      "Déploiement en production, documentation & mesure initiale",
++      "Cartographie rapide du flux & cadrage du besoin",
++      "Automatisation logicielle & connecteurs API / webhooks",
++      "Traitement de données ou IA ciblée si pertinent",
++      "Contrôle ou validation humaine si requis",
++      "Tests, mise en production & documentation courte",
+     ],
+-    price: "À partir de 3 500 € HT",
+-    featured: true,
+-    ctaText: "Lancer un Sprint",
+-    ctaAriaLabel: "Discuter d'un AI Workflow Sprint",
++    price: "Sur devis",
++    featured: false,
++    ctaText: "Décrire mon besoin",
++    ctaAriaLabel: "Décrire mon besoin pour une automatisation ciblée",
+   },
+   {
+-    id: "blueprint",
++    id: "workflow",
+     icon: "layers",
+-    title: "AI Workflow Blueprint",
+-    hook: "Cadrage préalable pour problématique complexe",
+-    desc: "Pour les projets nécessitant un audit préalable, une modélisation de données et des choix d'architecture avant de s'engager sur le build.",
++    badge: "OFFRE CŒUR",
++    badgeTone: "accent",
++    title: "Workflow métier",
++    hook: "Transformer un processus complet en système opérationnel.",
++    desc: "Pour les workflows qui traversent plusieurs étapes ou outils : cartographie, intégrations, automatisation, IA ciblée, contrôle humain, tests et mise en production.",
+     points: [
+-      "Audit du processus actuel, volumes & points de friction",
+-      "Matrice de décision : code déterministe vs IA vs humain",
+-      "Schéma d'architecture technique & flux de données cibles",
+-      "Analyse des risques, contraintes de sécurité & secrets",
+-      "Spécification des KPI de mesure & estimation budgétaire",
++      "Diagnostic approfondi & cartographie avant/après",
++      "Architecture système & connecteurs API métier",
++      "Modèles d'IA & prompt engineering avec sorties typées",
++      "Tests automatisés sur cas réels & boucle de validation humaine",
++      "Déploiement en production, documentation & mesure initiale",
+     ],
+-    price: "À partir de 750 € HT",
+-    featured: false,
+-    ctaText: "Demander un Blueprint",
+-    ctaAriaLabel: "Demander un AI Workflow Blueprint",
++    price: "Sur devis",
++    featured: true,
++    ctaText: "Identifier un workflow",
++    ctaAriaLabel: "Identifier un workflow métier",
+   },
+   {
+-    id: "care",
+-    icon: "bot",
+-    title: "AI Care",
+-    hook: "Maintien en condition opérationnelle",
+-    desc: "Maintien en condition opérationnelle d'une capacité intégrée au processus métier pour garantir disponibilité, précision et maîtrise des coûts.",
++    id: "sur-mesure",
++    icon: "terminal",
++    badge: "PROJET COMPLEXE",
++    badgeTone: "neutral",
++    title: "Système métier sur mesure",
++    hook: "Construire l'application lorsque l'automatisation devient un vrai produit.",
++    desc: "Interface, backend, base de données, authentification, intégrations, IA, rôles, supervision et déploiement.",
+     points: [
+-      "Supervision proactive, alertes & analyse des échecs",
+-      "Maintenance corrective & adaptation aux APIs tierces",
+-      "Suivi des coûts d'inférence & micro-ajustements de prompts",
+-      "Support technique réactif & veille sur les nouveaux modèles",
++      "Interface web ou desktop adaptée aux opérateurs",
++      "Backend, base de données relationnelle & gestion des rôles",
++      "Orchestration multi-modèles & pipelines de données",
++      "Intégration profonde au SI (CRM, ERP, APIs métier)",
++      "Supervision avancée, tests automatisés & déploiement souverain",
+     ],
+-    disclaimer:
+-      "Consommations tierces d'APIs et tokens (LLM, OCR, scraping...) refacturées au réel ou prises en charge directement par le client.",
+-    price: "À partir de 490 € HT / mois",
++    price: "Sur devis",
+     featured: false,
+-    ctaText: "Découvrir AI Care",
+-    ctaAriaLabel: "Découvrir l'accompagnement AI Care",
++    ctaText: "Parler du projet",
++    ctaAriaLabel: "Parler d'un projet de système métier sur mesure",
+   },
+ ];
+ 
+@@ -203,9 +211,9 @@ const siteUrl = useSiteUrl();
+ const servicesJsonLd = {
+   "@context": "https://schema.org",
+   "@type": "WebPage",
+-  name: "Services & Tarifs — Simon Jouan",
++  name: "Services & Systèmes IA — Simon Jouan",
+   description:
+-    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
++    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
+   url: `${siteUrl}/services`,
+   mainEntity: {
+     "@type": "ItemList",
+@@ -231,9 +239,9 @@ const servicesJsonLd = {
+ };
+ 
+ usePageSeo({
+-  title: "Services & Tarifs — Simon Jouan",
++  title: "Services & Systèmes IA — Simon Jouan",
+   description:
+-    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
++    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
+   path: "/services",
+   image: "/images/portrait.jpeg",
+   type: "website",
+@@ -285,6 +293,7 @@ usePageSeo({
+   display: flex;
+   flex-direction: column;
+   width: 100%;
++  scroll-margin-top: var(--space-16);
+ }
+ 
+ .offer__badge {
+diff --git a/docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md b/docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md
+index 7f0dc1e..6a40a57 100644
+--- a/docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md
++++ b/docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md
+@@ -1,6 +1,10 @@
++---
++baseline_commit: 7162f14595e42399d234c534fd88d78a7360cbb8
++---
++
+ # Story 15.2: Page Services — Restructuration des 3 Offres de Build sur Devis & Relégation du Blueprint
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -93,38 +97,38 @@ so that je puisse identifier le format adapté à mon organisation (FR50, CAP-2)
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Mise à jour du Hero H1 et de l'introduction dans `app/pages/services.vue` (AC: 1)
+-  - [ ] Mettre à jour le titre `h1.services__title` : `Le bon niveau de système pour le bon problème.`
+-  - [ ] Mettre à jour le paragraphe `p.prose.services__intro` avec le texte officiel V1.1 en 3 phrases.
+-  - [ ] Vérifier la typographie, les marges et la lisibilité sur mobile et desktop.
++- [x] Tâche 1 — Mise à jour du Hero H1 et de l'introduction dans `app/pages/services.vue` (AC: 1)
++  - [x] Mettre à jour le titre `h1.services__title` : `Le bon niveau de système pour le bon problème.`
++  - [x] Mettre à jour le paragraphe `p.prose.services__intro` avec le texte officiel V1.1 en 3 phrases.
++  - [x] Vérifier la typographie, les marges et la lisibilité sur mobile et desktop.
+ 
+-- [ ] Tâche 2 — Restructuration des données et du modèle `offers` (AC: 2, 3)
+-  - [ ] Adapter l'interface TypeScript `Offer` dans `<script setup>` pour supporter `badgeText?: string` ou `badgeTone?: "accent" | "neutral"`.
+-  - [ ] Remplacer les 3 anciennes offres (`sprint`, `blueprint`, `care`) par les 3 offres de build :
++- [x] Tâche 2 — Restructuration des données et du modèle `offers` (AC: 2, 3)
++  - [x] Adapter l'interface TypeScript `Offer` dans `<script setup>` pour supporter `badge: string` et `badgeTone?: "accent" | "neutral"`.
++  - [x] Remplacer les 3 anciennes offres (`sprint`, `blueprint`, `care`) par les 3 offres de build :
+     - `automatisation` (id: `automatisation`, icon: `zap`, badge: `BESOIN PRÉCIS`, price: `Sur devis`)
+     - `workflow` (id: `workflow`, icon: `layers`, badge: `OFFRE CŒUR`, featured: true, price: `Sur devis`)
+     - `sur-mesure` (id: `sur-mesure`, icon: `terminal`, badge: `PROJET COMPLEXE`, price: `Sur devis`)
+-  - [ ] Renseigner pour chacune les 5 points de livrables précis.
+-  - [ ] Configurer les libellés de CTA et `:aria-label` accessibles (`Décrire mon besoin`, `Identifier un workflow`, `Parler du projet`).
+-
+-- [ ] Tâche 3 — Template, ancres et intégration visuelle des badges (AC: 2, 4)
+-  - [ ] Ajouter l'attribut `:id="offer.id"` sur le conteneur de carte `<li>` ou `<ZCard>` avec la classe de scroll margin (`scroll-margin-top`).
+-  - [ ] Afficher `<ZBadge>` pour chaque carte selon son niveau d'intervention (`BESOIN PRÉCIS`, `OFFRE CŒUR`, `PROJET COMPLEXE`).
+-  - [ ] S'assurer que le bas de carte (`.offer__footer`) aligne proprement le prix `Sur devis` et le bouton `<ZButton>`.
+-  - [ ] Mettre à jour les 3 liens contextuels de `app/pages/index.vue` pour cibler `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`.
+-
+-- [ ] Tâche 4 — Synchronisation SEO et données structurées Schema.org (AC: 5)
+-  - [ ] Aligner `servicesJsonLd` sur les 3 nouvelles offres de build avec `offers.description = "Sur devis"`.
+-  - [ ] Mettre à jour la balise meta `description` dans `usePageSeo` pour supprimer toute référence à l'ancien catalogue tarifaire (3 500 € HT, Blueprint en build).
+-
+-- [ ] Tâche 5 — Validation a11y, responsive et Gate Docker Nitro SSG (AC: 5)
+-  - [ ] Tester la navigation clavier (`Tab`) et le focus visible sur les boutons des 3 cartes.
+-  - [ ] Vérifier le rendu sur mobile (< 900px) et la parité visuelle sur les thèmes clair et sombre.
+-  - [ ] Exécuter la commande de validation Docker :
++  - [x] Renseigner pour chacune les 5 points de livrables précis.
++  - [x] Configurer les libellés de CTA et `:aria-label` accessibles (`Décrire mon besoin`, `Identifier un workflow`, `Parler du projet`).
++
++- [x] Tâche 3 — Template, ancres et intégration visuelle des badges (AC: 2, 4)
++  - [x] Ajouter l'attribut `:id="offer.id"` sur le conteneur `<ZCard>` avec la classe de scroll margin (`scroll-margin-top: var(--space-16)`).
++  - [x] Afficher `<ZBadge>` pour chaque carte selon son niveau d'intervention (`BESOIN PRÉCIS`, `OFFRE CŒUR`, `PROJET COMPLEXE`).
++  - [x] S'assurer que le bas de carte (`.offer__footer`) aligne proprement le prix `Sur devis` et le bouton `<ZButton>`.
++  - [x] Mettre à jour les 3 liens contextuels de `app/pages/index.vue` pour cibler `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`.
++
++- [x] Tâche 4 — Synchronisation SEO et données structurées Schema.org (AC: 5)
++  - [x] Aligner `servicesJsonLd` sur les 3 nouvelles offres de build avec `offers.description = "Sur devis"`.
++  - [x] Mettre à jour la balise meta `description` dans `usePageSeo` pour supprimer toute référence à l'ancien catalogue tarifaire (3 500 € HT, Blueprint en build).
++
++- [x] Tâche 5 — Validation a11y, responsive et Gate Docker Nitro SSG (AC: 5)
++  - [x] Tester la navigation clavier (`Tab`) et le focus visible sur les boutons des 3 cartes.
++  - [x] Vérifier le rendu sur mobile (< 900px) et la parité visuelle sur les thèmes clair et sombre.
++  - [x] Exécuter la commande de validation Docker :
+     ```sh
+     docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
+     ```
+-  - [ ] Vérifier que les 28 routes statiques pré-rendues compilent sans erreur ni avertissement.
++  - [x] Vérifier que les 28 routes statiques pré-rendues compilent sans erreur ni avertissement.
+ 
+ ## Dev Notes
+ 
+@@ -239,11 +243,28 @@ Ajouter sur l'élément cible :
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++- Gemini 3.7 Flash
+ 
+ ### Debug Log References
++- Docker gate validation: `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 error (ESLint + Stylelint + vue-tsc + 28 Nitro routes SSG).
++- Local dev server curl check: `http://localhost:3000/services` -> 200 OK.
++- Verified generated HTML `.output/public/services/index.html` (badges, H1, intro, prices, JSON-LD Schema.org ItemList).
++- Verified generated HTML `.output/public/index.html` (direct anchor links `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`).
+ 
+ ### Completion Notes List
++- ✅ **Hero & Introduction V1.1 :** H1 mis à jour vers *« Le bon niveau de système pour le bon problème. »*, texte d'introduction axé sur le diagnostic workflow avant la technologie.
++- ✅ **Restructuration des 3 offres de build :** `automatisation` (BESOIN PRÉCIS, Sur devis), `workflow` (OFFRE CŒUR, Sur devis, featured: true), `sur-mesure` (PROJET COMPLEXE, Sur devis). Suppression intégrale du prix d'entrée « À partir de 3 500 € HT ».
++- ✅ **Badges de statut & Accessibilité :** Utilisation de `<ZBadge>` avec `tone="accent"` pour l'offre cœur et `tone="neutral"` pour les autres ; boutons `<ZButton>` avec labels et `aria-label` contextuels (`/contact`).
++- ✅ **Ancres HTML & Scroll Margin :** Identifiants stables (`id="automatisation"`, `id="workflow"`, `id="sur-mesure"`) et `scroll-margin-top: var(--space-16)` sur `.offer`.
++- ✅ **Résolution Dette Différée 15.1 :** Mise à jour de `app/pages/index.vue` pour router directement les 3 liens contextuels de la vitrine vers leurs ancres de build respectives.
++- ✅ **SEO & Schema.org :** Synchronisation de `servicesJsonLd` (WebPage / ItemList / Service) et de `usePageSeo` sans mentions tarifaires chiffrées obsolètes.
+ 
+ ### File List
++- `app/pages/services.vue` (modifié)
++- `app/pages/index.vue` (modifié)
++- `docs/implementation-artifacts/deferred-work.md` (modifié)
++- `docs/implementation-artifacts/sprint-status.yaml` (modifié)
++- `docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md` (modifié)
+ 
+ ### Change Log
++- 2026-09-18: Implémentation complète de la Story 15.2 (restructuration des 3 offres de build sur devis, Hero V1.1, ancres de navigation, synchronisation SEO/JSON-LD et résolution de la dette différée de liens d'accueil).
+diff --git a/docs/implementation-artifacts/deferred-work.md b/docs/implementation-artifacts/deferred-work.md
+index 788f4ae..3fbef01 100644
+--- a/docs/implementation-artifacts/deferred-work.md
++++ b/docs/implementation-artifacts/deferred-work.md
+@@ -42,8 +42,8 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
+ 
+ ## Deferred from: code review of 15-1-homepage-suppression-prix-dentree-liens-contextuels-et-reassurance (2026-09-18)
+ 
+-- **Ancrage direct des 3 liens contextuels de la homepage vers les offres `/services`** (`app/pages/index.vue:80`) — Les liens pointent vers `/services` au sens large ; ils devront être enrichis d'ancres spécifiques (ex: `#automation`, `#agents`, `#apps`) lors de la restructuration des offres de la page Services dans la Story 15.2.
+-- **Désancrage tarifaire résiduel sur la page catalogue `/services`** (`app/pages/services.vue`) — Le prix d'entrée « À partir de 3 500 € HT » est encore visible sur `/services` ; son élimination fait l'objet de la Story 15.2.
++- ~~**Ancrage direct des 3 liens contextuels de la homepage vers les offres `/services`**~~ — ✅ **Résolu en 15.2** (`app/pages/index.vue` : ancres `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`).
++- ~~**Désancrage tarifaire résiduel sur la page catalogue `/services`**~~ — ✅ **Résolu en 15.2** (`app/pages/services.vue` : 3 offres sur devis, élimination définitive du prix d'entrée 3 500 € HT et restructuration du catalogue de build).
+ 
+ ## Deferred from: code review of 13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg (2026-09-18)
+ 
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 5a751da..415b379 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -1,5 +1,5 @@
+ # generated: 2026-06-18
+-# last_updated: 2026-09-18 (Story 15.2 créée et prête pour le dev)
++# last_updated: 2026-09-18 (Story 15.2 terminée et prête pour review)
+ # project: jouan.ovh
+ # project_key: NOKEY
+ # tracking_system: file-system
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-18 (Story 15.2 prête pour le dev)"
++last_updated: "2026-09-18 (Story 15.2 prête pour review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -156,7 +156,7 @@ development_status:
+   # Epic 15 — Repositionnement Commercial V1.1 : Désancrage Tarifaire & Offres par Niveaux d'Intervention
+   epic-15: in-progress
+   15-1-homepage-suppression-prix-dentree-liens-contextuels-et-reassurance: done
+-  15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint: ready-for-dev
++  15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint: review
+   15-3-page-services-section-dediee-ai-care-et-process-4-etapes: backlog
+   15-4-coherence-globale-seo-formulaire-contact-et-gate-docker: backlog
+   epic-15-retrospective: optional
