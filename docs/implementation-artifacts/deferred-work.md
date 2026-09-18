@@ -40,6 +40,10 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 9. ~~**Déploiement gh-pages réel**~~ — ✅ **Résolu en 10.7** : premier merge sur `main` et déploiement réel `gh-pages` exécuté et validé. Site servi en production avec HTTPS sur `https://jouan.ovh`.
 
+## Deferred from: code review of 13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg (2026-09-18)
+
+- **Isolation du sélecteur global `pre` vis-à-vis des composants Markdown blog** (`app/assets/scss/abstract/_root.scss:268`) — La sanctuarisation actuelle applique les styles sombres directement sur la balise `pre`. Préexistant et cohérent avec le style par défaut du blog, mais factorisable sous une classe dédiée pour isoler formellement les terminaux des blocs de code du contenu éditorial lors d'une future refonte du blog.
+
 ## Deferred from: code review of 13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile (2026-09-18)
 
 - **Focus clavier non réinitialisé lors du redimensionnement dynamique mobile vers desktop (> 900px) avec menu ouvert** (`app/components/HeaderComponent.vue:209-214`) — Comportement préexistant commun à tous les contrôles du menu mobile (`.hdr__menu-link`, boutons terminal et contact) lors du passage desktop via `onDesktopChange()`. À traiter lors d'une passe de refactorisation globale du composant Header.

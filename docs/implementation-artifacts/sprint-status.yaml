@@ -138,11 +138,11 @@ development_status:
   epic-12-retrospective: done
 
   # Epic 13 — Thème Light & Dark et Bascule Utilisateur
-  epic-13: in-progress
+  epic-13: done
   13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: done
   13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: done
   13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile: done
-  13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: ready-for-dev
+  13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: done
   epic-13-retrospective: optional
 
   # Epic 14 — Analytics Privacy-First (PostHog EU), Consentement RGPD & Google Search Console

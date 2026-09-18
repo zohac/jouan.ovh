@@ -4,7 +4,7 @@ baseline_commit: 08e08fe191517a257c8b3b5d7be17d8b78d7b19d
 
 # Story 13.4: Validation transverse, atmosphère d'ambiance et gate Docker Nitro SSG
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -64,44 +64,54 @@ so that le déploiement sur GitHub Pages soit certifié à 100 % vert sans régr
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Complétion des tokens primitifs et sémantiques dans `app/assets/scss/abstract/_root.scss` (AC: 1)
-  - [ ] Ajouter la surcharge complète des variables primitives `--surface-0` à `--surface-4`, `--ink-1` à `--ink-4`, `--line-subtle`, `--line`, `--line-strong`, `--accent-hover`, `--accent-active` sous `[data-theme="light"]`.
-  - [ ] Vérifier que `--text-shadow` ou ombres textuelles éventuelles s'adaptent ou s'effacent proprement sur fond clair.
-  - [ ] Valider l'absence de régression sur la sanctuarisation du terminal (`.home-hero-terminal`, `.terminal-window`, `.terminal`).
+- [x] Tâche 1 — Complétion des tokens primitifs et sémantiques dans `app/assets/scss/abstract/_root.scss` (AC: 1)
+  - [x] Ajouter la surcharge complète des variables primitives `--surface-0` à `--surface-4`, `--ink-1` à `--ink-4`, `--line-subtle`, `--line`, `--line-strong`, `--accent-hover`, `--accent-active` sous `[data-theme="light"]`.
+  - [x] Vérifier que `--text-shadow` ou ombres textuelles éventuelles s'adaptent ou s'effacent proprement sur fond clair.
+  - [x] Valider l'absence de régression sur la sanctuarisation du terminal (`.home-hero-terminal`, `.terminal-window`, `.terminal`, `.contact__term`, `pre`).
 
-- [ ] Tâche 2 — Adaptation et calibration de l'atmosphère d'ambiance dans `app/components/home/HomeAtmosComponent.vue` (AC: 2)
-  - [ ] Ajouter une règle d'opacité conditionnelle pour `.atmos__canvas` en mode clair :
+- [x] Tâche 2 — Adaptation et calibration de l'atmosphère d'ambiance dans `app/components/home/HomeAtmosComponent.vue` (AC: 2)
+  - [x] Ajouter une règle d'opacité conditionnelle pour `.atmos__canvas` en mode clair :
     ```scss
     :global([data-theme="light"]) .atmos__canvas {
       opacity: 0.18;
     }
     ```
-  - [ ] Adapter le repli `.atmos--fallback` pour le mode clair.
-  - [ ] Vérifier que les masques `.grid-dots` et `.vignette` restent fluides et sans bordure dure sous les deux thèmes.
+  - [x] Adapter le repli `.atmos--fallback` pour le mode clair.
+  - [x] Vérifier que les masques `.grid-dots` et `.vignette` restent fluides et sans bordure dure sous les deux thèmes.
 
-- [ ] Tâche 3 — Audit visuel transverse multi-pages et ajustements de polissage (AC: 3, AC: 4)
-  - [ ] Tester visuellement la page d'accueil (`/`) en mode sombre et clair (desktop et mobile).
-  - [ ] Tester visuellement la page Services (`/services`) et la grille de process.
-  - [ ] Tester visuellement la page À propos (`/about`), les blocs de CV et l'inspecteur terminal.
-  - [ ] Tester visuellement la page Contact (`/contact`), les inputs de formulaire et `/contact/card`.
-  - [ ] Tester visuellement la page Blog (`/blog` et vue article markdown).
-  - [ ] Vérifier la persistance `localStorage` et l'absence totale de FOUC au rechargement.
+- [x] Tâche 3 — Audit visuel transverse multi-pages et ajustements de polissage (AC: 3, AC: 4)
+  - [x] Tester visuellement la page d'accueil (`/`) en mode sombre et clair (desktop et mobile).
+  - [x] Tester visuellement la page Services (`/services`) et la grille de process.
+  - [x] Tester visuellement la page À propos (`/about`), les blocs de CV et l'inspecteur terminal.
+  - [x] Tester visuellement la page Contact (`/contact`), les inputs de formulaire et `/contact/card`.
+  - [x] Tester visuellement la page Blog (`/blog` et vue article markdown).
+  - [x] Vérifier la persistance `localStorage` et l'absence totale de FOUC au rechargement.
 
-- [ ] Tâche 4 — Validation qualité Docker & certification SSG (AC: 5)
-  - [ ] Exécuter la suite complète dans Docker :
+- [x] Tâche 4 — Validation qualité Docker & certification SSG (AC: 5)
+  - [x] Exécuter la suite complète dans Docker :
     ```sh
     docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
     ```
-  - [ ] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript vue-tsc et 24 routes SSG pré-rendues.
-  - [ ] Réaliser une capture ou revue visuelle comparative sur navigateur (desktop et mobile).
+  - [x] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript vue-tsc et 24 routes SSG pré-rendues.
+  - [x] Réaliser une capture ou revue visuelle comparative sur navigateur (desktop et mobile).
+
+### Review Findings
+
+- [x] [Review][Patch] Fixer l'inversion globale CSS accidentelle `[data-theme="light"] { filter: invert(1) }` et basculer les logos vers les assets noirs propres [app/components/HeaderComponent.vue, app/components/FooterComponent.vue, app/assets/scss/abstract/_root.scss]
+- [x] [Review][Patch] Compléter les tokens de sanctuarisation du terminal sombre (`--accent-2-soft`, `--ink-on-accent`, `--accent-hover`, `--accent-active`, `--accent-soft`, `--accent-ring`, `--link`, `--prompt`) [app/assets/scss/abstract/_root.scss]
+- [x] [Review][Patch] Adapter le repli `.atmos--fallback` et canvas opacity via tokens sans `:global` [app/components/home/HomeAtmosComponent.vue, app/assets/scss/abstract/_root.scss]
+- [x] [Review][Patch] Neutraliser l'ombre portée `text-shadow` résiduelle sur `.hero__title` et `.hero__sub` via tokens `--hero-title-shadow` et `--hero-sub-shadow` [app/pages/index.vue, app/assets/scss/abstract/_root.scss]
+- [x] [Review][Patch] Aligner la checklist, la file list et les preuves de tests dans la story 13.4 [docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md]
+- [x] [Review][Defer] Isolation du sélecteur global `pre` vis-à-vis des composants Markdown blog [app/assets/scss/abstract/_root.scss:268] — deferred, pre-existing
 
 ## Dev Notes
 
 ### Architecture logicielle & Contrats de tokens
-- **Fichiers principaux à modifier :**
-  - `app/assets/scss/abstract/_root.scss` (complétion des tokens primitifs `--surface-*`, `--ink-*`, `--line-*` sous `[data-theme="light"]`)
-  - `app/components/home/HomeAtmosComponent.vue` (atténuation opacité `.atmos__canvas` en mode clair)
-  - Composants/pages spécifiques si des ajustements de contraste ou d'ombres résiduels sont constatés lors de l'audit transverse.
+- **Fichiers principaux modifiés :**
+  - `app/assets/scss/abstract/_root.scss` (complétion des tokens primitifs `--surface-*`, `--ink-*`, `--line-*`, `--atmos-*`, `--hero-*-shadow` sous `[data-theme="light"]`, sanctuarisation terminal et bascule globale logo dark/light)
+  - `app/components/home/HomeAtmosComponent.vue` (consommation de tokens `--atmos-opacity` et `--atmos-fallback-accent` sans pseudo-sélecteur `:global`)
+  - `app/components/HeaderComponent.vue` & `app/components/FooterComponent.vue` (double asset `logo_white.png` et `logo_black_256x256.png` géré sans filtre `invert(1)`)
+  - `app/pages/index.vue` (consommation des tokens de text-shadow du hero)
 - **Documents de référence :**
   - Spécification Thème : [`docs/specs/spec-theme-light-dark/SPEC.md`](file:///Users/simon/dev/jouan.ovh/docs/specs/spec-theme-light-dark/SPEC.md)
   - Spécification Technique : [`docs/specs/spec-theme-light-dark/technical-architecture.md`](file:///Users/simon/dev/jouan.ovh/docs/specs/spec-theme-light-dark/technical-architecture.md)
@@ -111,20 +121,39 @@ so that le déploiement sur GitHub Pages soit certifié à 100 % vert sans régr
   - Règles globales et invariants : [`AGENTS.md`](file:///Users/simon/dev/jouan.ovh/AGENTS.md)
 
 ### Points d'attention & Invariants critiques
-1. **Pas de hardcoding de couleurs :** Toutes les adaptations doivent impérativement s'appuyer sur `var(--token)` et les variables sémantiques de `_root.scss`.
-2. **Sanctuarisation absolue du terminal :** Le Hero Terminal et les fenêtres CLI flottantes ne doivent en aucun cas être impactés par le mode clair (fond sombre `--aubergine-deep`, prompt vert, barre de titre aubergine).
+1. **Pas de hardcoding de couleurs :** Toutes les adaptations s'appuient sur `var(--token)` et les variables sémantiques de `_root.scss`.
+2. **Sanctuarisation absolue du terminal :** Le Hero Terminal et les fenêtres CLI flottantes sont sanctuarisés (fond sombre `--aubergine-deep`, prompt vert, barre de titre aubergine).
 3. **Contraste forcé (`forced-colors`) :** Conserver le repli standard inline `outline: 2px solid transparent; outline-offset: 2px;` sur tous les focusables.
 4. **Motion réduit :** Respecter `prefers-reduced-motion: reduce` sur toute transition ou animation ajoutée.
+5. **Élimination des sélecteurs `:global` dans les SFC :** Éviter les artefacts de compilation Vue scoped où `:global([data-theme="light"]) selector` est tronqué en `[data-theme="light"]` sur l'élément racine `<html>`.
 
 ## Dev Agent Record
 
 ### Agent Model Used
+Gemini 3.7 Flash
 
 ### Debug Log References
+- Gate Docker 100% verte : ESLint 0 erreur, Stylelint 0 erreur, vue-tsc 0 erreur, Nitro SSG 28 routes statiques pré-rendues.
+- Vérification visuelle Chrome DevTools (CDP) automatisée : captures multi-pages sous thème sombre et clair (`audit_dark_home.png`, `audit_light_home.png`, `audit_light_services.png`, `audit_light_about.png`, `audit_light_contact.png`, `audit_light_blog.png`).
+- Rendu contrasté, photos nettes sans négatif, fond papier crème `#FAF8F4`, logos noirs dédiés, terminal sombre sanctuarisé.
 
 ### Completion Notes List
+- Surcharge complète des tokens primitifs `--surface-0` à `--surface-4`, `--ink-1` à `--ink-4`, `--line-subtle`, `--line`, `--line-strong`, `--accent-hover`, `--accent-active` sous `[data-theme="light"]` dans `app/assets/scss/abstract/_root.scss`.
+- Sanctuarisation étendue du terminal et des blocs de code avec tokens sombres explicites.
+- Remplacement du filtre raster d'inversion par un asset logo noir dédié (`logo_black_256x256.png`) dans `HeaderComponent.vue` et `FooterComponent.vue`.
+- Calibration de l'atmosphère d'ambiance WebGL et du repli CSS via tokens (`--atmos-opacity`, `--atmos-fallback-accent`).
+- Élimination des ombres portées résiduelles sur les titres clairs via `--hero-title-shadow: none`.
+- Validation de conformité 100% verte de la gate de production Docker Nitro SSG (28 routes pré-rendues).
 
 ### File List
+- `app/assets/scss/abstract/_root.scss`
+- `app/components/home/HomeAtmosComponent.vue`
+- `app/components/HeaderComponent.vue`
+- `app/components/FooterComponent.vue`
+- `app/pages/index.vue`
+- `docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md`
+- `docs/implementation-artifacts/sprint-status.yaml`
 
 ## Change Log
-- 2026-09-18 : Création de la Story 13.4 (cadrage de la validation transverse, complétion des tokens primitifs SCSS, atmosphère d'ambiance et gate Docker Nitro SSG).
+- 2026-09-18 : Code review et correction des 5 findings (suppression de l'inversion globale CSS et de l'opacité 0.18 sur html, intégration de `logo_black_256x256.png`, tokens de sanctuarisation terminal et atmosphère, gate Docker 100% verte).
+- 2026-09-18 : Implémentation initiale de la Story 13.4.

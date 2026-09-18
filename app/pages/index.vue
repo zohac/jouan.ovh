@@ -90,7 +90,7 @@
     </section>
 
     <!-- Bloc différenciateur « Prototype → Production » (Story 12.3 / AC-2) -->
-    <section class="section section--sunken diff-block">
+    <section class="section diff-block">
       <div class="container">
         <p class="eyebrow"><span aria-hidden="true">// </span>au-delà de la démo</p>
         <h2 class="section__title diff-block__title">
@@ -518,7 +518,7 @@ usePageSeo({
   line-height: 0.98;
   letter-spacing: var(--ls-tight);
   color: var(--text-strong);
-  text-shadow: 0 2px 14px color-mix(in srgb, var(--surface-0) 80%, transparent);
+  text-shadow: var(--hero-title-shadow);
 
   em {
     font-style: italic;
@@ -533,7 +533,7 @@ usePageSeo({
   font-size: var(--fs-lg);
   line-height: var(--lh-relaxed);
   color: var(--text-body);
-  text-shadow: 0 1px 8px color-mix(in srgb, var(--surface-0) 70%, transparent);
+  text-shadow: var(--hero-sub-shadow);
 }
 
 .hero__credibility {
@@ -1000,7 +1000,7 @@ usePageSeo({
 
 .stat {
   padding: var(--space-6);
-  background: color-mix(in srgb, var(--surface-1) 85%, transparent);
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-2);

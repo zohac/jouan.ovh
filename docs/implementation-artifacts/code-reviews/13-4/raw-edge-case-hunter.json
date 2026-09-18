@@ -1,0 +1,942 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0b53a-b0f1-7171-88fd-5a497974f29b
+--------
+user
+# Edge Case Hunter Prompt — Story 13.4
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/13-4/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every branch, report ONLY paths and conditions that lack handling. Discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+[
+  {
+    "location": "file:start-end (or file:line)",
+    "trigger_condition": "one-line description (max 15 words)",
+    "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string)",
+    "potential_consequence": "what could actually go wrong (max 15 words)"
+  }
+]
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+J’utilise `bmad-review-edge-case-hunter` pour analyser exhaustivement le diff demandé, puis je retournerai uniquement le tableau JSON requis.
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.codex/skills/bmad-review-edge-case-hunter/SKILL.md && printf '\\n---DIFF---\\n' && sed -n '1,260p' docs/implementation-artifacts/code-reviews/13-4/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+A brief secondary deletion check runs as Step 4 when the diff removes code.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler. Do not assign severity labels, rankings, or priority levels.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Consider implicit branches: the diff special-cases or changes the handling of one or more members of a fixed set of values — enums, status codes, sentinels, type tags, flags, value ranges. The rest of the set is implicit branches (e.g. the diff changes the `RED` and `YELLOW` cases of a `RED`/`YELLOW`/`GREEN` enum; `GREEN` is the implicit branch)
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Deletion Check
+
+If the diff removed or replaced meaningful code (ignore pure renames and whitespace): load `references/deletion-check.md` and follow it.
+
+### Step 5: Present Findings
+
+Output all findings as a single JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each edge-case finding contains exactly these four fields:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when nothing is found. Deletion findings from Step 4, if any, go in the same array with the extra fields defined in `references/deletion-check.md`.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+---DIFF---
+diff --git a/app/assets/scss/abstract/_root.scss b/app/assets/scss/abstract/_root.scss
+index aa40e8f..7a11d66 100644
+--- a/app/assets/scss/abstract/_root.scss
++++ b/app/assets/scss/abstract/_root.scss
+@@ -206,54 +206,95 @@
+ //  Surcharge Thème Clair — Palette « Papier technique / Crème solaire »
+ // ============================================================
+ [data-theme="light"] {
+-  // Surfaces claires
+-  --bg-page: hsl(38deg 25% 97%);
+-  --bg-sunken: hsl(38deg 20% 93%);
+-  --bg-card: hsl(0deg 0% 100%);
+-  --bg-elevated: hsl(38deg 30% 99%);
+-  --bg-input: hsl(38deg 15% 95%);
+-
+-  // Encres aubergine (contrastes WCAG AAA)
+-  --text-strong: hsl(320deg 30% 12%);
+-  --text-body: hsl(320deg 18% 26%);
+-  --text-muted: hsl(320deg 10% 44%);
+-  --text-faint: hsl(320deg 8% 58%);
++  // ---- Rampe de surfaces neutres primitives ----
++  --surface-0: hsl(38deg 25% 97%);
++  --surface-1: hsl(38deg 20% 93%);
++  --surface-2: hsl(0deg 0% 100%);
++  --surface-3: hsl(38deg 30% 99%);
++  --surface-4: hsl(38deg 15% 95%);
++
++  // ---- Bordures / hairlines primitives ----
++  --line-subtle: hsl(35deg 15% 88%);
++  --line: hsl(35deg 12% 80%);
++  --line-strong: hsl(35deg 12% 68%);
++
++  // ---- Texte encres primitives (contrastes WCAG AAA) ----
++  --ink-1: hsl(320deg 30% 12%);
++  --ink-2: hsl(320deg 18% 26%);
++  --ink-3: hsl(320deg 10% 44%);
++  --ink-4: hsl(320deg 8% 58%);
+   --ink-on-accent: hsl(0deg 0% 100%);
+ 
+-  // Bordures douces
+-  --border-subtle: hsl(35deg 15% 88%);
+-  --border-default: hsl(35deg 12% 80%);
+-  --border-strong: hsl(35deg 12% 68%);
++  // ---- Alias sémantiques ----
++  --bg-page: var(--surface-0);
++  --bg-sunken: var(--surface-1);
++  --bg-card: var(--surface-2);
++  --bg-elevated: var(--surface-3);
++  --bg-input: var(--surface-4);
++  --text-strong: var(--ink-1);
++  --text-body: var(--ink-2);
++  --text-muted: var(--ink-3);
++  --text-faint: var(--ink-4);
++  --accent-text: var(--ink-on-accent);
++  --border-subtle: var(--line-subtle);
++  --border-default: var(--line);
++  --border-strong: var(--line-strong);
+ 
+-  // Accent & sélections
++  // ---- Accentuation & interactions ----
+   --accent: hsl(24deg 95% 44%);
++  --accent-hover: hsl(24deg 95% 48%);
++  --accent-active: hsl(24deg 95% 40%);
+   --accent-soft: hsl(24deg 94% 53% / 10%);
+   --accent-ring: hsl(24deg 94% 53% / 35%);
++  --accent-2: hsl(319deg 33% 40%);
++  --accent-2-soft: hsl(319deg 40% 40% / 15%);
+   --selection: hsl(24deg 94% 53% / 22%);
+   --overlay: hsl(320deg 30% 10% / 40%);
+ 
+-  // Ombres adaptées
++  // ---- Ombres adaptées ----
+   --shadow-1: 0 1px 3px hsl(35deg 20% 40% / 8%);
+   --shadow-2: 0 3px 10px hsl(35deg 20% 40% / 10%);
+   --shadow-3: 0 8px 24px hsl(35deg 20% 40% / 12%);
+   --shadow-hairline: inset 0 1px 0 hsl(0deg 0% 100% / 80%);
+ }
+ 
++/* stylelint-disable selector-class-pattern -- sanctuarisation classes terminal et blocs code */
+ // Sanctuarisation absolue du terminal sombre
+ .home-hero-terminal,
+ .hero-term,
+ .terminal-window,
+-.terminal {
++.terminal,
++.contact__term,
++pre {
++  --surface-0: hsl(320deg 30% 6%);
++  --surface-1: hsl(319deg 22% 9%);
++  --surface-2: hsl(318deg 18% 12%);
++  --surface-3: hsl(317deg 16% 16%);
++  --surface-4: hsl(316deg 14% 21%);
++  --ink-1: hsl(30deg 18% 95%);
++  --ink-2: hsl(28deg 10% 74%);
++  --ink-3: hsl(25deg 7% 54%);
++  --ink-4: hsl(22deg 6% 40%);
++  --line-subtle: hsl(316deg 14% 18%);
++  --line: hsl(315deg 12% 25%);
++  --line-strong: hsl(314deg 11% 34%);
++  --bg-page: var(--surface-0);
++  --bg-sunken: var(--surface-1);
++  --bg-card: var(--surface-2);
++  --bg-elevated: var(--surface-3);
++  --bg-input: var(--surface-4);
+   --bg-terminal: var(--aubergine-deep);
+-  --text-strong: var(--ink-1);
+-  --text-body: var(--ink-2);
+-  --text-muted: var(--ink-3);
+-  --border-subtle: var(--line-subtle);
+-  --border-default: var(--line);
++  --text-strong: hsl(30deg 18% 95%);
++  --text-body: hsl(28deg 10% 74%);
++  --text-muted: hsl(25deg 7% 54%);
++  --text-faint: hsl(22deg 6% 40%);
++  --border-subtle: hsl(316deg 14% 18%);
++  --border-default: hsl(315deg 12% 25%);
+   --border-terminal: hsl(319deg 40% 30% / 40%);
+   --accent: var(--orange-500);
+   --selection: hsl(24deg 94% 53% / 30%);
+ }
++/* stylelint-enable selector-class-pattern */
+ 
+ ::selection {
+   background: var(--selection);
+diff --git a/app/components/FooterComponent.vue b/app/components/FooterComponent.vue
+index 1a4a3d6..4054aa5 100644
+--- a/app/components/FooterComponent.vue
++++ b/app/components/FooterComponent.vue
+@@ -108,6 +108,10 @@ const year = new Date().getFullYear();
+     height: 22px;
+     object-fit: contain;
+     filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--surface-0) 60%, transparent));
++
++    :global([data-theme="light"]) & {
++      filter: invert(1) drop-shadow(0 2px 4px color-mix(in srgb, var(--surface-0) 60%, transparent));
++    }
+   }
+ 
+   b {
+diff --git a/app/components/HeaderComponent.vue b/app/components/HeaderComponent.vue
+index 5b26f82..a883d04 100644
+--- a/app/components/HeaderComponent.vue
++++ b/app/components/HeaderComponent.vue
+@@ -297,6 +297,10 @@ onBeforeUnmount(() => {
+     transition:
+       transform var(--dur-base) var(--ease-standard),
+       filter var(--dur-base) var(--ease-standard);
++
++    :global([data-theme="light"]) & {
++      filter: invert(1) drop-shadow(0 2px 6px color-mix(in srgb, var(--surface-0) 60%, transparent));
++    }
+   }
+ 
+   .hdr__brand-text {
+diff --git a/app/components/home/HomeAtmosComponent.vue b/app/components/home/HomeAtmosComponent.vue
+index 849cfc4..4d59728 100644
+--- a/app/components/home/HomeAtmosComponent.vue
++++ b/app/components/home/HomeAtmosComponent.vue
+@@ -394,6 +394,10 @@ onBeforeUnmount(() => {
+   opacity: 0.52;
+ }
+ 
++:global([data-theme="light"]) .atmos__canvas {
++  opacity: 0.18;
++}
++
+ .grid-dots {
+   position: absolute;
+   inset: 0;
+diff --git a/docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md b/docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md
+index 391ca23..14d47b8 100644
+--- a/docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md
++++ b/docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md
+@@ -4,7 +4,7 @@ baseline_commit: 08e08fe191517a257c8b3b5d7be17d8b78d7b19d
+ 
+ # Story 13.4: Validation transverse, atmosphère d'ambiance et gate Docker Nitro SSG
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -64,36 +64,36 @@ so that le déploiement sur GitHub Pages soit certifié à 100 % vert sans régr
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Complétion des tokens primitifs et sémantiques dans `app/assets/scss/abstract/_root.scss` (AC: 1)
+-  - [ ] Ajouter la surcharge complète des variables primitives `--surface-0` à `--surface-4`, `--ink-1` à `--ink-4`, `--line-subtle`, `--line`, `--line-strong`, `--accent-hover`, `--accent-active` sous `[data-theme="light"]`.
+-  - [ ] Vérifier que `--text-shadow` ou ombres textuelles éventuelles s'adaptent ou s'effacent proprement sur fond clair.
+-  - [ ] Valider l'absence de régression sur la sanctuarisation du terminal (`.home-hero-terminal`, `.terminal-window`, `.terminal`).
++- [x] Tâche 1 — Complétion des tokens primitifs et sémantiques dans `app/assets/scss/abstract/_root.scss` (AC: 1)
++  - [x] Ajouter la surcharge complète des variables primitives `--surface-0` à `--surface-4`, `--ink-1` à `--ink-4`, `--line-subtle`, `--line`, `--line-strong`, `--accent-hover`, `--accent-active` sous `[data-theme="light"]`.
++  - [x] Vérifier que `--text-shadow` ou ombres textuelles éventuelles s'adaptent ou s'effacent proprement sur fond clair.
++  - [x] Valider l'absence de régression sur la sanctuarisation du terminal (`.home-hero-terminal`, `.terminal-window`, `.terminal`, `.contact__term`, `pre`).
+ 
+-- [ ] Tâche 2 — Adaptation et calibration de l'atmosphère d'ambiance dans `app/components/home/HomeAtmosComponent.vue` (AC: 2)
+-  - [ ] Ajouter une règle d'opacité conditionnelle pour `.atmos__canvas` en mode clair :
++- [x] Tâche 2 — Adaptation et calibration de l'atmosphère d'ambiance dans `app/components/home/HomeAtmosComponent.vue` (AC: 2)
++  - [x] Ajouter une règle d'opacité conditionnelle pour `.atmos__canvas` en mode clair :
+     ```scss
+     :global([data-theme="light"]) .atmos__canvas {
+       opacity: 0.18;
+     }
+     ```
+-  - [ ] Adapter le repli `.atmos--fallback` pour le mode clair.
+-  - [ ] Vérifier que les masques `.grid-dots` et `.vignette` restent fluides et sans bordure dure sous les deux thèmes.
+-
+-- [ ] Tâche 3 — Audit visuel transverse multi-pages et ajustements de polissage (AC: 3, AC: 4)
+-  - [ ] Tester visuellement la page d'accueil (`/`) en mode sombre et clair (desktop et mobile).
+-  - [ ] Tester visuellement la page Services (`/services`) et la grille de process.
+-  - [ ] Tester visuellement la page À propos (`/about`), les blocs de CV et l'inspecteur terminal.
+-  - [ ] Tester visuellement la page Contact (`/contact`), les inputs de formulaire et `/contact/card`.
+-  - [ ] Tester visuellement la page Blog (`/blog` et vue article markdown).
+-  - [ ] Vérifier la persistance `localStorage` et l'absence totale de FOUC au rechargement.
+-
+-- [ ] Tâche 4 — Validation qualité Docker & certification SSG (AC: 5)
+-  - [ ] Exécuter la suite complète dans Docker :
++  - [x] Adapter le repli `.atmos--fallback` pour le mode clair.
++  - [x] Vérifier que les masques `.grid-dots` et `.vignette` restent fluides et sans bordure dure sous les deux thèmes.
++
++- [x] Tâche 3 — Audit visuel transverse multi-pages et ajustements de polissage (AC: 3, AC: 4)
++  - [x] Tester visuellement la page d'accueil (`/`) en mode sombre et clair (desktop et mobile).
++  - [x] Tester visuellement la page Services (`/services`) et la grille de process.
++  - [x] Tester visuellement la page À propos (`/about`), les blocs de CV et l'inspecteur terminal.
++  - [x] Tester visuellement la page Contact (`/contact`), les inputs de formulaire et `/contact/card`.
++  - [x] Tester visuellement la page Blog (`/blog` et vue article markdown).
++  - [x] Vérifier la persistance `localStorage` et l'absence totale de FOUC au rechargement.
++
++- [x] Tâche 4 — Validation qualité Docker & certification SSG (AC: 5)
++  - [x] Exécuter la suite complète dans Docker :
+     ```sh
+     docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
+     ```
+-  - [ ] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript vue-tsc et 24 routes SSG pré-rendues.
+-  - [ ] Réaliser une capture ou revue visuelle comparative sur navigateur (desktop et mobile).
++  - [x] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript vue-tsc et 24 routes SSG pré-rendues.
++  - [x] Réaliser une capture ou revue visuelle comparative sur navigateur (desktop et mobile).
+ 
+ ## Dev Notes
+ 
+@@ -119,12 +119,27 @@ so that le déploiement sur GitHub Pages soit certifié à 100 % vert sans régr
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++Gemini 3.7 Flash
+ 
+ ### Debug Log References
++- Gate Docker 100% verte : ESLint 0 erreur, Stylelint 0 erreur, vue-tsc 0 erreur, Nitro SSG 24 routes statiques pré-rendues.
++- HTTP 200 vérifié sur toutes les routes clés (`/`, `/services`, `/about`, `/contact`, `/contact/card`, `/blog`, `/confidentialite`, `/mentions-legales`).
+ 
+ ### Completion Notes List
++- Surcharge complète des tokens primitifs `--surface-0` à `--surface-4`, `--ink-1` à `--ink-4`, `--line-subtle`, `--line`, `--line-strong`, `--accent-hover`, `--accent-active` sous `[data-theme="light"]` dans `app/assets/scss/abstract/_root.scss`.
++- Sanctuarisation étendue du terminal et des blocs de code (`.home-hero-terminal`, `.hero-term`, `.terminal-window`, `.terminal`, `.contact__term`, `pre`) avec tokens sombres explicites.
++- Calibration de l'atmosphère d'ambiance WebGL dans `app/components/home/HomeAtmosComponent.vue` : opacité du canvas atténuée à 0.18 sous `[data-theme="light"]`.
++- Adaptation des logos du header et du footer avec filtre d'inversion sous `[data-theme="light"]` (`HeaderComponent.vue`, `FooterComponent.vue`).
++- Validation de conformité 100% verte de la gate de production Docker Nitro SSG (24 routes pré-rendues).
+ 
+ ### File List
++- `app/assets/scss/abstract/_root.scss`
++- `app/components/home/HomeAtmosComponent.vue`
+
+exec
+/bin/zsh -lc "sed -n '1,240p' /Users/simon/.codex/skills/bmad-review-edge-case-hunter/references/deletion-check.md" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+# Deletion Check
+
+Secondary pass for the Edge Case Hunter — runs only when the diff removed meaningful code. Subordinate to the edge-case pass; findings are usually few or none.
+
+For each chunk of removed or replaced code (ignore pure renames and whitespace), ask: did it carry behavior or a contract that the change neither re-established nor intentionally retired? Add a finding for any resulting regression, orphaned reference, or newly-dead code. Skip anything already covered by your edge-case findings.
+
+Append each finding to the same JSON array as the edge-case findings, with the four standard fields plus:
+
+- `kind`: `"deletion"`
+- `confidence`: `"high"`, `"medium"`, or `"low"` — these are inferences; rate them
+
+For a deletion finding the standard fields read as: `location` = the removed item; `trigger_condition` = the behavior or contract it enforced; `guard_snippet` = where or how to re-establish it; `potential_consequence` = the regression or orphan.
+
+Add nothing if nothing qualifies.
+
+exec
+/bin/zsh -lc "rg -n --glob '*.vue' --glob '*.scss' --glob '*.md' 'accent-hover|accent-active|accent-text|accent-2|surface-[0-4]|ink-[1-4]|line-subtle|line-strong|var\\(--bg|var\\(--text|var\\(--border|var\\(--accent' app content docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md | head -240" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:21:   **Then** les tokens primitifs de surface (`--surface-0` à `--surface-4`), d'encre (`--ink-1` à `--ink-4`), de bordures (`--line-subtle`, `--line`, `--line-strong`) et d'accentuation interactive (`--accent-hover`, `--accent-active`) sont explicitement surchargés pour correspondre aux valeurs de la palette « Papier technique / Crème solaire » définie dans `DESIGN.md` :
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:22:     - `--surface-0: hsl(38deg 25% 97%)` (`#FAF8F4`)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:23:     - `--surface-1: hsl(38deg 20% 93%)` (`#F1EDE6`)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:24:     - `--surface-2: hsl(0deg 0% 100%)` (`#FFFFFF`)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:25:     - `--surface-3: hsl(38deg 30% 99%)` (`#FFFEFB`)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:26:     - `--surface-4: hsl(38deg 15% 95%)` (`#F5F3EE`)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:27:     - `--ink-1: hsl(320deg 30% 12%)` (`#271524`, contraste > 14:1)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:28:     - `--ink-2: hsl(320deg 18% 26%)` (`#473644`, contraste > 8:1)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:29:     - `--ink-3: hsl(320deg 10% 44%)` (`#756773`, contraste > 4.5:1)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:30:     - `--ink-4: hsl(320deg 8% 58%)` (`#988D96`)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:31:     - `--line-subtle: hsl(35deg 15% 88%)` (`#E6E2DC`)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:33:     - `--line-strong: hsl(35deg 12% 68%)` (`#B3ABA2`)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:34:     - `--accent-hover: hsl(24deg 95% 48%)`
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:35:     - `--accent-active: hsl(24deg 95% 40%)`
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:42:     - Les masques radiaux `.grid-dots` et la vignette `.vignette` fondent sans couture dans `--surface-0` (`#FAF8F4`)
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:68:  - [x] Ajouter la surcharge complète des variables primitives `--surface-0` à `--surface-4`, `--ink-1` à `--ink-4`, `--line-subtle`, `--line`, `--line-strong`, `--accent-hover`, `--accent-active` sous `[data-theme="light"]`.
+docs/implementation-artifacts/13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg.md:129:- Surcharge complète des tokens primitifs `--surface-0` à `--surface-4`, `--ink-1` à `--ink-4`, `--line-subtle`, `--line`, `--line-strong`, `--accent-hover`, `--accent-active` sous `[data-theme="light"]` dans `app/assets/scss/abstract/_root.scss`.
+app/pages/about.vue:219:  color: var(--text-strong);
+app/pages/about.vue:225:  color: var(--accent);
+app/pages/about.vue:234:  color: var(--text-muted);
+app/pages/about.vue:254:    color: var(--text-strong);
+app/pages/about.vue:283:  border: 1px solid var(--border-subtle);
+app/pages/about.vue:284:  border-left: 3px solid var(--accent);
+app/pages/about.vue:286:  background: var(--surface-1);
+app/pages/about.vue:294:  color: var(--text-strong);
+app/pages/about.vue:301:  color: var(--text-muted);
+app/pages/about.vue:318:    color: var(--text-body);
+app/pages/about.vue:324:      color: var(--accent);
+app/pages/about.vue:334:  color: var(--accent);
+app/pages/about.vue:376:  background: var(--border-default);
+app/pages/about.vue:394:  background: var(--surface-0);
+app/pages/about.vue:395:  border: 2px solid var(--accent);
+app/pages/about.vue:404:  color: var(--accent);
+app/pages/about.vue:413:  color: var(--text-strong);
+app/pages/about.vue:419:  color: var(--text-muted);
+app/pages/about.vue:426:  color: var(--text-body);
+app/pages/about.vue:444:  color: var(--text-strong);
+app/layouts/default.vue:22:  background: var(--bg-page);
+app/components/HeaderComponent.vue:254:  background: color-mix(in srgb, var(--surface-0) 80%, transparent);
+app/components/HeaderComponent.vue:255:  border-bottom-color: var(--border-subtle);
+app/components/HeaderComponent.vue:267:  background: linear-gradient(90deg, var(--accent), var(--aubergine-light));
+app/components/HeaderComponent.vue:268:  box-shadow: 0 0 10px var(--accent);
+app/components/HeaderComponent.vue:296:    filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--surface-0) 60%, transparent));
+app/components/HeaderComponent.vue:302:      filter: invert(1) drop-shadow(0 2px 6px color-mix(in srgb, var(--surface-0) 60%, transparent));
+app/components/HeaderComponent.vue:314:    color: var(--text-strong);
+app/components/HeaderComponent.vue:319:    color: var(--text-faint);
+app/components/HeaderComponent.vue:326:      filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 70%, transparent));
+app/components/HeaderComponent.vue:330:      color: var(--accent);
+app/components/HeaderComponent.vue:334:      color: var(--text-body);
+app/components/HeaderComponent.vue:364:  color: var(--text-body);
+app/components/HeaderComponent.vue:376:    background: var(--accent);
+app/components/HeaderComponent.vue:381:    color: var(--text-strong);
+app/components/HeaderComponent.vue:399:  color: var(--text-strong);
+app/components/HeaderComponent.vue:406:    color: var(--accent);
+app/components/HeaderComponent.vue:413:  color: var(--text-faint);
+app/components/HeaderComponent.vue:421:  color: var(--accent);
+app/components/HeaderComponent.vue:501:  color: var(--text-strong);
+app/components/HeaderComponent.vue:504:  border: 1px solid var(--border-default);
+app/components/HeaderComponent.vue:531:  border-bottom: 1px solid var(--border-subtle);
+app/components/HeaderComponent.vue:569:    background: var(--surface-1);
+app/components/HeaderComponent.vue:570:    border-bottom: 1px solid var(--border-subtle);
+app/components/HeaderComponent.vue:592:  color: var(--text-body);
+app/components/HeaderComponent.vue:597:    color: var(--text-strong);
+app/components/HeaderComponent.vue:598:    background: var(--surface-2);
+app/components/HeaderComponent.vue:609:  color: var(--accent);
+app/pages/blog/[...slug].vue:192:  color: var(--text-muted);
+app/pages/blog/[...slug].vue:196:    color: var(--text-strong);
+app/pages/blog/[...slug].vue:218:  color: var(--text-strong);
+app/pages/blog/[...slug].vue:232:  border: 1px solid var(--border-subtle);
+app/pages/blog/[...slug].vue:252:    color: var(--text-strong);
+app/pages/blog/[...slug].vue:261:    color: var(--text-strong);
+app/pages/blog/[...slug].vue:269:    color: var(--text-strong);
+app/pages/blog/[...slug].vue:275:    color: var(--text-strong);
+app/pages/blog/[...slug].vue:313:    color: var(--text-strong);
+app/pages/blog/[...slug].vue:314:    background: var(--bg-terminal);
+app/pages/blog/[...slug].vue:315:    border: 1px solid var(--border-default);
+app/pages/blog/[...slug].vue:342:    color: var(--accent);
+app/pages/blog/[...slug].vue:349:    color: var(--text-muted);
+app/pages/blog/[...slug].vue:351:    border-left: 2px solid var(--accent);
+app/pages/blog/[...slug].vue:362:    border-top: 1px solid var(--border-subtle);
+app/pages/blog/[...slug].vue:377:    border: 1px solid var(--border-default);
+app/pages/blog/[...slug].vue:383:    color: var(--text-strong);
+app/pages/blog/[...slug].vue:384:    background: var(--bg-elevated);
+app/pages/blog/[...slug].vue:403:  border: 1px solid var(--border-subtle);
+app/pages/blog/[...slug].vue:405:  background: var(--surface-1);
+app/pages/blog/[...slug].vue:418:  color: var(--text-strong);
+app/pages/blog/[...slug].vue:425:  color: var(--text-muted);
+app/pages/contact/card.vue:127:  color: var(--text-body);
+app/pages/contact/card.vue:146:  background: color-mix(in srgb, var(--surface-2) 85%, transparent);
+app/pages/contact/card.vue:147:  border: 1px solid var(--border-default);
+app/pages/contact/card.vue:151:    0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
+app/pages/contact/card.vue:180:  color: var(--text-strong);
+app/pages/contact/card.vue:186:  color: var(--text-muted);
+app/pages/contact/card.vue:211:  color: var(--text-strong);
+app/pages/contact/card.vue:213:  background: color-mix(in srgb, var(--surface-1) 60%, transparent);
+app/pages/contact/card.vue:214:  border: 1px solid color-mix(in srgb, var(--line-subtle) 80%, transparent);
+app/pages/contact/card.vue:222:    background: var(--surface-3);
+app/pages/contact/card.vue:223:    border-color: var(--accent);
+app/pages/contact/card.vue:224:    color: var(--accent);
+app/pages/contact/card.vue:236:  color: var(--accent);
+app/pages/contact/card.vue:272:  border: 2px solid var(--accent);
+app/pages/contact/card.vue:276:    0 0 20px color-mix(in srgb, var(--accent) 35%, transparent);
+app/pages/contact/card.vue:291:  color: var(--text-muted);
+app/components/CurrentTime.vue:65:  color: var(--text-muted);
+app/pages/blog/index.vue:169:  color: var(--text-strong);
+app/pages/blog/index.vue:175:  color: var(--text-muted);
+app/pages/blog/index.vue:202:  border: 1px solid var(--border-subtle);
+app/pages/blog/index.vue:216:  color: var(--text-strong);
+app/pages/blog/index.vue:224:  color: var(--text-body);
+app/pages/blog/index.vue:247:  color: var(--text-strong);
+app/pages/blog/index.vue:251:  color: var(--text-muted);
+app/pages/contact/index.vue:377:  color: var(--text-strong);
+app/pages/contact/index.vue:383:  color: var(--text-muted);
+app/pages/contact/index.vue:427:  color: var(--text-muted);
+app/pages/contact/index.vue:435:    color: var(--accent);
+app/pages/contact/index.vue:493:  color: var(--text-muted);
+app/pages/contact/index.vue:499:  color: var(--text-strong);
+app/pages/contact/index.vue:526:  background: var(--bg-terminal);
+app/pages/contact/index.vue:527:  border-color: var(--accent-2-soft);
+app/pages/contact/index.vue:537:// Commande tapée : off-white (porté de l'inline ink-1 de Contact.jsx).
+app/pages/contact/index.vue:539:  color: var(--text-strong);
+app/pages/contact/index.vue:545:  color: var(--text-muted);
+app/pages/contact/index.vue:553:  color: var(--text-muted);
+app/pages/contact/index.vue:559:  color: var(--text-muted);
+app/pages/services.vue:261:  color: var(--text-strong);
+app/pages/services.vue:267:  color: var(--text-muted);
+app/pages/services.vue:305:  color: var(--accent);
+app/pages/services.vue:306:  background: var(--accent-soft);
+app/pages/services.vue:315:  color: var(--text-strong);
+app/pages/services.vue:324:  color: var(--accent);
+app/pages/services.vue:332:  color: var(--text-body);
+app/pages/services.vue:345:    color: var(--text-muted);
+app/pages/services.vue:353:    color: var(--accent);
+app/pages/services.vue:367:  color: var(--text-muted);
+app/pages/services.vue:372:    color: var(--text-strong);
+app/pages/services.vue:381:  color: var(--text-muted);
+app/pages/services.vue:399:  color: var(--text-strong);
+app/pages/services.vue:420:  color: var(--accent);
+app/pages/services.vue:428:  color: var(--text-strong);
+app/pages/services.vue:433:  color: var(--text-muted);
+app/pages/services.vue:446:  color: var(--accent);
+app/pages/services.vue:453:    color: var(--accent-hover);
+app/components/FooterComponent.vue:74:  background: var(--surface-1);
+app/components/FooterComponent.vue:75:  border-top: 1px solid var(--border-subtle);
+app/components/FooterComponent.vue:110:    filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--surface-0) 60%, transparent));
+app/components/FooterComponent.vue:113:      filter: invert(1) drop-shadow(0 2px 4px color-mix(in srgb, var(--surface-0) 60%, transparent));
+app/components/FooterComponent.vue:121:    color: var(--text-strong);
+app/components/FooterComponent.vue:125:    color: var(--text-muted);
+app/components/FooterComponent.vue:140:  color: var(--text-body);
+app/components/FooterComponent.vue:155:  color: var(--accent);
+app/components/FooterComponent.vue:171:  color: var(--text-strong);
+app/components/FooterComponent.vue:178:    color: var(--accent);
+app/components/FooterComponent.vue:191:    color: var(--text-body);
+app/components/FooterComponent.vue:195:      color: var(--text-body);
+app/components/FooterComponent.vue:204:  border-top: 1px solid var(--border-default);
+app/components/FooterComponent.vue:216:  color: var(--text-body);
+app/pages/confidentialite.vue:184:  color: var(--text-strong);
+app/pages/confidentialite.vue:191:  color: var(--text-muted);
+app/pages/confidentialite.vue:223:  color: var(--text-strong);
+app/pages/confidentialite.vue:231:    color: var(--accent);
+app/pages/mentions-legales.vue:121:  color: var(--text-strong);
+app/pages/mentions-legales.vue:128:  color: var(--text-muted);
+app/pages/mentions-legales.vue:160:  color: var(--text-strong);
+app/pages/mentions-legales.vue:168:    color: var(--accent);
+app/components/HexagonLinkComponent.vue:26:  color: var(--text-strong);
+app/components/HexagonLinkComponent.vue:28:  background: var(--surface-3);
+app/components/HexagonLinkComponent.vue:37:    background: var(--accent);
+app/components/HexagonLinkComponent.vue:42:    outline: 2px solid var(--accent);
+app/pages/index.vue:520:  color: var(--text-strong);
+app/pages/index.vue:521:  text-shadow: 0 2px 14px color-mix(in srgb, var(--surface-0) 80%, transparent);
+app/pages/index.vue:525:    color: var(--accent);
+app/pages/index.vue:535:  color: var(--text-body);
+app/pages/index.vue:536:  text-shadow: 0 1px 8px color-mix(in srgb, var(--surface-0) 70%, transparent);
+app/pages/index.vue:544:  color: var(--text-muted);
+app/pages/index.vue:562:  color: var(--text-body);
+app/pages/index.vue:565:    color: var(--accent);
+app/pages/index.vue:569:      color: var(--accent-hover);
+app/pages/index.vue:612:  color: var(--text-strong);
+app/pages/index.vue:652:  color: var(--accent);
+app/pages/index.vue:653:  background: var(--accent-soft);
+app/pages/index.vue:661:  color: var(--text-faint);
+app/pages/index.vue:669:  color: var(--text-strong);
+app/pages/index.vue:677:  color: var(--text-body);
+app/pages/index.vue:695:    color: var(--text-muted);
+app/pages/index.vue:713:  border-top: 1px dashed var(--border-subtle);
+app/pages/index.vue:716:  color: var(--accent);
+app/pages/index.vue:723:  color: var(--accent);
+app/pages/index.vue:756:  color: var(--text-body);
+app/pages/index.vue:786:  color: var(--accent);
+app/pages/index.vue:787:  background: var(--accent-soft);
+app/pages/index.vue:796:  color: var(--text-strong);
+app/pages/index.vue:804:  color: var(--text-muted);
+app/pages/index.vue:832:  background: var(--surface-0);
+app/pages/index.vue:833:  border-bottom: 1px solid var(--border-subtle);
+app/pages/index.vue:855:    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+app/pages/index.vue:856:    var(--surface-0);
+app/pages/index.vue:868:  border: 1px dashed var(--border-default);
+app/pages/index.vue:870:  background: color-mix(in srgb, var(--surface-1) 60%, transparent);
+app/pages/index.vue:888:  border: 1px solid var(--border-subtle);
+app/pages/index.vue:890:  background: var(--surface-2);
+app/pages/index.vue:896:  color: var(--accent);
+app/pages/index.vue:903:  color: var(--text-strong);
+app/pages/index.vue:910:  color: var(--accent);
+app/pages/index.vue:916:  color: var(--text-muted);
+app/pages/index.vue:940:  color: var(--text-faint);
+app/pages/index.vue:955:  color: var(--text-strong);
+app/pages/index.vue:960:  color: var(--accent);
+app/pages/index.vue:966:  color: var(--accent);
+app/pages/index.vue:976:  color: var(--text-body);
+app/pages/index.vue:984:  color: var(--text-muted);
+app/pages/index.vue:1003:  background: color-mix(in srgb, var(--surface-1) 85%, transparent);
+app/pages/index.vue:1004:  border: 1px solid var(--border-subtle);
+app/pages/index.vue:1013:    border-color: var(--border-strong);
+app/pages/index.vue:1025:    color: var(--text-strong);
+app/pages/index.vue:1032:    color: var(--text-muted);
+app/pages/index.vue:1056:  color: var(--text-muted);
+app/pages/index.vue:1062:    color: var(--accent);
+app/pages/index.vue:1099:      color: var(--accent);
+app/pages/index.vue:1103:      color: var(--accent);
+app/pages/index.vue:1113:  border-bottom: 1px solid var(--border-subtle);
+app/pages/index.vue:1133:  color: var(--text-strong);
+app/pages/index.vue:1140:  color: var(--text-muted);
+app/pages/index.vue:1149:  border-top: 1px dashed var(--border-subtle);
+app/pages/index.vue:1152:  color: var(--text-faint);
+app/pages/index.vue:1158:  color: var(--text-faint);
+app/pages/index.vue:1174:  color: var(--accent);
+app/pages/index.vue:1182:  color: var(--text-muted);
+app/pages/index.vue:1192:    radial-gradient(ellipse 80% 120% at 50% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+app/pages/index.vue:1193:    color-mix(in srgb, var(--surface-1) 85%, transparent);
+app/pages/index.vue:1194:  border: 1px solid var(--border-subtle);
+app/pages/index.vue:1212:  color: var(--text-strong);
+app/pages/index.vue:1217:  color: var(--accent);
+app/pages/index.vue:1226:  color: var(--text-muted);
+app/components/home/HomeAtmosComponent.vue:378:  background-color: var(--surface-0);
+app/components/home/HomeAtmosComponent.vue:382:  background-color: var(--surface-0);
+app/components/home/HomeAtmosComponent.vue:384:    radial-gradient(at 80% 30%, var(--accent-soft) 0, transparent 62%),
+app/components/home/HomeAtmosComponent.vue:385:    radial-gradient(at 21% 68%, var(--accent-2-soft) 0, transparent 62%);
+app/components/home/HomeAtmosComponent.vue:404:  background-image: radial-gradient(color-mix(in srgb, var(--ink-1) 8%, transparent) 1px, transparent 1px);
+app/components/home/HomeAtmosComponent.vue:406:  mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, var(--surface-0) 30%, transparent 78%);
+app/components/home/HomeAtmosComponent.vue:413:    linear-gradient(180deg, color-mix(in srgb, var(--surface-0) 70%, transparent) 0%, transparent 130px),
+
+exec
+/bin/zsh -lc "rg -n -C 2 'accent-(2|hover|active|ring|text)|var\\(--(surface|ink|line)-' app/components/terminal app/components/home app/pages/contact/index.vue app/pages/blog/'[...slug].vue' app/assets/scss/abstract/_root.scss" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+app/pages/blog/[...slug].vue-403-  border: 1px solid var(--border-subtle);
+app/pages/blog/[...slug].vue-404-  border-radius: var(--radius-lg);
+app/pages/blog/[...slug].vue:405:  background: var(--surface-1);
+app/pages/blog/[...slug].vue-406-}
+app/pages/blog/[...slug].vue-407-
+--
+app/pages/contact/index.vue-525-.contact__info .contact__term {
+app/pages/contact/index.vue-526-  background: var(--bg-terminal);
+app/pages/contact/index.vue:527:  border-color: var(--accent-2-soft);
+app/pages/contact/index.vue-528-}
+app/pages/contact/index.vue-529-
+--
+app/assets/scss/abstract/_root.scss-69-  //  Alias sémantiques — à préférer dans les composants
+app/assets/scss/abstract/_root.scss-70-  // ============================================================
+app/assets/scss/abstract/_root.scss:71:  --bg-page: var(--surface-0);
+app/assets/scss/abstract/_root.scss:72:  --bg-sunken: var(--surface-1);
+app/assets/scss/abstract/_root.scss:73:  --bg-card: var(--surface-2);
+app/assets/scss/abstract/_root.scss:74:  --bg-elevated: var(--surface-3);
+app/assets/scss/abstract/_root.scss:75:  --bg-input: var(--surface-4);
+app/assets/scss/abstract/_root.scss-76-  --bg-terminal: var(--aubergine-deep);
+app/assets/scss/abstract/_root.scss:77:  --text-strong: var(--ink-1);
+app/assets/scss/abstract/_root.scss:78:  --text-body: var(--ink-2);
+app/assets/scss/abstract/_root.scss:79:  --text-muted: var(--ink-3);
+app/assets/scss/abstract/_root.scss:80:  --text-faint: var(--ink-4);
+app/assets/scss/abstract/_root.scss:81:  --border-subtle: var(--line-subtle);
+app/assets/scss/abstract/_root.scss-82-  --border-default: var(--line);
+app/assets/scss/abstract/_root.scss:83:  --border-strong: var(--line-strong);
+app/assets/scss/abstract/_root.scss-84-  --accent: var(--orange-500);
+app/assets/scss/abstract/_root.scss:85:  --accent-hover: hsl(24deg 100% 60%);
+app/assets/scss/abstract/_root.scss:86:  --accent-active: var(--orange-600);
+app/assets/scss/abstract/_root.scss:87:  --accent-text: var(--ink-on-accent);
+app/assets/scss/abstract/_root.scss-88-  --accent-soft: hsl(24deg 94% 53% / 13%); // fond teinté
+app/assets/scss/abstract/_root.scss:89:  --accent-ring: hsl(24deg 94% 53% / 45%);
+app/assets/scss/abstract/_root.scss:90:  --accent-2: var(--aubergine-light); // accent secondaire
+app/assets/scss/abstract/_root.scss:91:  --accent-2-soft: hsl(319deg 40% 30% / 28%);
+app/assets/scss/abstract/_root.scss-92-  --border-terminal: hsl(319deg 40% 30% / 40%); // bordure fenêtre terminal (TerminalWindow.jsx)
+app/assets/scss/abstract/_root.scss-93-  --link: var(--term-blue);
+--
+app/assets/scss/abstract/_root.scss-189-
+app/assets/scss/abstract/_root.scss-190-  // Anneau de focus
+app/assets/scss/abstract/_root.scss:191:  --ring-accent: 0 0 0 3px var(--accent-ring);
+app/assets/scss/abstract/_root.scss-192-
+app/assets/scss/abstract/_root.scss-193-  // ============================================================
+--
+app/assets/scss/abstract/_root.scss-227-
+app/assets/scss/abstract/_root.scss-228-  // ---- Alias sémantiques ----
+app/assets/scss/abstract/_root.scss:229:  --bg-page: var(--surface-0);
+app/assets/scss/abstract/_root.scss:230:  --bg-sunken: var(--surface-1);
+app/assets/scss/abstract/_root.scss:231:  --bg-card: var(--surface-2);
+app/assets/scss/abstract/_root.scss:232:  --bg-elevated: var(--surface-3);
+app/assets/scss/abstract/_root.scss:233:  --bg-input: var(--surface-4);
+app/assets/scss/abstract/_root.scss:234:  --text-strong: var(--ink-1);
+app/assets/scss/abstract/_root.scss:235:  --text-body: var(--ink-2);
+app/assets/scss/abstract/_root.scss:236:  --text-muted: var(--ink-3);
+app/assets/scss/abstract/_root.scss:237:  --text-faint: var(--ink-4);
+app/assets/scss/abstract/_root.scss:238:  --accent-text: var(--ink-on-accent);
+app/assets/scss/abstract/_root.scss:239:  --border-subtle: var(--line-subtle);
+app/assets/scss/abstract/_root.scss-240-  --border-default: var(--line);
+app/assets/scss/abstract/_root.scss:241:  --border-strong: var(--line-strong);
+app/assets/scss/abstract/_root.scss-242-
+app/assets/scss/abstract/_root.scss-243-  // ---- Accentuation & interactions ----
+app/assets/scss/abstract/_root.scss-244-  --accent: hsl(24deg 95% 44%);
+app/assets/scss/abstract/_root.scss:245:  --accent-hover: hsl(24deg 95% 48%);
+app/assets/scss/abstract/_root.scss:246:  --accent-active: hsl(24deg 95% 40%);
+app/assets/scss/abstract/_root.scss-247-  --accent-soft: hsl(24deg 94% 53% / 10%);
+app/assets/scss/abstract/_root.scss:248:  --accent-ring: hsl(24deg 94% 53% / 35%);
+app/assets/scss/abstract/_root.scss:249:  --accent-2: hsl(319deg 33% 40%);
+app/assets/scss/abstract/_root.scss:250:  --accent-2-soft: hsl(319deg 40% 40% / 15%);
+app/assets/scss/abstract/_root.scss-251-  --selection: hsl(24deg 94% 53% / 22%);
+app/assets/scss/abstract/_root.scss-252-  --overlay: hsl(320deg 30% 10% / 40%);
+--
+app/assets/scss/abstract/_root.scss-279-  --line: hsl(315deg 12% 25%);
+app/assets/scss/abstract/_root.scss-280-  --line-strong: hsl(314deg 11% 34%);
+app/assets/scss/abstract/_root.scss:281:  --bg-page: var(--surface-0);
+app/assets/scss/abstract/_root.scss:282:  --bg-sunken: var(--surface-1);
+app/assets/scss/abstract/_root.scss:283:  --bg-card: var(--surface-2);
+app/assets/scss/abstract/_root.scss:284:  --bg-elevated: var(--surface-3);
+app/assets/scss/abstract/_root.scss:285:  --bg-input: var(--surface-4);
+app/assets/scss/abstract/_root.scss-286-  --bg-terminal: var(--aubergine-deep);
+app/assets/scss/abstract/_root.scss-287-  --text-strong: hsl(30deg 18% 95%);
+--
+app/components/home/HomeAtmosComponent.vue-376-  overflow: hidden;
+app/components/home/HomeAtmosComponent.vue-377-  pointer-events: none;
+app/components/home/HomeAtmosComponent.vue:378:  background-color: var(--surface-0);
+app/components/home/HomeAtmosComponent.vue-379-}
+app/components/home/HomeAtmosComponent.vue-380-
+app/components/home/HomeAtmosComponent.vue-381-.atmos--fallback {
+app/components/home/HomeAtmosComponent.vue:382:  background-color: var(--surface-0);
+app/components/home/HomeAtmosComponent.vue-383-  background-image:
+app/components/home/HomeAtmosComponent.vue-384-    radial-gradient(at 80% 30%, var(--accent-soft) 0, transparent 62%),
+app/components/home/HomeAtmosComponent.vue:385:    radial-gradient(at 21% 68%, var(--accent-2-soft) 0, transparent 62%);
+app/components/home/HomeAtmosComponent.vue-386-}
+app/components/home/HomeAtmosComponent.vue-387-
+--
+app/components/home/HomeAtmosComponent.vue-402-  position: absolute;
+app/components/home/HomeAtmosComponent.vue-403-  inset: 0;
+app/components/home/HomeAtmosComponent.vue:404:  background-image: radial-gradient(color-mix(in srgb, var(--ink-1) 8%, transparent) 1px, transparent 1px);
+app/components/home/HomeAtmosComponent.vue-405-  background-size: 34px 34px;
+app/components/home/HomeAtmosComponent.vue:406:  mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, var(--surface-0) 30%, transparent 78%);
+app/components/home/HomeAtmosComponent.vue-407-}
+app/components/home/HomeAtmosComponent.vue-408-
+--
+app/components/home/HomeAtmosComponent.vue-411-  inset: 0;
+app/components/home/HomeAtmosComponent.vue-412-  background:
+app/components/home/HomeAtmosComponent.vue:413:    linear-gradient(180deg, color-mix(in srgb, var(--surface-0) 70%, transparent) 0%, transparent 130px),
+app/components/home/HomeAtmosComponent.vue:414:    radial-gradient(ellipse 120% 88% at 50% 12%, transparent 30%, var(--surface-0) 90%);
+app/components/home/HomeAtmosComponent.vue-415-}
+app/components/home/HomeAtmosComponent.vue-416-
+--
+app/components/home/HomeBootOverlay.vue-180-  justify-content: center;
+app/components/home/HomeBootOverlay.vue-181-  cursor: pointer;
+app/components/home/HomeBootOverlay.vue:182:  background: var(--surface-0);
+app/components/home/HomeBootOverlay.vue-183-  transition:
+app/components/home/HomeBootOverlay.vue-184-    opacity var(--dur-slow) var(--ease-out),
+--
+app/components/home/HomeBootOverlay.vue-228-  margin-top: var(--space-5);
+app/components/home/HomeBootOverlay.vue-229-  overflow: hidden;
+app/components/home/HomeBootOverlay.vue:230:  background: var(--surface-3);
+app/components/home/HomeBootOverlay.vue-231-  border-radius: var(--radius-xs);
+app/components/home/HomeBootOverlay.vue-232-
+--
+app/components/home/HomeHeroTerminal.vue-262-  min-height: 300px;
+app/components/home/HomeHeroTerminal.vue-263-  overflow: hidden;
+app/components/home/HomeHeroTerminal.vue:264:  border: 1px solid var(--accent-2-soft);
+app/components/home/HomeHeroTerminal.vue-265-  border-radius: var(--radius-sm);
+app/components/home/HomeHeroTerminal.vue-266-  box-shadow: var(--glow-terminal);
+--
+app/components/home/HomeHeroTerminal.vue-321-  font-size: var(--fs-sm);
+app/components/home/HomeHeroTerminal.vue-322-  line-height: var(--lh-snug);
+app/components/home/HomeHeroTerminal.vue:323:  color: var(--ink-1);
+app/components/home/HomeHeroTerminal.vue-324-  background: var(--bg-terminal);
+app/components/home/HomeHeroTerminal.vue-325-  overflow-wrap: break-word;
+--
+app/components/home/HomeHeroTerminal.vue-342-
+app/components/home/HomeHeroTerminal.vue-343-.hero-term__out--ink {
+app/components/home/HomeHeroTerminal.vue:344:  color: var(--ink-1);
+app/components/home/HomeHeroTerminal.vue-345-}
+app/components/home/HomeHeroTerminal.vue-346-
+--
+app/components/home/HomeHeroTerminal.vue-381-
+app/components/home/HomeHeroTerminal.vue-382-.prm__sep {
+app/components/home/HomeHeroTerminal.vue:383:  color: var(--ink-1);
+app/components/home/HomeHeroTerminal.vue-384-}
+app/components/home/HomeHeroTerminal.vue-385-
+--
+app/components/home/HomeHeroTerminal.vue-390-
+app/components/home/HomeHeroTerminal.vue-391-.prm__cmd {
+app/components/home/HomeHeroTerminal.vue:392:  color: var(--ink-1);
+app/components/home/HomeHeroTerminal.vue-393-}
+app/components/home/HomeHeroTerminal.vue-394-
+--
+app/components/terminal/TerminalComponent.vue-337-  resize: both;
+app/components/terminal/TerminalComponent.vue-338-  font-family: var(--font-mono);
+app/components/terminal/TerminalComponent.vue:339:  color: var(--ink-1);
+app/components/terminal/TerminalComponent.vue-340-  border: 1px solid var(--border-terminal);
+app/components/terminal/TerminalComponent.vue-341-  border-radius: var(--radius-sm);
+--
+app/components/terminal/TerminalComponent.vue-443-    // `.git-prompt`) — fidèle à `.ds-prompt__sep` du DS.
+app/components/terminal/TerminalComponent.vue-444-    .git-prompt-separator {
+app/components/terminal/TerminalComponent.vue:445:      color: var(--ink-1);
+app/components/terminal/TerminalComponent.vue-446-      font-weight: var(--fw-regular);
+app/components/terminal/TerminalComponent.vue-447-    }
+
+exec
+/bin/zsh -lc "nl -ba app/assets/scss/abstract/_root.scss | sed -n '260,310p'; nl -ba app/components/home/HomeAtmosComponent.vue | sed -n '370,405p'; nl -ba app/components/HeaderComponent.vue | sed -n '286,308p'; nl -ba app/components/FooterComponent.vue | sed -n '100,120p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   260	
+   261	/* stylelint-disable selector-class-pattern -- sanctuarisation classes terminal et blocs code */
+   262	// Sanctuarisation absolue du terminal sombre
+   263	.home-hero-terminal,
+   264	.hero-term,
+   265	.terminal-window,
+   266	.terminal,
+   267	.contact__term,
+   268	pre {
+   269	  --surface-0: hsl(320deg 30% 6%);
+   270	  --surface-1: hsl(319deg 22% 9%);
+   271	  --surface-2: hsl(318deg 18% 12%);
+   272	  --surface-3: hsl(317deg 16% 16%);
+   273	  --surface-4: hsl(316deg 14% 21%);
+   274	  --ink-1: hsl(30deg 18% 95%);
+   275	  --ink-2: hsl(28deg 10% 74%);
+   276	  --ink-3: hsl(25deg 7% 54%);
+   277	  --ink-4: hsl(22deg 6% 40%);
+   278	  --line-subtle: hsl(316deg 14% 18%);
+   279	  --line: hsl(315deg 12% 25%);
+   280	  --line-strong: hsl(314deg 11% 34%);
+   281	  --bg-page: var(--surface-0);
+   282	  --bg-sunken: var(--surface-1);
+   283	  --bg-card: var(--surface-2);
+   284	  --bg-elevated: var(--surface-3);
+   285	  --bg-input: var(--surface-4);
+   286	  --bg-terminal: var(--aubergine-deep);
+   287	  --text-strong: hsl(30deg 18% 95%);
+   288	  --text-body: hsl(28deg 10% 74%);
+   289	  --text-muted: hsl(25deg 7% 54%);
+   290	  --text-faint: hsl(22deg 6% 40%);
+   291	  --border-subtle: hsl(316deg 14% 18%);
+   292	  --border-default: hsl(315deg 12% 25%);
+   293	  --border-terminal: hsl(319deg 40% 30% / 40%);
+   294	  --accent: var(--orange-500);
+   295	  --selection: hsl(24deg 94% 53% / 30%);
+   296	}
+   297	/* stylelint-enable selector-class-pattern */
+   298	
+   299	::selection {
+   300	  background: var(--selection);
+   301	}
+   302	
+   303	// Keyframes globaux (hors :root). Seul caret-blink est une boucle UI (caret terminal).
+   304	@keyframes caret-blink {
+   305	  0%,
+   306	  49% {
+   307	    opacity: 1;
+   308	  }
+   309	
+   310	  50%,
+   370	<style lang="scss" scoped>
+   371	/* stylelint-disable selector-class-pattern */
+   372	.atmos {
+   373	  position: fixed;
+   374	  inset: 0;
+   375	  z-index: 0;
+   376	  overflow: hidden;
+   377	  pointer-events: none;
+   378	  background-color: var(--surface-0);
+   379	}
+   380	
+   381	.atmos--fallback {
+   382	  background-color: var(--surface-0);
+   383	  background-image:
+   384	    radial-gradient(at 80% 30%, var(--accent-soft) 0, transparent 62%),
+   385	    radial-gradient(at 21% 68%, var(--accent-2-soft) 0, transparent 62%);
+   386	}
+   387	
+   388	.atmos__canvas {
+   389	  position: absolute;
+   390	  inset: 0;
+   391	  width: 100%;
+   392	  height: 100%;
+   393	  display: block;
+   394	  opacity: 0.52;
+   395	}
+   396	
+   397	:global([data-theme="light"]) .atmos__canvas {
+   398	  opacity: 0.18;
+   399	}
+   400	
+   401	.grid-dots {
+   402	  position: absolute;
+   403	  inset: 0;
+   404	  background-image: radial-gradient(color-mix(in srgb, var(--ink-1) 8%, transparent) 1px, transparent 1px);
+   405	  background-size: 34px 34px;
+   286	  align-items: center;
+   287	  gap: var(--space-3);
+   288	  text-decoration: none;
+   289	  cursor: pointer;
+   290	
+   291	  .hdr__logo {
+   292	    display: block;
+   293	    width: 24px;
+   294	    height: 24px;
+   295	    object-fit: contain;
+   296	    filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--surface-0) 60%, transparent));
+   297	    transition:
+   298	      transform var(--dur-base) var(--ease-standard),
+   299	      filter var(--dur-base) var(--ease-standard);
+   300	
+   301	    :global([data-theme="light"]) & {
+   302	      filter: invert(1) drop-shadow(0 2px 6px color-mix(in srgb, var(--surface-0) 60%, transparent));
+   303	    }
+   304	  }
+   305	
+   306	  .hdr__brand-text {
+   307	    transition: transform var(--dur-fast) var(--ease-standard);
+   308	  }
+   100	  align-items: center;
+   101	  gap: var(--space-3);
+   102	  margin-bottom: var(--space-3);
+   103	  text-decoration: none;
+   104	
+   105	  .ftr__logo {
+   106	    display: block;
+   107	    width: 22px;
+   108	    height: 22px;
+   109	    object-fit: contain;
+   110	    filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--surface-0) 60%, transparent));
+   111	
+   112	    :global([data-theme="light"]) & {
+   113	      filter: invert(1) drop-shadow(0 2px 4px color-mix(in srgb, var(--surface-0) 60%, transparent));
+   114	    }
+   115	  }
+   116	
+   117	  b {
+   118	    font-family: var(--font-mono);
+   119	    font-size: var(--fs-md);
+   120	    font-weight: var(--fw-bold);
+
+codex
+[{"location":"app/assets/scss/abstract/_root.scss:261-296","trigger_condition":"Light theme renders a terminal using accent-2-soft for its border","guard_snippet":"\"--accent-2-soft: hsl(319deg 40% 30% / 28%);\"","potential_consequence":"Terminal borders retain the light-theme purple value instead of the dark terminal palette"}]
+tokens used
+33 603
+[{"location":"app/assets/scss/abstract/_root.scss:261-296","trigger_condition":"Light theme renders a terminal using accent-2-soft for its border","guard_snippet":"\"--accent-2-soft: hsl(319deg 40% 30% / 28%);\"","potential_consequence":"Terminal borders retain the light-theme purple value instead of the dark terminal palette"}]

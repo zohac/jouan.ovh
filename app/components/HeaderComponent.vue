@@ -3,7 +3,14 @@
     <div class="hdr__progress" :style="{ width: `${scrollProgress}%` }" aria-hidden="true" />
     <div class="hdr__in">
       <NuxtLink to="/" class="hdr__brand" @click="onBrandClick">
-        <NuxtImg src="/images/logo_white.png" alt="" class="hdr__logo" width="24" height="24" />
+        <NuxtImg src="/images/logo_white.png" alt="" class="hdr__logo hdr__logo--dark" width="24" height="24" />
+        <NuxtImg
+          src="/images/logo_black_256x256.png"
+          alt=""
+          class="hdr__logo hdr__logo--light"
+          width="24"
+          height="24"
+        />
         <span class="hdr__brand-text"><b>jouan</b><span class="dim">.ovh</span></span>
       </NuxtLink>
 
