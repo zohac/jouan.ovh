@@ -1,6 +1,10 @@
+---
+baseline_commit: 7162f14595e42399d234c534fd88d78a7360cbb8
+---
+
 # Story 15.2: Page Services — Restructuration des 3 Offres de Build sur Devis & Relégation du Blueprint
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -93,38 +97,44 @@ so that je puisse identifier le format adapté à mon organisation (FR50, CAP-2)
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Mise à jour du Hero H1 et de l'introduction dans `app/pages/services.vue` (AC: 1)
-  - [ ] Mettre à jour le titre `h1.services__title` : `Le bon niveau de système pour le bon problème.`
-  - [ ] Mettre à jour le paragraphe `p.prose.services__intro` avec le texte officiel V1.1 en 3 phrases.
-  - [ ] Vérifier la typographie, les marges et la lisibilité sur mobile et desktop.
+- [x] Tâche 1 — Mise à jour du Hero H1 et de l'introduction dans `app/pages/services.vue` (AC: 1)
+  - [x] Mettre à jour le titre `h1.services__title` : `Le bon niveau de système pour le bon problème.`
+  - [x] Mettre à jour le paragraphe `p.prose.services__intro` avec le texte officiel V1.1 en 3 phrases.
+  - [x] Vérifier la typographie, les marges et la lisibilité sur mobile et desktop.
 
-- [ ] Tâche 2 — Restructuration des données et du modèle `offers` (AC: 2, 3)
-  - [ ] Adapter l'interface TypeScript `Offer` dans `<script setup>` pour supporter `badgeText?: string` ou `badgeTone?: "accent" | "neutral"`.
-  - [ ] Remplacer les 3 anciennes offres (`sprint`, `blueprint`, `care`) par les 3 offres de build :
+- [x] Tâche 2 — Restructuration des données et du modèle `offers` (AC: 2, 3)
+  - [x] Adapter l'interface TypeScript `Offer` dans `<script setup>` pour supporter `badge: string` et `badgeTone?: "accent" | "neutral"`.
+  - [x] Remplacer les 3 anciennes offres (`sprint`, `blueprint`, `care`) par les 3 offres de build :
     - `automatisation` (id: `automatisation`, icon: `zap`, badge: `BESOIN PRÉCIS`, price: `Sur devis`)
     - `workflow` (id: `workflow`, icon: `layers`, badge: `OFFRE CŒUR`, featured: true, price: `Sur devis`)
     - `sur-mesure` (id: `sur-mesure`, icon: `terminal`, badge: `PROJET COMPLEXE`, price: `Sur devis`)
-  - [ ] Renseigner pour chacune les 5 points de livrables précis.
-  - [ ] Configurer les libellés de CTA et `:aria-label` accessibles (`Décrire mon besoin`, `Identifier un workflow`, `Parler du projet`).
+  - [x] Renseigner pour chacune les 5 points de livrables précis.
+  - [x] Configurer les libellés de CTA et `:aria-label` accessibles (`Décrire mon besoin`, `Identifier un workflow`, `Parler du projet`).
 
-- [ ] Tâche 3 — Template, ancres et intégration visuelle des badges (AC: 2, 4)
-  - [ ] Ajouter l'attribut `:id="offer.id"` sur le conteneur de carte `<li>` ou `<ZCard>` avec la classe de scroll margin (`scroll-margin-top`).
-  - [ ] Afficher `<ZBadge>` pour chaque carte selon son niveau d'intervention (`BESOIN PRÉCIS`, `OFFRE CŒUR`, `PROJET COMPLEXE`).
-  - [ ] S'assurer que le bas de carte (`.offer__footer`) aligne proprement le prix `Sur devis` et le bouton `<ZButton>`.
-  - [ ] Mettre à jour les 3 liens contextuels de `app/pages/index.vue` pour cibler `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`.
+- [x] Tâche 3 — Template, ancres et intégration visuelle des badges (AC: 2, 4)
+  - [x] Ajouter l'attribut `:id="offer.id"` sur le conteneur `<ZCard>` avec la classe de scroll margin (`scroll-margin-top: var(--space-16)`).
+  - [x] Afficher `<ZBadge>` pour chaque carte selon son niveau d'intervention (`BESOIN PRÉCIS`, `OFFRE CŒUR`, `PROJET COMPLEXE`).
+  - [x] S'assurer que le bas de carte (`.offer__footer`) aligne proprement le prix `Sur devis` et le bouton `<ZButton>`.
+  - [x] Mettre à jour les 3 liens contextuels de `app/pages/index.vue` pour cibler `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`.
 
-- [ ] Tâche 4 — Synchronisation SEO et données structurées Schema.org (AC: 5)
-  - [ ] Aligner `servicesJsonLd` sur les 3 nouvelles offres de build avec `offers.description = "Sur devis"`.
-  - [ ] Mettre à jour la balise meta `description` dans `usePageSeo` pour supprimer toute référence à l'ancien catalogue tarifaire (3 500 € HT, Blueprint en build).
+- [x] Tâche 4 — Synchronisation SEO et données structurées Schema.org (AC: 5)
+  - [x] Aligner `servicesJsonLd` sur les 3 nouvelles offres de build avec `offers.description = "Sur devis"`.
+  - [x] Mettre à jour la balise meta `description` dans `usePageSeo` pour supprimer toute référence à l'ancien catalogue tarifaire (3 500 € HT, Blueprint en build).
 
-- [ ] Tâche 5 — Validation a11y, responsive et Gate Docker Nitro SSG (AC: 5)
-  - [ ] Tester la navigation clavier (`Tab`) et le focus visible sur les boutons des 3 cartes.
-  - [ ] Vérifier le rendu sur mobile (< 900px) et la parité visuelle sur les thèmes clair et sombre.
-  - [ ] Exécuter la commande de validation Docker :
+- [x] Tâche 5 — Validation a11y, responsive et Gate Docker Nitro SSG (AC: 5)
+  - [x] Tester la navigation clavier (`Tab`) et le focus visible sur les boutons des 3 cartes.
+  - [x] Vérifier le rendu sur mobile (< 900px) et la parité visuelle sur les thèmes clair et sombre.
+  - [x] Exécuter la commande de validation Docker :
     ```sh
     docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
     ```
-  - [ ] Vérifier que les 28 routes statiques pré-rendues compilent sans erreur ni avertissement.
+  - [x] Vérifier que les 28 routes statiques pré-rendues compilent sans erreur ni avertissement.
+
+### Review Findings
+
+- [x] [Review][Patch] Nettoyer le commentaire de script désignant la page comme « catalogue d'offres IA packagées » [`app/pages/services.vue:83`]
+- [x] [Review][Defer] Nuancer la mention du Blueprint dans l'étape Cadrage pour refléter l'option de cadrage approfondi [`app/pages/services.vue:195`] — deferred, pre-existing (prévu dans Story 15.3 dédiée au process)
+- [x] [Review][Defer] Enrichir les entités Service de servicesJsonLd avec leur URL d'ancrage respective [`app/pages/services.vue:224`] — deferred, pre-existing
 
 ## Dev Notes
 
@@ -239,11 +249,28 @@ Ajouter sur l'élément cible :
 ## Dev Agent Record
 
 ### Agent Model Used
+- Gemini 3.7 Flash
 
 ### Debug Log References
+- Docker gate validation: `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 error (ESLint + Stylelint + vue-tsc + 28 Nitro routes SSG).
+- Local dev server curl check: `http://localhost:3000/services` -> 200 OK.
+- Verified generated HTML `.output/public/services/index.html` (badges, H1, intro, prices, JSON-LD Schema.org ItemList).
+- Verified generated HTML `.output/public/index.html` (direct anchor links `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`).
 
 ### Completion Notes List
+- ✅ **Hero & Introduction V1.1 :** H1 mis à jour vers *« Le bon niveau de système pour le bon problème. »*, texte d'introduction axé sur le diagnostic workflow avant la technologie.
+- ✅ **Restructuration des 3 offres de build :** `automatisation` (BESOIN PRÉCIS, Sur devis), `workflow` (OFFRE CŒUR, Sur devis, featured: true), `sur-mesure` (PROJET COMPLEXE, Sur devis). Suppression intégrale du prix d'entrée « À partir de 3 500 € HT ».
+- ✅ **Badges de statut & Accessibilité :** Utilisation de `<ZBadge>` avec `tone="accent"` pour l'offre cœur et `tone="neutral"` pour les autres ; boutons `<ZButton>` avec labels et `aria-label` contextuels (`/contact`).
+- ✅ **Ancres HTML & Scroll Margin :** Identifiants stables (`id="automatisation"`, `id="workflow"`, `id="sur-mesure"`) et `scroll-margin-top: var(--space-16)` sur `.offer`.
+- ✅ **Résolution Dette Différée 15.1 :** Mise à jour de `app/pages/index.vue` pour router directement les 3 liens contextuels de la vitrine vers leurs ancres de build respectives.
+- ✅ **SEO & Schema.org :** Synchronisation de `servicesJsonLd` (WebPage / ItemList / Service) et de `usePageSeo` sans mentions tarifaires chiffrées obsolètes.
 
 ### File List
+- `app/pages/services.vue` (modifié)
+- `app/pages/index.vue` (modifié)
+- `docs/implementation-artifacts/deferred-work.md` (modifié)
+- `docs/implementation-artifacts/sprint-status.yaml` (modifié)
+- `docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md` (modifié)
 
 ### Change Log
+- 2026-09-18: Implémentation complète de la Story 15.2 (restructuration des 3 offres de build sur devis, Hero V1.1, ancres de navigation, synchronisation SEO/JSON-LD et résolution de la dette différée de liens d'accueil).

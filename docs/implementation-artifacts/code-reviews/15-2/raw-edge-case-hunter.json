@@ -1,0 +1,997 @@
+Reading prompt from stdin...
+OpenAI Codex v0.145.0
+--------
+workdir: /Users/simon/dev/jouan.ovh
+model: gpt-5.6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0b621-0861-73b0-8d06-ad77af677497
+--------
+user
+# Edge Case Hunter Prompt — Story 15.2
+
+Invoke the `bmad-review-edge-case-hunter` skill on this diff:
+
+Diff file: `docs/implementation-artifacts/code-reviews/15-2/full.diff`
+
+Goal: Walk every branching path and boundary condition in content, report only unhandled edge cases.
+Method: Exhaustive path enumeration — mechanically walk every code path and identify what can break.
+Output format: Output findings as a JSON array of objects with fields:
+- `location`: file and line reference
+- `trigger_condition`: exact condition triggering the edge case
+- `guard_snippet`: suggested code guard
+- `potential_consequence`: what happens when triggered
+Output raw JSON only.
+
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’m using `bmad-review-edge-case-hunter` to mechanically enumerate the changed paths and return only unhandled edge cases as raw JSON.
+exec
+/bin/zsh -lc 'cat /Users/simon/dev/jouan.ovh/.agents/skills/bmad-review-edge-case-hunter/SKILL.md' in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+---
+name: bmad-review-edge-case-hunter
+description: 'Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.'
+---
+
+# Edge Case Hunter Review
+
+**Goal:** You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When no diff is provided (full file or function), treat the entire provided content as the scope.
+Ignore the rest of the codebase unless the provided content explicitly references external functions.
+
+**Inputs:**
+- **content** — Content to review: diff, full file, or function
+- **also_consider** (optional) — Areas to keep in mind during review alongside normal edge-case analysis
+
+**MANDATORY: Execute steps in the Execution section IN EXACT ORDER. DO NOT skip steps or change the sequence. When a halt condition triggers, follow its specific instruction exactly. Each action within a step is a REQUIRED action to complete that step.**
+
+**Your method is exhaustive path enumeration — mechanically walk every branch, not hunt by intuition. Report ONLY paths and conditions that lack handling — discard handled ones silently. Do NOT editorialize or add filler — findings only.**
+
+
+## EXECUTION
+
+### Step 1: Receive Content
+
+- Load the content to review strictly from provided input
+- If content is empty, or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+- Identify content type (diff, full file, or function) to determine scope rules
+
+### Step 2: Exhaustive Path Analysis
+
+**Walk every branching path and boundary condition within scope — report only unhandled ones.**
+
+- If `also_consider` input was provided, incorporate those areas into the analysis
+- Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- For each path: determine whether the content handles it
+- Collect only the unhandled paths as findings — discard handled ones silently
+
+### Step 3: Validate Completeness
+
+- Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+- Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+### Step 4: Present Findings
+
+Output findings as a JSON array following the Output Format specification exactly.
+
+
+## OUTPUT FORMAT
+
+Return ONLY a valid JSON array of objects. Each object must contain exactly these four fields and nothing else:
+
+```json
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+```
+
+No extra text, no explanations, no markdown wrapping. An empty array `[]` is valid when no unhandled paths are found.
+
+
+## HALT CONDITIONS
+
+- If content is empty or cannot be decoded as text, return `[{"location":"N/A","trigger_condition":"Input empty or undecodable","guard_snippet":"Provide valid content to review","potential_consequence":"Review skipped — no analysis performed"}]` and stop
+
+exec
+/bin/zsh -lc "sed -n '1,240p' docs/implementation-artifacts/code-reviews/15-2/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+diff --git a/app/pages/index.vue b/app/pages/index.vue
+index d8ed24f..d3c20e2 100644
+--- a/app/pages/index.vue
++++ b/app/pages/index.vue
+@@ -78,7 +78,7 @@
+                 </li>
+               </ul>
+               <NuxtLink
+-                to="/services"
++                :to="service.to"
+                 class="offer__more"
+                 :aria-label="`${service.actionText.replace(' →', '')} - ${service.title}`"
+               >
+@@ -348,6 +348,7 @@ interface HomeServiceOffer {
+   points: string[];
+   tags: string[];
+   actionText: string;
++  to: string;
+   featured: boolean;
+ }
+ 
+@@ -358,7 +359,7 @@ interface ProductionPillar {
+   desc: string;
+ }
+ 
+-// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2).
++// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2 & Story 15.2 / AC-4).
+ const services: HomeServiceOffer[] = [
+   {
+     id: "automation",
+@@ -373,6 +374,7 @@ const services: HomeServiceOffer[] = [
+     ],
+     tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
+     actionText: "Voir les types d'automatisation →",
++    to: "/services#automatisation",
+     featured: false,
+   },
+   {
+@@ -388,6 +390,7 @@ const services: HomeServiceOffer[] = [
+     ],
+     tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
+     actionText: "Voir quand utiliser un agent →",
++    to: "/services#workflow",
+     featured: true,
+   },
+   {
+@@ -403,6 +406,7 @@ const services: HomeServiceOffer[] = [
+     ],
+     tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
+     actionText: "Découvrir les projets sur mesure →",
++    to: "/services#sur-mesure",
+     featured: false,
+   },
+ ];
+diff --git a/app/pages/services.vue b/app/pages/services.vue
+index f92678b..e7d4d91 100644
+--- a/app/pages/services.vue
++++ b/app/pages/services.vue
+@@ -1,20 +1,21 @@
+ <template>
+   <main class="services">
+-    <!-- En-tête + grille d'offres (story 12.5) -->
++    <!-- En-tête + grille d'offres (story 12.5 & story 15.2) -->
+     <section class="section">
+       <div class="container">
+         <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
+-        <h1 class="services__title">Des systèmes IA construits autour de vos vrais processus métier.</h1>
++        <h1 class="services__title">Le bon niveau de système pour le bon problème.</h1>
+         <p class="prose services__intro">
+-          Je pars d’un workflow existant, pas d’une technologie à placer. Du cadrage initial jusqu'au maintien en
+-          condition opérationnelle, l’IA intervient uniquement là où elle apporte réellement quelque chose.
++          Je pars d’un workflow existant, pas d’une technologie à placer. Certaines frictions se règlent avec une
++          automatisation simple. D’autres nécessitent plusieurs intégrations, de l’IA ou une véritable application
++          métier. Le rôle du diagnostic est justement de déterminer jusqu’où il est utile d’aller.
+         </p>
+ 
+         <ul class="grid-3">
+           <li v-for="offer in offers" :key="offer.id">
+-            <ZCard class="offer" :accent="offer.featured" :featured="offer.featured">
+-              <div v-if="offer.featured" class="offer__badge">
+-                <ZBadge tone="accent">Format cœur</ZBadge>
++            <ZCard :id="offer.id" class="offer" :accent="offer.featured" :featured="offer.featured">
++              <div v-if="offer.badge" class="offer__badge">
++                <ZBadge :tone="offer.badgeTone || 'neutral'">{{ offer.badge }}</ZBadge>
+               </div>
+               <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+               <h2 class="offer__title">{{ offer.title }}</h2>
+@@ -85,17 +86,19 @@ import { NuxtLink } from "#components";
+ import { SITE } from "~/data/site";
+ 
+ interface Offer {
+-  /** Clé v-for stable (indépendante du contenu affiché). */
++  /** Clé v-for et ancre HTML stable (indépendante du contenu affiché). */
+   id: string;
+   /** Nom d'icône dans le set ZIcon. */
+   icon: string;
++  badge: string;
++  badgeTone?: "accent" | "neutral";
+   title: string;
+   hook?: string;
+   desc: string;
+   points: string[];
+   price: string;
+   disclaimer?: string;
+-  /** Offre mise en avant : carte accent + glow + badge. */
++  /** Offre mise en avant : carte accent + glow. */
+   featured: boolean;
+   ctaText: string;
+   ctaAriaLabel: string;
+@@ -111,62 +114,67 @@ interface Step {
+   };
+ }
+ 
+-// Les 3 offres officielles V1 — 1re personne, vouvoiement, zéro emoji.
++// Les 3 offres de build officielles V1.1 — 1re personne, vouvoiement, zéro emoji.
+ const offers: Offer[] = [
+   {
+-    id: "sprint",
++    id: "automatisation",
+     icon: "zap",
+-    title: "AI Workflow Sprint",
+-    hook: "Un Sprint = un workflow prioritaire",
+-    desc: "Conception, intégration logicielle et mise en production d'un workflow métier complet avec IA ciblée et supervision humaine.",
++    badge: "BESOIN PRÉCIS",
++    badgeTone: "neutral",
++    title: "Automatisation ciblée",
++    hook: "Supprimer une tâche répétitive sans reconstruire tout le processus.",
++    desc: "Pour les besoins bien délimités : données, emails, documents, CRM, synchronisation, génération ou traitement automatisé.",
+     points: [
+-      "Diagnostic approfondi & cartographie avant/après",
+-      "Architecture système, connecteurs API & intégrations métier",
+-      "Modèles d'IA & prompt engineering avec sorties typées",
+-      "Tests automatisés sur cas réels & boucle de validation humaine",
+-      "Déploiement en production, documentation & mesure initiale",
++      "Cartographie rapide du flux & cadrage du besoin",
++      "Automatisation logicielle & connecteurs API / webhooks",
++      "Traitement de données ou IA ciblée si pertinent",
++      "Contrôle ou validation humaine si requis",
++      "Tests, mise en production & documentation courte",
+     ],
+-    price: "À partir de 3 500 € HT",
+-    featured: true,
+-    ctaText: "Lancer un Sprint",
+-    ctaAriaLabel: "Discuter d'un AI Workflow Sprint",
++    price: "Sur devis",
++    featured: false,
++    ctaText: "Décrire mon besoin",
++    ctaAriaLabel: "Décrire mon besoin pour une automatisation ciblée",
+   },
+   {
+-    id: "blueprint",
++    id: "workflow",
+     icon: "layers",
+-    title: "AI Workflow Blueprint",
+-    hook: "Cadrage préalable pour problématique complexe",
+-    desc: "Pour les projets nécessitant un audit préalable, une modélisation de données et des choix d'architecture avant de s'engager sur le build.",
++    badge: "OFFRE CŒUR",
++    badgeTone: "accent",
++    title: "Workflow métier",
++    hook: "Transformer un processus complet en système opérationnel.",
++    desc: "Pour les workflows qui traversent plusieurs étapes ou outils : cartographie, intégrations, automatisation, IA ciblée, contrôle humain, tests et mise en production.",
+     points: [
+-      "Audit du processus actuel, volumes & points de friction",
+-      "Matrice de décision : code déterministe vs IA vs humain",
+-      "Schéma d'architecture technique & flux de données cibles",
+-      "Analyse des risques, contraintes de sécurité & secrets",
+-      "Spécification des KPI de mesure & estimation budgétaire",
++      "Diagnostic approfondi & cartographie avant/après",
++      "Architecture système & connecteurs API métier",
++      "Modèles d'IA & prompt engineering avec sorties typées",
++      "Tests automatisés sur cas réels & boucle de validation humaine",
++      "Déploiement en production, documentation & mesure initiale",
+     ],
+-    price: "À partir de 750 € HT",
+-    featured: false,
+-    ctaText: "Demander un Blueprint",
+-    ctaAriaLabel: "Demander un AI Workflow Blueprint",
++    price: "Sur devis",
++    featured: true,
++    ctaText: "Identifier un workflow",
++    ctaAriaLabel: "Identifier un workflow métier",
+   },
+   {
+-    id: "care",
+-    icon: "bot",
+-    title: "AI Care",
+-    hook: "Maintien en condition opérationnelle",
+-    desc: "Maintien en condition opérationnelle d'une capacité intégrée au processus métier pour garantir disponibilité, précision et maîtrise des coûts.",
++    id: "sur-mesure",
++    icon: "terminal",
++    badge: "PROJET COMPLEXE",
++    badgeTone: "neutral",
++    title: "Système métier sur mesure",
++    hook: "Construire l'application lorsque l'automatisation devient un vrai produit.",
++    desc: "Interface, backend, base de données, authentification, intégrations, IA, rôles, supervision et déploiement.",
+     points: [
+-      "Supervision proactive, alertes & analyse des échecs",
+-      "Maintenance corrective & adaptation aux APIs tierces",
+-      "Suivi des coûts d'inférence & micro-ajustements de prompts",
+-      "Support technique réactif & veille sur les nouveaux modèles",
++      "Interface web ou desktop adaptée aux opérateurs",
++      "Backend, base de données relationnelle & gestion des rôles",
++      "Orchestration multi-modèles & pipelines de données",
++      "Intégration profonde au SI (CRM, ERP, APIs métier)",
++      "Supervision avancée, tests automatisés & déploiement souverain",
+     ],
+-    disclaimer:
+-      "Consommations tierces d'APIs et tokens (LLM, OCR, scraping...) refacturées au réel ou prises en charge directement par le client.",
+-    price: "À partir de 490 € HT / mois",
++    price: "Sur devis",
+     featured: false,
+-    ctaText: "Découvrir AI Care",
+-    ctaAriaLabel: "Découvrir l'accompagnement AI Care",
++    ctaText: "Parler du projet",
++    ctaAriaLabel: "Parler d'un projet de système métier sur mesure",
+   },
+ ];
+ 
+@@ -203,9 +211,9 @@ const siteUrl = useSiteUrl();
+ const servicesJsonLd = {
+   "@context": "https://schema.org",
+   "@type": "WebPage",
+-  name: "Services & Tarifs — Simon Jouan",
++  name: "Services & Systèmes IA — Simon Jouan",
+   description:
+-    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
++    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
+   url: `${siteUrl}/services`,
+   mainEntity: {
+     "@type": "ItemList",
+@@ -231,9 +239,9 @@ const servicesJsonLd = {
+ };
+ 
+ usePageSeo({
+-  title: "Services & Tarifs — Simon Jouan",
++  title: "Services & Systèmes IA — Simon Jouan",
+   description:
+-    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
++    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
+   path: "/services",
+
+exec
+/bin/zsh -lc "sed -n '241,520p' docs/implementation-artifacts/code-reviews/15-2/full.diff" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   image: "/images/portrait.jpeg",
+   type: "website",
+@@ -285,6 +293,7 @@ usePageSeo({
+   display: flex;
+   flex-direction: column;
+   width: 100%;
++  scroll-margin-top: var(--space-16);
+ }
+ 
+ .offer__badge {
+diff --git a/docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md b/docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md
+index 7f0dc1e..6a40a57 100644
+--- a/docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md
++++ b/docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md
+@@ -1,6 +1,10 @@
++---
++baseline_commit: 7162f14595e42399d234c534fd88d78a7360cbb8
++---
++
+ # Story 15.2: Page Services — Restructuration des 3 Offres de Build sur Devis & Relégation du Blueprint
+ 
+-Status: ready-for-dev
++Status: review
+ 
+ <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+ 
+@@ -93,38 +97,38 @@ so that je puisse identifier le format adapté à mon organisation (FR50, CAP-2)
+ 
+ ## Tasks / Subtasks
+ 
+-- [ ] Tâche 1 — Mise à jour du Hero H1 et de l'introduction dans `app/pages/services.vue` (AC: 1)
+-  - [ ] Mettre à jour le titre `h1.services__title` : `Le bon niveau de système pour le bon problème.`
+-  - [ ] Mettre à jour le paragraphe `p.prose.services__intro` avec le texte officiel V1.1 en 3 phrases.
+-  - [ ] Vérifier la typographie, les marges et la lisibilité sur mobile et desktop.
++- [x] Tâche 1 — Mise à jour du Hero H1 et de l'introduction dans `app/pages/services.vue` (AC: 1)
++  - [x] Mettre à jour le titre `h1.services__title` : `Le bon niveau de système pour le bon problème.`
++  - [x] Mettre à jour le paragraphe `p.prose.services__intro` avec le texte officiel V1.1 en 3 phrases.
++  - [x] Vérifier la typographie, les marges et la lisibilité sur mobile et desktop.
+ 
+-- [ ] Tâche 2 — Restructuration des données et du modèle `offers` (AC: 2, 3)
+-  - [ ] Adapter l'interface TypeScript `Offer` dans `<script setup>` pour supporter `badgeText?: string` ou `badgeTone?: "accent" | "neutral"`.
+-  - [ ] Remplacer les 3 anciennes offres (`sprint`, `blueprint`, `care`) par les 3 offres de build :
++- [x] Tâche 2 — Restructuration des données et du modèle `offers` (AC: 2, 3)
++  - [x] Adapter l'interface TypeScript `Offer` dans `<script setup>` pour supporter `badge: string` et `badgeTone?: "accent" | "neutral"`.
++  - [x] Remplacer les 3 anciennes offres (`sprint`, `blueprint`, `care`) par les 3 offres de build :
+     - `automatisation` (id: `automatisation`, icon: `zap`, badge: `BESOIN PRÉCIS`, price: `Sur devis`)
+     - `workflow` (id: `workflow`, icon: `layers`, badge: `OFFRE CŒUR`, featured: true, price: `Sur devis`)
+     - `sur-mesure` (id: `sur-mesure`, icon: `terminal`, badge: `PROJET COMPLEXE`, price: `Sur devis`)
+-  - [ ] Renseigner pour chacune les 5 points de livrables précis.
+-  - [ ] Configurer les libellés de CTA et `:aria-label` accessibles (`Décrire mon besoin`, `Identifier un workflow`, `Parler du projet`).
+-
+-- [ ] Tâche 3 — Template, ancres et intégration visuelle des badges (AC: 2, 4)
+-  - [ ] Ajouter l'attribut `:id="offer.id"` sur le conteneur de carte `<li>` ou `<ZCard>` avec la classe de scroll margin (`scroll-margin-top`).
+-  - [ ] Afficher `<ZBadge>` pour chaque carte selon son niveau d'intervention (`BESOIN PRÉCIS`, `OFFRE CŒUR`, `PROJET COMPLEXE`).
+-  - [ ] S'assurer que le bas de carte (`.offer__footer`) aligne proprement le prix `Sur devis` et le bouton `<ZButton>`.
+-  - [ ] Mettre à jour les 3 liens contextuels de `app/pages/index.vue` pour cibler `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`.
+-
+-- [ ] Tâche 4 — Synchronisation SEO et données structurées Schema.org (AC: 5)
+-  - [ ] Aligner `servicesJsonLd` sur les 3 nouvelles offres de build avec `offers.description = "Sur devis"`.
+-  - [ ] Mettre à jour la balise meta `description` dans `usePageSeo` pour supprimer toute référence à l'ancien catalogue tarifaire (3 500 € HT, Blueprint en build).
+-
+-- [ ] Tâche 5 — Validation a11y, responsive et Gate Docker Nitro SSG (AC: 5)
+-  - [ ] Tester la navigation clavier (`Tab`) et le focus visible sur les boutons des 3 cartes.
+-  - [ ] Vérifier le rendu sur mobile (< 900px) et la parité visuelle sur les thèmes clair et sombre.
+-  - [ ] Exécuter la commande de validation Docker :
++  - [x] Renseigner pour chacune les 5 points de livrables précis.
++  - [x] Configurer les libellés de CTA et `:aria-label` accessibles (`Décrire mon besoin`, `Identifier un workflow`, `Parler du projet`).
++
++- [x] Tâche 3 — Template, ancres et intégration visuelle des badges (AC: 2, 4)
++  - [x] Ajouter l'attribut `:id="offer.id"` sur le conteneur `<ZCard>` avec la classe de scroll margin (`scroll-margin-top: var(--space-16)`).
++  - [x] Afficher `<ZBadge>` pour chaque carte selon son niveau d'intervention (`BESOIN PRÉCIS`, `OFFRE CŒUR`, `PROJET COMPLEXE`).
++  - [x] S'assurer que le bas de carte (`.offer__footer`) aligne proprement le prix `Sur devis` et le bouton `<ZButton>`.
++  - [x] Mettre à jour les 3 liens contextuels de `app/pages/index.vue` pour cibler `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`.
++
++- [x] Tâche 4 — Synchronisation SEO et données structurées Schema.org (AC: 5)
++  - [x] Aligner `servicesJsonLd` sur les 3 nouvelles offres de build avec `offers.description = "Sur devis"`.
++  - [x] Mettre à jour la balise meta `description` dans `usePageSeo` pour supprimer toute référence à l'ancien catalogue tarifaire (3 500 € HT, Blueprint en build).
++
++- [x] Tâche 5 — Validation a11y, responsive et Gate Docker Nitro SSG (AC: 5)
++  - [x] Tester la navigation clavier (`Tab`) et le focus visible sur les boutons des 3 cartes.
++  - [x] Vérifier le rendu sur mobile (< 900px) et la parité visuelle sur les thèmes clair et sombre.
++  - [x] Exécuter la commande de validation Docker :
+     ```sh
+     docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
+     ```
+-  - [ ] Vérifier que les 28 routes statiques pré-rendues compilent sans erreur ni avertissement.
++  - [x] Vérifier que les 28 routes statiques pré-rendues compilent sans erreur ni avertissement.
+ 
+ ## Dev Notes
+ 
+@@ -239,11 +243,28 @@ Ajouter sur l'élément cible :
+ ## Dev Agent Record
+ 
+ ### Agent Model Used
++- Gemini 3.7 Flash
+ 
+ ### Debug Log References
++- Docker gate validation: `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` -> 0 error (ESLint + Stylelint + vue-tsc + 28 Nitro routes SSG).
++- Local dev server curl check: `http://localhost:3000/services` -> 200 OK.
++- Verified generated HTML `.output/public/services/index.html` (badges, H1, intro, prices, JSON-LD Schema.org ItemList).
++- Verified generated HTML `.output/public/index.html` (direct anchor links `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`).
+ 
+ ### Completion Notes List
++- ✅ **Hero & Introduction V1.1 :** H1 mis à jour vers *« Le bon niveau de système pour le bon problème. »*, texte d'introduction axé sur le diagnostic workflow avant la technologie.
++- ✅ **Restructuration des 3 offres de build :** `automatisation` (BESOIN PRÉCIS, Sur devis), `workflow` (OFFRE CŒUR, Sur devis, featured: true), `sur-mesure` (PROJET COMPLEXE, Sur devis). Suppression intégrale du prix d'entrée « À partir de 3 500 € HT ».
++- ✅ **Badges de statut & Accessibilité :** Utilisation de `<ZBadge>` avec `tone="accent"` pour l'offre cœur et `tone="neutral"` pour les autres ; boutons `<ZButton>` avec labels et `aria-label` contextuels (`/contact`).
++- ✅ **Ancres HTML & Scroll Margin :** Identifiants stables (`id="automatisation"`, `id="workflow"`, `id="sur-mesure"`) et `scroll-margin-top: var(--space-16)` sur `.offer`.
++- ✅ **Résolution Dette Différée 15.1 :** Mise à jour de `app/pages/index.vue` pour router directement les 3 liens contextuels de la vitrine vers leurs ancres de build respectives.
++- ✅ **SEO & Schema.org :** Synchronisation de `servicesJsonLd` (WebPage / ItemList / Service) et de `usePageSeo` sans mentions tarifaires chiffrées obsolètes.
+ 
+ ### File List
++- `app/pages/services.vue` (modifié)
++- `app/pages/index.vue` (modifié)
++- `docs/implementation-artifacts/deferred-work.md` (modifié)
++- `docs/implementation-artifacts/sprint-status.yaml` (modifié)
++- `docs/implementation-artifacts/15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint.md` (modifié)
+ 
+ ### Change Log
++- 2026-09-18: Implémentation complète de la Story 15.2 (restructuration des 3 offres de build sur devis, Hero V1.1, ancres de navigation, synchronisation SEO/JSON-LD et résolution de la dette différée de liens d'accueil).
+diff --git a/docs/implementation-artifacts/deferred-work.md b/docs/implementation-artifacts/deferred-work.md
+index 788f4ae..3fbef01 100644
+--- a/docs/implementation-artifacts/deferred-work.md
++++ b/docs/implementation-artifacts/deferred-work.md
+@@ -42,8 +42,8 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
+ 
+ ## Deferred from: code review of 15-1-homepage-suppression-prix-dentree-liens-contextuels-et-reassurance (2026-09-18)
+ 
+-- **Ancrage direct des 3 liens contextuels de la homepage vers les offres `/services`** (`app/pages/index.vue:80`) — Les liens pointent vers `/services` au sens large ; ils devront être enrichis d'ancres spécifiques (ex: `#automation`, `#agents`, `#apps`) lors de la restructuration des offres de la page Services dans la Story 15.2.
+-- **Désancrage tarifaire résiduel sur la page catalogue `/services`** (`app/pages/services.vue`) — Le prix d'entrée « À partir de 3 500 € HT » est encore visible sur `/services` ; son élimination fait l'objet de la Story 15.2.
++- ~~**Ancrage direct des 3 liens contextuels de la homepage vers les offres `/services`**~~ — ✅ **Résolu en 15.2** (`app/pages/index.vue` : ancres `/services#automatisation`, `/services#workflow`, `/services#sur-mesure`).
++- ~~**Désancrage tarifaire résiduel sur la page catalogue `/services`**~~ — ✅ **Résolu en 15.2** (`app/pages/services.vue` : 3 offres sur devis, élimination définitive du prix d'entrée 3 500 € HT et restructuration du catalogue de build).
+ 
+ ## Deferred from: code review of 13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg (2026-09-18)
+ 
+diff --git a/docs/implementation-artifacts/sprint-status.yaml b/docs/implementation-artifacts/sprint-status.yaml
+index 5a751da..415b379 100644
+--- a/docs/implementation-artifacts/sprint-status.yaml
++++ b/docs/implementation-artifacts/sprint-status.yaml
+@@ -1,5 +1,5 @@
+ # generated: 2026-06-18
+-# last_updated: 2026-09-18 (Story 15.2 créée et prête pour le dev)
++# last_updated: 2026-09-18 (Story 15.2 terminée et prête pour review)
+ # project: jouan.ovh
+ # project_key: NOKEY
+ # tracking_system: file-system
+@@ -35,7 +35,7 @@
+ # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+ 
+ generated: 2026-06-18
+-last_updated: "2026-09-18 (Story 15.2 prête pour le dev)"
++last_updated: "2026-09-18 (Story 15.2 prête pour review)"
+ project: jouan.ovh
+ project_key: NOKEY
+ tracking_system: file-system
+@@ -156,7 +156,7 @@ development_status:
+   # Epic 15 — Repositionnement Commercial V1.1 : Désancrage Tarifaire & Offres par Niveaux d'Intervention
+   epic-15: in-progress
+   15-1-homepage-suppression-prix-dentree-liens-contextuels-et-reassurance: done
+-  15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint: ready-for-dev
++  15-2-page-services-restructuration-3-offres-build-sur-devis-et-blueprint: review
+   15-3-page-services-section-dediee-ai-care-et-process-4-etapes: backlog
+   15-4-coherence-globale-seo-formulaire-contact-et-gate-docker: backlog
+   epic-15-retrospective: optional
+
+exec
+/bin/zsh -lc "nl -ba app/pages/index.vue | sed -n '70,86p;340,420p'; nl -ba app/pages/services.vue | sed -n '1,55p;85,185p;285,310p'" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+    70	                <li v-for="point in service.points" :key="point">
+    71	                  <ZIcon name="check" class="offer__check" />
+    72	                  <span>{{ point }}</span>
+    73	                </li>
+    74	              </ul>
+    75	              <ul class="hero__tags offer__tags">
+    76	                <li v-for="tag in service.tags" :key="tag">
+    77	                  <ZTag>{{ tag }}</ZTag>
+    78	                </li>
+    79	              </ul>
+    80	              <NuxtLink
+    81	                :to="service.to"
+    82	                class="offer__more"
+    83	                :aria-label="`${service.actionText.replace(' →', '')} - ${service.title}`"
+    84	              >
+    85	                <span>{{ service.actionText.replace(" →", "") }}</span>
+    86	                <span class="offer__arrow" aria-hidden="true">→</span>
+   340	}
+   341	
+   342	interface HomeServiceOffer {
+   343	  id: string;
+   344	  no: string;
+   345	  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+   346	  title: string;
+   347	  desc: string;
+   348	  points: string[];
+   349	  tags: string[];
+   350	  actionText: string;
+   351	  to: string;
+   352	  featured: boolean;
+   353	}
+   354	
+   355	interface ProductionPillar {
+   356	  id: string;
+   357	  icon: "code" | "layers" | "spark" | "bot" | "terminal" | "zap";
+   358	  title: string;
+   359	  desc: string;
+   360	}
+   361	
+   362	// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2 & Story 15.2 / AC-4).
+   363	const services: HomeServiceOffer[] = [
+   364	  {
+   365	    id: "automation",
+   366	    no: "01 / 03",
+   367	    icon: "layers",
+   368	    title: "Automatisation de processus métier",
+   369	    desc: "Cartographie d'un workflow existant, identification des tâches répétitives et construction du système qui automatise ce qui mérite réellement de l'être.",
+   370	    points: [
+   371	      "Cartographie de flux & connecteurs d'APIs",
+   372	      "Ingestion, enrichissement et traitement de données",
+   373	      "Synchronisation d'outils métier & reporting",
+   374	    ],
+   375	    tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
+   376	    actionText: "Voir les types d'automatisation →",
+   377	    to: "/services#automatisation",
+   378	    featured: false,
+   379	  },
+   380	  {
+   381	    id: "agents",
+   382	    no: "02 / 03",
+   383	    icon: "bot",
+   384	    title: "Agents IA intégrés à vos outils",
+   385	    desc: "Intégration d'agents outillés dans vos flux existants pour lire, interpréter, synthétiser et décider sans casser vos habitudes de travail.",
+   386	    points: [
+   387	      "Agents outillés (Tool Calling) & serveurs MCP",
+   388	      "Extraction structurée & analyse documentaire",
+   389	      "Supervision humaine obligatoire (Human-in-the-loop)",
+   390	    ],
+   391	    tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
+   392	    actionText: "Voir quand utiliser un agent →",
+   393	    to: "/services#workflow",
+   394	    featured: true,
+   395	  },
+   396	  {
+   397	    id: "apps",
+   398	    no: "03 / 03",
+   399	    icon: "code",
+   400	    title: "Applications IA sur mesure",
+   401	    desc: "Développement complet de solutions logicielles dédiées quand le workflow nécessite une interface, un backend robuste et une base de données sur mesure.",
+   402	    points: [
+   403	      "Applications web complètes Nuxt & NestJS",
+   404	      "Applications desktop sécurisées Tauri (IA locale)",
+   405	      "Architecture PostgreSQL, tests QA & déploiement",
+   406	    ],
+   407	    tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
+   408	    actionText: "Découvrir les projets sur mesure →",
+   409	    to: "/services#sur-mesure",
+   410	    featured: false,
+   411	  },
+   412	];
+   413	
+   414	// 4 Piliers d'industrialisation « Prototype → Production » (Story 12.3 / AC-2).
+   415	const pillars: ProductionPillar[] = [
+   416	  {
+   417	    id: "data",
+   418	    icon: "layers",
+   419	    title: "Données",
+   420	    desc: "Provenance, structuration, stockage, rétention, secrets.",
+     1	<template>
+     2	  <main class="services">
+     3	    <!-- En-tête + grille d'offres (story 12.5 & story 15.2) -->
+     4	    <section class="section">
+     5	      <div class="container">
+     6	        <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
+     7	        <h1 class="services__title">Le bon niveau de système pour le bon problème.</h1>
+     8	        <p class="prose services__intro">
+     9	          Je pars d’un workflow existant, pas d’une technologie à placer. Certaines frictions se règlent avec une
+    10	          automatisation simple. D’autres nécessitent plusieurs intégrations, de l’IA ou une véritable application
+    11	          métier. Le rôle du diagnostic est justement de déterminer jusqu’où il est utile d’aller.
+    12	        </p>
+    13	
+    14	        <ul class="grid-3">
+    15	          <li v-for="offer in offers" :key="offer.id">
+    16	            <ZCard :id="offer.id" class="offer" :accent="offer.featured" :featured="offer.featured">
+    17	              <div v-if="offer.badge" class="offer__badge">
+    18	                <ZBadge :tone="offer.badgeTone || 'neutral'">{{ offer.badge }}</ZBadge>
+    19	              </div>
+    20	              <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
+    21	              <h2 class="offer__title">{{ offer.title }}</h2>
+    22	              <p v-if="offer.hook" class="offer__hook">{{ offer.hook }}</p>
+    23	              <p class="offer__desc">{{ offer.desc }}</p>
+    24	              <ul class="offer__points">
+    25	                <li v-for="point in offer.points" :key="point">{{ point }}</li>
+    26	              </ul>
+    27	              <div class="offer__footer">
+    28	                <div class="offer__price">
+    29	                  <b>{{ offer.price }}</b>
+    30	                </div>
+    31	                <p v-if="offer.disclaimer" class="offer__disclaimer">
+    32	                  {{ offer.disclaimer }}
+    33	                </p>
+    34	                <div class="offer__cta">
+    35	                  <ZButton
+    36	                    :as="NuxtLink"
+    37	                    to="/contact"
+    38	                    :variant="offer.featured ? 'primary' : 'secondary'"
+    39	                    :aria-label="offer.ctaAriaLabel"
+    40	                    class="offer__btn"
+    41	                  >
+    42	                    {{ offer.ctaText }}
+    43	                  </ZButton>
+    44	                </div>
+    45	              </div>
+    46	            </ZCard>
+    47	          </li>
+    48	        </ul>
+    49	      </div>
+    50	    </section>
+    51	
+    52	    <!-- Section process : 4 étapes ordonnées + CTA (story 12.5) -->
+    53	    <section class="section section--sunken">
+    54	      <div class="container">
+    55	        <p class="eyebrow"><span aria-hidden="true">// </span>comment ça se passe</p>
+    85	import { NuxtLink } from "#components";
+    86	import { SITE } from "~/data/site";
+    87	
+    88	interface Offer {
+    89	  /** Clé v-for et ancre HTML stable (indépendante du contenu affiché). */
+    90	  id: string;
+    91	  /** Nom d'icône dans le set ZIcon. */
+    92	  icon: string;
+    93	  badge: string;
+    94	  badgeTone?: "accent" | "neutral";
+    95	  title: string;
+    96	  hook?: string;
+    97	  desc: string;
+    98	  points: string[];
+    99	  price: string;
+   100	  disclaimer?: string;
+   101	  /** Offre mise en avant : carte accent + glow. */
+   102	  featured: boolean;
+   103	  ctaText: string;
+   104	  ctaAriaLabel: string;
+   105	}
+   106	
+   107	interface Step {
+   108	  n: string;
+   109	  title: string;
+   110	  desc: string;
+   111	  inlineCta?: {
+   112	    to: string;
+   113	    label: string;
+   114	  };
+   115	}
+   116	
+   117	// Les 3 offres de build officielles V1.1 — 1re personne, vouvoiement, zéro emoji.
+   118	const offers: Offer[] = [
+   119	  {
+   120	    id: "automatisation",
+   121	    icon: "zap",
+   122	    badge: "BESOIN PRÉCIS",
+   123	    badgeTone: "neutral",
+   124	    title: "Automatisation ciblée",
+   125	    hook: "Supprimer une tâche répétitive sans reconstruire tout le processus.",
+   126	    desc: "Pour les besoins bien délimités : données, emails, documents, CRM, synchronisation, génération ou traitement automatisé.",
+   127	    points: [
+   128	      "Cartographie rapide du flux & cadrage du besoin",
+   129	      "Automatisation logicielle & connecteurs API / webhooks",
+   130	      "Traitement de données ou IA ciblée si pertinent",
+   131	      "Contrôle ou validation humaine si requis",
+   132	      "Tests, mise en production & documentation courte",
+   133	    ],
+   134	    price: "Sur devis",
+   135	    featured: false,
+   136	    ctaText: "Décrire mon besoin",
+   137	    ctaAriaLabel: "Décrire mon besoin pour une automatisation ciblée",
+   138	  },
+   139	  {
+   140	    id: "workflow",
+   141	    icon: "layers",
+   142	    badge: "OFFRE CŒUR",
+   143	    badgeTone: "accent",
+   144	    title: "Workflow métier",
+   145	    hook: "Transformer un processus complet en système opérationnel.",
+   146	    desc: "Pour les workflows qui traversent plusieurs étapes ou outils : cartographie, intégrations, automatisation, IA ciblée, contrôle humain, tests et mise en production.",
+   147	    points: [
+   148	      "Diagnostic approfondi & cartographie avant/après",
+   149	      "Architecture système & connecteurs API métier",
+   150	      "Modèles d'IA & prompt engineering avec sorties typées",
+   151	      "Tests automatisés sur cas réels & boucle de validation humaine",
+   152	      "Déploiement en production, documentation & mesure initiale",
+   153	    ],
+   154	    price: "Sur devis",
+   155	    featured: true,
+   156	    ctaText: "Identifier un workflow",
+   157	    ctaAriaLabel: "Identifier un workflow métier",
+   158	  },
+   159	  {
+   160	    id: "sur-mesure",
+   161	    icon: "terminal",
+   162	    badge: "PROJET COMPLEXE",
+   163	    badgeTone: "neutral",
+   164	    title: "Système métier sur mesure",
+   165	    hook: "Construire l'application lorsque l'automatisation devient un vrai produit.",
+   166	    desc: "Interface, backend, base de données, authentification, intégrations, IA, rôles, supervision et déploiement.",
+   167	    points: [
+   168	      "Interface web ou desktop adaptée aux opérateurs",
+   169	      "Backend, base de données relationnelle & gestion des rôles",
+   170	      "Orchestration multi-modèles & pipelines de données",
+   171	      "Intégration profonde au SI (CRM, ERP, APIs métier)",
+   172	      "Supervision avancée, tests automatisés & déploiement souverain",
+   173	    ],
+   174	    price: "Sur devis",
+   175	    featured: false,
+   176	    ctaText: "Parler du projet",
+   177	    ctaAriaLabel: "Parler d'un projet de système métier sur mesure",
+   178	  },
+   179	];
+   180	
+   181	// Étapes du process en 4 temps. L'ordre du tableau garantit l'affichage 01 → 04.
+   182	const steps: Step[] = [
+   183	  {
+   184	    n: "01",
+   185	    title: "Diagnostic",
+   285	  list-style: none;
+   286	
+   287	  > li {
+   288	    display: flex;
+   289	  }
+   290	}
+   291	
+   292	.offer {
+   293	  display: flex;
+   294	  flex-direction: column;
+   295	  width: 100%;
+   296	  scroll-margin-top: var(--space-16);
+   297	}
+   298	
+   299	.offer__badge {
+   300	  margin-bottom: var(--space-3);
+   301	}
+   302	
+   303	.offer__icon {
+   304	  display: flex;
+   305	  align-items: center;
+   306	  justify-content: center;
+   307	  width: var(--space-10); // 40px
+   308	  height: var(--space-10);
+   309	  margin-bottom: var(--space-4);
+   310	
+
+exec
+/bin/zsh -lc "nl -ba app/pages/services.vue | sed -n '190,250p'; sed -n '1,130p' app/components/ui/ZCard.vue" in /Users/simon/dev/jouan.ovh
+ succeeded in 0ms:
+   190	    },
+   191	  },
+   192	  {
+   193	    n: "02",
+   194	    title: "Cadrage",
+   195	    desc: "Formalisation du workflow cible, des étapes manuelles à conserver sous contrôle humain, des connecteurs API requis et des KPI de mesure. Fait l'objet d'un Blueprint pour les sujets complexes.",
+   196	  },
+   197	  {
+   198	    n: "03",
+   199	    title: "Construction & intégration",
+   200	    desc: "Développement logiciel du système, connexion aux outils métiers (CRM, ERP, messagerie...), couverture de tests automatisés et mise à l'épreuve sur cas réels avant livraison.",
+   201	  },
+   202	  {
+   203	    n: "04",
+   204	    title: "Suivi & amélioration",
+   205	    desc: "Monitoring en production, maintenance préventive/corrective, ajustements aux évolutions d'APIs tierces ou modèles d'IA, mesure factuelle des résultats.",
+   206	  },
+   207	];
+   208	
+   209	const siteUrl = useSiteUrl();
+   210	
+   211	const servicesJsonLd = {
+   212	  "@context": "https://schema.org",
+   213	  "@type": "WebPage",
+   214	  name: "Services & Systèmes IA — Simon Jouan",
+   215	  description:
+   216	    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
+   217	  url: `${siteUrl}/services`,
+   218	  mainEntity: {
+   219	    "@type": "ItemList",
+   220	    itemListElement: offers.map((offer, index) => ({
+   221	      "@type": "ListItem",
+   222	      position: index + 1,
+   223	      item: {
+   224	        "@type": "Service",
+   225	        name: offer.title,
+   226	        description: offer.desc,
+   227	        provider: {
+   228	          "@type": "Organization",
+   229	          "@id": `${siteUrl}/#organization`,
+   230	          name: SITE.profile.name,
+   231	        },
+   232	        offers: {
+   233	          "@type": "Offer",
+   234	          description: offer.price,
+   235	        },
+   236	      },
+   237	    })),
+   238	  },
+   239	};
+   240	
+   241	usePageSeo({
+   242	  title: "Services & Systèmes IA — Simon Jouan",
+   243	  description:
+   244	    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
+   245	  path: "/services",
+   246	  image: "/images/portrait.jpeg",
+   247	  type: "website",
+   248	  jsonLd: servicesJsonLd,
+   249	});
+   250	</script>
+<template>
+  <component
+    :is="as"
+    ref="cardRef"
+    v-bind="rootAttrs"
+    class="zcard"
+    :class="{
+      'zcard--pad': padded,
+      'zcard--interactive': interactive,
+      'zcard--accent': accent,
+      'zcard--featured': featured,
+      'zcard--tilt': tilt,
+    }"
+    @mousemove="onMouseMove"
+    @mouseleave="onMouseLeave"
+  >
+    <slot />
+  </component>
+</template>
+
+<script setup lang="ts">
+// Primitive carte du DS — surface discrète, 3D tilt interactif optionnel.
+// Porté de docs/design_system/components/core/Card.jsx et Home - Awwwards.html.
+import type { Component, ComponentPublicInstance } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+interface Props {
+  /** Rendre la carte interactive (hover state, clickable). @default false */
+  interactive?: boolean;
+  /** Filet supérieur dégradé accent (story 2.4). @default false */
+  accent?: boolean;
+  /** Variante mise en valeur (bordure accent, glow). @default false */
+  featured?: boolean;
+  /** Padding interne (var(--space-6)). Désactivable pour cartes média. @default true */
+  padded?: boolean;
+  /** Élément rendu (polymorphe). @default "div" */
+  as?: string | Component;
+  /** Activer l'effet 3D tilt sur mousemove. @default false */
+  tilt?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  interactive: false,
+  accent: false,
+  featured: false,
+  padded: true,
+  as: "div",
+  tilt: false,
+});
+
+const attrs = useAttrs();
+const cardRef = ref<Element | ComponentPublicInstance | null>(null);
+const isReducedMotion = ref(false);
+let motionMq: MediaQueryList | null = null;
+
+function onMotionChange(e: MediaQueryListEvent) {
+  isReducedMotion.value = e.matches;
+  if (e.matches) {
+    onMouseLeave();
+  }
+}
+
+onMounted(() => {
+  motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  isReducedMotion.value = motionMq.matches;
+  motionMq.addEventListener("change", onMotionChange);
+});
+
+onBeforeUnmount(() => {
+  motionMq?.removeEventListener("change", onMotionChange);
+});
+
+function onMouseMove(event: MouseEvent) {
+  if (!props.tilt || isReducedMotion.value || !cardRef.value) {
+    return;
+  }
+  if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
+    return;
+  }
+  const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
+  if (!el || !(el instanceof HTMLElement)) {
+    return;
+  }
+  const rect = el.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return;
+  }
+  const px = (event.clientX - rect.left) / rect.width - 0.5;
+  const py = (event.clientY - rect.top) / rect.height - 0.5;
+  el.style.transform = `perspective(800px) rotateX(${-py * 6}deg) rotateY(${px * 8}deg) translateY(-4px)`;
+}
+
+function onMouseLeave() {
+  if (cardRef.value) {
+    const el = ((cardRef.value as ComponentPublicInstance).$el ?? cardRef.value) as HTMLElement | null;
+    if (el instanceof HTMLElement) {
+      el.style.transform = "";
+    }
+  }
+}
+
+watch(
+  () => props.tilt,
+  (newVal) => {
+    if (!newVal) {
+      onMouseLeave();
+    }
+  },
+);
+
+// `as` accepte une balise native ("div", "article") ou une référence de composant
+// (ex. NuxtLink importé de "#components") ; ne pas passer un nom de composant en chaîne.
+const isNativeButton = computed(() => props.as === "button");
+const rootAttrs = computed(() => {
+  if (!isNativeButton.value) {
+    return attrs;
+  }
+
+  return {
+    ...attrs,
+    type: typeof attrs.type === "string" ? attrs.type : "button",
+  };
+});
+</script>
+
+<style lang="scss" scoped>
+
+codex
+[]
+tokens used
+29 083
+[]

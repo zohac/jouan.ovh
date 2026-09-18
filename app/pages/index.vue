@@ -78,7 +78,7 @@
                 </li>
               </ul>
               <NuxtLink
-                to="/services"
+                :to="service.to"
                 class="offer__more"
                 :aria-label="`${service.actionText.replace(' →', '')} - ${service.title}`"
               >
@@ -348,6 +348,7 @@ interface HomeServiceOffer {
   points: string[];
   tags: string[];
   actionText: string;
+  to: string;
   featured: boolean;
 }
 
@@ -358,7 +359,7 @@ interface ProductionPillar {
   desc: string;
 }
 
-// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2).
+// Vitrine des 3 offres ciblées Systèmes IA & Automatisation (Story 12.3 / AC-1 & Story 15.1 / AC-1, AC-2 & Story 15.2 / AC-4).
 const services: HomeServiceOffer[] = [
   {
     id: "automation",
@@ -373,6 +374,7 @@ const services: HomeServiceOffer[] = [
     ],
     tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
     actionText: "Voir les types d'automatisation →",
+    to: "/services#automatisation",
     featured: false,
   },
   {
@@ -388,6 +390,7 @@ const services: HomeServiceOffer[] = [
     ],
     tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
     actionText: "Voir quand utiliser un agent →",
+    to: "/services#workflow",
     featured: true,
   },
   {
@@ -403,6 +406,7 @@ const services: HomeServiceOffer[] = [
     ],
     tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
     actionText: "Découvrir les projets sur mesure →",
+    to: "/services#sur-mesure",
     featured: false,
   },
 ];

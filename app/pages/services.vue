@@ -1,20 +1,21 @@
 <template>
   <main class="services">
-    <!-- En-tête + grille d'offres (story 12.5) -->
+    <!-- En-tête + grille d'offres (story 12.5 & story 15.2) -->
     <section class="section">
       <div class="container">
         <p class="eyebrow"><span aria-hidden="true">// </span>services</p>
-        <h1 class="services__title">Des systèmes IA construits autour de vos vrais processus métier.</h1>
+        <h1 class="services__title">Le bon niveau de système pour le bon problème.</h1>
         <p class="prose services__intro">
-          Je pars d’un workflow existant, pas d’une technologie à placer. Du cadrage initial jusqu'au maintien en
-          condition opérationnelle, l’IA intervient uniquement là où elle apporte réellement quelque chose.
+          Je pars d’un workflow existant, pas d’une technologie à placer. Certaines frictions se règlent avec une
+          automatisation simple. D’autres nécessitent plusieurs intégrations, de l’IA ou une véritable application
+          métier. Le rôle du diagnostic est justement de déterminer jusqu’où il est utile d’aller.
         </p>
 
         <ul class="grid-3">
           <li v-for="offer in offers" :key="offer.id">
-            <ZCard class="offer" :accent="offer.featured" :featured="offer.featured">
-              <div v-if="offer.featured" class="offer__badge">
-                <ZBadge tone="accent">Format cœur</ZBadge>
+            <ZCard :id="offer.id" class="offer" :accent="offer.featured" :featured="offer.featured">
+              <div v-if="offer.badge" class="offer__badge">
+                <ZBadge :tone="offer.badgeTone || 'neutral'">{{ offer.badge }}</ZBadge>
               </div>
               <div class="offer__icon"><ZIcon :name="offer.icon" /></div>
               <h2 class="offer__title">{{ offer.title }}</h2>
@@ -79,23 +80,25 @@
 </template>
 
 <script setup lang="ts">
-// Page Services : catalogue d'offres IA packagées + process 4 étapes + CTA contact.
+// Page Services : catalogue d'offres de build sur devis (3 niveaux d'intervention) + process 4 étapes + CTA contact.
 // Données statiques (3 offres, 4 étapes) déclarées localement. Prerender-safe, dark-first.
 import { NuxtLink } from "#components";
 import { SITE } from "~/data/site";
 
 interface Offer {
-  /** Clé v-for stable (indépendante du contenu affiché). */
+  /** Clé v-for et ancre HTML stable (indépendante du contenu affiché). */
   id: string;
   /** Nom d'icône dans le set ZIcon. */
   icon: string;
+  badge: string;
+  badgeTone?: "accent" | "neutral";
   title: string;
   hook?: string;
   desc: string;
   points: string[];
   price: string;
   disclaimer?: string;
-  /** Offre mise en avant : carte accent + glow + badge. */
+  /** Offre mise en avant : carte accent + glow. */
   featured: boolean;
   ctaText: string;
   ctaAriaLabel: string;
@@ -111,62 +114,67 @@ interface Step {
   };
 }
 
-// Les 3 offres officielles V1 — 1re personne, vouvoiement, zéro emoji.
+// Les 3 offres de build officielles V1.1 — 1re personne, vouvoiement, zéro emoji.
 const offers: Offer[] = [
   {
-    id: "sprint",
+    id: "automatisation",
     icon: "zap",
-    title: "AI Workflow Sprint",
-    hook: "Un Sprint = un workflow prioritaire",
-    desc: "Conception, intégration logicielle et mise en production d'un workflow métier complet avec IA ciblée et supervision humaine.",
+    badge: "BESOIN PRÉCIS",
+    badgeTone: "neutral",
+    title: "Automatisation ciblée",
+    hook: "Supprimer une tâche répétitive sans reconstruire tout le processus.",
+    desc: "Pour les besoins bien délimités : données, emails, documents, CRM, synchronisation, génération ou traitement automatisé.",
+    points: [
+      "Cartographie rapide du flux & cadrage du besoin",
+      "Automatisation logicielle & connecteurs API / webhooks",
+      "Traitement de données ou IA ciblée si pertinent",
+      "Contrôle ou validation humaine si requis",
+      "Tests, mise en production & documentation courte",
+    ],
+    price: "Sur devis",
+    featured: false,
+    ctaText: "Décrire mon besoin",
+    ctaAriaLabel: "Décrire mon besoin pour une automatisation ciblée",
+  },
+  {
+    id: "workflow",
+    icon: "layers",
+    badge: "OFFRE CŒUR",
+    badgeTone: "accent",
+    title: "Workflow métier",
+    hook: "Transformer un processus complet en système opérationnel.",
+    desc: "Pour les workflows qui traversent plusieurs étapes ou outils : cartographie, intégrations, automatisation, IA ciblée, contrôle humain, tests et mise en production.",
     points: [
       "Diagnostic approfondi & cartographie avant/après",
-      "Architecture système, connecteurs API & intégrations métier",
+      "Architecture système & connecteurs API métier",
       "Modèles d'IA & prompt engineering avec sorties typées",
       "Tests automatisés sur cas réels & boucle de validation humaine",
       "Déploiement en production, documentation & mesure initiale",
     ],
-    price: "À partir de 3 500 € HT",
+    price: "Sur devis",
     featured: true,
-    ctaText: "Lancer un Sprint",
-    ctaAriaLabel: "Discuter d'un AI Workflow Sprint",
+    ctaText: "Identifier un workflow",
+    ctaAriaLabel: "Identifier un workflow métier",
   },
   {
-    id: "blueprint",
-    icon: "layers",
-    title: "AI Workflow Blueprint",
-    hook: "Cadrage préalable pour problématique complexe",
-    desc: "Pour les projets nécessitant un audit préalable, une modélisation de données et des choix d'architecture avant de s'engager sur le build.",
+    id: "sur-mesure",
+    icon: "terminal",
+    badge: "PROJET COMPLEXE",
+    badgeTone: "neutral",
+    title: "Système métier sur mesure",
+    hook: "Construire l'application lorsque l'automatisation devient un vrai produit.",
+    desc: "Interface, backend, base de données, authentification, intégrations, IA, rôles, supervision et déploiement.",
     points: [
-      "Audit du processus actuel, volumes & points de friction",
-      "Matrice de décision : code déterministe vs IA vs humain",
-      "Schéma d'architecture technique & flux de données cibles",
-      "Analyse des risques, contraintes de sécurité & secrets",
-      "Spécification des KPI de mesure & estimation budgétaire",
+      "Interface web ou desktop adaptée aux opérateurs",
+      "Backend, base de données relationnelle & gestion des rôles",
+      "Orchestration multi-modèles & pipelines de données",
+      "Intégration profonde au SI (CRM, ERP, APIs métier)",
+      "Supervision avancée, tests automatisés & déploiement souverain",
     ],
-    price: "À partir de 750 € HT",
+    price: "Sur devis",
     featured: false,
-    ctaText: "Demander un Blueprint",
-    ctaAriaLabel: "Demander un AI Workflow Blueprint",
-  },
-  {
-    id: "care",
-    icon: "bot",
-    title: "AI Care",
-    hook: "Maintien en condition opérationnelle",
-    desc: "Maintien en condition opérationnelle d'une capacité intégrée au processus métier pour garantir disponibilité, précision et maîtrise des coûts.",
-    points: [
-      "Supervision proactive, alertes & analyse des échecs",
-      "Maintenance corrective & adaptation aux APIs tierces",
-      "Suivi des coûts d'inférence & micro-ajustements de prompts",
-      "Support technique réactif & veille sur les nouveaux modèles",
-    ],
-    disclaimer:
-      "Consommations tierces d'APIs et tokens (LLM, OCR, scraping...) refacturées au réel ou prises en charge directement par le client.",
-    price: "À partir de 490 € HT / mois",
-    featured: false,
-    ctaText: "Découvrir AI Care",
-    ctaAriaLabel: "Découvrir l'accompagnement AI Care",
+    ctaText: "Parler du projet",
+    ctaAriaLabel: "Parler d'un projet de système métier sur mesure",
   },
 ];
 
@@ -203,9 +211,9 @@ const siteUrl = useSiteUrl();
 const servicesJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Services & Tarifs — Simon Jouan",
+  name: "Services & Systèmes IA — Simon Jouan",
   description:
-    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
+    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
   url: `${siteUrl}/services`,
   mainEntity: {
     "@type": "ItemList",
@@ -231,9 +239,9 @@ const servicesJsonLd = {
 };
 
 usePageSeo({
-  title: "Services & Tarifs — Simon Jouan",
+  title: "Services & Systèmes IA — Simon Jouan",
   description:
-    "Développement de systèmes IA et automatisation de processus métier : offres packagées (AI Workflow Sprint, Blueprint, AI Care) et déroulement d'intervention transparent.",
+    "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
   path: "/services",
   image: "/images/portrait.jpeg",
   type: "website",
@@ -285,6 +293,7 @@ usePageSeo({
   display: flex;
   flex-direction: column;
   width: 100%;
+  scroll-margin-top: var(--space-16);
 }
 
 .offer__badge {
