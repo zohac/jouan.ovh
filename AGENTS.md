@@ -8,7 +8,7 @@ Ce document constitue la **source de vérité universelle** pour tout agent IA (
 
 - **Projet :** `jouan.ovh` — Portfolio, vitrine de services et blog de **Simon Jouan** (développeur Full Stack spécialisé en systèmes IA & automatisation métier).
 - **URL de production :** [`https://jouan.ovh`](https://jouan.ovh) (déployé sur **GitHub Pages**, domaine custom, HTTPS Let's Encrypt forcé, DNS OVH).
-- **Statut actuel :** **Refonte complète et repositionnement commercial Systèmes IA & Automatisation Métier livrés** (Epics 1 à 12 validés, clôturés et déployés en production). Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
+- **Statut actuel :** **Repositionnement commercial V1.1 livré** (Désancrage tarifaire, 3 niveaux d'intervention sur devis, section dédiée AI Care dès 250 € HT/mois, Blueprint en cadrage, Epics 1 à 13 et Epic 15 validés et clôturés). Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
 - **Langue & Voix (NFR6) :** 
   - Interface et contenu en **FRANÇAIS** (`lang="fr"`).
   - Voix : **1re personne (« je »)** pour Simon, **vouvoiement** pour le visiteur/client.
