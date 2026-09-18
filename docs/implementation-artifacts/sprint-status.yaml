@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-18 (Story 13.3 prête pour le dev)"
+last_updated: "2026-09-18 (Story 13.4 prête pour le dev)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -141,8 +141,8 @@ development_status:
   epic-13: in-progress
   13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal: done
   13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc: done
-  13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile: ready-for-dev
-  13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: backlog
+  13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile: done
+  13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: ready-for-dev
   epic-13-retrospective: optional
 
   # Epic 14 — Analytics Privacy-First (PostHog EU), Consentement RGPD & Google Search Console

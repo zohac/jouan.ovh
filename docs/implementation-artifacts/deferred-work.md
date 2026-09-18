@@ -40,6 +40,10 @@ _Vue d'ensemble par destination. Le détail par story est conservé dans les sec
 
 9. ~~**Déploiement gh-pages réel**~~ — ✅ **Résolu en 10.7** : premier merge sur `main` et déploiement réel `gh-pages` exécuté et validé. Site servi en production avec HTTPS sur `https://jouan.ovh`.
 
+## Deferred from: code review of 13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile (2026-09-18)
+
+- **Focus clavier non réinitialisé lors du redimensionnement dynamique mobile vers desktop (> 900px) avec menu ouvert** (`app/components/HeaderComponent.vue:209-214`) — Comportement préexistant commun à tous les contrôles du menu mobile (`.hdr__menu-link`, boutons terminal et contact) lors du passage desktop via `onDesktopChange()`. À traiter lors d'une passe de refactorisation globale du composant Header.
+
 ## Deferred from: code review of 13-1-fondations-des-tokens-scss-theme-clair-et-sanctuarisation-du-terminal (2026-09-18)
 
 - **Ajustement des tokens d'état d'accentuation (--accent-hover, --accent-active) et des composants transverses en mode clair** (`app/assets/scss/abstract/_root.scss`) — La Story 13.1 pose la fondation de la palette de surface et de texte crème/aubergine. L'adaptation fine des états d'interaction hover/active et l'audit transverse de l'atmosphère d'ambiance et des pages spécifiques sont explicitement planifiés pour la Story 13.4.

@@ -46,6 +46,7 @@
 
     <!-- Dock d'état tout à droite de l'écran (hors container centré) -->
     <div class="hdr__dock-right" aria-label="Statut et heure">
+      <ThemeToggle class="hdr__dock-theme" />
       <div class="hdr__status-badge">
         <span class="hdr__status-dot" aria-hidden="true" />
         <span class="hdr__status-text">Disponible</span>
@@ -72,6 +73,7 @@
 
       <div class="hdr__menu-actions">
         <div class="hdr__menu-status">
+          <ThemeToggle class="hdr__menu-theme" />
           <div class="hdr__status-badge">
             <span class="hdr__status-dot" aria-hidden="true" />
             <span class="hdr__status-text">Disponible</span>
@@ -527,7 +529,8 @@ onBeforeUnmount(() => {
 
 // Dégradé progressif pour le dock droit sur largeurs moyennes (évite la collision avec le CTA à 1440px)
 @media (width <= 1650px) {
-  .hdr__dock-right {
+  .hdr__dock-right .hdr__status-badge,
+  .hdr__dock-clock {
     display: none;
   }
 }

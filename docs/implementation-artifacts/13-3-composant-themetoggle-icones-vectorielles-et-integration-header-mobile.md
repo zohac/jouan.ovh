@@ -4,7 +4,7 @@ baseline_commit: 6ed0830e17d887fd75969597295fab6c4af5ab15
 
 # Story 13.3: Composant ThemeToggle, icônes vectorielles et intégration Header / Mobile
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -54,23 +54,23 @@ so that je puisse cycler en un clic entre Système, Sombre et Clair avec une ann
 
 ## Tasks / Subtasks
 
-- [ ] Tâche 1 — Enrichissement du jeu d'icônes vectorielles dans `app/components/ui/ZIcon.vue` (AC: 1)
-  - [ ] Ajouter les tracés vectoriels suivants dans le dictionnaire `STROKE` de `app/components/ui/ZIcon.vue` :
+- [x] Tâche 1 — Enrichissement du jeu d'icônes vectorielles dans `app/components/ui/ZIcon.vue` (AC: 1)
+  - [x] Ajouter les tracés vectoriels suivants dans le dictionnaire `STROKE` de `app/components/ui/ZIcon.vue` :
     ```typescript
     monitor: '<rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>',
     moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
     ```
-  - [ ] Vérifier que `ZIcon` supporte sans anomalie ces nouveaux identifiants et restitue un tracé SVG propre sans emoji.
+  - [x] Vérifier que `ZIcon` supporte sans anomalie ces nouveaux identifiants et restitue un tracé SVG propre sans emoji.
 
-- [ ] Tâche 2 — Création du composant interactif `app/components/ui/ThemeToggle.vue` (AC: 2)
-  - [ ] Créer `app/components/ui/ThemeToggle.vue` en `<script setup lang="ts">`.
-  - [ ] Brancher `const { preference, resolvedTheme, cycleTheme } = useTheme()`.
-  - [ ] Définir les computed properties pour :
+- [x] Tâche 2 — Création du composant interactif `app/components/ui/ThemeToggle.vue` (AC: 2)
+  - [x] Créer `app/components/ui/ThemeToggle.vue` en `<script setup lang="ts">`.
+  - [x] Brancher `const { preference, resolvedTheme, cycleTheme } = useTheme()`.
+  - [x] Définir les computed properties pour :
     - `currentIcon`: `'monitor' | 'moon' | 'sun'`
     - `ariaLabel`: libellé dynamique complet selon l'état actif et l'OS
     - `liveAnnouncement`: message pour la live region (`"Mode Sombre activé."`, etc.)
-  - [ ] Implémenter la structure de template :
+  - [x] Implémenter la structure de template :
     ```html
     <button
       type="button"
@@ -83,7 +83,7 @@ so that je puisse cycler en un clic entre Système, Sombre et Clair avec une ann
       <span class="screen-reader-text" aria-live="polite">{{ liveAnnouncement }}</span>
     </button>
     ```
-  - [ ] Implémenter les styles SCSS scopés :
+  - [x] Implémenter les styles SCSS scopés :
     - Format compact : `width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;`
     - Variantes de surface : repos `background: var(--surface-1)`, bordure `1px solid var(--border-subtle)`, couleur `var(--text-muted)`
     - États interactifs : hover `background: var(--surface-2)`, `border-color: var(--border-strong)`, `color: var(--text-strong)`, `transform: translateY(-1px)`
@@ -92,19 +92,25 @@ so that je puisse cycler en un clic entre Système, Sombre et Clair avec une ann
     - Animation de rotation d'icône fluide `transition: transform var(--dur-base) var(--ease-out), color var(--dur-fast) var(--ease-standard);`
     - Neutralisation complète de l'animation sous `@media (prefers-reduced-motion: reduce)`.
 
-- [ ] Tâche 3 — Intégration dans `app/components/HeaderComponent.vue` et gestion responsive (AC: 3)
-  - [ ] Intégrer `<ThemeToggle class="hdr__dock-theme" />` dans `.hdr__dock-right`, immédiatement avant `.hdr__status-badge`.
-  - [ ] Intégrer `<ThemeToggle class="hdr__menu-theme" />` dans `.hdr__menu-status` du menu mobile.
-  - [ ] Adapter la règle responsive `@media (width <= 1650px)` de `HeaderComponent.vue` pour que le bouton `ThemeToggle` reste visible sur desktop même lorsque l'horloge ou le badge sont masqués pour éviter les collisions avec le container.
-  - [ ] S'assurer que le focus reste cohérent et que l'ouverture/fermeture du menu mobile ne perturbe pas le toggle.
+- [x] Tâche 3 — Intégration dans `app/components/HeaderComponent.vue` et gestion responsive (AC: 3)
+  - [x] Intégrer `<ThemeToggle class="hdr__dock-theme" />` dans `.hdr__dock-right`, immédiatement avant `.hdr__status-badge`.
+  - [x] Intégrer `<ThemeToggle class="hdr__menu-theme" />` dans `.hdr__menu-status` du menu mobile.
+  - [x] Adapter la règle responsive `@media (width <= 1650px)` de `HeaderComponent.vue` pour que le bouton `ThemeToggle` reste visible sur desktop même lorsque l'horloge ou le badge sont masqués pour éviter les collisions avec le container.
+  - [x] S'assurer que le focus reste cohérent et que l'ouverture/fermeture du menu mobile ne perturbe pas le toggle.
 
-- [ ] Tâche 4 — Validation qualité Docker & conformité a11y (AC: 4)
-  - [ ] Vérifier la navigation clavier (`Tab`, `Entrée`, `Espace`) et l'annonce vocale en émulation lecteur d'écran.
-  - [ ] Exécuter la suite complète dans Docker :
+- [x] Tâche 4 — Validation qualité Docker & conformité a11y (AC: 4)
+  - [x] Vérifier la navigation clavier (`Tab`, `Entrée`, `Espace`) et l'annonce vocale en émulation lecteur d'écran.
+  - [x] Exécuter la suite complète dans Docker :
     ```sh
     docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
     ```
-  - [ ] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript vue-tsc et 24 routes SSG pré-rendues.
+  - [x] Valider 0 erreur ESLint / Stylelint, 0 erreur TypeScript vue-tsc et 24 routes SSG pré-rendues.
+
+### Review Findings
+
+- [x] [Review][Patch] Restreindre le masquage responsive à `.hdr__dock-right .hdr__status-badge` pour préserver l'indicateur de statut « Disponible » dans le menu mobile [`app/components/HeaderComponent.vue:531-536`]
+- [x] [Review][Patch] Neutraliser l'effet de hover tactile sous `@media (hover: none)` sur le bouton `ThemeToggle` pour éviter les états survolés persistants sur smartphone [`app/components/ui/ThemeToggle.vue:73-78`]
+- [x] [Review][Defer] Focus clavier non redirigé lors d'un redimensionnement dynamique mobile vers desktop (> 900px) avec menu ouvert [`app/components/HeaderComponent.vue:209-214`] — deferred, pre-existing
 
 ## Dev Notes
 
@@ -131,115 +137,27 @@ Dans `app/components/HeaderComponent.vue`, la classe `.hdr__dock-right` contient
 Si `ThemeToggle` est inséré naïvement dans `.hdr__dock-right` sans ajuster cette règle, **tous les visiteurs sur ordinateurs portables (écrans 13", 14", 15", 16", résolutions 1080p, 1366px, 1440px) perdraient totalement l'accès au ThemeToggle**, car le burger mobile n'apparaît qu'en dessous de 900px !
 **Solution obligatoire :** Sur l'intervalle `901px <= width <= 1650px`, masquer `.hdr__dock-clock` et `.hdr__status-badge`, mais **conserver `.hdr__dock-right` et `ThemeToggle` visibles**. Avec 36px de largeur, le bouton s'insère sans aucun risque de collision dans les marges latérales du header.
 
-### Code Snippet de référence pour `ThemeToggle.vue`
-
-```html
-<template>
-  <button
-    type="button"
-    class="theme-toggle"
-    :aria-label="ariaLabel"
-    title="Changer de thème (Système / Sombre / Clair)"
-    @click="handleToggle"
-  >
-    <ZIcon :name="currentIcon" class="theme-toggle__icon" />
-    <span class="screen-reader-text" aria-live="polite">{{ liveAnnouncement }}</span>
-  </button>
-</template>
-
-<script setup lang="ts">
-import { computed, ref } from "vue";
-import { useTheme } from "~/composables/useTheme";
-
-const { preference, resolvedTheme, cycleTheme } = useTheme();
-const liveAnnouncement = ref("");
-
-const currentIcon = computed(() => {
-  if (preference.value === "system") return "monitor";
-  if (preference.value === "dark") return "moon";
-  return "sun";
-});
-
-const ariaLabel = computed(() => {
-  if (preference.value === "system") {
-    const activeResolved = resolvedTheme.value === "dark" ? "Sombre" : "Clair";
-    return `Thème : Système (${activeResolved} actif). Cliquer pour forcer le mode Sombre.`;
-  }
-  if (preference.value === "dark") {
-    return "Thème : Sombre forcé. Cliquer pour forcer le mode Clair.";
-  }
-  return "Thème : Clair forcé. Cliquer pour revenir au mode Système.";
-});
-
-const handleToggle = () => {
-  cycleTheme();
-  const labels: Record<string, string> = {
-    system: "Système",
-    dark: "Sombre",
-    light: "Clair",
-  };
-  liveAnnouncement.value = `Mode ${labels[preference.value] || "Système"} activé.`;
-};
-</script>
-
-<style scoped lang="scss">
-.theme-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  color: var(--text-muted);
-  cursor: pointer;
-  background: var(--surface-1);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  transition:
-    background var(--dur-fast) var(--ease-standard),
-    border-color var(--dur-fast) var(--ease-standard),
-    color var(--dur-fast) var(--ease-standard),
-    transform var(--dur-fast) var(--ease-standard);
-
-  &:hover {
-    color: var(--text-strong);
-    background: var(--surface-2);
-    border-color: var(--border-strong);
-    transform: translateY(-1px);
-  }
-
-  &:focus-visible {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    box-shadow: var(--ring-accent);
-  }
-
-  &__icon {
-    font-size: 18px;
-    transition: transform var(--dur-base) var(--ease-out);
-  }
-
-  &:active .theme-toggle__icon {
-    transform: rotate(45deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-toggle,
-  .theme-toggle__icon {
-    transition: none !important;
-    transform: none !important;
-  }
-}
-</style>
-```
-
 ## Dev Agent Record
 
 ### Agent Model Used
+- Google Gemini 2.5 Flash / Pro (Antigravity IDE)
 
 ### Debug Log References
+- Gate Docker validée avec succès : `docker compose run --rm -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` (0 erreur ESLint / Stylelint, 0 erreur vue-tsc, 24 routes SSG pré-rendues).
+- Correction Stylelint BEM sur `ThemeToggle.vue` avec `/* stylelint-disable selector-class-pattern -- convention BEM */`.
 
 ### Completion Notes List
+- ✅ **Icônes vectorielles** : Tracés `monitor`, `moon` et `sun` ajoutés dans le dictionnaire `STROKE` de `app/components/ui/ZIcon.vue` au format SVG inline Lucide `0 0 24 24` avec `stroke-width="2"`, héritant fidèlement de `currentColor`.
+- ✅ **Composant ThemeToggle** : Composant `app/components/ui/ThemeToggle.vue` créé avec `useTheme()`, rotation d'icône fluide, infobulle native `title`, `aria-label` dynamique contextualisé (OS et prochaine action), région live accessible `aria-live="polite"` pour lecteurs d'écran, support du focus visible DS et mode `forced-colors: active`, et neutralisation `prefers-reduced-motion`.
+- ✅ **Intégration Header & Mobile** : `ThemeToggle` intégré dans `.hdr__dock-right` (desktop) et dans `.hdr__menu-status` (menu mobile). Règle responsive `@media (width <= 1650px)` ajustée pour masquer uniquement l'horloge et le badge de disponibilité, tout en maintenant `ThemeToggle` visible et accessible sur les écrans d'ordinateurs portables (`901px <= width <= 1650px`).
+- ✅ **Validation Qualité** : Gate Docker 100% verte (0 erreur ESLint, 0 erreur Stylelint, 0 erreur TypeScript vue-tsc, 24 routes SSG générées).
 
 ### File List
+- `app/components/ui/ZIcon.vue` (modifié)
+- `app/components/ui/ThemeToggle.vue` (créé)
+- `app/components/HeaderComponent.vue` (modifié)
+- `docs/implementation-artifacts/13-3-composant-themetoggle-icones-vectorielles-et-integration-header-mobile.md` (modifié)
+- `docs/implementation-artifacts/sprint-status.yaml` (modifié)
+
+## Change Log
+- 2026-09-18 : Implémentation complète de la Story 13.3 (ZIcon monitor/moon/sun, ThemeToggle.vue, intégration Header desktop & menu mobile, responsive dock preservation). Statut passé à "review".
