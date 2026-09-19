@@ -64,7 +64,7 @@ const aboutData = {
     firstname: "Simon",
     lastname: "JOUAN",
     poste: SITE.profile.role,
-    experience: "3 ans",
+    experience: "8+ ans",
     ville: SITE.profile.city,
     telephone: SITE.profile.phone ?? "+33 6 58 96 90 20",
     email: SITE.profile.email,

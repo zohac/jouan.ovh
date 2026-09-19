@@ -34,7 +34,7 @@
           Terminal
         </ZButton>
         <ZButton :as="NuxtLink" to="/contact" variant="primary" size="sm" class="hdr__action">
-          Démarrer un projet
+          Parler de mon besoin
         </ZButton>
 
         <button
@@ -92,7 +92,7 @@
           Terminal
         </ZButton>
         <ZButton :as="NuxtLink" to="/contact" variant="primary" size="sm" @click="closeMenu">
-          Démarrer un projet
+          Parler de mon besoin
         </ZButton>
       </div>
     </nav>
@@ -113,7 +113,6 @@ const navItems = [
   { to: "/", label: "Accueil", prefix: "~" },
   { to: "/services", label: "Services", prefix: "//" },
   { to: "/about", label: "À propos", prefix: "./" },
-  { to: "/blog", label: "Blog", prefix: "~/" },
   { to: "/contact", label: "Contact", prefix: "$" },
 ];
 

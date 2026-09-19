@@ -71,8 +71,9 @@
           />
           <h2 class="blog__notice-title">Pas encore d'articles.</h2>
           <p class="prose blog__notice-text">
-            Je travaille actuellement sur de nouveaux contenus pour partager ce que j'apprends en développement web.
-            Revenez bientôt pour découvrir mes prochaines publications.
+            Je travaille actuellement sur de nouveaux contenus pour partager mes retours d'expérience en ingénierie
+            logicielle, systèmes IA et automatisation métier. Revenez bientôt pour découvrir mes prochaines
+            publications.
           </p>
         </ZCard>
       </div>

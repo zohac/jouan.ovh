@@ -14,7 +14,7 @@
             <h2 class="eyebrow">
               <span aria-hidden="true">// </span>DÉVELOPPEUR FULL STACK · SYSTÈMES IA &amp; AUTOMATISATION
             </h2>
-            <h1 class="hero__title">Automatisez les workflows qui freinent votre équipe.</h1>
+            <h1 class="hero__title">Automatisez les processus qui font perdre du temps à votre équipe.</h1>
             <p class="hero__sub">
               Je conçois des agents IA, automatisations et applications métier qui s’intègrent à vos outils existants —
               de l’identification du problème jusqu’à la mise en production.
@@ -34,7 +34,7 @@
 
             <div class="hero__cta">
               <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
-                Identifier un workflow à automatiser
+                Parler d'un processus à automatiser
                 <template #iconRight><ZIcon name="arrow" /></template>
               </ZButton>
               <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir mes systèmes IA </ZButton>
@@ -146,7 +146,7 @@
       <div class="container">
         <div class="block__head">
           <p class="eyebrow"><span aria-hidden="true">// </span>projets sélectionnés</p>
-          <h2 class="section__title">Des produits qui tournent en production</h2>
+          <h2 class="section__title">Des systèmes construits autour de problèmes réels</h2>
         </div>
 
         <ul class="projects-grid">
@@ -444,8 +444,8 @@ const projects = SITE.projects;
 
 // Chiffres clés de réassurance (Story 11.4 / AC-2).
 const stats = [
-  { id: "stat-1", value: "11", label: "années d'expérience web" },
-  { id: "stat-2", value: "100%", label: "TypeScript & SaaS de bout en bout" },
+  { id: "stat-1", value: "8+", label: "années d'expérience logicielle & dev" },
+  { id: "stat-2", value: "100%", label: "Full Stack de bout en bout" },
   { id: "stat-3", value: "QA", label: "culture d'automatisation & zéro régression" },
 ];
 

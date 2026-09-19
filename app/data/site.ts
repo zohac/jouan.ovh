@@ -52,6 +52,8 @@ const profile: IProfile = {
 
 // Stack technique moderne prioritaire ordonnée.
 const skills: string[] = [
+  "automatisation",
+  "intelligence artificielle",
   "typescript",
   "node.js",
   "nest.js",
