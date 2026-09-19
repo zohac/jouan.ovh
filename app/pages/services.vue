@@ -72,6 +72,9 @@
             <div class="care-card__footer">
               <div class="care-card__price">
                 <b>{{ careOffer.price }}</b>
+                <p v-if="careOffer.priceSubtitle" class="care-card__price-sub">
+                  {{ careOffer.priceSubtitle }}
+                </p>
               </div>
               <p v-if="careOffer.disclaimer" class="care-card__disclaimer">
                 {{ careOffer.disclaimer }}
@@ -160,6 +163,7 @@ interface CareOffer {
   badge: string;
   title: string;
   price: string;
+  priceSubtitle?: string;
   desc: string;
   points: string[];
   disclaimer: string;
@@ -210,7 +214,7 @@ const offers: Offer[] = [
     points: [
       "Diagnostic approfondi & cartographie avant/après",
       "Architecture système & connecteurs API métier",
-      "Modèles d'IA & prompt engineering avec sorties typées",
+      "IA ciblée avec sorties structurées et contrôlées",
       "Tests automatisés sur cas réels & boucle de validation humaine",
       "Déploiement en production, documentation & mesure initiale",
     ],
@@ -247,13 +251,14 @@ const careOffer: CareOffer = {
   badge: "MAINTIEN EN CONDITION OPÉRATIONNELLE",
   title: "AI Care",
   price: "À partir de 250 € HT / mois",
+  priceSubtitle: "Niveau de monitoring et de support adapté au système et défini au devis.",
   desc: "Pour les systèmes qui ont besoin d'être exploités, surveillés et adaptés dans la durée.",
   points: [
     "Monitoring proactif, détection d'erreurs & alertes d'anomalies",
     "Maintenance corrective & adaptation aux évolutions d'APIs tierces",
-    "Suivi fin de consommation des tokens & ajustements de prompts",
+    "Suivi fin de consommation des tokens & ajustement des consignes modèles",
     "Support technique réactif & veille sur les nouveaux modèles",
-    "Mesure factuelle des KPI et optimisation continue du flux",
+    "Mesure factuelle des KPI et optimisations mineures selon le périmètre convenu",
   ],
   disclaimer:
     "Consommations tierces d'APIs et tokens (LLM, OCR, scraping...) refacturées au réel ou prises en charge directement par le client. Pas d'engagement imposé au build.",
@@ -626,6 +631,14 @@ usePageSeo({
     font-weight: var(--fw-bold);
     color: var(--text-strong);
   }
+}
+
+.care-card__price-sub {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-normal);
+  color: var(--text-muted);
 }
 
 .care-card__disclaimer {

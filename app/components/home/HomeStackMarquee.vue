@@ -28,6 +28,8 @@ import { computed } from "vue";
 import { SITE } from "~/data/site";
 
 const SKILL_LABEL_MAP: Record<string, string> = {
+  automatisation: "Automatisation",
+  "intelligence artificielle": "Intelligence Artificielle",
   typescript: "TypeScript",
   "node.js": "Node.js",
   "nest.js": "NestJS",
