@@ -20,7 +20,7 @@
               Activité : {{ profile.role }}<br />
               Localisation : {{ profile.city }}<br />
               Courrier électronique :
-              <a class="legal__link" :href="`mailto:${profile.email}`">{{ profile.email }}</a
+              <a class="legal__link ph-no-capture" :href="`mailto:${profile.email}`">{{ profile.email }}</a
               ><br />
               Profil freelance (Malt) :
               <ZExternalLink class="legal__link" href="https://www.malt.fr/profile/simonjouan" rel="noopener"

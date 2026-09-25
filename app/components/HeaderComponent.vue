@@ -29,7 +29,7 @@
       </nav>
 
       <div class="hdr__right">
-        <ZButton variant="terminal" size="sm" class="hdr__action hdr__action--terminal" @click="addNewTerminal">
+        <ZButton variant="terminal" size="sm" class="hdr__action hdr__action--terminal" @click="addNewTerminal()">
           <template #icon><ZIcon name="terminal" /></template>
           Terminal
         </ZButton>
@@ -106,6 +106,7 @@ import type { ComponentPublicInstance } from "vue";
 import { onBeforeUnmount, onMounted, nextTick, ref } from "vue";
 import { NuxtLink } from "#components";
 import TerminalManagerComponent from "~/components/terminal/TerminalManagerComponent.vue";
+import type { TerminalOpenOptions } from "~/composables/useTerminal";
 
 const route = useRoute();
 
@@ -138,8 +139,10 @@ function onScroll() {
 
 // --- Terminal easter-egg (préservé) ---
 const terminalManager = ref<InstanceType<typeof TerminalManagerComponent> | null>(null);
+const { track } = useAnalytics();
 
-function addNewTerminal() {
+function addNewTerminal(options: TerminalOpenOptions = {}) {
+  track("terminal_window_opened", { trigger_source: options.trigger_source ?? "header_icon" });
   terminalManager.value?.createNewTerminal();
 }
 

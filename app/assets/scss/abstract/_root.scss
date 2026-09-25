@@ -160,6 +160,12 @@
   --footer-height: 56px;
   --gutter: var(--space-6);
 
+  // Empilement (z-index) — pas de valeur en dur dans les composants.
+  --z-header: 50;
+  --z-header-raised: 52;
+  --z-toast: 90;
+  --z-modal: 100;
+
   // ============================================================
   //  Rayons (héritage : 0 / 4 / 8 / pill / 50% ; terminal = 5px)
   // ============================================================

@@ -96,3 +96,4 @@ sw.*
 *.swp
 
 /screenshots
+.openchamber/

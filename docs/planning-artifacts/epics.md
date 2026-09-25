@@ -28,6 +28,9 @@ inputDocuments:
   - docs/specs/spec-analytics-search-console/seo-verification.md
   - docs/jouan-ovh-offre-commerciale-v1.1-updated.md
   - docs/planning-artifacts/sprint-change-proposal-2026-09-18.md
+  - docs/specs/spec-blog-editorial/SPEC.md
+  - docs/planning-artifacts/prds/prd-jouan.ovh-2026-09-24/prd.md
+  - docs/planning-artifacts/sprint-change-proposal-2026-09-25.md
 ---
 
 # jouan.ovh - Epic Breakdown
@@ -106,13 +109,16 @@ FR50: Page Services — Restructuration complète des offres de build en 3 nivea
 FR51: Page Services — Section dédiée AI Care après mise en production (à partir de 250 € HT / mois) et réalignement du déroulé d'intervention en 4 étapes (Diagnostic gratuit 20-30 min, Cadrage, Construction & intégration, Exploitation & mesure). _(CAP-3)_
 FR52: Cohérence globale, SEO, accessibilité et validation transversale — Formulaire de contact sans budget imposé, alignement des métadonnées SEO, parité des thèmes clair/sombre et validation de la gate Docker 100% verte. _(CAP-4)_
 
+FR53: Migration de la maintenance SEO vers les modules Nuxt SEO officiels — Sitemap et Robots générés au build, découverte des routes `@nuxt/content`, configuration Site Config partagée et suppression des propriétaires concurrents. _(CAP-9)_
+FR54: Exposition AEO du site public — `llms.txt`, `llms-full.txt`, versions Markdown, politique OpenAI explicite et mesure du trafic ChatGPT sans promesse de classement. _(CAP-10)_
+
 ### NonFunctional Requirements
 
-NFR1: Dark-first uniquement — aucun thème clair ; orange Ubuntu = unique accent héros.
+NFR1: Baseline DS approuvé au checkpoint Epic 14 — aucune migration ou changement de thème dans le lot blog ; le mode sombre et le terminal sanctuarisé restent les références de contraste.
 NFR2: Aucune valeur de couleur/espace/rayon hardcodée ; tout passe par les tokens.
 NFR3: Port, pas copie — recréation en Vue 3 `<script setup>` + SCSS `@use` (jamais `@import`).
 NFR4: Compatibilité prerender — tout passe `nuxi generate`, accès DOM gardés.
-NFR5: Déploiement préservé — `CNAME` + chaîne `yarn generate` → `gh-pages` non régressés.
+NFR5: Déploiement préservé — `CNAME` + chaîne `pnpm generate` sous Docker → `gh-pages` non régressés ; aucun.handler manuel ni domaine codé en dur.
 NFR6: Langue & voix — français, 1re personne « je », vouvoiement, pas d'emoji.
 NFR7: Typo signature — Ubuntu Mono (titres/labels/code), Ubuntu sans (corps long).
 NFR8: Séquencement — la migration (FR1) doit être livrée et verte avant FR2+.
@@ -123,7 +129,7 @@ NFR12: Fiabilité des liens et accessibilité — zéro lien externe mort (TryOn
 NFR13: Sobriété & Zéro Emoji — aucun emoji dans les contenus et composants (NFR6), aucun visuel générique d'IA (pas de robots, cerveaux lumineux ou gradients néon SaaS).
 NFR14: Confidentialité & Propriété intellectuelle — respect strict des dépôts privés (`zohac/*`), aucun lien sortant 404, mention transparente des statuts réels.
 NFR15: Exécution Docker stricte — toute compilation et validation de gate s'effectue dans le conteneur Docker.
-NFR16: Performance SSG & Zéro régression — génération statique Nitro préservée avec 13 routes pré-rendues.
+NFR16: Performance SSG & Zéro régression — génération statique Nitro préservée pour toutes les routes publiques indexables, les routes Content et les artefacts SEO/AI, sans hypothèse sur un nombre total de routes.
 NFR17: Exécution stricte de la suite de validation dans l'environnement Docker (`pnpm lint`, `pnpm typecheck`, `pnpm generate`).
 NFR18: Zéro emoji dans les libellés, composants ou infobulles du sélecteur de thème (règle NFR6).
 NFR19: Sanctuarisation absolue du terminal (Terminal Hero et fenêtres flottantes conservent impérativement leur fond sombre aubergine `#2E0024` et leurs couleurs syntaxiques).
@@ -135,11 +141,16 @@ NFR20: Compatibilité SSG totale sous GitHub Pages sans dépendance dynamique se
 - SCSS structuré (`abstract/` `base/` `components/` `pages/`), entrée `assets/scss/main.scss`, système `@use`.
 - Nuxt : auto-import des composants, `pages/`, layout `layouts/default.vue`, images via `<nuxt-img>`/`<nuxt-picture>`.
 - Blog via `@nuxt/content` markdown — dossier `content/`.
-- Barre de qualité stricte = Docker-only gate (`pnpm lint && pnpm typecheck && pnpm generate`) avec 0 erreur et 13 routes pré-rendues.
+- Barre de qualité stricte = Docker-only gate (`pnpm lint && pnpm typecheck && pnpm generate`) avec 0 erreur, routes publiques/Content et artefacts SEO/AI vérifiés.
 - Lint : ESLint 10 (`@nuxt/eslint`), Prettier 3, Stylelint 17 (`stylelint-scss`).
+- SEO/AI : les artefacts de sitemap, robots, `llms.txt` et Markdown sont régénérés au build et vérifiés par la CI, sans double propriétaire de route.
 - **Epic 11 — Données centralisées dans `app/data/site.ts`** : mise à jour de `SITE.profile` (titre Full Stack TS, localisation Rouen/remote), `SITE.skills` (TypeScript, Nuxt, NestJS, etc.) et `SITE.projects` (Keova, TryOn, Nodium), consommées sans duplication locale.
 - **Epic 11 — Compatibilité statique SSG (Nitro)** : tout accès direct à `window`, `document`, `sessionStorage` strictement encapsulé dans `onMounted()` ou sous `import.meta.client`.
 - **Epic 13 — Cascade SCSS & Composable `useTheme`** : Déclaration des tokens de thème clair sous le sélecteur `[data-theme="light"]` dans `app/assets/scss/abstract/_root.scss`, script synchrone anti-FOUC injecté via `app.head.script` dans `nuxt.config.ts`, et gestion d'état réactive via `app/composables/useTheme.ts`.
+
+### Planning hygiene — critères historiques supersédés
+
+Les critères anciens qui mentionnent `yarn`, des handlers sitemap/robots manuels, des URL de production codées en dur ou un thème dark-only sont conservés uniquement comme historique. Pour tout nouveau lot, la source actuelle est le gate Docker `pnpm`, les propriétaires Nuxt SEO/ Site Config et le design system approuvé au checkpoint Epic 14.
 
 ### UX Design Requirements
 
@@ -227,8 +238,12 @@ FR45: Epic 14 — Toast de consentement RGPD inspiré du terminal et gestion des
 FR46: Epic 14 — Plan de taggage exhaustif (parcours IA, formulaire, terminal, blog, liens)
 FR47: Epic 14 — Observabilité SEO, vérification DNS OVH, sitemap.xml et robots.txt
 FR48: Epic 14 — Intégration MCP PostHog et validation Docker complète
-
-## Epic List
+FR53: Epic 14 — Migration SEO Nuxt automatisée avec `@nuxtjs/sitemap` et `@nuxtjs/robots`
+FR54: Epic 14 — AEO et découvrabilité IA avec AI Ready, Markdown et politique OpenAI
+FR55: Epic 16 — Contrat de contenu T0, resolver de visibility et migration contrôlée
+FR56: Epic 16 — Homepage `/blog` minimale, route article responsive et non-régression homepage
+FR57: Epic 16 — FR-18, checklist de preuve, promotion contrôlée et gate E1
+FR58: Epic 16 — Fixtures, validation Docker, navigateur/a11y, rollback et non-régression Epic 14
 
 ### Epic 1: Migration de la stack vers Nuxt 4
 Le site tourne sur une stack moderne (Nuxt 4, deps à jour, abandon de `@nuxt/bridge-edge`), build & déploiement verts — base saine et bloquante pour la refonte.
@@ -282,9 +297,15 @@ Le visiteur arrivant sur `jouan.ovh` (prospect ou client) comprend en moins de 1
 Le visiteur peut consulter l'ensemble du site dans un thème clair « Papier technique / Crème solaire » reposant et contrasté tout en profitant de l'authenticité des terminaux sombres sanctuarisés. Il bénéficie d'une synchronisation automatique avec son OS, d'une bascule manuelle rapide dans le header (desktop et tiroir mobile) et d'une persistance locale sans aucun clignotement visuel (anti-FOUC) au rechargement statique.
 **FRs covered:** FR37, FR38, FR39, FR40, FR41, FR42 _(NFR17 à NFR20, UX-DR32 à UX-DR35)_
 
-### Epic 14: Analytics Privacy-First (PostHog EU), Consentement RGPD & Google Search Console
-Le visiteur bénéficie d'un contrôle transparent sur sa vie privée via un toast de consentement sobre inspiré du terminal, tandis que Simon Jouan dispose d'une observabilité complète sur l'audience, la restitution de parcours (Session Replay sécurisé) et les conversions de l'offre IA, soutenue par l'indexation organique certifiée par Google Search Console (`sitemap.xml`, `robots.txt` et DNS OVH).
-**FRs covered:** FR43, FR44, FR45, FR46, FR47, FR48 _(CAP-1 à CAP-8)_
+### Epic 14: Analytics Privacy-First, SEO Nuxt, AEO & Google Search Console
+Le visiteur bénéficie d'un contrôle transparent sur sa vie privée via un toast de consentement sobre inspiré du terminal, tandis que Simon Jouan dispose d'une observabilité complète sur l'audience, la restitution de parcours (Session Replay sécurisé) et les conversions de l'offre IA, soutenue par une infrastructure SEO statique maintenue par les modules Nuxt SEO, une politique de découvrabilité IA explicite et des artefacts agent-readables sans promesse de classement.
+**FRs covered:** FR43, FR44, FR45, FR46, FR47, FR48, FR53, FR54 _(CAP-1 à CAP-10)_
+
+### Epic 16: Plateforme éditoriale durable — contrat, publication et patrimoine
+
+Simon peut publier et préserver une preuve technique fiable dans une boucle éditoriale statique, sans étendre l'Epic 6 historique ni concurrencer les propriétaires Epic 14. Le premier périmètre est T0 + E1 ; hubs, related, projets, AEO étendue, RSS, analytics enhancements et curation restent R1 conditionnels. Epic 16 est backlog tant que le checkpoint Epic 14, la SPEC et les contrats D-01 à D-08 ne sont pas ratifiés.
+
+**FRs covered:** FR55 à FR58 _(CAP-1, CAP-2, CAP-4, CAP-6 à CAP-9)_
 
 ---
 
@@ -563,6 +584,8 @@ So that j'évalue les compétences de Simon (UX-DR14, FR7).
 ## Epic 6: Blog
 
 Le visiteur lit les articles (index + article).
+
+> **Baseline historique conservée.** Epic 6 est clôturée après ses deux stories terminées. Les capacités éditoriales durables sont suivies dans Epic 16 ; ne pas ouvrir de story 6.3+.
 
 ### Story 6.1: Index du blog et empty-state
 
@@ -1136,6 +1159,8 @@ So that le déploiement sur GitHub Pages soit certifié à 100 % vert sans régr
 
 Simon Jouan dispose d'un suivi précis et respectueux du trafic, du comportement des visiteurs (Session Replay masqué) et de la conversion de l'offre commerciale IA, tout en garantissant une conformité RGPD exemplaire (toast de consentement terminal) et une indexation certifiée par Google Search Console (`sitemap.xml`, `robots.txt`, vérification DNS).
 
+> **Checkpoint requis.** Epic 14 reste `in-progress` jusqu'à la résolution de 14.1, 14.2 et 14.6. Epic 16 consomme ce checkpoint et ne modifie pas les propriétaires SEO/AEO/privacy sans décision séparée. Les critères manuels de 14.4 sont supersédés par 14.5.
+
 ### Story 14.1: Fondations PostHog EU, Composable de Consentement & Toast Cookie Terminal
 
 As a visiteur du site `jouan.ovh`,
@@ -1203,25 +1228,58 @@ So that je dispose d'une visibilité granulaire sur l'attractivité de l'offre I
   6. *Blog & Liens sortants :* `blog_article_viewed`, `blog_code_copied`, `external_link_clicked` sur les composants `<ZExternalLink>`
 **And** aucun appel télémétrique n'est émis si l'utilisateur a refusé le consentement ou activé Do Not Track.
 
+**Boundary Epic 16 :** les événements et propriétés analytics existants restent couverts par Epic 14 pour la non-régression. Epic 16 T0 n'ajoute aucun événement, propriété ou paramètre ; toute évolution fait l'objet de R-07 et d'une revue de vie privée.
+
 ### Story 14.4: Référencement Google Search Console (DNS TXT OVH), Sitemap XML & Robots.txt
 
 As a Simon Jouan,
-I want certifier la propriété de mon domaine apex et garantir l'exploration systématique de mes 13 routes par les moteurs de recherche,
+I want certifier la propriété de mon domaine apex et garantir l'exploration systématique des routes publiques et des articles publiés par les moteurs de recherche,
 So that mon positionnement sur les systèmes IA et l'automatisation métier bénéficie d'une visibilité organique optimale (FR47, FR48, CAP-5, CAP-6, CAP-8).
 
 **Acceptance Criteria:**
 
 **Given** l'infrastructure statique Nitro et le domaine `jouan.ovh`
 **When** on génère le site statique (`pnpm generate`)
-**Then** la route `https://jouan.ovh/sitemap.xml` est autogénérée et liste l'intégralité des 13 routes canoniques du site et articles de blog
+**Then** la route `https://jouan.ovh/sitemap.xml` est autogénérée et liste les routes publiques indexables ainsi que les articles de blog publiés
 **And** chaque URL du sitemap est absolue et générée dynamiquement via le composable `useSiteUrl()` (zéro hardcode)
-**And** le fichier `public/robots.txt` autorise l'exploration générale et référence la ligne `Sitemap: https://jouan.ovh/sitemap.xml`
+**And** la route Nitro `server/routes/robots.txt.ts` autorise l'exploration générale et référence la ligne `Sitemap: https://jouan.ovh/sitemap.xml`
 **And** la documentation de validation GSC par enregistrement DNS TXT chez OVH est formalisée dans `docs/specs/spec-analytics-search-console/seo-verification.md`
 **And** la configuration agentic MCP PostHog dans `.agents/mcp_config.json` et les variables de `.env.example` sont validées
 **And** la suite de validation Docker complète réussit avec 0 erreur :
   ```sh
   docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
   ```
+
+### Story 14.5: Migration SEO Nuxt automatisée — Sitemap, Robots & Site Config
+
+As a mainteneur du site,
+I want remplacer les artefacts SEO manuels par les modules Nuxt SEO officiels et une configuration de site partagée,
+so that chaque nouvelle route ou article `@nuxt/content` soit pris en compte au prochain build sans mettre à jour un manifeste manuel.
+
+**Acceptance Criteria:**
+
+**Given** la story 14.4 et le site statique GitHub Pages,
+**When** la migration est effectuée via Docker,
+**Then** `@nuxtjs/sitemap` et `@nuxtjs/robots` possèdent chacun une seule route publique, `NUXT_SITE_URL`/`NUXT_SITE_ENV` pilotent l'origine et l'indexabilité, et les handlers `server/routes/sitemap.xml.ts`/`robots.txt.ts` sont supprimés sans collision,
+**And** l'intégration Content v3, le mode `zeroRuntime`, les exclusions, les dates `lastmod` réelles et les URLs prérendues sont vérifiés,
+**And** la gate Docker, les assertions CI, le XML, le MIME robots, `_headers` et le `CNAME` restent verts sans hypothèse sur un nombre total de routes.
+
+### Story 14.6: AEO & AI Ready — `llms.txt`, Markdown, OAI-SearchBot et découvrabilité ChatGPT
+
+As a Simon Jouan,
+I want exposer les contenus publics déjà indexables dans des formats lisibles par les agents IA et mesurer les visites ChatGPT,
+so que la lisibilité machine et la découvrabilité observée restent vérifiables sans promettre un classement ou une citation ChatGPT garantis.
+
+**Acceptance Criteria:**
+
+**Given** la story 14.5 terminée et le déploiement statique,
+**When** `nuxt-ai-ready` est installé via Docker dans une version revue,
+**Then** `llms.txt`, `llms-full.txt`, les `.md` des routes prérendues et les liens HTML alternatifs sont générés sans MCP, WebMCP, runtime sync ou base de production,
+**And** `OAI-SearchBot` est autorisé pour la recherche tandis que `GPTBot` est bloqué pour l'entraînement selon la politique respectueuse de la vie privée documentée,
+**And** les artefacts publics ne contiennent aucune donnée personnelle, le workflow CI préserve les `_headers`, les routes internes sont revues et les liens/sections sont contrôlés,
+**And** la mesure PostHog respecte le consentement existant et conserve uniquement les paramètres UTM sanitizés, avec une fenêtre avant/après documentée et aucune promesse de ranking.
+
+**Décisions d'implémentation (2026-09-24) :** `nuxt-ai-ready@2.4.0` est verrouillé dans le manifeste et le lockfile après revue Docker. La configuration est statique (`contentSource: true`, `contentNegotiation: false`, `database: false`, `runtimeSync: false`, `cron: false`, `sitemapMd: true`, `describedby: true`) ; MCP, WebMCP, API Catalog et Agent Skills restent désactivés. Les routes publiques de base et les articles publiés sont exportés ; les noindex, brouillons, futurs et exclusions explicites sont retirés des artefacts AEO, tandis que les pages légales et coordonnées professionnelles déjà publiques restent des contenus publics. Les budgets sont de 64 KiB pour `llms.txt` et 1 MiB pour `llms-full.txt`. `OAI-SearchBot` est autorisé pour la politique de recherche et `GPTBot` bloqué pour l'entraînement ; `Content-Signal`/`Content-Usage` restent des indications voluntaristes, jamais un contrôle d'accès. La mesure avant/après dure au moins quatre semaines par période et distingue sessions referral, conversions, panel de prompts français, citations observées et contrôles GSC, sans score de lisibilité agent comme proxy de classement. Les vérifications HTTP post-déploiement sont requises avant de conclure le cycle de vie de la story.
 
 ---
 
@@ -1309,8 +1367,76 @@ So that le site soit exempt de régressions fonctionnelles, visuelles ou d'acces
   docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
   ```
 
+---
 
+## Epic 16: Plateforme éditoriale durable — contrat, publication et patrimoine
 
+Simon peut publier, préserver et faire découvrir une preuve technique fiable dans une boucle éditoriale statique. Cet Epic ne réécrit pas Epic 6, ne fait pas entrer les capacités conditionnelles dans T0 et ne concurrence pas les propriétaires Epic 14.
 
+**Statut de planning :** `backlog` — aucun story d'implémentation ne doit être créé avant le checkpoint Epic 14 et la ratification de la SPEC, du content-contract, du verification-plan et des décisions D-01 à D-08.
+
+**Source de vérité :** `docs/planning-artifacts/prds/prd-jouan.ovh-2026-09-24/prd.md`, `docs/specs/spec-blog-editorial/SPEC.md` et `docs/planning-artifacts/sprint-change-proposal-2026-09-25.md`.
+
+### Portée Epic 16
+
+#### T0 — Préparation technique
+
+- contrat de contenu minimal et migration contrôlée ;
+- resolver de visibility déterministe ;
+- homepage `/blog` avec promesse, empty state et trois derniers articles publics ;
+- route article responsive avec auteur, date, pilier, format et sources ;
+- non-régression homepage, Site Config, SEO, AEO, `CNAME` et `_headers` ;
+- supply chain, secrets, licences, analytics no-diff et gate Docker ;
+- validation navigateur/a11y desktop 1280 px et mobile 375 px.
+
+#### E1 — Lancement éditorial
+
+- article réel nommé et hash de contenu ;
+- checklist FR-18 versionnée et pass de Simon ;
+- promotion contrôlée et probes post-déploiement ;
+- preuve de rollback éditorial et de takedown confidentialité.
+
+#### R1 — Roadmap conditionnelle
+
+- hubs Vue dédiés ;
+- related filtré avant crawl ;
+- auteur enrichi et relations projet par ID public ;
+- AEO étendue par allow-list ;
+- RSS statique approuvé ;
+- curation `featured`, navigation principale et analytics enhancements.
+
+### Matrice de traçabilité Epic 16
+
+| CAP | Phase | FR couvertes | Story map prévu | Statut |
+| --- | --- | --- | --- | --- |
+| CAP-1 | T0/E1 | FR-1 à FR-3, FR-18 | contrat + resolver ; checklist FR-18 | bloqué avant ratification |
+| CAP-2 | T0 | FR-4 | `/blog` et empty state | bloqué avant ratification |
+| CAP-4 | T0/R1 | FR-6 à FR-9 | article responsive ; related R1 | bloqué avant ratification |
+| CAP-6 | T0/E1/R1 | FR-12 | visibility matrix et fixtures | bloqué avant ratification |
+| CAP-7 | T0/R1 | FR-13 à FR-15 | non-régression SEO/AEO ; extensions R1 | bloqué avant ratification |
+| CAP-8 | T0 | FR-9, FR-16 | DS, responsive, a11y | bloqué avant ratification |
+| CAP-9 | T0/E1/R1 | FR-17, FR-18 | Docker, probes, rollback, rapports | bloqué avant ratification |
+
+### Conditions d'entrée
+
+- Epic 6 est `done` et ses stories restent la baseline historique.
+- Epic 14 a résolu 14.1, 14.2 et 14.6 et possède un checkpoint écrit (`docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md`).
+- La SPEC et ses companions partagent les gates T0/E1/R1.
+- D-01 à D-07 sont ratifiés ; D-08 est confirmée au checkpoint.
+- Aucun événement/propriété analytics nouveau n'est requis en T0.
+- Les fixtures ne sont jamais versionnées ni déployées en production.
+
+### Critères de sortie Epic 16
+
+- T0 est vert sans régression des surfaces partagées.
+- E1 est vert avec article réel, FR-18, promotion et probes.
+- Les capacités R1 restent fermées jusqu'à leurs propres décisions et gates.
+- La commande Docker complète est verte :
+
+```sh
+docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"
+```
+
+- Les résultats statiques, navigateur/a11y et production sont consignés.
 
 

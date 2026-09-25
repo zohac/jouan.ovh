@@ -1,5 +1,5 @@
 <template>
-  <div class="hero-term">
+  <div class="hero-term" @click="onInteraction('click')" @keydown="onInteraction('keypress')">
     <div class="hero-term__bar">
       <span class="hero-term__dots" aria-hidden="true">
         <span class="hero-term__dot hero-term__dot--close" />
@@ -43,7 +43,7 @@
         class="hero-term__open"
         aria-label="Ouvrir le terminal interactif"
         aria-haspopup="dialog"
-        @click="openTerminal"
+        @click="openTerminal({ trigger_source: 'hero_prompt' })"
       >
         <span class="prm">
           <span class="prm__user">anon.@jouan.ovh</span>
@@ -78,6 +78,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from "vue";
+import { useAnalytics } from "~/composables/useAnalytics";
 import { useTerminal } from "~/composables/useTerminal";
 import { SITE } from "~/data/site";
 
@@ -96,6 +97,17 @@ const props = withDefaults(
 );
 
 const { open: openTerminal } = useTerminal();
+const { track } = useAnalytics();
+
+// Émission unique de la première interaction avec la fenêtre hero (story 14.3).
+const hasInteracted = ref(false);
+function onInteraction(type: "click" | "keypress") {
+  if (hasInteracted.value) {
+    return;
+  }
+  hasInteracted.value = true;
+  track("hero_terminal_interaction", { interaction_type: type });
+}
 
 interface ITermRow {
   cmd: string;

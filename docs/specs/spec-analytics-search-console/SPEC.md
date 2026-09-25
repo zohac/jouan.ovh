@@ -9,11 +9,11 @@ sources: []
 
 > **Canonical contract.** This SPEC and the files in `companions:` are the complete, preservation-validated contract for what to build, test, and validate. Source documents listed in frontmatter are for traceability only — consult them only if you need narrative rationale or prose color this contract intentionally omits.
 
-# Analytics Privacy-First (PostHog EU) & Observabilité SEO (Google Search Console)
+# Analytics Privacy-First, SEO Nuxt, AEO & Observabilité Google Search Console
 
 ## Why
 
-Suite au déploiement du repositionnement commercial ciblant les systèmes IA et l'automatisation métier, le site `jouan.ovh` ne dispose actuellement d'aucune visibilité sur le trafic et les conversions, ni d'aucun suivi d'indexation dans les moteurs de recherche. L'absence de métriques interdit d'évaluer l'attractivité de la proposition de valeur, d'auditer les parcours de qualification ou de détecter les requêtes de recherche organiques. Ce contrat spécifie l'instrumentation de PostHog Cloud EU (analytics, capture granulaire d'événements et Session Replay) et l'activation de Google Search Console (via enregistrement DNS TXT chez OVH, `sitemap.xml` et `robots.txt`), garantissant une observabilité maximale dès la V1 tout en sanctuarisant la conformité RGPD, la performance SSG et la rigueur Docker du projet.
+Suite au déploiement du repositionnement commercial ciblant les systèmes IA et l’automatisation métier, le site `jouan.ovh` ne dispose actuellement d’aucune visibilité sur le trafic et les conversions, ni d’aucun suivi d’indexation dans les moteurs de recherche. L’absence de métriques interdit d’évaluer l’attractivité de la proposition de valeur, d’auditer les parcours de qualification ou de détecter les requêtes de recherche organiques. Ce contrat spécifie l’instrumentation de PostHog Cloud EU, l’activation de Google Search Console et la maintenance SEO/AEO statique. Il met à disposition des capacités de mesure et des contrôles techniques, sans promettre un résultat de classement, de citation ou d’attribution.
 
 ## Capabilities
 
@@ -23,7 +23,7 @@ Suite au déploiement du repositionnement commercial ciblant les systèmes IA et
 
 - id: CAP-2
   intent: Le système active l'enregistrement de sessions (Session Replay) dès la première mise en production pour analyser les points de friction de navigation.
-  success: Les sessions utilisateurs sont enregistrées et visionnables sur l'interface PostHog EU, avec masquage intégral forcé de tous les champs de saisie, textes de formulaires et attributs sensibles (`mask_all_inputs: true`, `mask_all_element_attributes: true`), garantissant qu'aucune donnée personnelle n'est capturée dans la vidéo de session.
+  success: Les sessions utilisateurs sont enregistrées et visionnables sur l’interface PostHog EU après un consentement distinct, avec masquage forcé des champs de saisie, du terminal, des liens de contact et des attributs sensibles (`maskAllInputs: true`, `maskAllElementAttributes: true`, `maskTextSelector: ".ph-no-capture, .terminal, input, textarea"`, `recordBody: false`).
 
 - id: CAP-3
   intent: Le système instrumente un spectre exhaustif d'événements comportementaux et de micro/macro-conversions pour disposer d'un volume de données riche et exploitable avant tri ultérieur.
@@ -31,31 +31,50 @@ Suite au déploiement du repositionnement commercial ciblant les systèmes IA et
 
 - id: CAP-4
   intent: La collecte analytique et l'enregistrement de sessions garantissent une conformité stricte au RGPD via un mécanisme de consentement explicite (opt-in) sobre et révocable.
-  success: L'ingestion est cantonnée à l'infrastructure européenne de PostHog, un composant toast de consentement inspiré du terminal permet d'accepter ou refuser le Session Replay et la télémétrie, le signal `Do Not Track` désactive automatiquement la collecte, un lien permanent dans le footer permet de révoquer son choix à tout moment, et la page `/confidentialite` documente l'ensemble des finalités.
+  success: L'ingestion est cantonnée à l'infrastructure européenne de PostHog, un composant toast de consentement inspiré du terminal permet d'activer séparément la télémétrie et le Session Replay, les signaux `Do Not Track` et `Global Privacy Control` désactivent automatiquement la collecte, un lien permanent dans le footer permet de révoquer chaque choix à tout moment, et la page `/confidentialite` documente l'ensemble des finalités et des durées de conservation.
 
 - id: CAP-5
   intent: Le domaine apex `jouan.ovh` est vérifié et monitoré dans Google Search Console via un enregistrement DNS TXT géré chez OVH.
   success: Google Search Console valide la propriété du domaine sur le périmètre DNS global (`jouan.ovh`) sans requérir de balise meta ou de fichier de vérification supplémentaire dans le code source de l'application Nuxt.
 
 - id: CAP-6
-  intent: Les moteurs de recherche indexent l'intégralité des 13 routes publiques valides grâce à un `sitemap.xml` autogénéré et un fichier `robots.txt` déclaratif.
-  success: La route `https://jouan.ovh/robots.txt` déclare l'autorisation d'exploration et l'URL du sitemap, et `https://jouan.ovh/sitemap.xml` liste dynamiquement l'ensemble des routes publiques et articles de blog avec des URLs absolues générées par `useSiteUrl()`.
+  intent: Les moteurs de recherche indexent les routes publiques valides et les articles publiés grâce à un `sitemap.xml` autogénéré et un `robots.txt` déclaratif.
+  success: `robots.txt` déclare l’autorisation d’exploration en production et l’indexation est bloquée en staging ; `sitemap.xml` est généré par `@nuxtjs/sitemap` en `zeroRuntime`, contient une seule fois chaque route indexable et chaque article publié, avec des URLs absolues, un HTML statique correspondant et des dates `lastmod` issues de `updated` ou `date` uniquement.
 
 - id: CAP-7
   intent: L'agent IA dispose des capacités de configuration et d'audit PostHog via l'outillage MCP (Model Context Protocol).
   success: La spécification intègre le protocole MCP officiel PostHog (`@posthog/mcp` / wizard PostHog) pour permettre le requêtage et l'administration des métriques et feature flags directement depuis l'environnement agentic.
 
 - id: CAP-8
-  intent: L'ensemble des ajouts techniques préserve l'intégrité de la chaîne de compilation Docker et les standards de performance du projet.
-  success: La commande de validation `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` passe avec zéro erreur ESLint/Stylelint/TypeScript, et les 13 routes statiques sont générées dans `.output/public` avec leurs artefacts SEO conformes.
+  intent: L’ensemble des ajouts techniques préserve l’intégrité de la chaîne de compilation Docker et les standards de performance du projet.
+  success: La commande de validation `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` passe avec zéro erreur ESLint/Stylelint/TypeScript ; les fichiers SEO attendus sont générés dans `.output/public` et vérifiés par nom, contenu et origine, sans dépendance à un total de routes Nitro instable.
+
+- id: CAP-9
+  intent: La maintenance SEO repose sur les modules Nuxt SEO officiels et une configuration de site partagée, au lieu d’un manifeste de routes manuel.
+  success: `@nuxtjs/sitemap` et `@nuxtjs/robots` possèdent chacun une seule route, sont chargés avant `@nuxt/content`, alimentent le sitemap via `defineSitemapSchema()`/`defineRobotsSchema()` et les handlers manuels sont supprimés ; le build SSG reste statique et la CI vérifie les artefacts sans hypothèse sur un nombre total de routes.
+
+- id: CAP-10
+  intent: Les contenus publics sont exposés dans des formats lisibles par les agents IA, avec une politique de crawl OpenAI explicite et une mesure d’attribution.
+  success: `nuxt-ai-ready@2.4.0` produit au build `llms.txt`, `llms-full.txt`, `sitemap.md` et les représentations Markdown des routes publiques éligibles ; `OAI-SearchBot` est autorisé pour la politique de recherche, `GPTBot` est bloqué pour l’entraînement, les sorties ne contiennent aucune valeur de formulaire ni donnée privée et aucune documentation ne promet un classement ChatGPT. La mesure referral est descriptive, conditionnée au consentement et ne constitue pas une attribution causale.
 
 ## Constraints
 
 - **Hébergement européen strict :** Ingestion et stockage des données analytics exclusivement sur la région Europe de PostHog (`https://eu.i.posthog.com`).
-- **Session Replay sécurisé :** Masquage natif et strict de toute donnée textuelle saisie par l'utilisateur (`mask_all_inputs: true`).
-- **Consentement opt-in :** Activation du Session Replay et des cookies conditionnée au consentement explicite via un bandeau discret terminal conforme RGPD.
+- **Session Replay sécurisé :** Masquage natif et strict de toute donnée textuelle saisie par l’utilisateur, du terminal et des zones de contact (`maskAllInputs: true`, `maskAllElementAttributes: true`, `maskTextSelector: ".ph-no-capture, .terminal, input, textarea"`, `recordBody: false`).
+- **Consentements opt-in distincts :** La mesure d'audience et le Session Replay sont activés séparément via un bandeau discret terminal conforme RGPD.
 - **Isolation environnementale :** Neutralisation stricte du tracking en développement local et lors des builds SSG.
-- **Zéro hardcoding :** Aucune clé ou URL en dur dans le code ; consommation obligatoire de `runtimeConfig.public` et `useSiteUrl()`.
+- **Zéro hardcoding :** Aucune clé, URL de domaine ou secret dans le code ; consommation obligatoire de `NUXT_SITE_URL`/Site Config et de `useSiteUrl()` pour l’origine canonique.
+- **Source SEO unique :** Une seule implémentation possède `/sitemap.xml` et `/robots.txt` ; les routes manuelles de la story 14.4 sont retirées lors de la migration 14.5.
+- **Manifeste interdit :** Aucun tableau d’articles ou manifeste de routes manuel ne doit être réintroduit ; la découverte Nuxt Content v3 et le hook de prérenderisation dynamique sont les sources-de-vérité.
+- **Découverte statique :** Les routes articles sont prérendues et ne reposent pas sur une source runtime-only pour GitHub Pages.
+- **AEO sans promesse :** `llms.txt` et Markdown facilitent la lecture machine mais ne constituent pas un facteur de classement ou une garantie de citation ChatGPT.
+- **Version AEO revue :** `nuxt-ai-ready` est verrouillé exactement en `2.4.0` ; la compatibilité est vérifiée avec Nuxt `4.4.8`, `@nuxt/content` `3.14.0`, `better-sqlite3` `12.11.1`, `@nuxtjs/sitemap` `8.5.1`, `@nuxtjs/robots` `6.2.3` et Node Docker `22.23.0`.
+- **Configuration statique AEO :** `contentSource: true`, `contentNegotiation: false`, `database: false`, `runtimeSync: false`, `cron: false`, `sitemapMd: true`, `describedby: true` et `llmsTxt.markdownLinks: true` sont explicites ; MCP, WebMCP, API Catalog et Agent Skills sont désactivés.
+- **Couverture AEO :** les routes publiques de base et les articles publiés sont exportés ; les noindex, brouillons, futurs et exclusions explicites sont retirés des artefacts AEO après génération. Les pages légales et les coordonnées professionnelles déjà publiques restent des contenus publics.
+- **Budgets AEO :** `llms.txt` est plafonné à 64 KiB et `llms-full.txt` à 1 MiB ; la CI échoue au-delà de ces seuils.
+- **En-têtes AEO :** `public/_headers` reste la source des règles de sécurité et de cache ; AI Ready ajoute les règles Markdown à la sortie générée et la CI ne recopie jamais le fichier source.
+- **Routes internes :** les dumps `__ai-ready` et `__nuxt_content/blog/sql_dump.txt` sont supprimés de la sortie statique ; les autres routes techniques ne sont ni liées ni utilisées comme contenu AEO.
+- **Politique OpenAI explicite :** `OAI-SearchBot` et `GPTBot` sont configurés indépendamment ; `ChatGPT-User` est une visite initiée par une personne, pas un crawl automatique ni un contrôle d'accès. Les directives IA volontaires ne remplacent pas un contrôle d’accès.
 - **Environnement Docker exclusif :** Tout ajout de dépendance (`posthog-js`, etc.) et exécution d'outils doit s'effectuer dans Docker.
 - **Règle NFR6 :** Zéro emoji dans l'ensemble des fichiers, métadonnées, logs et libellés.
 - **Performance Core Web Vitals :** Chargement de `posthog-js` en mode différé / asynchrone non bloquant.
@@ -67,13 +86,22 @@ Suite au déploiement du repositionnement commercial ciblant les systèmes IA et
 - Ne pas intégrer de bandeau cookie lourd ou modal bloquant générique (conserver un toast discret et intégré à l'univers terminal du site).
 - Ne pas modifier le code Nuxt pour la vérification GSC (déléguée à l'enregistrement DNS TXT chez OVH).
 - Ne pas créer de tableau de bord analytics intégré dans l'UI du portfolio.
+- Ne pas exécuter de serveur MCP, WebMCP, runtime sync ou base de données de production pour l’AEO sur GitHub Pages.
+- Ne pas élargir la collecte PostHog : seuls les paramètres UTM de la whitelist peuvent documenter un referral, après consentement et hors DNT/GPC ; leurs valeurs sont validées comme identifiants de campagne et les emails, téléphones, tokens longs et credentials courts sont neutralisés.
+- Définir la mesure sur une période de référence et une période post-déploiement d’au moins quatre semaines ; distinguer sessions referral, conversions, panel de prompts français et contrôles GSC.
+- Ne pas déduire une causalité ou un classement d’un fichier `llms.txt`, d’une citation observée ou d’un score de lisibilité machine.
+- Ne pas indexer de contenu privé, de données de formulaire ou de secrets dans `llms.txt`, `llms-full.txt` ou les fichiers `.md`.
+- Ne pas utiliser `llms.txt` ou un score de lisibilité agent comme promesse de classement, de citation ou de visibilité ChatGPT.
 
 ## Success signal
 
-Une session de navigation sur `https://jouan.ovh` en production est capturée avec succès dans PostHog Cloud EU (restitution de la session en replay avec inputs masqués et remontée de l'ensemble des événements du plan de taggage), et Google Search Console valide la propriété du domaine apex tout en explorant le sitemap sans anomalie.
+En production, une session consenting aux mesures peut être observée dans PostHog Cloud EU (restitution de la session en replay avec inputs masqués et remontée des événements du plan de taggage), Google Search Console peut valider la propriété du domaine apex et explorer le sitemap, puis les artefacts SEO/AEO statiques sont disponibles avec une politique de crawlers IA explicite. Ces vérifications post-déploiement restent à confirmer pour chaque environnement.
 
 ## Assumptions
 
 - Simon Jouan ajoute l'enregistrement DNS TXT fourni par Google Search Console sur la zone DNS `jouan.ovh` chez OVH.
 - Simon Jouan dispose d'un projet PostHog Cloud EU et fournit sa clé de publication publique (`phc_...`) via la variable d'environnement `NUXT_PUBLIC_POSTHOG_KEY`.
-- Pour l'outillage MCP, une clé API personnelle PostHog (`POSTHOG_API_KEY`) avec le preset "MCP Server" sera mise à disposition de l'agent.
+- Simon fournit ou fixe `NUXT_SITE_URL`, `NUXT_SITE_NAME` et `NUXT_SITE_ENV=production` dans le build GitHub Pages afin que les modules SEO et AI Ready utilisent l’origine canonique.
+- La CI utilise Node 22 avec une version effective compatible avec le module AI Ready ; la version Docker observée est `22.23.0` et le minimum SQLite documenté est `22.13+` ou le fallback `better-sqlite3` installé.
+- La version `nuxt-ai-ready@2.4.0` est revue et verrouillée dans le manifeste et le lockfile ; aucune installation `latest`, mise à jour de Nuxt/Content ou second générateur `llms.txt` n'est suivie.
+- La publication GitHub Pages et la vérification HTTP post-déploiement sont des étapes opératoires distinctes de la gate locale ; elles doivent être consignées avant de conclure la lifecycle story.

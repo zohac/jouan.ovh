@@ -3,7 +3,12 @@
 allowBuilds:
   '@parcel/watcher': true
   better-sqlite3: true
+  core-js: false
   esbuild: true
   sharp: true
   unrs-resolver: true
   vue-demi: true
+# `nuxt-ai-ready@2.4.0` a été publié le jour de la revue ; l'exception est
+# conservée uniquement pour cette version exacte, vérifiée dans le lockfile.
+minimumReleaseAgeExclude:
+  - nuxt-ai-ready@2.4.0

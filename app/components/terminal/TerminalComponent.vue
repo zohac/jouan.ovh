@@ -7,7 +7,13 @@
     Déplacement de rendu uniquement — drag/resize/focus/historique inchangés.
   -->
   <Teleport to="body">
-    <div ref="terminalElement" :data-id="id" class="terminal" @click="focusUserInput" @keydown.esc="closeTerminal">
+    <div
+      ref="terminalElement"
+      :data-id="id"
+      class="terminal ph-no-capture"
+      @click="focusUserInput"
+      @keydown.esc="closeTerminal"
+    >
       <div class="terminal-header" @mousedown="handleHeaderMouseDown" @mouseup="handleMouseUp">
         <div class="terminal-dots">
           <div
@@ -64,6 +70,7 @@
 import { onMounted, onUnmounted, ref, watch } from "vue";
 import type { ITerminalConfig } from "~/components/terminal/interfaces";
 import programManager from "~/components/terminal/programs/ProgramManager";
+import { useAnalytics } from "~/composables/useAnalytics";
 import { escapeHtml } from "~/utils/functions";
 // Import statique : les valeurs par défaut sont disponibles dès l'exécution du setup,
 // sans course asynchrone qui laissait parfois la config vide à l'initialisation.
@@ -98,6 +105,11 @@ const userInputRef = ref<HTMLInputElement | null>(null);
 const openerElement = ref<HTMLElement | null>(null);
 const commandHistory = ref<string[]>([]);
 const commandHistoryPosition = ref<number>(-1);
+// Télémétrie (story 14.3) : horodatage d'ouverture (durée d'exploration) et
+// garde d'émission unique à la fermeture.
+const { track } = useAnalytics();
+const openedAt = ref<number>(0);
+const hasEmittedClose = ref<boolean>(false);
 const defaultConfig = ref({
   width: props.terminalConfig.width || terminalDefaults.width,
   height: props.terminalConfig.height || terminalDefaults.height,
@@ -163,6 +175,12 @@ const submitInput = (): void => {
 
 const runCommand = (command: string): string | HTMLElement => {
   const program = programManager.get(command);
+  // `command_name` n'est renseigné que pour une commande reconnue (jamais de
+  // saisie libre — RGPD art. 5, minimisation) ; l'inconnu n'expose que sa longueur.
+  track("terminal_command_executed", {
+    command_name: program ? command : null,
+    is_known_command: Boolean(program),
+  });
   if (program) {
     return program.run(
       { userName: defaultConfig.value.userName },
@@ -170,6 +188,7 @@ const runCommand = (command: string): string | HTMLElement => {
       program.initialData,
     );
   }
+  track("terminal_invalid_command", { command_raw_length: command.length });
   // La commande provient de la saisie utilisateur : on l'échappe car la réponse est rendue via v-html.
   return `Commande inconnue : ${escapeHtml(command)}`;
 };
@@ -284,13 +303,26 @@ const closeTerminal = () => {
   if (terminalElement.value) {
     terminalElement.value.style.display = "none";
   }
+  // Émission unique : durée d'exploration + nombre de commandes saisies.
+  if (!hasEmittedClose.value) {
+    hasEmittedClose.value = true;
+    const duration = openedAt.value > 0 ? Math.round((Date.now() - openedAt.value) / 1000) : 0;
+    track("terminal_window_closed", {
+      duration_open_seconds: duration,
+      commands_count: commandHistory.value.length,
+    });
+  }
   // Retour du focus au déclencheur (a11y : ne pas perdre le focus sur <body>
   // à la fermeture clavier — Échap ou Entrée/Espace sur la pastille close).
   openerElement.value?.focus();
 };
 
 onMounted(() => {
+  openedAt.value = Date.now();
   updateTerminalDimensions();
+  // F-07 : flush `terminal_window_closed` si l'onglet se ferme brutalement
+  // (avantunload/pagehide). Idempotent grâce à `hasEmittedClose`.
+  window.addEventListener("pagehide", closeTerminal);
   // Mémorise le déclencheur AVANT de déplacer le focus dans le terminal : à ce
   // stade, l'élément actif est encore le bouton qui a ouvert le terminal.
   if (import.meta.client && document.activeElement instanceof HTMLElement) {
@@ -312,6 +344,8 @@ onUnmounted(() => {
   window.removeEventListener("mouseup", handleGlobalMouseUp);
   window.removeEventListener("mousemove", handleGlobalResizeMouseMove);
   window.removeEventListener("mouseup", handleGlobalResizeMouseUp);
+  // F-07 : nettoyage du listener pagehide ajouté au mount.
+  window.removeEventListener("pagehide", closeTerminal);
 });
 </script>
 

@@ -16,6 +16,8 @@ export interface PageSeoOptions {
   imageAlt?: string;
   /** Type Open Graph : "website" (défaut), "article" ou "profile". */
   type?: "website" | "article" | "profile";
+  /** Directive meta robots facultative, notamment "noindex, nofollow" pour un article exclu. */
+  robots?: string;
   /** Format Twitter Card : si omis, "summary_large_image" si type article avec image, sinon "summary". */
   twitterCard?: "summary" | "summary_large_image";
   /** Données JSON-LD (objet Schema.org ou tableau d'objets) injectées via jsonLdScript. */
@@ -27,7 +29,7 @@ export interface PageSeoOptions {
  * <title>, canonical, description, Open Graph (type, title, desc, url, image, alt)
  * et Twitter Card (card, title, desc, image, alt) + JSON-LD échappé.
  *
- * Résout automatiquement les URLs absolues à partir de `useSiteUrl()` (runtimeConfig).
+ * Résout automatiquement les URLs absolues à partir de `useSiteUrl()` (Nuxt Site Config).
  */
 export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined | null>): void {
   const siteUrl = useSiteUrl();
@@ -60,6 +62,7 @@ export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined 
       imageUrl,
       imageAlt: opts.imageAlt,
       type,
+      robots: opts.robots,
       twitterCard,
       jsonLd: opts.jsonLd,
     };
@@ -95,6 +98,7 @@ export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined 
     ogDescription: () => seo.value?.description,
     ogUrl: () => seo.value?.canonicalUrl,
     ogType: () => seo.value?.type,
+    robots: () => seo.value?.robots,
     ogImage: () => seo.value?.imageUrl,
     ogImageAlt: () => seo.value?.imageAlt,
     twitterCard: () => seo.value?.twitterCard,

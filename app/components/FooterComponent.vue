@@ -19,7 +19,15 @@
 
         <nav class="ftr__col" aria-label="Navigation du pied de page">
           <h2 class="ftr__title">// Navigation</h2>
-          <NuxtLink v-for="item in navItems" :key="item.to" :to="item.to" class="ftr__link">{{ item.label }}</NuxtLink>
+          <NuxtLink
+            v-for="item in navItems"
+            :key="item.to"
+            :to="item.to"
+            class="ftr__link"
+            :data-analytics="item.analytics"
+          >
+            {{ item.label }}
+          </NuxtLink>
         </nav>
 
         <div class="ftr__col">
@@ -45,7 +53,10 @@
     <div class="ftr__bottom-bar">
       <div class="ftr__container ftr__bottom">
         <span>© {{ year }} Simon Jouan — jouan.ovh</span>
-        <span class="ftr__term">anon.@jouan.ovh:~$ <span class="ftr__cmd">echo "merci de votre visite"</span></span>
+        <span class="ftr__bottom-right">
+          <button type="button" class="ftr__cookies" @click="openConsentModal">Gestion des cookies</button>
+          <span class="ftr__term">anon.@jouan.ovh:~$ <span class="ftr__cmd">echo "merci de votre visite"</span></span>
+        </span>
       </div>
     </div>
   </footer>
@@ -55,14 +66,31 @@
 import LinkListComponent from "~/components/LinkListComponent.vue";
 import { SITE } from "~/data/site";
 
-const navItems = [
+const { openConsentModal } = useConsent();
+
+interface FooterNavItem {
+  to: string;
+  label: string;
+  /** Contrat `data-analytics` (story 14.3) — uniquement pour les pages légales. */
+  analytics?: string;
+}
+
+const navItems: FooterNavItem[] = [
   { to: "/", label: "Accueil" },
   { to: "/services", label: "Services" },
   { to: "/about", label: "À propos" },
   { to: "/blog", label: "Blog" },
   { to: "/contact", label: "Contact" },
-  { to: "/confidentialite", label: "Confidentialité" },
-  { to: "/mentions-legales", label: "Mentions légales" },
+  {
+    to: "/confidentialite",
+    label: "Confidentialité",
+    analytics: "footer_legal_clicked|target_page:confidentialite",
+  },
+  {
+    to: "/mentions-legales",
+    label: "Mentions légales",
+    analytics: "footer_legal_clicked|target_page:mentions-legales",
+  },
 ];
 
 const profile = SITE.profile;
@@ -219,15 +247,52 @@ const year = new Date().getFullYear();
   color: var(--text-body);
 }
 
+// Regroupe le déclencheur cookies et la ligne terminal à droite,
+// en préservant la répartition gauche/droite d'origine de la barre basse.
+.ftr__bottom-right {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
 .ftr__cmd {
   color: var(--term-green);
   font-weight: var(--fw-medium);
+}
+
+// Déclencheur « Gestion des cookies » (Epic 14) : bouton natif stylé en lien discret.
+.ftr__cookies {
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-body);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-standard);
+
+  &:hover {
+    color: var(--accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid transparent; // forced-colors : rendu en couleur système
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+    box-shadow: var(--ring-accent);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ftr__link {
     transition: none;
     transform: none !important;
+  }
+
+  .ftr__cookies {
+    transition: none;
   }
 }
 </style>

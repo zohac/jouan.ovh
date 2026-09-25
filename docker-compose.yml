@@ -1,5 +1,5 @@
 # Environnement de développement isolé pour jouan.ovh.
-# Node 22 LTS (cible supportée par Nuxt 4) + pnpm via corepack (pinné par package.json#packageManager).
+# Node 22 LTS (cible supportée par Nuxt 4 et AI Ready, minimum 22.13) + pnpm via corepack (pinné par package.json#packageManager).
 #
 # Usage :
 #   docker compose up        -> installe les deps puis lance `pnpm dev` (http://localhost:3000)
@@ -18,13 +18,22 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - NUXT_TELEMETRY_DISABLED=1
+      # Source canonique SEO partagée par le build local et les modules Nuxt SEO.
+      # Les valeurs proviennent du .env local ou de l'environnement du runner.
+      - NUXT_SITE_URL=${NUXT_SITE_URL:-}
+      - NUXT_SITE_NAME=${NUXT_SITE_NAME:-}
+      - NUXT_SITE_ENV=${NUXT_SITE_ENV:-}
     ports:
       - "3000:3000"
     volumes:
       - .:/app
       - node_modules:/app/node_modules
     # corepack active la version de pnpm déclarée par package.json#packageManager
-    command: sh -c "corepack enable && pnpm install && pnpm dev --host 0.0.0.0"
+    # La validation reste dans le service pour que `docker compose down` reste
+    # disponible sur un checkout propre, sans .env.local.
+    command: >-
+      sh -c "test -n \"$${NUXT_SITE_URL}\" && test -n \"$${NUXT_SITE_NAME}\" && test -n \"$${NUXT_SITE_ENV}\" &&
+      corepack enable && pnpm install --frozen-lockfile && pnpm dev --host 0.0.0.0"
 
 volumes:
   node_modules:

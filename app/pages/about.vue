@@ -17,7 +17,9 @@
             </p>
             <div class="about__cta">
               <ZButton :as="NuxtLink" to="/contact" variant="primary">Me contacter</ZButton>
-              <ZButton as="a" :href="`mailto:${profile.email}`" variant="secondary">M'écrire</ZButton>
+              <ZButton as="a" :href="`mailto:${profile.email}`" variant="secondary" class="ph-no-capture"
+                >M'écrire</ZButton
+              >
             </div>
           </div>
 

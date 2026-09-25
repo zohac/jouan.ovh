@@ -29,13 +29,15 @@
               <div class="contact__hp" aria-hidden="true">
                 <label>
                   Ne remplissez pas ce champ
-                  <input v-model="honeypot" type="text" tabindex="-1" autocomplete="off" />
+                  <input v-model="honeypot" class="ph-no-capture" type="text" tabindex="-1" autocomplete="off" />
                 </label>
               </div>
 
               <div class="contact__row">
                 <ZInput
                   v-model="form.name"
+                  class="ph-no-capture"
+                  name="name"
                   label="Nom"
                   placeholder="Votre nom"
                   required
@@ -45,6 +47,8 @@
                 />
                 <ZInput
                   v-model="form.email"
+                  class="ph-no-capture"
+                  name="email"
                   label="Email professionnel"
                   type="email"
                   placeholder="vous@entreprise.com"
@@ -58,12 +62,16 @@
               <div class="contact__row">
                 <ZInput
                   v-model="form.company"
+                  class="ph-no-capture"
+                  name="company"
                   label="Entreprise"
                   placeholder="Nom de votre structure"
                   autocomplete="organization"
                 />
                 <ZInput
                   v-model="form.frequency"
+                  class="ph-no-capture"
+                  name="frequency"
                   label="Combien de fois ce process se répète-t-il ?"
                   placeholder="Ex : quotidien, 10x par semaine…"
                   autocomplete="off"
@@ -72,6 +80,8 @@
 
               <ZInput
                 v-model="form.workflow"
+                class="ph-no-capture"
+                name="workflow"
                 label="Quel processus souhaitez-vous améliorer ?"
                 placeholder="Ex : qualification des leads, devis BTP, extraction de factures…"
                 required
@@ -82,6 +92,8 @@
 
               <ZInput
                 v-model="form.currentState"
+                class="ph-no-capture"
+                name="currentState"
                 label="Comment fonctionne-t-il aujourd’hui ?"
                 multiline
                 placeholder="Outils utilisés, étapes manuelles, qui intervient, où l’information se perd…"
@@ -117,7 +129,12 @@
                 <div class="infoitem">
                   <dt class="infoitem__k"><span aria-hidden="true">// </span>email</dt>
                   <dd class="infoitem__v">
-                    <a class="contact__email" :href="`mailto:${contact.email}`">{{ contact.email }}</a>
+                    <a
+                      class="contact__email ph-no-capture"
+                      :href="`mailto:${contact.email}`"
+                      data-analytics="direct_email_copied|email_context:contact_page"
+                      >{{ contact.email }}</a
+                    >
                   </dd>
                 </div>
                 <div class="infoitem">
@@ -150,7 +167,12 @@
                 anon.@jouan.ovh:~$ <span class="contact__prompt-cmd">./contact</span>
               </p>
               <p class="prose contact__term-text">Vous préférez la ligne de commande ? Ouvrez le terminal.</p>
-              <ZButton variant="terminal" size="sm" aria-haspopup="dialog" @click="openTerminal">
+              <ZButton
+                variant="terminal"
+                size="sm"
+                aria-haspopup="dialog"
+                @click="openTerminal({ trigger_source: 'contact_cta' })"
+              >
                 <template #icon><ZIcon name="terminal" /></template>
                 Ouvrir le terminal
               </ZButton>
@@ -168,8 +190,9 @@
 <script setup lang="ts">
 // Page Contact — colonne gauche : en-tête + formulaire (story 7.1, envoi Web3Forms,
 // service tiers SANS serveur). Colonne droite : infos + CTA terminal + socials (story 7.2).
-import { nextTick, reactive, ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import { NuxtLink } from "#components";
+import { useAnalytics } from "~/composables/useAnalytics";
 import { SITE } from "~/data/site";
 
 // Infos de contact — source unique `app/data/site.ts`.
@@ -178,6 +201,8 @@ const contact = SITE.profile;
 // Ouverture de l'easter-egg terminal via le lanceur partagé (enregistré par le header).
 // no-op au prerender (aucun lanceur) → prerender-safe ; ouvre le terminal côté client.
 const { open: openTerminal } = useTerminal();
+const { track } = useAnalytics();
+const route = useRoute();
 
 interface ContactForm {
   name: string;
@@ -234,6 +259,68 @@ function cleanInput(val?: string): string {
   return (val ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
 }
 
+// ---- Télémétrie formulaire (story 14.3) ----
+// Délégation focusin/focusout : aucun attribut n'est ajouté aux primitives ZInput,
+// on lit le `name` natif du contrôle (ajouté côté template pour le tracking).
+const FIELD_IDS = new Set(["name", "email", "company", "frequency", "workflow", "currentState"]);
+const focusedFields = new Set<string>();
+
+// Whitelist pour `contact_page_viewed.origin_cta` (F-21) : aucune valeur libre
+// remontée vers PostHog — uniquement des identifiants fermés.
+const ALLOWED_ORIGINS = new Set(["hero_cta", "footer", "direct", "services_cta", "blog_cta", "final_cta"]);
+function sanitizeOrigin(value: unknown): string {
+  return typeof value === "string" && ALLOWED_ORIGINS.has(value) ? value : "direct";
+}
+
+// Sanitiser referrer → hostname uniquement (F-04).
+function sanitizeReferrer(referrer: string): string {
+  if (!referrer) {
+    return "direct";
+  }
+  try {
+    return new URL(referrer).hostname || "direct";
+  } catch {
+    return "direct";
+  }
+}
+
+function fieldNameOf(target: EventTarget | null): string | null {
+  const control = target instanceof HTMLElement ? target.closest("input, textarea") : null;
+  const name = control?.getAttribute("name") ?? null;
+  return name && FIELD_IDS.has(name) ? name : null;
+}
+
+// Bucket de longueur (jamais le contenu saisi — RGPD art. 5, minimisation).
+function charCountBucket(length: number): string {
+  if (length < 20) {
+    return "<20";
+  }
+  if (length <= 100) {
+    return "20-100";
+  }
+  return ">100";
+}
+
+function onFieldFocusIn(event: FocusEvent): void {
+  const fieldId = fieldNameOf(event.target);
+  if (fieldId && !focusedFields.has(fieldId)) {
+    focusedFields.add(fieldId);
+    track("contact_field_focused", { field_id: fieldId });
+  }
+}
+
+function onFieldFocusOut(event: FocusEvent): void {
+  const fieldId = fieldNameOf(event.target);
+  if (!fieldId) {
+    return;
+  }
+  const control = event.target as HTMLInputElement | HTMLTextAreaElement | null;
+  const value = control?.value?.trim() ?? "";
+  if (value) {
+    track("contact_field_completed", { field_id: fieldId, char_count_bucket: charCountBucket(value.length) });
+  }
+}
+
 function validate(): boolean {
   const name = cleanInput(form.name);
   const email = cleanInput(form.email);
@@ -258,6 +345,21 @@ watch(
   },
 );
 
+// Entrée dans le tunnel + branchement de la délégation focus du formulaire.
+onMounted(() => {
+  track("contact_page_viewed", {
+    origin_cta: sanitizeOrigin(route.query.origin),
+    referrer: sanitizeReferrer(document.referrer),
+  });
+  formRef.value?.addEventListener("focusin", onFieldFocusIn);
+  formRef.value?.addEventListener("focusout", onFieldFocusOut);
+});
+
+onBeforeUnmount(() => {
+  formRef.value?.removeEventListener("focusin", onFieldFocusIn);
+  formRef.value?.removeEventListener("focusout", onFieldFocusOut);
+});
+
 async function focusSentCard(): Promise<void> {
   await nextTick();
   sentCard.value?.$el?.focus();
@@ -267,7 +369,15 @@ async function onSubmit(): Promise<void> {
   submitted.value = true;
   submitError.value = "";
 
-  if (!validate()) {
+  const startedAt = performance.now();
+  const fieldsFilledCount = [form.name, form.email, form.company, form.workflow, form.currentState, form.frequency]
+    .map((value) => cleanInput(value))
+    .filter(Boolean).length;
+
+  const isValid = validate();
+  track("contact_form_submit_attempt", { fields_filled_count: fieldsFilledCount, form_validity: isValid });
+
+  if (!isValid) {
     // a11y : amener le focus sur le 1er champ invalide.
     await nextTick();
     formRef.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
@@ -307,12 +417,23 @@ async function onSubmit(): Promise<void> {
       },
     });
     if (res.success) {
+      track("contact_form_success", {
+        has_company: Boolean(company),
+        latency_ms: Math.round(performance.now() - startedAt),
+      });
       sent.value = true;
       await focusSentCard();
     } else {
+      // Code interne uniquement (jamais `res.message` — peut contenir le contenu
+      // saisi, ex. "Invalid email: user@foo.com"). RGPD art. 5 — minimisation.
+      track("contact_form_error", {
+        error_status: "api_rejection",
+        error_message: "web3forms_rejected",
+      });
       submitError.value = ERROR_MESSAGE;
     }
   } catch {
+    track("contact_form_error", { error_status: "network_error", error_message: "fetch_error" });
     submitError.value = ERROR_MESSAGE;
   } finally {
     sending.value = false;

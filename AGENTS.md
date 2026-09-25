@@ -8,8 +8,8 @@ Ce document constitue la **source de vérité universelle** pour tout agent IA (
 
 - **Projet :** `jouan.ovh` — Portfolio, vitrine de services et blog de **Simon Jouan** (développeur Full Stack spécialisé en systèmes IA & automatisation métier).
 - **URL de production :** [`https://jouan.ovh`](https://jouan.ovh) (déployé sur **GitHub Pages**, domaine custom, HTTPS Let's Encrypt forcé, DNS OVH).
-- **Statut actuel :** **Repositionnement commercial V1.1 livré** (Désancrage tarifaire, 3 niveaux d'intervention sur devis, section dédiée AI Care dès 250 € HT/mois, Blueprint en cadrage, Epics 1 à 13 et Epic 15 validés et clôturés). Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
-- **Langue & Voix (NFR6) :** 
+- **Statut actuel :** **Repositionnement commercial V1.1 livré** (Désancrage tarifaire, 3 niveaux d'intervention sur devis, section dédiée AI Care dès 250 € HT/mois, Blueprint en cadrage, Epics 1 à 13 et Epic 15 validés et clôturés, Epic 14 en cours avec roadmap SEO/AEO). Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
+- **Langue & Voix (NFR6) :**
   - Interface et contenu en **FRANÇAIS** (`lang="fr"`).
   - Voix : **1re personne (« je »)** pour Simon, **vouvoiement** pour le visiteur/client.
   - **ZÉRO EMOJI** dans le contenu et l'UI (univers sobre et professionnel inspiré du terminal).
@@ -38,11 +38,11 @@ docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typechec
 # Commandes ponctuelles
 docker compose run --rm web sh -c "corepack enable && pnpm lint"       # eslint + stylelint
 docker compose run --rm web sh -c "corepack enable && pnpm typecheck"  # vérification TypeScript vue-tsc
-docker compose run --rm web sh -c "corepack enable && pnpm generate"   # build statique SSG (13 routes)
+docker compose run --rm web sh -c "corepack enable && pnpm generate"   # build statique SSG (routes publiques + articles)
 docker compose run --rm web sh -c "corepack enable && pnpm add -D <pkg>" # ajout de dépendance
 ```
 
-*Note SQLite / `@nuxt/content` :* Lancer `pnpm generate` dans un conteneur séparé pendant que le serveur dev tourne peut invalider la base de contenu SQLite du dev. Si `/blog` affiche une erreur en dev, exécuter `docker compose restart web`.
+_Note SQLite / `@nuxt/content` :_ Lancer `pnpm generate` dans un conteneur séparé pendant que le serveur dev tourne peut invalider la base de contenu SQLite du dev. Si `/blog` affiche une erreur en dev, exécuter `docker compose restart web`.
 
 ---
 
@@ -81,13 +81,13 @@ jouan.ovh/
 │   │   ├── FooterComponent.vue
 │   │   └── HexagonLinkComponent.vue
 │   ├── composables/
-│   │   ├── useSiteUrl.ts    # Source unique pour l'URL de base résolue via runtimeConfig
+│   │   ├── useSiteUrl.ts    # Source unique pour l'URL de base résolue via Nuxt Site Config
 │   │   └── usePageSeo.ts    # Helper universel useSeoMeta, canonical et Schema.org / JSON-LD
 │   ├── data/
 │   │   └── site.ts          # SOURCE UNIQUE de vérité pour le profil, compétences et projets (SITE)
 │   ├── layouts/
 │   │   └── default.vue      # Layout principal
-│   └── pages/               # 13 routes statiques pré-rendues
+│   └── pages/               # routes publiques + articles dynamiques pré-rendus
 │       ├── index.vue        # Accueil (Hero terminal, aperçu services, projets phares)
 │       ├── services.vue     # Offres de freelance et déroulé du process en 4 étapes
 │       ├── about.vue        # Biographie, timeline expériences/formations et stack
@@ -101,6 +101,9 @@ jouan.ovh/
 │   └── blog/                # Articles de blog au format Markdown
 ├── content.config.ts        # Schéma et validation Zod des collections @nuxt/content
 ├── nuxt.config.ts           # Configuration centrale Nuxt 4
+├── server/plugins/
+│   ├── seo-content.ts       # Réconciliation Content/Sitemap après fusion des sources
+│   └── ai-ready-markdown.ts # Nettoyage contrôlé des exports Markdown AI Ready
 ├── public/
 │   ├── CNAME                # Domaine de production officiel (contient "jouan.ovh")
 │   ├── _headers             # En-têtes HTTP de sécurité pour gh-pages
@@ -114,20 +117,24 @@ jouan.ovh/
 ## 5. Invariants & Règles d'Implémentation Critiques
 
 ### 1. URLs et Domaines : Jamais de Hardcoding
+
 - **Règle :** Ne **JAMAIS** écrire en dur `https://jouan.ovh` ou `https://dev.jouan.ovh` dans le code applicatif ou les métadonnées.
-- **Pattern :** Toujours injecter l'URL via le composable `useSiteUrl()`. Ce composable lit `runtimeConfig.public.siteUrl` (surchargeable par la variable d'environnement `NUXT_PUBLIC_SITE_URL`).
+- **Pattern :** Toujours injecter l'URL via le composable `useSiteUrl()`. Ce composable lit `useSiteConfig().url`, alimenté au build par `NUXT_SITE_URL` (avec `NUXT_SITE_NAME` et `NUXT_SITE_ENV`). `runtimeConfig.public.siteUrl` et `NUXT_PUBLIC_SITE_URL` ne sont plus des sources SEO.
 - **SEO :** Utiliser systématiquement `usePageSeo({ title, description, path, ... })` pour garantir l'unicité des canonicals et des balises OpenGraph/Twitter.
 
 ### 2. Contenu Partagé : DRY Strict
+
 - **Règle :** Ne **JAMAIS** re-hardcoder le nom, la bio, la ville, l'email ou les projets dans une page ou un programme terminal.
 - **Pattern :** Consommer `SITE.profile`, `SITE.skills` ou `SITE.projects` depuis `app/data/site.ts`.
 
 ### 3. Tokens & Primitives de Layout SCSS
+
 - **No Hardcode :** Aucune couleur, rayon, ombre ou marge en dur. Toujours consommer les variables globales `var(--token)`.
 - **Primitives globales :** Les classes de mise en page `.section`, `.section--sunken`, `.container`, `.eyebrow`, `.prose`, `.hero__tags` vivent dans `app/assets/scss/base/_layout.scss`. **Ne JAMAIS les redéclarer dans un `<style scoped>` de page**.
 - **Piège du padding multi-classes :** Lorsqu'un élément cumule `.container` et une classe locale (ex. `.hero__in.container`), ne **JAMAIS** utiliser le raccourci `padding: ...`. Utiliser impérativement les propriétés logiques **`padding-inline`** et **`padding-block`** pour éviter l'écrasement mutuel des axes.
 
 ### 4. Accessibilité (a11y) dès la Conception
+
 - **Liens externes :** TOUT lien ouvrant un nouvel onglet (`target="_blank"`) DOIT utiliser la primitive **`<ZExternalLink>`** (`app/components/ui/ZExternalLink.vue`). Elle impose `rel="noopener"` et injecte le libellé masqué accessible `(ouvre dans un nouvel onglet)`.
 - **Hiérarchie de titres :** Tout libellé de section eyebrow ouvrant une section sans titre h2 propre doit être un **`<h2 class="eyebrow">`** (le style neutralisé hérite de `font-weight`/`line-height` pour une parité visuelle stricte). Les préfixes décoratifs `// ` doivent être encapsulés dans `<span aria-hidden="true">// </span>`.
 - **Séquences :** Toute répétition de cartes ou étapes doit être balisée en listes sémantiques **`<ul>` ou `<ol>` avec `<li>`** (avec `> li { display: flex }` si cartes flex).
@@ -136,21 +143,25 @@ jouan.ovh/
 - **Raccourcis clavier :** La touche `Échap` ferme la fenêtre terminal et restitue automatiquement le focus à l'élément déclencheur.
 
 ### 5. Nuxt 4 Gotchas
+
 - **`<component :is="...">` :** Passer un nom de composant en chaîne de caractères (`:is="'NuxtLink'"`) **ne résout pas** l'auto-import Nuxt. Il faut importer explicitement la référence depuis `#components` (`import { NuxtLink } from "#components"`) et la lier comme valeur.
 - **Prerender compatibility :** Le site étant statique, aucun accès direct à `window`, `document` ou `localStorage` n'est toléré en dehors du hook `onMounted` ou d'une garde `import.meta.client`.
 - **Génération d'IDs :** Toujours utiliser `useId()` de Nuxt/Vue pour générer des attributs `id` de formulaires hydration-safe.
 
 ### 6. Pipeline CI/CD & Déploiement
+
 - Le fichier `public/CNAME` contient **`jouan.ovh`**. Ne jamais le modifier ou le supprimer.
 - Le step `Verify static output` dans `.github/workflows/cd.yml` vérifie `grep -qx "jouan.ovh" .output/public/CNAME`. Tout changement de domaine doit être répercuté simultanément sur ces deux fichiers.
 
 ### 7. Composants Immersifs, Canvas & WebGL (Acquis Epic 11)
+
 - **Cycle de vie client strict :** Tout accès WebGL, animation canvas ou écouteur de souris (`mousemove`, `resize`, `scroll`) DOIT être instancié dans `onMounted()` et obligatoirement démonté/nettoyé dans `onBeforeUnmount()`.
 - **Résilience WebGL :** Toujours écouter l'événement `webglcontextlost` sur le canvas et basculer gracieusement vers le repli CSS pur sans interrompre la navigation.
 - **Économie de ressources :** Mettre en pause les boucles de rendu (`requestAnimationFrame`) lorsque l'onglet est masqué via l'API `document.visibilitychange`.
 - **Neutralisation universelle :** Tout effet cinétique (auroras, 3D tilt sur `ZCard`, magnétisme sur `ZButton`, micro-curseur) doit être strictement désactivé sous `prefers-reduced-motion: reduce` et sous `@media (hover: none)`.
 
 ### 8. Fidélité Visuelle & Spécifications (Accords Rétro Epic 11)
+
 - **Spécifications complètes dès la rédaction :** Toute nouvelle story d'UI doit stipuler les contraintes de rendu spatial (dimensions, échelles `clamp`, transparences, gestion de l'arrière-plan d'ambiance) directement dérivées de la maquette cible.
 - **Revue visuelle obligatoire :** L'obtention d'une gate de test verte (lint/build) est une condition nécessaire mais NON suffisante pour valider une story d'interface. Un contrôle visuel comparatif (navigateur / captures) est obligatoire avant clôture.
 
@@ -166,7 +177,7 @@ Avant de soumettre tout changement ou de clore une tâche, l'agent IA doit exéc
    ```
    - 0 erreur ESLint / Stylelint.
    - 0 erreur TypeScript vue-tsc.
-   - 13 routes statiques (+ assets) pré-rendues avec succès par Nitro.
+   - Routes publiques, articles et artefacts SEO/AEO pré-rendus avec succès par Nitro ; les assertions CI contrôlent `llms.txt`, `llms-full.txt`, les jumeaux `.md`, les liens alternatifs et les budgets.
 2. **Vérification visuelle & comportementale :**
    - Contrôle visuel comparatif sur navigateur (desktop et mobile) conforme à la maquette cible.
    - Rendu fidèle au Design System (thème sombre aubergine, orange accent, typographie Ubuntu).
