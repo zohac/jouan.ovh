@@ -1,0 +1,31 @@
+# jouan.ovh
+
+> Développeur Full Stack spécialisé en systèmes IA & automatisation métier. Simon Jouan conçoit des applications et workflows fiables.
+
+Origine canonique : https://jouan.ovh/
+
+**Notes :**
+
+Présentation publique en français de jouan.ovh : portfolio, services et articles de Simon Jouan sur les systèmes IA et l’automatisation métier.
+
+Les liens Markdown sont des représentations statiques de contenus publics ; ils ne garantissent ni classement, ni citation, ni visibilité dans une réponse ChatGPT.
+
+Les valeurs de formulaire, clés, cookies de session, scripts analytics, terminaux et contenus privés ne font pas partie des exports AEO.
+
+## Ressources LLM
+
+- [Contenu complet](https://jouan.ovh/llms-full.txt) : Contenu complet des pages au format Markdown.
+- [sitemap.xml](https://jouan.ovh/sitemap.xml) : Sitemap XML pour les moteurs de recherche et les robots.
+- [robots.txt](https://jouan.ovh/robots.txt) : Règles et permissions pour les robots.
+
+## Pages
+
+- [Simon Jouan — Systèmes IA, agents &amp; automatisation métier](/index.md): Développeur Full Stack spécialisé en systèmes IA et automatisation métier. Agents IA, intégrations, applications sur mesure et workflows mis en production.
+- [À propos — Simon Jouan](/about.md): Développeur Full Stack spécialisé en systèmes IA et automatisation métier. Parcours métrologie, culture QA et ingénierie logicielle au service de la fiabilité.
+- [Blog — Simon Jouan](/blog.md): Notes de dev, architecture, agents IA et automatisation métier : retours d'expérience et apprentissages concrets sur le terrain.
+- [Politique de confidentialité — Simon Jouan](/confidentialite.md): Politique de confidentialité et protection des données personnelles (RGPD) du site jouan.ovh — Simon Jouan.
+- [Mentions légales — Simon Jouan](/mentions-legales.md): Mentions légales, informations éditeur et hébergement du site jouan.ovh — Simon Jouan.
+- [Services &amp; Systèmes IA — Simon Jouan](/services.md): Conception, automatisation de processus métier et maintien en condition opérationnelle (AI Care) de systèmes IA sur mesure. Diagnostic gratuit, cadrage Blueprin...
+
+- [Contact — Simon Jouan](/contact.md): Parlons de votre workflow : décrivez le processus métier qui vous ralentit pour identifier les opportunités d'automatisation et d'agents IA adaptés.
+- [Carte de visite — Simon Jouan](/contact/card.md): Fiche contact et QR code vCard de Simon Jouan, Développeur Full Stack spécialisé en systèmes IA et automatisation métier.
