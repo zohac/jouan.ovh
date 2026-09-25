@@ -246,7 +246,15 @@ jobs:
               exit 1
             fi
             actual=$(printf '%s\n' "$headers" | tr -d '\r' | awk -F': ' 'tolower($1) == "content-type" { print $2; exit }')
-            if [[ ",${expected,,}," != *",${actual,,},"* ]]; then
+            local matched="false"
+            IFS='|' read -r -a allowed <<< "$expected"
+            for candidate in "${allowed[@]}"; do
+              if [[ "${actual,,}" == "${candidate,,}" ]]; then
+                matched="true"
+                break
+              fi
+            done
+            if [[ "$matched" != "true" ]]; then
               echo "::error::MIME inattendu pour $path : $actual (attendu $expected)"
               printf '%s\n' "$headers"
               exit 1
