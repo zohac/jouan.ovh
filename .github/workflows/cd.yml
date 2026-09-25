@@ -448,19 +448,29 @@ jobs:
           assert set(sources) == set(locs), 'llms-full.txt ne couvre pas exactement les URLs du sitemap'
 
           article_md = (public / 'blog/__ci-seo-published.md').read_text(encoding='utf-8')
-          assert 'title: "Article SEO publié"' in article_md
-          assert 'canonical_url: "https://jouan.ovh/blog/__ci-seo-published"' in article_md
-          assert 'last_updated: "2026-02-11"' in article_md
-          assert 'date: 2026-01-10' in article_md
-          assert 'updated: 2026-02-11' in article_md
+          assert re.search(r'^title:\s*"?Article SEO publié"?\s*$', article_md, re.MULTILINE)
+          assert re.search(
+              r'^canonical_url:\s*"?https://jouan\.ovh/blog/__ci-seo-published"?\s*$', article_md, re.MULTILINE
+          )
+          assert re.search(r'^last_updated:\s*"?2026-02-11"?\s*$', article_md, re.MULTILINE)
+          assert re.search(r'^date:\s*"?2026-01-10"?\s*$', article_md, re.MULTILINE)
+          assert re.search(r'^updated:\s*"?2026-02-11"?\s*$', article_md, re.MULTILINE)
           assert 'tags:' in article_md and '  - CI' in article_md
           assert 'read: 1 min' in article_md
           assert 'image:' in article_md and 'alt: Portrait de Simon Jouan' in article_md
           assert '```ts' in article_md
           assert 'const artefact = "AEO";' in article_md
           nested_md = (public / 'blog/__ci-seo-nested.md').read_text(encoding='utf-8')
-          for value in ('title: "Article SEO imbriqué"', 'canonical_url: "https://jouan.ovh/blog/__ci-seo-nested"', 'last_updated: "2026-02-12"', 'date: 2026-01-11', 'updated: 2026-02-12', 'read: 2 min', 'alt: Portrait de Simon Jouan'):
-              assert value in nested_md, f'métadonnée article index.md absente : {value}'
+          for pattern in (
+              r'^title:\s*"?Article SEO imbriqué"?\s*$',
+              r'^canonical_url:\s*"?https://jouan\.ovh/blog/__ci-seo-nested"?\s*$',
+              r'^last_updated:\s*"?2026-02-12"?\s*$',
+              r'^date:\s*"?2026-01-11"?\s*$',
+              r'^updated:\s*"?2026-02-12"?\s*$',
+              r'^read:\s*"?2 min"?\s*$',
+              r'^  alt:\s*"?Portrait de Simon Jouan"?\s*$',
+          ):
+              assert re.search(pattern, nested_md, re.MULTILINE), f'métadonnée article index.md absente : {pattern}'
           article_html = (public / 'blog/__ci-seo-published/index.html').read_text(encoding='utf-8')
           for marker in ('2026-01-10', 'AEO', '1 min', 'Portrait de Simon Jouan'):
               assert marker in article_html, f'métadonnée Content absente du HTML article : {marker}'
@@ -572,7 +582,7 @@ jobs:
               robots_noindex = robots is False or bool(robots_tokens & {'noindex', 'none'})
               noindex = scalar(frontmatter, 'noindex') is True
               sitemap_value = scalar(frontmatter, 'sitemap')
-              sitemap_excluded = sitemap_value is False or robots is False or (
+              sitemap_excluded = sitemap_value is False or (
                   sitemap_value is None
                   and re.search(r'^sitemap:\s*(?:null|~)\s*$', frontmatter, re.MULTILINE)
               )

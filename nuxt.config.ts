@@ -77,16 +77,15 @@ const contentSourcePathByRoute = new Map<string, string>();
 function sanitizeAiReadyMarkdown(route: string, markdown: string): string {
   let sanitized = markdown;
 
+  // Le prompt du terminal est décoratif sur toutes les routes. Les règles
+  // spécifiques ne doivent retirer que leurs variantes résiduelles.
+  sanitized = sanitized.replace(/^anon\.@[^\n]*(?:\n+|$)/gmu, "");
+
   if (route === "/") {
-    sanitized = sanitized.replace(
-      /\n+anon\.@[^:\n]+:[^\n]*\n[\s\S]*?\n\/\/ ce que je propose\n/u,
-      "\n\n// ce que je propose\n",
-    );
     sanitized = sanitized.replace(/\n+\*\*Automatisation\*\*✦[^\n]*\n/u, "\n");
   }
 
   if (route === "/contact") {
-    sanitized = sanitized.replace(/\n+anon\.@[^:\n]+:.*\n(?:Vous préférez[^\n]*\n)?\n?/u, "\n");
     sanitized = sanitized.replace(/## Coordonnées et terminal/u, "## Coordonnées");
     sanitized = sanitized.replace(/\n+Vous préférez la ligne de commande \? Ouvrez le terminal\.\n/u, "\n");
   }
