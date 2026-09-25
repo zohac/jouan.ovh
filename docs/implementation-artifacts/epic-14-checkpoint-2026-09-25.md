@@ -20,7 +20,7 @@ Ce checkpoint est requis avant toute story Epic 16. Il est **pending** : il déc
 
 - [x] 14.1 est réconciliée et son implémentation est gelée dans un diff propre. — clôturée `done` le 2026-09-25.
 - [x] 14.2 est revue et le masquage des données sensibles est confirmé. — clôturée `done` le 2026-09-25 (replay production + réglages projet vérifiés via MCP).
-- [ ] 14.6 est revue et la baseline AEO/Markdown est capturée.
+- [x] 14.6 est revue et la baseline AEO/Markdown est capturée. — clôturée `done` le 2026-09-25 (production AEO vérifiée).
 - [ ] 14.5 reste le propriétaire unique de Site Config, canonical, sitemap et robots.
 - [ ] Les critères historiques de 14.4 sont marqués supersédés, sans réouvrir la story.
 - [ ] La liste blanche analytics existante est inventoriée ; aucun nouvel événement/propriété n'est requis par Epic 16 T0.

@@ -4,7 +4,7 @@ baseline_commit: d8193c77d218c364b9ea4d65b8bddb8ac3900f8b
 
 # Story 14.6: AEO & AI Ready — `llms.txt`, Markdown, OAI-SearchBot et découvrabilité ChatGPT
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -115,7 +115,7 @@ so que le contenu puisse être découvert et cité plus facilement par les agent
   - [x] Mettre à jour `SPEC.md`, `seo-verification.md`, `compliance-gdpr.md`, `epics.md` et `sprint-status.yaml` avec les choix de version, la politique IA et les limites de la mesure.
   - [x] Consigner les résultats HTTP/desktop/mobile et le plan de mesure post-déploiement ; ne pas déclarer ChatGPT mieux classé sans preuve.
 
-> La vérification HTTP de la production GitHub Pages reste une étape post-déploiement. Le statut `review` ne vaut donc pas déclaration `done` : aucune visibilité, citation ou amélioration de classement ChatGPT n'est promise.
+> La vérification HTTP de la production GitHub Pages a été effectuée le 2026-09-25 (voir Dev Agent Record). La clôture ne vaut pas déclaration de visibilité, citation ou amélioration de classement ChatGPT : aucune de ces garanties n'est promise.
 
 ### Review Findings
 
@@ -324,14 +324,15 @@ Space Bunny Free (OpenCode) — 2026-09-24
 - Durcissement analytics : les valeurs UTM sont validées comme identifiants de campagne ; emails, tokens longs, espaces et caractères atypiques sont neutralisés, tandis que `utm_source=chatgpt.com` reste accepté. L’état des routes Content est recalculé depuis les fichiers présents pour éviter un cache de prérendu obsolète.
 - Fixture CI exacte : le bloc Python de `.github/workflows/cd.yml`, dérivé de toutes les URLs du sitemap, valide les 12 pages attendues de la fixture, les deux articles (plat et `index.md`), les exclusions, les liens, MIME, budgets et marqueurs ; il passe avec `Exact workflow Python assertions: OK`.
 - HTTP local : GET vérifiés sur `/robots.txt`, `/llms.txt`, `/llms-full.txt`, `/sitemap.xml`, `/sitemap.md`, `/index.md`, `/about.md`, `/blog.md` et `/contact.md` avec les types MIME attendus ; le HTML `/about` contient les liens AEO. Les requêtes de développement conservent le blocage d’indexation. Les fixtures de visibilité ont confirmé 200 pour les articles publiés et 404 pour draft, futur, noindex et sitemap exclu.
-- Déploiement : la sonde production read-only du 2026-09-24 renvoie actuellement 404 pour `llms.txt`, `llms-full.txt`, `robots.txt` et `sitemap.xml` ; aucun déploiement ni merge n’est effectué dans ce workspace. La story reste donc `review`.
+- Déploiement initial (2026-09-24) : la sonde production read-only renvoyait 404 pour `llms.txt`, `llms-full.txt`, `robots.txt` et `sitemap.xml` ; aucun merge n’était encore effectué depuis ce workspace.
+- **Post-déploiement (2026-09-25)** : CI `main` verte (run GitHub Actions `36141238524`), merge `develop → main` déployé. Tous les artefacts AEO répondent en production : `/llms.txt`, `/llms-full.txt`, `/robots.txt` (`text/plain; charset=utf-8`), `/sitemap.xml` (`application/xml`), `/sitemap.md`, `/index.md`, `/services.md`, `/about.md`, `/contact.md`, `/contact/card.md`, `/blog.md`, `/mentions-legales.md`, `/confidentialite.md` (`text/markdown; charset=utf-8`). Les routes internes `/__ai-ready`, `/__nuxt-ai-ready` et `/__nuxt_content/blog/sql_dump.txt` répondent 404. `CNAME` et `_headers` sont servis en 200. Assertions Python production : 8 URLs sitemap uniques, budgets `llms.txt` = 2557 octets et `llms-full.txt` = 28323 octets, liens Markdown complets, sources `llms-full` égales au sitemap, groupes robots `*`/`OAI-SearchBot` en `Allow: /` et `GPTBot` en `Disallow: /`, aucun marqueur privé ou composant terminal. Les 8 HTML du sitemap portent `rel="alternate"`, `rel="describedby"` et un canonical cohérent. `/confidentialite` expose la politique OAI/GPT sans promesse de classement.
 - Revue visuelle : `/confidentialite` contrôlé en desktop et mobile via OpenChamber ; captures conservées dans `.openchamber/screenshots/`. La page de politique IA reste lisible et conforme au Design System.
 - Qualité documentaire : `git diff --check` vert ; `prettier --check` vert sur les sources, le workflow et les documents companions AEO ; les trois blocs Bash du workflow passent `bash -n`. Le story file conserve son format BMAD existant.
 - Revue code patchée : `sitemap.loc` personnalisé rejeté, parsing YAML partagé, exclusion `robots:false` séparée de `sitemap:false`, protection du crawler, nettoyage runtime des liens AEO, cache AI Ready réinitialisé, parsing AEO durci et libellés générés localisés en français.
 - Fixture de validation dynamique : route `index.md` imbriquée, noindex, `robots: false`, `sitemap: false`, draft et futur testés ; les fixtures ont été supprimées. Le HTML noindex runtime ne contient plus `alternate`/`describedby` et son `.md` répond 404.
 - Revue CI/déploiement patchée : validation isolée en conteneur `node:22-bookworm-slim`, permissions PR réduites à `contents: read`, artefact clean régénéré après suppression des fixtures, job de déploiement isolé sur `gh-pages`, garde anti-rerun obsolète, probes statiques bornées, groupes robots parsés, structure `_headers`/CNAME validée et assertions AEO localisées.
 - Revue confidentialité/mesure patchée : consentements analytics et replay séparés, DNT/GPC réévalués en session, hôte PostHog EU vérifié, cycle de révocation/re-connexion sécurisé, URL/propriétés assainies avant capture, replay réseau/terminal masqué, politique de rétention documentée sans promesse abusive et dump Content public supprimé.
-- Validation workflow : YAML parsé, quatre blocs Python compilés, Prettier vert, `docker compose --env-file /dev/null config` vert et gate Docker finale verte. Le job GitHub Actions complet et le déploiement distant restent à exécuter par GitHub.
+- Validation workflow : YAML parsé, quatre blocs Python compilés, Prettier vert, `docker compose --env-file /dev/null config` vert et gate Docker finale verte. Le job GitHub Actions `main` (run `36141238524`) et le déploiement GitHub Pages ont depuis été exécutés avec succès.
 - Avertissements non bloquants consignés : `.gitkeep` ignoré par Content, payload extraction recommandé, sourcemap du polyfill module-preload, avertissement AI Ready sur la collection blog vide et écart peer inherited `unctx`/`oxc-parser` ; aucun n'a bloqué install, typecheck, lint ou generate.
 
 ### Completion Notes List
@@ -344,9 +345,9 @@ Space Bunny Free (OpenCode) — 2026-09-24
 - La whitelist PostHog est durcie : `utm_source=chatgpt.com` reste observable après consentement dans `$pageview.query_params`, tandis que les clés non documentées, emails, téléphones, tokens longs et credentials courts sont neutralisés ; aucune donnée de formulaire n'est envoyée.
 - La mesure avant/après sur au moins quatre semaines, le panel de prompts français, les conversions, les citations observées et les contrôles GSC sont documentés comme des observations descriptives, jamais comme une attribution causale.
 - Les findings de la revue adversariale ont été traités : parsing AEO sûr vis-à-vis des `---`, fixtures noindex avec séparateur, article `index.md` imbriqué, cache de routes recalculé, refus runtime des sources exclues, liens HTML noindex nettoyés, valeurs UTM assainies et CI dérivée du sitemap.
-- La gate, le build production, les assertions statiques, la fixture dynamique, les requêtes HTTP et la revue visuelle sont validés. Le déploiement GitHub Pages et la vérification HTTP sur `jouan.ovh` restent à effectuer après merge ; la story est donc `review`, pas `done`.
+- La gate, le build production, les assertions statiques, la fixture dynamique, les requêtes HTTP et la revue visuelle sont validés. Le déploiement GitHub Pages et la vérification HTTP de production ont été effectués le 2026-09-25 (run CI `36141238524`) : tous les artefacts AEO et jumeaux `.md` répondent 200 avec les MIME attendus, les routes internes sont en 404, les budgets et la politique robots sont conformes. La story peut donc être déclarée `done`.
 - La dernière passe locale après build propre confirme à nouveau les 8 URL sitemap, les 8 jumeaux Markdown, les budgets (`2 557` et `27 749` octets), l’absence de fixtures dans la source et la sortie, ainsi que les MIME HTTP attendus. Aucun déploiement distant n’a été déclenché dans ce workspace.
-- Les 47 patches des groupes 1 à 3 de la revue code review ont été traités et vérifiés ; la story reste toutefois en `review` car le workflow GitHub Actions complet, le déploiement GitHub Pages et la vérification HTTP production n’ont pas été effectués dans ce workspace.
+- Les 47 patches des groupes 1 à 3 de la revue code review ont été traités et vérifiés ; le workflow GitHub Actions `main` est vert, le déploiement GitHub Pages a été effectué et la vérification HTTP de production est documentée ci-dessus.
 
 ### File List
 
@@ -398,3 +399,4 @@ Space Bunny Free (OpenCode) — 2026-09-24
 - 2026-09-24 : correction du filtre sitemap sérialisable et validation finale de la fixture article ; story passée de `in-progress` à `review`, sous réserve du déploiement et de la vérification HTTP post-déploiement.
 - 2026-09-24 : durcissement post-revue des exclusions Content, du parsing `llms-full.txt`, des métadonnées `index.md`, des liens HTML noindex, des valeurs UTM et de la couverture CI dérivée du sitemap ; story maintenue en `review` jusqu’au déploiement.
 - 2026-09-24 : build production final propre, assertions statiques sans fixture et contrôle HTTP MIME Docker répétés avec succès ; statut conservé à `review` en attente de déploiement et de vérification production.
+- 2026-09-25 : **Clôture post-déploiement** — CI `main` verte (`36141238524`), production `jouan.ovh` vérifiée : 13 artefacts AEO en 200 avec MIME attendus, 8 URLs sitemap et sources `llms-full` concordantes, budgets 2557/28323 octets, liens HTML `alternate`/`describedby` et canonical sur les 8 pages, robots `OAI-SearchBot`/`GPTBot` conformes, routes internes et dump Content en 404, CNAME et `_headers` servis. Statut → `done`.

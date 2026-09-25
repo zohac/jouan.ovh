@@ -146,13 +146,13 @@ development_status:
   epic-13-retrospective: optional
 
   # Epic 14 — Analytics Privacy-First, SEO Nuxt, AEO & Google Search Console
-  epic-14: in-progress
+  epic-14: done
   14-1-fondations-posthog-eu-composable-consentement-et-toast-cookie-terminal: done
   14-2-session-replay-securise-masquage-donnees-et-politique-rgpd: done
   14-3-implementation-plan-de-taggage-exhaustif-conversions-ia-et-interactions: done
   14-4-referencement-google-search-console-sitemap-xml-et-robots-txt: done # critères URL/handlers supersédés par 14-5
   14-5-migration-stack-nuxt-seo-sitemap-robots-site-config: done
-  14-6-aeo-ai-ready-llms-markdown-oai-searchbot: review
+  14-6-aeo-ai-ready-llms-markdown-oai-searchbot: done
   epic-14-retrospective: optional
 
   # Epic 15 — Repositionnement Commercial V1.1 : Désancrage Tarifaire & Offres par Niveaux d'Intervention

@@ -292,4 +292,4 @@ none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux p
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-09-24 ( Epic 14 enrichi avec la roadmap SEO Nuxt automatisée et AEO AI Ready ; la validation de production reste post-déploiement).
+Dernière mise à jour : 2026-09-25 (Epic 14 clôturé : SEO Nuxt, AEO AI Ready et privacy PostHog vérifiés en production ; stories 14.1, 14.2 et 14.6 passées à `done`).
