@@ -5,6 +5,12 @@
     <slot />
 
     <FooterComponent />
+
+    <!-- Toast de consentement télémétrie (Epic 14) — client-only pour éviter
+         tout mismatch d'hydratation en SSG. -->
+    <ClientOnly>
+      <ConsentToast />
+    </ClientOnly>
   </div>
 </template>
 

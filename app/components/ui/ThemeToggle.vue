@@ -16,6 +16,7 @@ import { computed, ref } from "vue";
 import { useTheme } from "~/composables/useTheme";
 
 const { preference, resolvedTheme, cycleTheme } = useTheme();
+const { track } = useAnalytics();
 const liveAnnouncement = ref("");
 
 const currentIcon = computed(() => {
@@ -40,7 +41,23 @@ const ariaLabel = computed(() => {
 });
 
 const handleToggle = () => {
+  // Capture avant/après pour n'émettre que sur un changement effectif de
+  // préférence (story 14.3) — un clic sans transition serait du bruit.
+  const fromTheme = preference.value;
+  const systemTheme =
+    import.meta.client && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+
   cycleTheme();
+
+  const toTheme = preference.value;
+  if (fromTheme !== toTheme) {
+    track("theme_toggle_clicked", {
+      from_theme: fromTheme,
+      to_theme: toTheme,
+      system_theme: systemTheme,
+    });
+  }
+
   const labels: Record<string, string> = {
     system: "Système",
     dark: "Sombre",

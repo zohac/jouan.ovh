@@ -88,18 +88,19 @@
 // au build par useAsyncData). La vue article (/blog/[...slug]) est la story 6.2.
 import { NuxtLink } from "#components";
 import { SITE } from "~/data/site";
+import { isIndexableBlogEntry } from "~/utils/blog-indexability";
 
-// Articles triés par date décroissante. La requête de contenu est résolue côté
-// build/SSR → rendu prerender-safe. `error` distingue un échec de chargement d'un
-// véritable empty-state (liste vide).
-const { data: articles, error } = await useAsyncData("blog-list", () =>
-  queryCollection("blog").order("date", "DESC").all(),
-);
+// Articles publiés, indexables et triés par date décroissante. Le même filtre que
+// le schéma Sitemap empêche un contenu noindex d'être lié puis-prérendu via le crawler.
+const { data: articles, error } = await useAsyncData("blog-list", async () => {
+  const entries = await queryCollection("blog").order("date", "DESC").all();
+  return entries.filter((entry) => isIndexableBlogEntry(entry));
+});
 
 // `formatDate` (date ISO → français) est un util auto-importé partagé (app/utils/).
 
-// Métadonnées de la page. URL de prod lue depuis runtimeConfig via useSiteUrl()
-// (swappable staging/prod, sans domaine en dur). Inchangée en staging.
+// Métadonnées de la page. URL de prod lue depuis Nuxt Site Config via useSiteUrl()
+// (swappable staging/prod, sans domaine en dur).
 const siteUrl = useSiteUrl();
 const pageTitle = "Blog — Simon Jouan";
 const pageDescription =
@@ -119,6 +120,7 @@ const blogJsonLd = {
     headline: article.title,
     description: article.description,
     datePublished: article.date,
+    dateModified: article.updated ?? article.date,
     author: {
       "@type": "Person",
       name: SITE.profile.name,

@@ -12,7 +12,17 @@ import { ref } from "vue";
 // au prerender `nuxi generate`, avant hydratation), `open()` est un no-op sûr.
 // La restylisation complète du terminal reste du périmètre d'Epic 8.
 
-type TerminalLauncher = () => void;
+/** Contexte d'ouverture transmis à la télémétrie (story 14.3). */
+export interface TerminalOpenOptions {
+  /**
+   * Origine de l'ouverture. Valeurs du tracking plan : `header_icon`,
+   * `keyboard_shortcut`, `hero_prompt` (+ `contact_cta` pour la page contact).
+   * @default "header_icon"
+   */
+  trigger_source?: string;
+}
+
+type TerminalLauncher = (options?: TerminalOpenOptions) => void;
 
 const launcher = ref<TerminalLauncher | null>(null);
 
@@ -32,8 +42,8 @@ export function useTerminal() {
       }
     },
     /** Ouvre un terminal si un lanceur est disponible ; no-op sinon. */
-    open() {
-      launcher.value?.();
+    open(options?: TerminalOpenOptions) {
+      launcher.value?.(options);
     },
   };
 }

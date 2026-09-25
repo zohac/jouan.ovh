@@ -8,35 +8,42 @@ on:
     branches:
       - main
 
-# Le déploiement publie sur la branche gh-pages via GITHUB_TOKEN → écriture requise.
+# Le job de validation ne reçoit que lecture. Le job de déploiement, séparé,
+# possède le droit d'écriture nécessaire à gh-pages.
 permissions:
-  contents: write
+  contents: read
 
-# Sérialise les exécutions : deux pushes rapprochés sur main ne peuvent pas
-# publier dans le désordre (un ancien build écrasant un plus récent).
+# Les PR ne doivent pas bloquer la file de déploiement main.
 concurrency:
-  group: deploy-gh-pages
+  group: ${{ github.event_name == 'pull_request' && format('validate-pr-{0}', github.event.pull_request.number) || 'deploy-main' }}
   cancel-in-progress: false
 
+# Source Site Config explicite pour toutes les étapes Nuxt (typecheck et build inclus).
+env:
+  NUXT_SITE_URL: https://jouan.ovh
+  NUXT_SITE_NAME: jouan.ovh
+  NUXT_SITE_ENV: production
+
 jobs:
-  cd:
+  validate:
     runs-on: ubuntu-latest
+    container:
+      image: node:22-bookworm-slim
 
     steps:
+      - name: Install CI utilities
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends curl git python3
+          rm -rf /var/lib/apt/lists/*
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup node env
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
 
       # Gate de qualité : lint + typecheck avant le build (validation minimale du projet).
       # S'exécute aussi sur les PR pour valider sans publier.
@@ -46,38 +53,673 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # Les fixtures sont temporaires et restent propres à l'exécuteur CI. Elles
+      # prouvent le contrat complet sans committer de faux article de production.
       - name: Generate
         env:
           NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY || vars.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
-        run: pnpm generate
-
-      # CNAME et _headers vivent dans public/ et sont émis automatiquement dans
-      # .output/public par `nuxi generate`. La copie reste par sécurité (no-op si déjà présent).
-      - name: Ensure _headers + CNAME in output
+          NUXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NUXT_PUBLIC_POSTHOG_KEY || vars.NUXT_PUBLIC_POSTHOG_KEY }}
         run: |
-          cp public/_headers .output/public/_headers
-          cp public/CNAME .output/public/CNAME
+          set -euo pipefail
+          fixture_paths=(
+            content/blog/__ci-seo-published.md
+            content/blog/__ci-seo-nested/index.md
+            content/blog/__ci-seo-nested
+            content/blog/__ci-seo-noindex.md
+            content/blog/__ci-seo-robots-false.md
+            content/blog/__ci-seo-robots-none.md
+            content/blog/__ci-seo-sitemap-excluded.md
+            content/blog/__ci-seo-sitemap-null.md
+            content/blog/__ci-seo-draft.md
+            content/blog/__ci-seo-future.md
+          )
+          for fixture_path in "${fixture_paths[@]}"; do
+            if [ -e "$fixture_path" ]; then
+              echo "::error::Espace réservé CI occupé : $fixture_path" >&2
+              exit 1
+            fi
+          done
+          rm -rf .nuxt .data
+          cat > content/blog/__ci-seo-published.md <<'EOF'
+          ---
+          title: Article SEO publié
+          description: Fixture CI du contrat sitemap.
+          date: 2026-01-10
+          updated: 2026-02-11
+          tags:
+            - CI
+          read: 1 min
+          image:
+            src: /images/portrait.jpeg
+            alt: Portrait de Simon Jouan
+          ---
 
-      # Garde-fou avant publication : la sortie statique doit contenir toutes les pages,
-      # _headers, le CNAME du domaine custom, le portrait et la clé Web3Forms sur push main.
+          ## Bloc Markdown de validation
+
+          ```ts
+          const artefact = "AEO";
+          ```
+
+          Article temporaire de validation CI.
+          EOF
+          mkdir -p content/blog/__ci-seo-nested
+          cat > content/blog/__ci-seo-nested/index.md <<'EOF'
+          ---
+          title: Article SEO imbriqué
+          description: Fixture CI du chemin index.md.
+          date: 2026-01-11
+          updated: 2026-02-12
+          tags:
+            - CI
+          read: 2 min
+          image:
+            src: /images/portrait.jpeg
+            alt: Portrait de Simon Jouan
+          ---
+
+          ## Bloc Markdown imbriqué
+
+          Article temporaire dans un dossier `index.md`.
+          EOF
+          cat > content/blog/__ci-seo-noindex.md <<'EOF'
+          ---
+          title: Article noindex
+          description: Fixture CI noindex.
+          date: 2026-01-10
+          noindex: true
+          ---
+
+          Article temporaire noindex.
+
+          ---
+
+          MARQUEUR_NOINDEX_HORIZONTAL — ce texte ne doit jamais être publié dans un artefact AEO.
+          EOF
+          cat > content/blog/__ci-seo-robots-false.md <<'EOF'
+          ---
+          title: Article robots false
+          description: Fixture CI robots false.
+          date: 2026-01-10
+          robots: false
+          ---
+
+          Article temporaire robots false.
+          EOF
+          cat > content/blog/__ci-seo-robots-none.md <<'EOF'
+          ---
+          title: Article robots none
+          description: Fixture CI robots none.
+          date: 2026-01-10
+          robots: none
+          ---
+
+          Article temporaire robots none.
+          EOF
+          cat > content/blog/__ci-seo-sitemap-excluded.md <<'EOF'
+          ---
+          title: Article exclu du sitemap
+          description: Fixture CI sitemap false.
+          date: 2026-01-10
+          sitemap: false
+          ---
+
+          Article temporaire exclu du sitemap.
+          EOF
+          cat > content/blog/__ci-seo-sitemap-null.md <<'EOF'
+          ---
+          title: Article sitemap null
+          description: Fixture CI sitemap null.
+          date: 2026-01-10
+          sitemap: null
+          ---
+
+          Article temporaire avec sitemap null.
+          EOF
+          cat > content/blog/__ci-seo-draft.md <<'EOF'
+          ---
+          title: Brouillon CI
+          description: Fixture CI brouillon.
+          date: 2026-01-10
+          draft: true
+          ---
+
+          Brouillon temporaire.
+          EOF
+          cat > content/blog/__ci-seo-future.md <<'EOF'
+          ---
+          title: Article futur CI
+          description: Fixture CI future.
+          date: 2999-01-10
+          ---
+
+          Article temporaire futur.
+          EOF
+          pnpm exec nuxi prepare
+          pnpm generate
+
+      - name: Verify SEO/AEO HTTP MIME
+        run: |
+          set -euo pipefail
+          (cd .output/public && python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/nuxt-preview.log 2>&1) &
+          preview_pid=$!
+          cleanup() {
+            kill "$preview_pid" 2>/dev/null || true
+            for _ in $(seq 1 5); do
+              if ! kill -0 "$preview_pid" 2>/dev/null; then
+                break
+              fi
+              sleep 1
+            done
+            kill -9 "$preview_pid" 2>/dev/null || true
+            wait "$preview_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          fetch_headers() {
+            local path="$1"
+            local response=""
+            for _ in $(seq 1 30); do
+              if response=$(curl --connect-timeout 2 --max-time 10 -fsS -D - -o /dev/null "http://127.0.0.1:4173${path}"); then
+                printf '%s' "$response"
+                return 0
+              fi
+              sleep 1
+            done
+            return 1
+          }
+
+          fetch_status() {
+            local path="$1"
+            curl --connect-timeout 2 --max-time 10 -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:4173${path}"
+          }
+
+          assert_content_type() {
+            local path="$1"
+            local expected="$2"
+            local headers actual
+            if ! headers=$(fetch_headers "$path"); then
+              cat /tmp/nuxt-preview.log
+              echo "::error::route HTTP indisponible : $path"
+              exit 1
+            fi
+            actual=$(printf '%s\n' "$headers" | tr -d '\r' | awk -F': ' 'tolower($1) == "content-type" { print $2; exit }')
+            if [[ ",${expected,,}," != *",${actual,,},"* ]]; then
+              echo "::error::MIME inattendu pour $path : $actual (attendu $expected)"
+              printf '%s\n' "$headers"
+              exit 1
+            fi
+          }
+
+          assert_status() {
+            local path="$1"
+            local expected="$2"
+            local actual
+            actual=$(fetch_status "$path")
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::statut inattendu pour $path : $actual (attendu $expected)"
+              cat /tmp/nuxt-preview.log
+              exit 1
+            fi
+          }
+
+          assert_content_type /robots.txt 'text/plain|text/plain; charset=utf-8'
+          assert_content_type /llms.txt 'text/plain|text/plain; charset=utf-8'
+          assert_content_type /llms-full.txt 'text/plain|text/plain; charset=utf-8'
+          assert_content_type /sitemap.xml 'application/xml|text/xml; charset=utf-8|text/xml'
+          assert_content_type /sitemap.md 'text/markdown|text/markdown; charset=utf-8'
+          assert_content_type /index.md 'text/markdown|text/markdown; charset=utf-8'
+          assert_content_type /about.md 'text/markdown|text/markdown; charset=utf-8'
+          assert_content_type /blog/__ci-seo-published.md 'text/markdown|text/markdown; charset=utf-8'
+          assert_status /blog/__ci-seo-published.md 200
+          for slug in \
+            __ci-seo-noindex \
+            __ci-seo-robots-false \
+            __ci-seo-robots-none \
+            __ci-seo-sitemap-excluded \
+            __ci-seo-sitemap-null \
+            __ci-seo-draft \
+            __ci-seo-future; do
+            assert_status "/blog/${slug}.md" 404
+          done
+
+      # CNAME et _headers sont émis par Nitro depuis public/. Ne jamais les recopier
+      # après le build : une copie CI pourrait écraser un artefact généré par un module.
+      # La vérification ci-dessous contrôle leur présence et leur contenu sans supposer
+      # un nombre total de routes Nitro.
       - name: Verify static output
         env:
           NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY || vars.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
+          NUXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NUXT_PUBLIC_POSTHOG_KEY || vars.NUXT_PUBLIC_POSTHOG_KEY }}
         run: |
           set -euo pipefail
-          for f in index.html 200.html 404.html services/index.html about/index.html blog/index.html contact/index.html confidentialite/index.html mentions-legales/index.html _headers CNAME images/portrait_512x512_drip_art_8.webp; do
+          for f in index.html 200.html 404.html services/index.html about/index.html blog/index.html contact/index.html contact/card/index.html confidentialite/index.html mentions-legales/index.html sitemap.xml robots.txt llms.txt llms-full.txt sitemap.md index.md services.md about.md contact.md contact/card.md blog.md mentions-legales.md confidentialite.md blog/__ci-seo-published.md blog/__ci-seo-nested.md _headers CNAME images/portrait_512x512_drip_art_8.webp; do
             test -f ".output/public/$f" || { echo "::error::Fichier manquant dans la sortie statique : $f"; exit 1; }
           done
+          test ! -e .output/public/__ai-ready || { echo "::error::les dumps internes AI Ready ne doivent pas être publiés"; exit 1; }
+          for internal_path in __nuxt-ai-ready __nuxt-ai-ready__; do
+            test ! -e ".output/public/$internal_path" || { echo "::error::route interne AI Ready publiée : $internal_path"; exit 1; }
+          done
+
+          # Artefacts de déploiement : la source _headers est émise puis enrichie par
+          # AI Ready ; aucune copie CI ne doit écraser cette sortie.
+          grep -q '^/\*$' .output/public/_headers || { echo "::error::_headers ne contient pas la règle globale /*"; exit 1; }
+          grep -q '^_nuxt/\*$' .output/public/_headers || { echo "::error::_headers ne contient pas la règle _nuxt/*"; exit 1; }
+          grep -q '^/\*\.md$' .output/public/_headers || { echo "::error::_headers ne couvre pas les Markdown"; exit 1; }
+          grep -Fq 'Content-Type: text/markdown; charset=utf-8' .output/public/_headers || { echo "::error::MIME Markdown absent de _headers"; exit 1; }
+          grep -Fq 'rel="describedby"' .output/public/_headers || { echo "::error::relation describedby absente de _headers"; exit 1; }
+          cmp -s public/CNAME .output/public/CNAME || { echo "::error::CNAME généré absent ou différent de public/CNAME"; exit 1; }
           grep -qx "jouan.ovh" .output/public/CNAME || { echo "::error::CNAME ne contient pas le domaine custom attendu"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+
+          headers = Path('.output/public/_headers').read_text(encoding='utf-8').splitlines()
+          cname = Path('.output/public/CNAME').read_text(encoding='utf-8').splitlines()
+          assert cname == ['jouan.ovh'], cname
+
+          def block(route: str) -> list[str]:
+              start = headers.index(route) + 1
+              values: list[str] = []
+              for line in headers[start:]:
+                  if line and not line[0].isspace():
+                      break
+                  if line.strip():
+                      values.append(line.strip())
+              return values
+
+          assert 'Cache-Control: max-age=0,public,must-revalidate' in block('/*')
+          assert 'Cache-Control: max-age=31536000,public,immutable' in block('_nuxt/*')
+          markdown_headers = block('/*.md')
+          assert 'Content-Type: text/markdown; charset=utf-8' in markdown_headers
+          assert 'Link: </llms.txt>; rel="describedby"' in markdown_headers
+          PY
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          groups: dict[str, list[str]] = {}
+          current: str | None = None
+          for raw_line in Path('.output/public/robots.txt').read_text(encoding='utf-8').splitlines():
+              line = raw_line.strip()
+              if line.startswith('User-agent:'):
+                  current = line.split(':', 1)[1].strip()
+                  groups.setdefault(current, [])
+              elif current and (line.startswith('Allow:') or line.startswith('Disallow:')):
+                  groups[current].append(line)
+          assert 'Allow: /' in groups.get('*', []), groups
+          assert 'Allow: /' in groups.get('OAI-SearchBot', []), groups
+          assert 'Disallow: /' not in groups.get('OAI-SearchBot', []), groups
+          assert 'Disallow: /' in groups.get('GPTBot', []), groups
+          assert 'Allow: /' not in groups.get('GPTBot', []), groups
+          PY
+          grep -Fqx "Sitemap: https://jouan.ovh/sitemap.xml" .output/public/robots.txt || { echo "::error::sitemap absolu absent de robots.txt"; exit 1; }
+          grep -Fq '"utm_source"' app/composables/useAnalytics.ts || { echo "::error::whitelist UTM referral absente"; exit 1; }
+          grep -Fq 'sanitizeAttributionValue' app/composables/useAnalytics.ts || { echo "::error::sanitisation des valeurs UTM absente"; exit 1; }
+          grep -Fq 'redactPii' app/composables/useAnalytics.ts || { echo "::error::redaction PII des valeurs UTM absente"; exit 1; }
+          ! grep -Fq 'nuxt-llms' package.json pnpm-lock.yaml || { echo "::error::deuxième implémentation llms.txt interdite"; exit 1; }
+          ! grep -Fq 'blockAiBots: true' nuxt.config.ts || { echo "::error::blockAiBots bloquerait la politique OAI"; exit 1; }
+
+          python3 - <<'PY'
+          from datetime import date, datetime
+          from pathlib import Path
+          from urllib.parse import urlparse
+          from xml.etree import ElementTree
+          from zoneinfo import ZoneInfo
+          import re
+
+          public = Path('.output/public')
+          content_root = Path('content/blog')
+          sitemap_path = public / 'sitemap.xml'
+          root = ElementTree.parse(sitemap_path).getroot()
+          namespace = 'http://www.sitemaps.org/schemas/sitemap/0.9'
+          assert root.tag == f'{{{namespace}}}urlset', root.tag
+          nodes = root.findall(f'{{{namespace}}}url')
+          locs = [node.findtext(f'{{{namespace}}}loc') for node in nodes]
+          assert all(locs), 'sitemap contient une URL vide'
+          assert len(locs) == len(set(locs)), 'sitemap contient des URLs dupliquées'
+
+          expected = {
+              'https://jouan.ovh/',
+              'https://jouan.ovh/services',
+              'https://jouan.ovh/about',
+              'https://jouan.ovh/contact',
+              'https://jouan.ovh/contact/card',
+              'https://jouan.ovh/blog',
+              'https://jouan.ovh/mentions-legales',
+              'https://jouan.ovh/confidentialite',
+          }
+          assert expected.issubset(locs), sorted(expected.difference(locs))
+
+          # Artefacts AEO : contenu public, liens Markdown, couverture et budgets.
+          llms_path = public / 'llms.txt'
+          llms_full_path = public / 'llms-full.txt'
+          sitemap_md_path = public / 'sitemap.md'
+          llms_text = llms_path.read_text(encoding='utf-8')
+          llms_full_text = llms_full_path.read_text(encoding='utf-8')
+          sitemap_md_text = sitemap_md_path.read_text(encoding='utf-8')
+          assert llms_path.stat().st_size <= 64 * 1024, 'budget llms.txt dépassé'
+          assert llms_full_path.stat().st_size <= 1024 * 1024, 'budget llms-full.txt dépassé'
+          assert 'Origine canonique : https://jouan.ovh/' in llms_text
+          assert 'Présentation publique en français' in llms_text
+          assert 'ne garantissent ni classement' in llms_text
+          assert '__ai-ready' not in llms_text
+          assert '__ai-ready' not in llms_full_text
+          assert not (public / '__ai-ready').exists(), 'dossier interne AI Ready publié'
+
+          def markdown_for(path: str) -> str:
+              normalized = path.rstrip('/') or '/'
+              return 'index.md' if normalized == '/' else normalized.lstrip('/') + '.md'
+
+          base_paths = ['/', '/services', '/about', '/contact', '/contact/card', '/blog', '/mentions-legales', '/confidentialite']
+          expected_base_markdown = {markdown_for(path) for path in base_paths}
+          sitemap_paths = [urlparse(loc).path for loc in locs]
+          expected_markdown = {markdown_for(path) for path in sitemap_paths}
+          assert expected_base_markdown <= expected_markdown, 'sitemap incomplet des pages de base'
+          assert 'blog/__ci-seo-published.md' in expected_markdown, 'fixture publiée absente du sitemap'
+          assert 'blog/__ci-seo-nested.md' in expected_markdown, 'fixture index.md absente du sitemap'
+          for relative in expected_markdown:
+              markdown_file = public / relative
+              assert markdown_file.is_file() and markdown_file.stat().st_size > 0, f'Markdown twin absent ou vide : {relative}'
+
+          markdown_link_pattern = r'\]\((/[^)\s]+\.md)(?:\s+[^)]*)?\)'
+          llms_markdown_links = re.findall(markdown_link_pattern, llms_text)
+          sitemap_md_links = re.findall(markdown_link_pattern, sitemap_md_text)
+          assert len(llms_markdown_links) == len(set(llms_markdown_links)), 'llms.txt contient des doublons'
+          assert len(sitemap_md_links) == len(set(sitemap_md_links)), 'sitemap.md contient des doublons'
+          for relative in expected_markdown:
+              assert f'/{relative}' in llms_markdown_links, f'lien Markdown absent de llms.txt : {relative}'
+              assert f'/{relative}' in sitemap_md_links, f'lien Markdown absent de sitemap.md : {relative}'
+          for href in llms_markdown_links + sitemap_md_links:
+              assert (public / href.lstrip('/')).is_file(), f'lien Markdown vers un fichier absent : {href}'
+
+          sources = re.findall(r'^- \*\*Source\s*:\*\* (\S+)$', llms_full_text, re.MULTILINE)
+          assert sources, 'llms-full.txt ne contient aucune Source'
+          assert len(sources) == len(set(sources)), 'llms-full.txt contient des sources dupliquées'
+          assert set(sources) == set(locs), 'llms-full.txt ne couvre pas exactement les URLs du sitemap'
+
+          article_md = (public / 'blog/__ci-seo-published.md').read_text(encoding='utf-8')
+          assert 'title: "Article SEO publié"' in article_md
+          assert 'canonical_url: "https://jouan.ovh/blog/__ci-seo-published"' in article_md
+          assert 'last_updated: "2026-02-11"' in article_md
+          assert 'date: 2026-01-10' in article_md
+          assert 'updated: 2026-02-11' in article_md
+          assert 'tags:' in article_md and '  - CI' in article_md
+          assert 'read: 1 min' in article_md
+          assert 'image:' in article_md and 'alt: Portrait de Simon Jouan' in article_md
+          assert '```ts' in article_md
+          assert 'const artefact = "AEO";' in article_md
+          nested_md = (public / 'blog/__ci-seo-nested.md').read_text(encoding='utf-8')
+          for value in ('title: "Article SEO imbriqué"', 'canonical_url: "https://jouan.ovh/blog/__ci-seo-nested"', 'last_updated: "2026-02-12"', 'date: 2026-01-11', 'updated: 2026-02-12', 'read: 2 min', 'alt: Portrait de Simon Jouan'):
+              assert value in nested_md, f'métadonnée article index.md absente : {value}'
+          article_html = (public / 'blog/__ci-seo-published/index.html').read_text(encoding='utf-8')
+          for marker in ('2026-01-10', 'AEO', '1 min', 'Portrait de Simon Jouan'):
+              assert marker in article_html, f'métadonnée Content absente du HTML article : {marker}'
+          assert 'portrait' in sitemap_path.read_text(encoding='utf-8'), 'image Content absente du sitemap'
+
+          for slug in (
+              '__ci-seo-noindex',
+              '__ci-seo-robots-false',
+              '__ci-seo-robots-none',
+              '__ci-seo-sitemap-excluded',
+              '__ci-seo-sitemap-null',
+              '__ci-seo-draft',
+              '__ci-seo-future',
+          ):
+              assert not (public / 'blog' / f'{slug}.md').exists(), f'Markdown noindex/exclu présent : {slug}'
+              assert f'/blog/{slug}' not in llms_text, f'lien AI noindex/exclu présent : {slug}'
+              assert f'/blog/{slug}' not in llms_full_text, f'corps AI noindex/exclu présent : {slug}'
+              html_file = public / 'blog' / slug / 'index.html'
+              if html_file.is_file():
+                  html = html_file.read_text(encoding='utf-8')
+                  assert not re.search(r'<link[^>]+rel="alternate"[^>]+href="/blog/' + re.escape(slug) + r'\.md"', html), f'lien Markdown cassé sur HTML noindex : {slug}'
+                  assert 'rel="describedby"' not in html, f'describedby présent sur HTML noindex : {slug}'
+          noindex_marker = 'MARQUEUR_NOINDEX_HORIZONTAL'
+          for artifact in (llms_text, llms_full_text, sitemap_md_text):
+              assert noindex_marker not in artifact, 'corps noindex avec séparateur Markdown partiellement publié'
+
+          for marker in ('phc_', 'NUXT_PUBLIC_', 'posthogKey', 'access_key', 'accessKey', 'honeypot', 'jouan_consent_telemetry'):
+              assert marker not in llms_text, f'marqueur privé dans llms.txt : {marker}'
+              assert marker not in llms_full_text, f'marqueur privé dans llms-full.txt : {marker}'
+              for relative in expected_markdown:
+                  assert marker not in (public / relative).read_text(encoding='utf-8'), f'marqueur privé dans {relative} : {marker}'
+          for marker in ('anon.@jouan.ovh', 'hero-term', 'contact__term', 'consent__prompt', 'terminal-window', 'custom-cursor'):
+              assert marker not in llms_text, f'composant non public dans llms.txt : {marker}'
+              assert marker not in llms_full_text, f'composant non public dans llms-full.txt : {marker}'
+              assert marker not in sitemap_md_text, f'composant non public dans sitemap.md : {marker}'
+              for relative in expected_markdown:
+                  assert marker not in (public / relative).read_text(encoding='utf-8'), f'composant non public dans {relative} : {marker}'
+
+          for path in sitemap_paths:
+              html_file = public / ('index.html' if path == '/' else path.lstrip('/') + '/index.html')
+              html = html_file.read_text(encoding='utf-8')
+              markdown_href = '/' + markdown_for(path)
+              assert re.search(r'<link[^>]+rel="alternate"[^>]+type="text/markdown"[^>]+href="' + re.escape(markdown_href) + r'"', html), f'alternate Markdown absent : {path}'
+              assert re.search(r'<link[^>]+rel="describedby"[^>]+href="/llms.txt"', html), f'describedby absent : {path}'
+
+          canonical_origin = 'https://jouan.ovh'
+          for loc in locs:
+              parsed = urlparse(loc)
+              assert parsed.scheme == 'https', loc
+              assert parsed.netloc == 'jouan.ovh', loc
+              assert not parsed.query and not parsed.fragment, loc
+              assert loc == f'{canonical_origin}{parsed.path}', loc
+              assert not any(
+                  token in parsed.path for token in ('/200', '/404', '/api/', '/__nuxt_content', '/_ipx/')
+              ), loc
+
+          node_by_loc = dict(zip(locs, nodes, strict=True))
+          paris_today = datetime.now(ZoneInfo('Europe/Paris')).date()
+
+          def scalar(frontmatter: str, key: str):
+              match = re.search(rf'^{re.escape(key)}:\s*(.*?)\s*$', frontmatter, re.MULTILINE)
+              if not match:
+                  return None
+              value = match.group(1).strip()
+              if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+                  return value[1:-1]
+              if value.lower() == 'true':
+                  return True
+              if value.lower() == 'false':
+                  return False
+              if value.lower() in {'null', '~'}:
+                  return None
+              return value
+
+          def article_path(file: Path) -> str:
+              parts = list(file.relative_to(content_root).with_suffix('').parts)
+              if parts[-1] == 'index':
+                  parts.pop()
+              return '/' + '/'.join(['blog', *parts])
+
+          content_files = sorted(content_root.rglob('*.md'))
+          article_paths = [article_path(file) for file in content_files]
+          assert len(article_paths) == len(set(article_paths)), f'routes article dupliquées : {article_paths}'
+
+          def html_path(path: str) -> Path:
+              relative = path.removeprefix('/')
+              return public / relative / 'index.html'
+
+          def has_noindex_meta(file: Path) -> bool:
+              html = file.read_text(encoding='utf-8')
+              return bool(re.search(
+                  r'<meta[^>]+name=["\']robots["\'][^>]+content=["\']noindex, nofollow["\']'
+                  r'|<meta[^>]+content=["\']noindex, nofollow["\'][^>]+name=["\']robots["\']',
+                  html,
+                  re.IGNORECASE,
+              ))
+
+          expected_lastmods = {}
+          for file in content_files:
+              text = file.read_text(encoding='utf-8')
+              match = re.match(r'^---\s*\n(.*?)\n---\s*(?:\n|$)', text, re.DOTALL)
+              assert match, f'frontmatter absent : {file}'
+              frontmatter = match.group(1)
+              raw_date = scalar(frontmatter, 'date')
+              assert isinstance(raw_date, str), f'date absente : {file}'
+              published_at = date.fromisoformat(raw_date)
+              robots = scalar(frontmatter, 'robots')
+              robots_tokens = {token.lower() for token in re.split(r'[\s,]+', str(robots or ''))}
+              robots_noindex = robots is False or bool(robots_tokens & {'noindex', 'none'})
+              noindex = scalar(frontmatter, 'noindex') is True
+              sitemap_value = scalar(frontmatter, 'sitemap')
+              sitemap_excluded = sitemap_value is False or robots is False or (
+                  sitemap_value is None
+                  and re.search(r'^sitemap:\s*(?:null|~)\s*$', frontmatter, re.MULTILINE)
+              )
+              published = scalar(frontmatter, 'draft') is not True and published_at <= paris_today
+              indexable = published and not robots_noindex and not noindex and not sitemap_excluded
+              html_expected = published and not sitemap_excluded
+              path = article_path(file)
+              loc = f'{canonical_origin}{path}'
+              html = html_path(path)
+
+              if html_expected:
+                  assert html.is_file(), f'HTML manquant pour un article publié : {path}'
+              else:
+                  assert not html.exists(), f'HTML généré pour un article exclu ou non publié : {path}'
+
+              if indexable:
+                  assert loc in node_by_loc, f'article publié absent du sitemap : {path}'
+                  expected_lastmods[loc] = scalar(frontmatter, 'updated') or raw_date
+              else:
+                  assert loc not in node_by_loc, f'article exclu présent dans le sitemap : {path}'
+                  assert not (public / f'{path.lstrip("/")}.md').exists(), f'Markdown exclu présent : {path}'
+                  assert path not in llms_text, f'lien AEO exclu présent : {path}'
+                  assert path not in llms_full_text, f'corps AEO exclu présent : {path}'
+                  assert path not in sitemap_md_text, f'lien sitemap.md exclu présent : {path}'
+
+              if html.is_file():
+                  if noindex or robots_noindex:
+                      assert has_noindex_meta(html), f'meta robots noindex absent : {path}'
+                  else:
+                      assert not has_noindex_meta(html), f'meta noindex inattendu : {path}'
+
+          for node in nodes:
+              loc = node.findtext(f'{{{namespace}}}loc')
+              assert node.find(f'{{{namespace}}}priority') is None, f'priority présent : {loc}'
+              assert node.find(f'{{{namespace}}}changefreq') is None, f'changefreq présent : {loc}'
+              lastmod = node.findtext(f'{{{namespace}}}lastmod')
+              if loc in expected_lastmods:
+                  assert lastmod == expected_lastmods[loc], f'lastmod incorrect : {loc}'
+              else:
+                  assert lastmod is None, f'lastmod non editoriel présent : {loc}'
+
+          for loc in locs:
+              path = urlparse(loc).path
+              relative = 'index.html' if path == '/' else f"{path.lstrip('/')}/index.html"
+              assert (public / relative).is_file(), f'HTML manquant pour {loc}'
+          PY
+
           if [ "${{ github.event_name }}" = "push" ]; then
             test -n "${NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY:-}" || { echo "::error::NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY manquant pour le déploiement de production"; exit 1; }
+            test -n "${NUXT_PUBLIC_POSTHOG_KEY:-}" || { echo "::error::NUXT_PUBLIC_POSTHOG_KEY manquant pour le déploiement de production (analytics inactif)"; exit 1; }
+            grep -R -Fq -- "$NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY" .output/public || { echo "::error::clé Web3Forms absente de l'artefact client"; exit 1; }
+            grep -R -Fq -- "$NUXT_PUBLIC_POSTHOG_KEY" .output/public || { echo "::error::clé PostHog absente de l'artefact client"; exit 1; }
           fi
-          echo "Sortie statique validée."
+          echo "Sortie statique et artefacts SEO validés."
+
+      - name: Remove SEO fixtures
+        if: always()
+        run: |
+          set -euo pipefail
+          rm -f \
+            content/blog/__ci-seo-published.md \
+            content/blog/__ci-seo-noindex.md \
+            content/blog/__ci-seo-robots-false.md \
+            content/blog/__ci-seo-robots-none.md \
+            content/blog/__ci-seo-sitemap-excluded.md \
+            content/blog/__ci-seo-sitemap-null.md \
+            content/blog/__ci-seo-draft.md \
+            content/blog/__ci-seo-future.md
+          rm -rf content/blog/__ci-seo-nested
+
+      - name: Clean build for deployment
+        if: github.event_name == 'push'
+        env:
+          NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY || vars.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
+          NUXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NUXT_PUBLIC_POSTHOG_KEY || vars.NUXT_PUBLIC_POSTHOG_KEY }}
+        run: |
+          set -euo pipefail
+          rm -rf .nuxt .data .output
+          corepack enable
+          pnpm exec nuxi prepare
+          pnpm generate
+
+      - name: Verify clean deployment output
+        if: github.event_name == 'push'
+        env:
+          NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY || vars.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
+          NUXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NUXT_PUBLIC_POSTHOG_KEY || vars.NUXT_PUBLIC_POSTHOG_KEY }}
+        run: |
+          set -euo pipefail
+          for f in sitemap.xml robots.txt llms.txt llms-full.txt sitemap.md index.md about.md contact.md _headers CNAME; do
+            test -f ".output/public/$f" || { echo "::error::Fichier absent du build clean : $f"; exit 1; }
+          done
+          test ! -e .output/public/__ai-ready || { echo "::error::dumps AI Ready présents dans le build clean"; exit 1; }
+          for internal_path in __nuxt-ai-ready __nuxt-ai-ready__; do
+            test ! -e ".output/public/$internal_path" || { echo "::error::route interne AI Ready présente : $internal_path"; exit 1; }
+          done
+          ! grep -R -Fq --exclude='*.map' '__ci-seo-' .output/public || { echo "::error::fixture CI présente dans l'artefact clean"; exit 1; }
+          grep -R -Fq -- "$NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY" .output/public || { echo "::error::clé Web3Forms absente du build clean"; exit 1; }
+          grep -R -Fq -- "$NUXT_PUBLIC_POSTHOG_KEY" .output/public || { echo "::error::clé PostHog absente du build clean"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          public = Path('.output/public')
+          root = ElementTree.parse(public / 'sitemap.xml').getroot()
+          namespace = 'http://www.sitemaps.org/schemas/sitemap/0.9'
+          locs = [node.findtext(f'{{{namespace}}}loc') for node in root.findall(f'{{{namespace}}}url')]
+          assert len(locs) >= 8, locs
+          assert len(locs) == len(set(locs)), locs
+          for path in public.rglob('*'):
+              assert '__ci-seo-' not in str(path), path
+          PY
+
+      - name: Upload clean static output
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-output
+          path: .output/public
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout deployment ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Ensure deployment is current
+        id: current
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "::notice::Le commit n'est plus la tête de main ; déploiement ignoré."
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download static output
+        if: steps.current.outputs.stale != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: static-output
+          path: .output/public
 
       - name: Deploy
-        # Publication uniquement sur push (main) ; les PR exécutent la validation sans déployer.
-        if: github.event_name == 'push'
+        if: steps.current.outputs.stale != 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
           publish_dir: .output/public

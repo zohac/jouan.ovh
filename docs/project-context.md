@@ -26,8 +26,8 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - **Styles :** SCSS (`sass ^1.101.0`) via `@use ... as`. **Deux couches de tokens coexistent :** (1) tokens DS portés en **CSS custom properties globales** dans `app/assets/scss/abstract/_root.scss` (chargé via `main.scss`) = source de vérité du nouveau code ; (2) anciens tokens SCSS `$` sous `abstract/` encore consommés par le legacy restant. Cf. règle SCSS.
 - **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
 - **Lint :** ESLint `^10` en **flat config** via `@nuxt/eslint` (`eslint.config.mjs`, `eslint: { config: { stylistic: false } }` → Prettier formate). Prettier `^3` (double quotes, points-virgules). Stylelint `^17` + `stylelint-config-standard-scss` + `stylelint-scss`. Script : `eslint . && stylelint "app/assets/**/*.scss" "app/**/*.vue"`.
-- **Gestionnaire de paquets :** pnpm (`packageManager: pnpm@11.8.0`, `pnpm-lock.yaml`), Node `>=22` — dev via Docker (cf. Workflow).
-- **Déploiement :** site statique (`nuxi generate`) → publication vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME` = `jouan.ovh`). ✅ La chaîne CI de déploiement est **prouvée en réel** sur `main` (Story 10.7), avec 13 routes pré-rendues, HTTPS Let's Encrypt forcé et DNS OVH opérationnel.
+- **Gestionnaire de paquets :** pnpm (`packageManager: pnpm@11.8.0`, `pnpm-lock.yaml`), Node `>=22.13.0` — dev via Docker (cf. Workflow).
+- **Déploiement :** site statique (`nuxi generate`) → publication vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME` = `jouan.ovh`). ✅ La chaîne CI de déploiement est **prouvée en réel** sur `main` (Story 10.7) pour les routes publiques et les artefacts SEO. La couche AEO `nuxt-ai-ready@2.4.0` est validée par la gate locale et reste soumise à la vérification HTTP post-déploiement ; elle est configurée en mode statique (`contentSource`, Markdown, `llms.txt`, `sitemap.md`). HTTPS Let's Encrypt forcé et DNS OVH opérationnel.
 - **Divers :** `ua-parser-js ^2` (détection device, terminal).
 
 ## Critical Implementation Rules
@@ -65,10 +65,18 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Blog alimenté par `@nuxt/content` **v3** (markdown sous `content/blog/`) — index
   `app/pages/blog/index.vue`, article `app/pages/blog/[...slug].vue`. Collections **typées
   dans `content.config.ts`** (schéma `blog` : `date` validée ISO via `z.string().regex`,
-  `tags`, `read`, `image`). Requêtes via `queryCollection("blog")…` dans `useAsyncData`
+  `updated`, `tags`, `read`, `image`). Requêtes via `queryCollection("blog")…` dans `useAsyncData`
   (prerender-safe) ; rendu article via `<ContentRenderer>`. **Coloration Shiki désactivée**
   (`content.build.markdown.highlight: false`) pour imposer la palette terminale du DS —
   ne pas réactiver sans surcharge (sinon styles inline par token écrasant le DS).
+- **AEO statique :** `nuxt-ai-ready@2.4.0` est activé après `@nuxt/content` dans
+  `nuxt.config.ts` avec `contentSource: true`, `contentNegotiation: false`, `database/runtimeSync/cron: false`,
+  `llmsTxt.markdownLinks: true`, `sitemapMd: true` et `describedby: true`. Le hook de nettoyage
+  `server/plugins/ai-ready-markdown.ts` retire les composants non publics ; le middleware
+  `server/middleware/aeo-content-visibility.ts` refuse les sources Content non publiques en runtime ;
+  l'état des routes est recalculé depuis les fichiers présents. Les artefacts AEO sont générés au build,
+  les routes noindex sont retirées après génération et les dumps `__ai-ready` ne sont pas publiés.
+  Ne pas activer MCP/WebMCP/runtime sync sur GitHub Pages.
 - **Formulaire `/contact` (Epic 7)** : envoi via **Web3Forms** (tiers _sans serveur_, site
   reste statique), clé via `runtimeConfig.public.web3formsAccessKey` (env
   `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY`, cf. `.env.example`). ⚠️ **Sans la clé, l'envoi échoue** —
@@ -135,7 +143,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   `public/images/` ou `assets/` lors de l'implémentation.
 - **Contenu partagé, URLs & SEO :**
   - Source unique de contenu : `app/data/site.ts` (`SITE.profile` / `SITE.skills` / `SITE.projects`, typés `IProfile`/`IProject`) — consommée par les programmes terminal (`skills`/`projets`/`contact`/`about`), `index.vue`, `about.vue`, `contact.vue` et `FooterComponent`. **Ne pas re-hardcoder** profil/skills/projets/email/ville ailleurs (DRY, consolidé en 8.2).
-  - Source unique d'URL de base : `app/composables/useSiteUrl.ts` (lit `runtimeConfig.public.siteUrl`, surchargeable via `NUXT_PUBLIC_SITE_URL`). **Ne jamais hardcoder l'URL de domaine** dans le code applicatif.
+  - Source unique d'URL de base : `app/composables/useSiteUrl.ts` (lit `useSiteConfig().url`, alimenté par `NUXT_SITE_URL`; `NUXT_SITE_NAME` et `NUXT_SITE_ENV` complètent la source Nuxt Site Config). **Ne jamais hardcoder l'URL de domaine** dans le code applicatif.
   - Helper SEO centralisé : `app/composables/usePageSeo.ts` — pose `useSeoMeta`, liens canonicals et JSON-LD Schema.org échappé via `jsonLdScript()`. _(Les `experiences`/`degrees` divergent volontairement entre le CV terminal détaillé et `/about` condensé — non unifiés, suivi dans `deferred-work.md`.)_
 
 **Langue**
@@ -180,7 +188,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 
 - ❌ Aucun framework de test configuré à ce jour (pas de Vitest/Jest/Playwright).
 - Validation actuelle = lint (`eslint`, `stylelint`) + `pnpm typecheck` (vue-tsc) +
-  build `pnpm generate`, le tout via Docker et sans erreur. Barre de qualité minimale.
+  build `pnpm generate`, le tout via Docker et sans erreur. Les assertions shell/Python du workflow vérifient aussi les artefacts AEO, les exclusions noindex, les MIME, les doublons, les liens alternatifs et les budgets (`llms.txt` 64 KiB, `llms-full.txt` 1 MiB). Barre de qualité minimale.
 - Si des tests sont introduits pendant la migration, documenter la convention ici.
 
 ### Règles critiques à ne pas manquer
@@ -209,7 +217,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   (style neutralisé : `font-weight`/`line-height` hérités → rendu identique), pas un
   `<p>` — pour un outline `h1 → h2…` sans saut. Une **séquence** (étapes, expériences,
   diplômes, tags, cartes répétées) se balise en **`<ol>`/`<ul>` + `<li>`** (`list-style:
-  none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux points
+none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux points
   **dès la story**, ils étaient sinon systématiquement rattrapés en revue.
 - Leçon rétro Epic 2 : ces points étaient systématiquement rattrapés en revue —
   les traiter en amont (checklist pré-revue dans la consigne de story).
@@ -284,4 +292,4 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-09-18 (post-Epic 15 : repositionnement commercial V1.1 livré — désancrage tarifaire de 3 500 € HT sur la home, restructuration en 3 niveaux d'intervention sur devis sur /services, section dédiée AI Care dès 250 € HT/mois pour l'exploitation post-prod, option Blueprint en étape cadrage, qualification de workflow sans champ budget forcé, SEO et Schema.org alignés, 0 emoji, gate Docker 100% verte — epics 1→13 et epic 15 done).
+Dernière mise à jour : 2026-09-24 ( Epic 14 enrichi avec la roadmap SEO Nuxt automatisée et AEO AI Ready ; la validation de production reste post-déploiement).

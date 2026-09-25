@@ -15,7 +15,7 @@ onMounted(() => {
 });
 
 // Métadonnées Schema.org globales (Organization / publisher du site).
-// Résolues depuis runtimeConfig (useSiteUrl) et les données partagées (SITE).
+// Résolues depuis Nuxt Site Config (useSiteUrl) et les données partagées (SITE).
 const siteUrl = useSiteUrl();
 
 const organizationJsonLd = {

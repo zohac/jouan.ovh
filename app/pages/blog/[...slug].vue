@@ -55,7 +55,14 @@
                 Identifier un workflow à automatiser
                 <template #iconRight><ZIcon name="arrow" /></template>
               </ZButton>
-              <ZButton as="a" :href="`mailto:${SITE.profile.email}`" variant="secondary" size="lg">
+              <ZButton
+                as="a"
+                :href="`mailto:${SITE.profile.email}`"
+                class="ph-no-capture"
+                variant="secondary"
+                size="lg"
+                data-analytics="direct_email_copied|email_context:blog_article"
+              >
                 M’écrire directement
               </ZButton>
             </div>
@@ -72,9 +79,13 @@
 // palette terminale (Shiki désactivé, cf. nuxt.config), CTA de fin. Contenu via
 // @nuxt/content v3 (queryCollection + ContentRenderer). Prerender-safe (useAsyncData).
 import { NuxtLink } from "#components";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useAnalytics } from "~/composables/useAnalytics";
 import { SITE } from "~/data/site";
+import { getBlogRobotsDirective, isPublishedBlogEntry } from "~/utils/blog-indexability";
 
 const route = useRoute();
+const { track } = useAnalytics();
 
 // Normalise le chemin (retire le(s) slash(es) final/aux) pour éviter un faux 404
 // sur une URL du type "/blog/mon-article/".
@@ -87,13 +98,91 @@ const { data: page, error } = await useAsyncData(
   { watch: [path] },
 );
 
+// ---- Télémétrie lecture d'article (story 14.3) ----
+const articleStartedAt = ref(0);
+const finishedSlug = ref("");
+
+function emitArticleViewed(): void {
+  const article = page.value;
+  if (!article || !isPublishedBlogEntry(article)) {
+    return;
+  }
+  articleStartedAt.value = Date.now();
+  finishedSlug.value = "";
+  track("blog_article_viewed", {
+    article_slug: article.path,
+    article_title: article.title,
+    reading_time_est: article.read ?? null,
+  });
+}
+
+function onArticleScroll(): void {
+  const article = page.value;
+  if (!article || finishedSlug.value === article.path) {
+    return;
+  }
+  const doc = document.documentElement;
+  const scrollable = doc.scrollHeight - window.innerHeight;
+  const ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
+  if (ratio >= 0.9) {
+    finishedSlug.value = article.path;
+    const totalSeconds = articleStartedAt.value > 0 ? Math.round((Date.now() - articleStartedAt.value) / 1000) : 0;
+    track("blog_article_finished", { article_slug: article.path, total_seconds: totalSeconds });
+  }
+}
+
+function onArticleClick(event: MouseEvent): void {
+  const article = page.value;
+  if (!article || !(event.target instanceof Element)) {
+    return;
+  }
+  const link = event.target.closest('.article__prose a[href^="#"]');
+  if (!(link instanceof HTMLAnchorElement)) {
+    return;
+  }
+  const headingId = link.getAttribute("href")?.split("#")[1];
+  if (headingId) {
+    track("blog_toc_clicked", { heading_id: headingId, article_slug: article.path });
+  }
+}
+
+function onArticleCopy(): void {
+  const article = page.value;
+  const selection = window.getSelection();
+  if (!article || !selection || selection.isCollapsed) {
+    return;
+  }
+  const anchorNode = selection.anchorNode;
+  const element = anchorNode instanceof Element ? anchorNode : (anchorNode?.parentElement ?? null);
+  const pre = element?.closest("pre");
+  if (!pre) {
+    return;
+  }
+  const languageClass = pre.querySelector("code")?.className.match(/language-(\w+)/)?.[1];
+  track("blog_code_copied", { code_language: languageClass ?? "unknown", article_slug: article.path });
+}
+
+watch(page, () => emitArticleViewed(), { immediate: true });
+
+onMounted(() => {
+  window.addEventListener("scroll", onArticleScroll, { passive: true });
+  document.addEventListener("click", onArticleClick);
+  document.addEventListener("copy", onArticleCopy);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", onArticleScroll);
+  document.removeEventListener("click", onArticleClick);
+  document.removeEventListener("copy", onArticleCopy);
+});
+
 // Erreur adaptée à l'état courant : 500 si la requête de contenu échoue (on ne masque
 // pas une vraie erreur derrière un 404), 404 uniquement quand l'article n'existe pas.
 const resolveContentError = () => {
   if (error.value) {
     return createError({ statusCode: 500, statusMessage: "Erreur lors du chargement de l'article" });
   }
-  if (!page.value) {
+  if (!page.value || !isPublishedBlogEntry(page.value)) {
     return createError({ statusCode: 404, statusMessage: "Article introuvable" });
   }
   return null;
@@ -139,6 +228,7 @@ usePageSeo(() => {
     headline: article.title,
     description: article.description,
     datePublished: article.date,
+    dateModified: article.updated ?? article.date,
     author: {
       "@type": "Person",
       name: SITE.profile.name,
@@ -164,6 +254,7 @@ usePageSeo(() => {
     image: article.image?.src,
     imageAlt: article.image?.alt,
     type: "article",
+    robots: getBlogRobotsDirective(article),
     jsonLd,
   };
 });

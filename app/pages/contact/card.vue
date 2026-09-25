@@ -21,13 +21,13 @@
 
           <ul class="vcard__coords" role="list">
             <li>
-              <a :href="`tel:${profile.phoneRaw}`" class="vcard__coord-link">
+              <a :href="`tel:${profile.phoneRaw}`" class="vcard__coord-link ph-no-capture">
                 <span class="vcard__coord-icon" aria-hidden="true"><ZIcon name="phone" /></span>
                 <span class="vcard__coord-text">{{ profile.phone }}</span>
               </a>
             </li>
             <li>
-              <a :href="`mailto:${profile.email}`" class="vcard__coord-link">
+              <a :href="`mailto:${profile.email}`" class="vcard__coord-link ph-no-capture">
                 <span class="vcard__coord-icon" aria-hidden="true"><ZIcon name="mail" /></span>
                 <span class="vcard__coord-text">{{ profile.email }}</span>
               </a>

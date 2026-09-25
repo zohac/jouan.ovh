@@ -11,7 +11,7 @@
           métier. Le rôle du diagnostic est justement de déterminer jusqu’où il est utile d’aller.
         </p>
 
-        <ul class="grid-3">
+        <ul class="grid-3" data-analytics-view="pricing">
           <li v-for="offer in offers" :key="offer.id">
             <ZCard :id="offer.id" class="offer" :accent="offer.featured" :featured="offer.featured">
               <div v-if="offer.badge" class="offer__badge">
@@ -37,6 +37,7 @@
                     to="/contact"
                     :variant="offer.featured ? 'primary' : 'secondary'"
                     :aria-label="offer.ctaAriaLabel"
+                    :data-analytics="pricingAnalytics(offer)"
                     class="offer__btn"
                   >
                     {{ offer.ctaText }}
@@ -85,6 +86,7 @@
                   to="/contact"
                   variant="secondary"
                   :aria-label="careOffer.ctaAriaLabel"
+                  :data-analytics="pricingAnalytics(careOffer)"
                   class="care-card__btn"
                 >
                   {{ careOffer.ctaText }}
@@ -110,12 +112,22 @@
         <h2 class="process__title">Un déroulé simple en quatre temps</h2>
 
         <ol class="process">
-          <li v-for="step in steps" :key="step.n" class="process__step">
+          <li
+            v-for="step in steps"
+            :key="step.n"
+            class="process__step"
+            :data-analytics-view="`process-step-${step.n.replace(/^0+/, '') || '0'}`"
+            :data-analytics-step-title="step.title"
+          >
             <div class="process__num" aria-hidden="true">{{ step.n }}</div>
             <h3 class="process__step-title">{{ step.title }}</h3>
             <p class="prose process__desc">{{ step.desc }}</p>
             <div v-if="step.inlineCta" class="process__cta-inline-wrapper">
-              <NuxtLink :to="step.inlineCta.to" class="process__inline-cta">
+              <NuxtLink
+                :to="step.inlineCta.to"
+                class="process__inline-cta"
+                :data-analytics="`process_step_interacted|step_number:${step.n}|step_title:${step.title}`"
+              >
                 {{ step.inlineCta.label }}
               </NuxtLink>
             </div>
@@ -265,6 +277,22 @@ const careOffer: CareOffer = {
   ctaText: "Découvrir AI Care",
   ctaAriaLabel: "Découvrir l'accompagnement AI Care",
 };
+
+// Instrumentation tarifaire (story 14.3) : identifiant de package normalisé +
+// prix d'entrée du tracking plan. Les offres de build sont « sur devis » ; AI Care
+// démarre à 250 € HT/mois.
+const PACKAGE_IDS: Record<string, string> = {
+  automatisation: "automatisation",
+  workflow: "workflow",
+  "sur-mesure": "sur_mesure",
+  "ai-care": "ai_care",
+};
+
+function pricingAnalytics(offer: { id: string; price: string }): string {
+  const packageId = PACKAGE_IDS[offer.id] ?? offer.id;
+  const startingPrice = offer.id === "ai-care" ? "250" : "sur_devis";
+  return `pricing_cta_clicked|package_id:${packageId}|starting_price_ht:${startingPrice}`;
+}
 
 // Étapes du process en 4 temps (Offre V1.1). L'ordre du tableau garantit l'affichage 01 → 04.
 const steps: Step[] = [

@@ -192,7 +192,44 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 ## Deferred from: code review of 11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker (2026-09-13)
 
 - **Nettoyage résiduel des mentions « WordPress » sur les autres pages secondaires** (`app/pages/contact.vue`, `app/pages/blog/index.vue`) — Si la page `about.vue` a été harmonisée en Story 11.5 et `/services` fait l'objet d'un suivi différé dédié, `contact.vue` (placeholder de formulaire et description SEO) et `blog/index.vue` (sous-titre et meta description) conservent des mentions WordPress historiques à réaligner lors d'un futur rafraîchissement éditorial transversal.
- 
+
 ## Deferred from: code review of 13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc (2026-09-18)
- 
+
 - **Suite de tests automatisés unitaires pour la logique réactive de `useTheme`** (`test/`) — Le projet ne possède pas de banc de tests unitaires client (Vitest/Playwright). La validation actuelle repose sur la gate Docker (lint, typecheck, generate SSG 24 routes). L'ajout d'une suite de tests unitaires pour `useTheme` et l'anti-FOUC relève d'une mise en place globale d'outillage de test.
+
+## Deferred from: code review of 14-1-fondations-posthog-eu-composable-consentement-et-toast-cookie-terminal (2026-09-23)
+
+- **Pas de synchronisation inter-onglets du consentement** (`app/composables/useConsent.ts`) — Un onglet déjà ouvert conserve son état de consentement obsolète (accordé/refusé) jusqu'au rechargement ; une révocation dans un onglet n'arrête pas la capture dans les autres. Amélioration possible via l'événement `storage` ou un `BroadcastChannel`.
+- **Choix de consentement non persistant si `localStorage` indisponible** (`app/composables/useConsent.ts:26-35`) — En navigation privée restrictive (`setItem`/`getItem` levant), le choix ne vit qu'en mémoire et le toast réapparaît à chaque chargement complet. Limitation inhérente, dégradation acceptable.
+- **Premier `$pageview` d'un visiteur déjà accepté perdu** — _Résolu_ par la décision code review 14.1 (D2 : `capture_pageview: false`, pageview route-based en 14.3). Sans objet désormais.
+
+## Deferred from: story 14.2 (Session Replay) — réglages PostHog EU (2026-09-23)
+
+- **Rétention Session Replay plafonnée à 30 jours par le plan PostHog** — `compliance-gdpr.md §5` cible « 14 mois glissants », mais l'API PostHog EU refuse toute valeur > `30d` sur le plan actuel (`longest allowable retention period is '30d'`). La page `/confidentialite` annonce donc la valeur réelle (30 jours). **À réévaluer lors d'une montée de plan PostHog** (options schéma : `90d`, `1y`, `5y`) ; mettre à jour la politique de confidentialité en conséquence. Projet PostHog EU 62302.
+- **Vérification end-to-end de la capture Session Replay reportée au post-déploiement** (AC5 story 14.2) — `recording_domains` est restreint à `https://jouan.ovh`, donc aucun enregistrement ne peut être produit/testé en local. Après le prochain déploiement en production (clé `NUXT_PUBLIC_POSTHOG_KEY` injectée par la CI), ouvrir le site, accepter la télémétrie, naviguer et saisir du texte dans `/contact`, puis confirmer via `query-session-recordings-list` / `session-recording-get` qu'une session est enregistrée **et** qu'aucun texte de formulaire n'apparaît en clair (masquage effectif).
+
+## Deferred from: code review of story 14-2-session-replay-securise-masquage-donnees-et-politique-rgpd (2026-09-23)
+
+- **Contrat de forwarding `ZInput class` → contrôle natif non couvert par CI** (`app/components/ui/ZInput.vue` + `app/pages/contact/index.vue:142,150,158,165,173,181`) — L'exclusion PostHog `ph-no-capture` repose entièrement sur le pattern `inheritAttrs: false` + `v-bind="controlAttrs"` de `ZInput` (qui forwarde `$attrs` au `<input>`/`<textarea>` natif). Le projet n'a pas de framework de test configuré (cf. `project-context.md#Tests`) : tout futur refactor de `ZInput` peut casser silencieusement l'exclusion native sans qu'aucune gate ne le détecte. Mitigation actuelle : vérification DOM manuelle. À couvrir par un test de composant (Vitest + `@vue/test-utils`) lors de la mise en place globale d'un banc de tests.
+
+## Deferred from: code review of 14-4-referencement-google-search-console-sitemap-xml-et-robots-txt (2026-09-24)
+
+- **Validation calendaire stricte de `content.blog.date`** (`content.config.ts:17`) — Le schéma Content garantit seulement la forme `YYYY-MM-DD` via une expression régulière, pas l'existence de la date dans le calendrier. Une date telle que `2026-02-31` peut donc être publiée puis copiée telle quelle dans `<lastmod>`, où elle n'est pas une valeur ISO 8601 valide. Préexistant et hors du correctif local de la Story 14.4 ; à traiter avec une refinement Zod lors d'une évolution du schéma de collection.
+
+## Deferred from: code review of 14-3-implementation-plan-de-taggage-exhaustif-conversions-ia-et-interactions (2026-09-24)
+
+- **`blog_code_copied.code_language` toujours `unknown`** (`app/pages/blog/[...slug].vue:147-161`) — Shiki est désactivé intentionnellement pour préserver la palette DS terminale (cf. `project-context.md`). L'extraction via `code.className.match(/language-(\w+)/)` ne capture jamais rien. Conséquence connue et assumée : la propriété `code_language` est dépourvue de valeur analytique tant que la palette est sanctuarisée. Si le besoin analytique devient prioritaire : réintroduire Shiki avec override token-level ou inférer la langue par heuristique sur le contenu.
+- **`linkedin_profile_clicked.location: 'header'` est inatteignable** (`app/composables/useAnalytics.ts:198-208`) — Aucun lien LinkedIn n'est rendu dans le `<header>` aujourd'hui (uniquement dans le footer via `LinkListComponent` et dans `/contact`). La branche `link.closest('header')` retourne donc systématiquement `false` et la valeur `"header"` du `location` reste morte. Cardinalité du `location` non contrôlée, code mort non bloquant. À harmoniser si un LinkedIn header est ajouté ou si la fonction est refactorée.
+
+## Deferred from: code review of story 14-5-migration-stack-nuxt-seo-sitemap-robots-site-config (2026-09-24)
+
+- **Ancres contextuelles des CTA Services retirées sur la home** (`app/pages/index.vue:447`) — Les trois liens `/services#automatisation`, `/services#workflow` et `/services#sur-mesure` ont été ramenés vers `/services`, régression d'un point explicitement résolu par la story 15.2. À traiter dans le flux Epic 15, hors périmètre de la migration SEO 14.5.
+- **Événement `direct_email_copied` émis sans copie** (`app/pages/blog/[...slug].vue:63`, `app/pages/index.vue:317`) — Le clic sur `mailto:` est comptabilisé comme une copie presse-papiers. Introduit par la story 14.3 ; renommer l'événement ou implémenter une copie réelle lors d'une passe analytics dédiée.
+- **Article sans zone défilable jamais marqué comme terminé** (`app/pages/blog/[...slug].vue:117`) — Lorsque `scrollHeight <= innerHeight`, le ratio reste à zéro et le seuil de fin à 90 % ne peut jamais être atteint. Introduit par la story 14.3 ; traiter avec un sentinel de fin ou une durée minimale de lecture.
+- **Timer de survol non annulé lors du reduced motion** (`app/pages/index.vue:370`) — Un timer `service_card_hovered` déjà planifié continue à s'exécuter si la préférence système passe à `prefers-reduced-motion: reduce` pendant le délai de 1,5 seconde. Introduit par la story 14.3 ; réexaminer `isReducedMotion` dans le callback ou annuler les timers lors du changement.
+- **Sélection de code traversant plusieurs blocs non mesurée** (`app/pages/blog/[...slug].vue:147`) — Seul `selection.anchorNode` est inspecté ; une sélection commençant hors du `pre` mais le traversant n'émet pas `blog_code_copied`. Introduit par la story 14.3 ; utiliser la plage de sélection ou vérifier le bloc commun.
+
+## Deferred from: code review of story 14-6-aeo-ai-ready-llms-markdown-oai-searchbot (2026-09-25)
+
+- **Épingler les versions exactes des actions, de l’image Node et du runner** (`.github/workflows/cd.yml:27-45`, `docker-compose.yml:13`) — Durcissement supply-chain hors périmètre immédiat de la story 14.6 ; à traiter dans une passe dédiée de reproductibilité et de sécurité CI.
+- **Synchroniser le consentement entre onglets et versionner la politique de consentement** (`app/composables/useConsent.ts:43-114`) — Dette déjà identifiée dans la story 14.1 ; à traiter dans une évolution dédiée du cycle de vie du consentement, hors correctif AEO 14.6.

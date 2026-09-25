@@ -23,7 +23,10 @@
               Full Stack TypeScript · Agents IA · APIs · PostgreSQL · MCP · IA locale · QA
             </p>
 
-            <div class="hero__badge-wrap">
+            <div
+              class="hero__badge-wrap"
+              :data-analytics="`hero_malt_link_clicked|badge_state:${SITE.profile.available ? 'available' : 'busy'}`"
+            >
               <span class="hero__pulse-dot" aria-hidden="true" />
               <span>Disponible pour nouvelles missions freelance</span>
               <template v-if="SITE.profile.maltUrl">
@@ -33,11 +36,25 @@
             </div>
 
             <div class="hero__cta">
-              <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg">
+              <ZButton
+                :as="NuxtLink"
+                to="/contact"
+                variant="primary"
+                size="lg"
+                data-analytics="hero_cta_clicked|cta_id:identify_workflow|cta_label:Parler d'un processus à automatiser|destination:/contact"
+              >
                 Parler d'un processus à automatiser
                 <template #iconRight><ZIcon name="arrow" /></template>
               </ZButton>
-              <ZButton :as="NuxtLink" to="/services" variant="secondary" size="lg"> Voir mes systèmes IA </ZButton>
+              <ZButton
+                :as="NuxtLink"
+                to="/services"
+                variant="secondary"
+                size="lg"
+                data-analytics="hero_cta_clicked|cta_id:view_systems|cta_label:Voir mes systèmes IA|destination:/services"
+              >
+                Voir mes systèmes IA
+              </ZButton>
             </div>
           </div>
 
@@ -58,7 +75,12 @@
         <p class="eyebrow"><span aria-hidden="true">// </span>ce que je propose</p>
         <h2 class="section__title">Trois expertises pour concevoir et faire évoluer vos systèmes</h2>
         <ul class="grid-3">
-          <li v-for="service in services" :key="service.id">
+          <li
+            v-for="service in services"
+            :key="service.id"
+            @mouseenter="onServiceHover(service.id)"
+            @mouseleave="onServiceLeave(service.id)"
+          >
             <ZCard class="offer" interactive tilt :accent="service.featured" :featured="service.featured">
               <div class="offer__top">
                 <div class="offer__icon"><ZIcon :name="service.icon" /></div>
@@ -81,6 +103,7 @@
                 :to="service.to"
                 class="offer__more"
                 :aria-label="`${service.actionText.replace(' →', '')} - ${service.title}`"
+                :data-analytics="`service_card_clicked|service_id:${service.id}|service_title:${service.title}|location:homepage_services`"
               >
                 <span>{{ service.actionText.replace(" →", "") }}</span>
                 <span class="offer__arrow" aria-hidden="true">→</span>
@@ -114,7 +137,7 @@
     </section>
 
     <!-- Bloc différenciateur « Prototype → Production » (Story 12.3 / AC-2) -->
-    <section class="section diff-block">
+    <section class="section diff-block" data-analytics-view="differentiator">
       <div class="container">
         <p class="eyebrow"><span aria-hidden="true">// </span>au-delà de la démo</p>
         <h2 class="section__title diff-block__title">
@@ -205,7 +228,7 @@
                 <p class="project-card__desc prose">{{ project.desc }}</p>
                 <ul class="hero__tags project-card__tags">
                   <li v-for="tag in project.tags" :key="tag">
-                    <ZTag>{{ tag }}</ZTag>
+                    <ZTag :data-analytics="`project_tag_clicked|tech_tag:${tag}`">{{ tag }}</ZTag>
                   </li>
                 </ul>
               </div>
@@ -296,11 +319,26 @@
             qui doit rester humain et si l’IA apporte réellement quelque chose.
           </p>
           <div class="cta__actions">
-            <ZButton :as="NuxtLink" to="/contact" variant="primary" size="lg" data-hot>
+            <ZButton
+              :as="NuxtLink"
+              to="/contact"
+              variant="primary"
+              size="lg"
+              data-hot
+              data-analytics="hero_cta_clicked|cta_id:identify_workflow_final|cta_label:Identifier un workflow à automatiser|destination:/contact"
+            >
               Identifier un workflow à automatiser
               <template #iconRight><ZIcon name="arrow" /></template>
             </ZButton>
-            <ZButton as="a" :href="`mailto:${SITE.profile.email}`" variant="secondary" size="lg" data-hot>
+            <ZButton
+              as="a"
+              :href="`mailto:${SITE.profile.email}`"
+              class="ph-no-capture"
+              variant="secondary"
+              size="lg"
+              data-hot
+              data-analytics="direct_email_copied|email_context:homepage_final"
+            >
               M’écrire directement
             </ZButton>
           </div>
@@ -315,11 +353,47 @@
 // Architecture multi-pages Nuxt 4, dark-first, accent orange.
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { NuxtLink, ZExternalLink } from "#components";
+import { useAnalytics } from "~/composables/useAnalytics";
 import { SITE } from "~/data/site";
+import { isIndexableBlogEntry } from "~/utils/blog-indexability";
+
+const { track } = useAnalytics();
 
 const isBootFinished = ref(false);
 const isReducedMotion = ref(false);
 let motionMq: MediaQueryList | null = null;
+
+// Survol prolongé (>1.5s) des cartes de service — émission unique par service
+// et par session (story 14.3, `service_card_hovered`).
+const hoveredServices = new Set<string>();
+const hoverTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+function onServiceHover(serviceId: string) {
+  // F-10 : neutralisation universelle sous `prefers-reduced-motion: reduce`
+  // (cohérent avec l'invariant Epic 11 §7 appliqué au scroll tracking).
+  if (isReducedMotion.value) {
+    return;
+  }
+  if (hoveredServices.has(serviceId) || hoverTimers.has(serviceId)) {
+    return;
+  }
+  hoverTimers.set(
+    serviceId,
+    setTimeout(() => {
+      hoverTimers.delete(serviceId);
+      hoveredServices.add(serviceId);
+      track("service_card_hovered", { service_id: serviceId, location: "homepage_services" });
+    }, 1500),
+  );
+}
+
+function onServiceLeave(serviceId: string) {
+  const timer = hoverTimers.get(serviceId);
+  if (timer) {
+    clearTimeout(timer);
+    hoverTimers.delete(serviceId);
+  }
+}
 
 function onMotionChange(e: MediaQueryListEvent) {
   isReducedMotion.value = e.matches;
@@ -333,6 +407,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   motionMq?.removeEventListener("change", onMotionChange);
+  hoverTimers.forEach(clearTimeout);
+  hoverTimers.clear();
 });
 
 function onBootComplete() {
@@ -374,7 +450,7 @@ const services: HomeServiceOffer[] = [
     ],
     tags: ["Workflow", "APIs", "Automation", "PostgreSQL"],
     actionText: "Voir les types d'automatisation →",
-    to: "/services#automatisation",
+    to: "/services",
     featured: false,
   },
   {
@@ -390,7 +466,7 @@ const services: HomeServiceOffer[] = [
     ],
     tags: ["Agents IA", "LLM", "MCP", "Human-in-the-loop"],
     actionText: "Voir quand utiliser un agent →",
-    to: "/services#workflow",
+    to: "/services",
     featured: true,
   },
   {
@@ -406,7 +482,7 @@ const services: HomeServiceOffer[] = [
     ],
     tags: ["TypeScript", "Nuxt", "NestJS", "PostgreSQL", "Tauri"],
     actionText: "Découvrir les projets sur mesure →",
-    to: "/services#sur-mesure",
+    to: "/services",
     featured: false,
   },
 ];
@@ -449,10 +525,13 @@ const stats = [
   { id: "stat-3", value: "QA", label: "culture d'automatisation & zéro régression" },
 ];
 
-// Récupération des 3 derniers articles du journal technique (Story 11.4 / AC-3).
-const { data: articles } = await useAsyncData("home-articles", () =>
-  queryCollection("blog").order("date", "DESC").limit(3).all(),
-);
+// Récupération des 3 derniers articles publiés/indexables du journal technique.
+// Le filtre évite qu'un brouillon, une date future ou une entrée noindex soit lié
+// depuis l'accueil puis réintroduit dans les routes prérendues.
+const { data: articles } = await useAsyncData("home-articles", async () => {
+  const entries = await queryCollection("blog").order("date", "DESC").all();
+  return entries.filter((entry) => isIndexableBlogEntry(entry)).slice(0, 3);
+});
 
 const siteUrl = useSiteUrl();
 const homeJsonLd = [
