@@ -29,16 +29,19 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: node:22-bookworm-slim
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Install CI utilities
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends curl git python3
+          apt-get install -y --no-install-recommends ca-certificates curl git python3
           rm -rf /var/lib/apt/lists/*
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install dependencies
         run: |
@@ -692,7 +695,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout deployment ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           persist-credentials: false
