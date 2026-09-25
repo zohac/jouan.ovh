@@ -4,7 +4,7 @@ baseline_commit: d8193c7
 
 # Story 14.1: Fondations PostHog EU, Composable de Consentement & Toast Cookie Terminal
 
-Status: in-progress
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -210,6 +210,8 @@ deepseek-v4.1-flash (opencode-go)
 - MCP PostHog enregistré et clé configurée ; le pilotage via MCP sera actif après redémarrage d'opencode.
 - **Fichiers hors dépôt** (non commités) : `.env` (gitignoré — clés `NUXT_PUBLIC_POSTHOG_KEY`, `POSTHOG_API_KEY`) et `~/.config/opencode/opencode.json` (serveur MCP).
 
+- **Clôture post-déploiement (2026-09-25)** : la CI GitHub Actions `main` est verte (run `36141238524`), les artefacts AEO sont servis en production (`/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml`, `/sitemap.md` en 200) et la vérification MCP confirme le projet PostHog EU, le token de production et les réglages de replay. Le consentement 14.1 a ensuite été scindé analytics/replay par la revue de la story 14.6 (voir Change Log), sans régression de l'opt-in.
+
 ### File List
 
 - `app/composables/useConsent.ts` (nouveau)
@@ -226,6 +228,7 @@ deepseek-v4.1-flash (opencode-go)
 - `docs/implementation-artifacts/14-1-fondations-posthog-eu-composable-consentement-et-toast-cookie-terminal.md` (story)
 
 ## Change Log
+- 2026-09-25 : **Clôture** — décision D4 levée (MCP PostHog opérationnel, projet EU `62302`, token production identique, réglages replay intacts) ; CI `main` verte et artefacts AEO servis en production ; consentement final scindé analytics/replay par la revue 14.6 (`Mesure uniquement` / `Mesure + replay` / `Refuser`, `accept()`/`decline()` conservés comme alias). Statut → `done`.
 - 2026-09-23 : **Code review (3 couches adverses)** — 15 findings patch + 3 defer + 3 dismiss. Patchs appliqués : `NUXT_PUBLIC_POSTHOG_KEY` câblée dans `.github/workflows/cd.yml` (D1), `capture_pageview: false` (D2), `ip: false` (D3), race accept→decline corrigée, retry d'import PostHog, toast Échap/aria-live/focus, garde `import.meta.client`, fallback d'hôte retiré, tokens `--z-*`, DNT élargi, bouton footer regroupé. Reste bloqué : vérification via MCP PostHog (D4, après redémarrage d'opencode). Gate Docker verte (28 routes).
 - 2026-09-23 : Configuration PostHog EU réelle (région EU confirmée, project token + clé MCP, réutilisation du projet unique du plan gratuit), enregistrement du serveur MCP PostHog, `capture_pageview: true`, preuve d'ingestion end-to-end (`$pageview` + `$opt_in` reçus dans PostHog). Gate Docker verte (28 routes).
 - 2026-09-23 : Implémentation de la story 14.1 — fondations PostHog EU (plugin client différé, opt-out par défaut), composable `useConsent` (opt-in RGPD + DNT), toast terminal `ConsentToast`, lien footer « Gestion des cookies », runtimeConfig PostHog, enregistrement MCP PostHog.
@@ -235,7 +238,7 @@ deepseek-v4.1-flash (opencode-go)
 
 _Code review du 2026-09-23 (diff non commité vs `d8193c7`) — 3 couches adverses : Blind Hunter, Edge Case Hunter, Acceptance Auditor._
 
-- [ ] [Review][Patch][Blocked] (ex-Décision D4 → rejouer via MCP) Vérification PostHog via le serveur MCP PostHog — Après redémarrage d'opencode (chargement du MCP), piloter PostHog via MCP pour confirmer région EU, project token et réglages Session Replay, puis consigner la preuve dans le Dev Agent Record. **Non exécutable dans cette session** : le MCP n'est chargé qu'après redémarrage d'opencode. Action à réaliser avant clôture.
+- [x] [Review][Patch][Résolu] (ex-Décision D4) Vérification PostHog via le serveur MCP PostHog — Résolu le 2026-09-25 : MCP opérationnel (`project-get`), projet `62302` servi par `https://eu.posthog.com`, `api_token` identique à la clé injectée en production (`phc_rvr9…`), `session_recording_opt_in: true`, `anonymize_ips: true`, `recording_domains`/`app_urls` restreints à `https://jouan.ovh`. Preuves complètes en story 14.2.
 - [x] [Review][Patch] (ex-Décision D1) PostHog absent du pipeline de déploiement — Résolu : `NUXT_PUBLIC_POSTHOG_KEY` ajoutée aux steps `Generate` et `Verify static output` de `.github/workflows/cd.yml` (pattern `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY`), avec garde-fou `::error` sur push. **Action requise côté Simon** : provisionner `NUXT_PUBLIC_POSTHOG_KEY` (`phc_...`) dans `Settings → Secrets and variables → Repository secrets` (ou `vars`).
 - [x] [Review][Patch] (ex-Décision D2) `capture_pageview` à `false` — Résolu : `app/plugins/posthog.client.ts` passe `capture_pageview: false` ; le `$pageview` route-based reste à la story 14.3 (pas de double capture).
 - [x] [Review][Patch] (ex-Décision D3) Anonymisation IP absente vs `compliance-gdpr.md §3` — Résolu : `ip: false` ajouté à `posthog.init()`.

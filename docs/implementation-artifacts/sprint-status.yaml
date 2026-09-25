@@ -147,8 +147,8 @@ development_status:
 
   # Epic 14 — Analytics Privacy-First, SEO Nuxt, AEO & Google Search Console
   epic-14: in-progress
-  14-1-fondations-posthog-eu-composable-consentement-et-toast-cookie-terminal: in-progress
-  14-2-session-replay-securise-masquage-donnees-et-politique-rgpd: review
+  14-1-fondations-posthog-eu-composable-consentement-et-toast-cookie-terminal: done
+  14-2-session-replay-securise-masquage-donnees-et-politique-rgpd: done
   14-3-implementation-plan-de-taggage-exhaustif-conversions-ia-et-interactions: done
   14-4-referencement-google-search-console-sitemap-xml-et-robots-txt: done # critères URL/handlers supersédés par 14-5
   14-5-migration-stack-nuxt-seo-sitemap-robots-site-config: done
