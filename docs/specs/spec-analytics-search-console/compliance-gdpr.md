@@ -7,7 +7,7 @@ Ce document formalise les garde-fous juridiques et techniques garantissant que l
 ## 1. Hébergement Européen & Souveraineté
 
 - **Point d'ingestion & stockage :** PostHog Cloud région Union Européenne (`https://eu.i.posthog.com`).
-- **Garantie juridique :** Les données demeurent sous la juridiction des règlements européens de protection des données, sans transfert vers les infrastructures US de PostHog.
+- **Hébergement retenu :** le projet utilise la région Union Européenne de PostHog (`https://eu.i.posthog.com`). Les garanties contractuelles de non-transfert extra-régional doivent être confirmées dans les conditions PostHog applicables ; elles ne sont pas déduites du seul code applicatif.
 - **Aucune monétisation :** Aucune donnée n'est cédée, croisée ou revendue à des tiers ou régies publicitaires.
 
 ---
@@ -18,7 +18,7 @@ Le Session Replay est activé dès la première livraison pour observer l'ergono
 
 ### A. Masquage forcé des saisies (Data Masking)
 
-- `maskAllInputs: true` : Tout contenu tapé par le visiteur dans un `<input>` ou un `<textarea>` (nom, email, description de processus métier, budget) est systématiquement masqué par des astérisques lors de la capture vidéo.
+- `maskAllInputs: true` : tout contenu tapé par le visiteur dans un `<input>` ou un `<textarea>` (nom, email, description de processus métier) est systématiquement masqué par des astérisques lors de la capture vidéo.
 - `maskAllElementAttributes: true` : Les attributs DOM pouvant véhiculer des informations d'état personnel sont neutralisés.
 - `maskTextSelector: ".ph-no-capture, .terminal, input, textarea"` : le terminal et les zones explicitement exclues sont masqués, en plus des champs de saisie.
 - `recordBody: false` : les corps de requêtes réseau ne sont pas capturés par le replay.
@@ -101,3 +101,9 @@ Le protocole d'observation comprend une période de référence et une période 
 - les vérifications techniques de couverture, de liens, de doublons et de taille des artefacts.
 
 Ces observations décrivent une tendance et ne constituent ni une attribution causale, ni une garantie de classement, de citation ou de visibilité. Un changement de `robots.txt` peut également être pris en compte avec un délai par les moteurs.
+
+## 8. Limites des preuves actuelles
+
+- La configuration du replay, les exclusions DOM et une session de production sont vérifiées ; l'inspection visuelle du rendu de la vidéo n'est pas exposée par les outils MCP.
+- La rétention de 30 jours concerne les enregistrements de session. La durée effective des événements analytics doit être relevée dans le projet PostHog avant d'en tirer une conclusion.
+- La mesure d'effet AEO et la validation Google Search Console restent des opérations distinctes, non déduites de la génération des artefacts.

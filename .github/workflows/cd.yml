@@ -496,6 +496,19 @@ jobs:
           noindex_marker = 'MARQUEUR_NOINDEX_HORIZONTAL'
           for artifact in (llms_text, llms_full_text, sitemap_md_text):
               assert noindex_marker not in artifact, 'corps noindex avec séparateur Markdown partiellement publié'
+          for artifact in (llms_text, sitemap_md_text):
+              assert not re.search(r'^\s*[-*+]\s*:', artifact, re.MULTILINE), 'puce AEO résiduelle après retrait de lien exclu'
+          for description in (
+              'Fixture CI noindex.',
+              'Fixture CI robots false.',
+              'Fixture CI robots none.',
+              'Fixture CI sitemap false.',
+              'Fixture CI sitemap null.',
+              'Fixture CI brouillon.',
+              'Fixture CI future.',
+          ):
+              assert description not in llms_text, f'description d’article exclu publiée dans llms.txt : {description}'
+              assert description not in sitemap_md_text, f'description d’article exclu publiée dans sitemap.md : {description}'
 
           for marker in ('phc_', 'NUXT_PUBLIC_', 'posthogKey', 'access_key', 'accessKey', 'honeypot', 'jouan_consent_telemetry'):
               assert marker not in llms_text, f'marqueur privé dans llms.txt : {marker}'

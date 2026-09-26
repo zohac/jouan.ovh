@@ -1,5 +1,5 @@
 # generated: 2026-06-18
-# last_updated: 2026-09-25 (Sprint change approved — Epic 16 backlog)
+# last_updated: 2026-09-25 (rétrospective Epic 14 et réconciliation documentaire)
 # project: jouan.ovh
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-25 (Sprint change approved — Epic 16 backlog)"
+last_updated: "2026-09-25 (rétrospective Epic 14 et réconciliation documentaire)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -145,15 +145,15 @@ development_status:
   13-4-validation-transverse-atmosphere-dambiance-et-gate-docker-nitro-ssg: done
   epic-13-retrospective: optional
 
-  # Epic 14 — Analytics Privacy-First, SEO Nuxt, AEO & Google Search Console
-  epic-14: done
+  # Epic 14 — Télémétrie respectueuse de la vie privée, SEO Nuxt, AEO et Google Search Console
+  epic-14: done # livraison des six tâches ; réserves de gouvernance suivies dans epic-14-checkpoint-2026-09-25.md
   14-1-fondations-posthog-eu-composable-consentement-et-toast-cookie-terminal: done
   14-2-session-replay-securise-masquage-donnees-et-politique-rgpd: done
   14-3-implementation-plan-de-taggage-exhaustif-conversions-ia-et-interactions: done
   14-4-referencement-google-search-console-sitemap-xml-et-robots-txt: done # critères URL/handlers supersédés par 14-5
   14-5-migration-stack-nuxt-seo-sitemap-robots-site-config: done
   14-6-aeo-ai-ready-llms-markdown-oai-searchbot: done
-  epic-14-retrospective: optional
+  epic-14-retrospective: done
 
   # Epic 15 — Repositionnement Commercial V1.1 : Désancrage Tarifaire & Offres par Niveaux d'Intervention
   epic-15: done
@@ -163,8 +163,9 @@ development_status:
   15-4-coherence-globale-seo-formulaire-contact-et-gate-docker: done
   epic-15-retrospective: done
 
-  # Epic 16 — Plateforme éditoriale durable (backlog, aucun story créé)
+  # Epic 16 — Plateforme éditoriale durable (backlog, aucune tâche créée)
   # T0 = préparation technique ; E1 = article réel + FR-18 ; R1 = roadmap conditionnelle
+  # Bloqué jusqu'à la ratification du point de contrôle Epic 14 et des contrats D-01 à D-08
   epic-16: backlog
 
 

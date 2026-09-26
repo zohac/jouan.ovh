@@ -1,5 +1,7 @@
 # Rapport de réconciliation — PRD blog éditorial / investigation / planning
 
+> **État actuel après la rétrospective Epic 14 (2026-09-25) :** les constats de ce rapport décrivent l'instantané du 2026-09-24. Les six tâches de l'Epic 14 sont désormais terminées, son point de contrôle est réconcilié et l'Epic 16 reste en `backlog` jusqu'à la ratification des contrats. Les constats historiques ne doivent pas être réinterprétés comme l'état actuel.
+
 **Date de réconciliation :** 2026-09-24  
 **Portée :** `prd.md`, `addendum.md`, l'investigation brownfield, `epics.md`, `sprint-status.yaml` et `project-context.md`. Les companions de la SPEC ont aussi été consultés lorsqu'ils sont explicitement référencés par le PRD.  
 **Convention de citation :** `investigation` désigne `docs/implementation-artifacts/investigations/blog-editorial-brief-investigation.md`; `SPEC` désigne `docs/specs/spec-blog-editorial/SPEC.md`; `content-contract.md` désigne `docs/specs/spec-blog-editorial/content-contract.md`; `verification-plan.md` désigne `docs/specs/spec-blog-editorial/verification-plan.md`. Les autres noms sont les chemins relatifs indiqués dans chaque source.  

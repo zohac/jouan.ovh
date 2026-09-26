@@ -320,6 +320,10 @@ function removeNonIndexableAiReadyArtifacts(publicDir: string, routes: Set<strin
         }),
       )
       .filter((line) => !/^\s*[-*+]\s*$/u.test(line))
+      // AI Ready sérialise `- [titre](/route.md): description`. Une fois le lien
+      // retiré, la ligne résiduelle `- : description` doit disparaître elle aussi
+      // pour ne pas publier la description d'une route exclue.
+      .filter((line) => !/^\s*[-*+]\s*:/u.test(line))
       .join("\n");
     if (filtered !== text) {
       nodeFileSystem.writeFileSync(filePath, filtered, "utf8");

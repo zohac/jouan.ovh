@@ -204,10 +204,10 @@ deepseek-v4.1-flash (opencode-go)
 - Toutes les tâches sont terminées ; la gate Docker est 100 % verte (28 routes pré-rendues).
 - `posthog-js@1.434.7` installé en Docker, ajouté à `dependencies`.
 - `useConsent` : état partagé `useState`, persistance `jouan_consent_telemetry`, DNT (`navigator.doNotTrack === '1'`) → déclin silencieux non écrasable, `openConsentModal()` pour révocation.
-- Plugin `posthog.client.ts` : import dynamique non bloquant, `opt_out_capturing_by_default: true`, `respect_dnt: true`, `capture_pageview: true`, `autocapture: false`, `disable_session_recording: true` (Session Replay = 14.2), `persistence: "localStorage+cookie"`, aucun `identify()`, inactif en dev et sans clé.
+- Plugin `posthog.client.ts` : import dynamique non bloquant, `opt_out_capturing_by_default: true`, `respect_dnt: true`, `capture_pageview: false` (le `$pageview` est géré par la story 14.3), `autocapture: false`, `disable_session_recording: true` (Session Replay = 14.2), `persistence: "localStorage"`, `opt_out_persistence_by_default: true`, aucun `identify()`, inactif en dev et sans clé.
 - `ConsentToast` client-only (`ClientOnly` + garde `mounted`), tokens DS, focus visible + repli forced-colors, animation neutralisée sous reduced-motion.
 - Footer : bouton natif « Gestion des cookies » (focus visible, sans régression de layout).
-- MCP PostHog enregistré et clé configurée ; le pilotage via MCP sera actif après redémarrage d'opencode.
+- MCP PostHog enregistré et clé configurée ; le pilotage a été rendu opérationnel après le redémarrage d'opencode, puis confirmé en production.
 - **Fichiers hors dépôt** (non commités) : `.env` (gitignoré — clés `NUXT_PUBLIC_POSTHOG_KEY`, `POSTHOG_API_KEY`) et `~/.config/opencode/opencode.json` (serveur MCP).
 
 - **Clôture post-déploiement (2026-09-25)** : la CI GitHub Actions `main` est verte (run `36141238524`), les artefacts AEO sont servis en production (`/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml`, `/sitemap.md` en 200) et la vérification MCP confirme le projet PostHog EU, le token de production et les réglages de replay. Le consentement 14.1 a ensuite été scindé analytics/replay par la revue de la story 14.6 (voir Change Log), sans régression de l'opt-in.

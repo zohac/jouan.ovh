@@ -6,7 +6,7 @@
 
 1. Epic 14 est revu, réconcilié et enregistré dans un checkpoint propre.
 2. La SPEC, le content-contract, le PRD et la proposition de sprint sont versionnés.
-3. Les décisions D-01 à D-07 sont ratifiées ; D-08 est confirmée au checkpoint Epic 14.
+3. Les décisions D-01 à D-07 sont ratifiées ; D-08 reste à confirmer au checkpoint Epic 14.
 4. Les fixtures sont temporaires, marquées, non versionnées et supprimées après validation.
 5. Aucun `pnpm`, `npm`, `yarn` ou `nuxi` n'est lancé sur l'hôte.
 
@@ -92,7 +92,7 @@ Contrôler :
 - contrastes, textes alternatifs et liens externes accessibles ;
 - code long, tableaux et taxonomie sans overflow horizontal ;
 - images responsives et fallback sans image ;
-- baseline du design system approuvé au checkpoint Epic 14 ;
+- baseline du design system à ratifier au checkpoint Epic 14 ;
 - terminal sanctuarisé ;
 - `forced-colors` ;
 - `prefers-reduced-motion` ;

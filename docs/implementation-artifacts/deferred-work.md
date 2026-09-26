@@ -191,7 +191,7 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 
 ## Deferred from: code review of 11-5-validation-transverse-a11y-multi-pages-ssg-nitro-et-gate-docker (2026-09-13)
 
-- **Nettoyage résiduel des mentions « WordPress » sur les autres pages secondaires** (`app/pages/contact.vue`, `app/pages/blog/index.vue`) — Si la page `about.vue` a été harmonisée en Story 11.5 et `/services` fait l'objet d'un suivi différé dédié, `contact.vue` (placeholder de formulaire et description SEO) et `blog/index.vue` (sous-titre et meta description) conservent des mentions WordPress historiques à réaligner lors d'un futur rafraîchissement éditorial transversal.
+- **Nettoyage résiduel des mentions « WordPress » sur les autres pages secondaires** (`app/pages/contact/index.vue`, `app/pages/blog/index.vue`) — Si la page `about.vue` a été harmonisée en Story 11.5 et `/services` fait l'objet d'un suivi différé dédié, `contact/index.vue` (placeholder de formulaire et description SEO) et `blog/index.vue` (sous-titre et meta description) conservent des mentions WordPress historiques à réaligner lors d'un futur rafraîchissement éditorial transversal.
 
 ## Deferred from: code review of 13-2-composable-reactif-usetheme-ecoute-systeme-et-script-synchrone-anti-fouc (2026-09-18)
 
@@ -206,7 +206,7 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 ## Deferred from: story 14.2 (Session Replay) — réglages PostHog EU (2026-09-23)
 
 - **Rétention Session Replay plafonnée à 30 jours par le plan PostHog** — `compliance-gdpr.md §5` cible « 14 mois glissants », mais l'API PostHog EU refuse toute valeur > `30d` sur le plan actuel (`longest allowable retention period is '30d'`). La page `/confidentialite` annonce donc la valeur réelle (30 jours). **À réévaluer lors d'une montée de plan PostHog** (options schéma : `90d`, `1y`, `5y`) ; mettre à jour la politique de confidentialité en conséquence. Projet PostHog EU 62302.
-- **Vérification end-to-end de la capture Session Replay reportée au post-déploiement** (AC5 story 14.2) — `recording_domains` est restreint à `https://jouan.ovh`, donc aucun enregistrement ne peut être produit/testé en local. Après le prochain déploiement en production (clé `NUXT_PUBLIC_POSTHOG_KEY` injectée par la CI), ouvrir le site, accepter la télémétrie, naviguer et saisir du texte dans `/contact`, puis confirmer via `query-session-recordings-list` / `session-recording-get` qu'une session est enregistrée **et** qu'aucun texte de formulaire n'apparaît en clair (masquage effectif).
+- **Vérification end-to-end de la capture Session Replay : session confirmée, inspection pixel encore ouverte** — `recording_domains` restreint la capture à `https://jouan.ovh`. Une session de production et les réglages du projet ont été confirmés ; les outils MCP n'exposent toutefois pas le rendu vidéo permettant de vérifier pixel par pixel l'absence de texte sensible. La configuration, les classes `ph-no-capture` et la restriction du domaine restent les preuves disponibles ; l'inspection visuelle du replay est une réserve séparée.
 
 ## Deferred from: code review of story 14-2-session-replay-securise-masquage-donnees-et-politique-rgpd (2026-09-23)
 
@@ -214,7 +214,7 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 
 ## Deferred from: code review of 14-4-referencement-google-search-console-sitemap-xml-et-robots-txt (2026-09-24)
 
-- **Validation calendaire stricte de `content.blog.date`** (`content.config.ts:17`) — Le schéma Content garantit seulement la forme `YYYY-MM-DD` via une expression régulière, pas l'existence de la date dans le calendrier. Une date telle que `2026-02-31` peut donc être publiée puis copiée telle quelle dans `<lastmod>`, où elle n'est pas une valeur ISO 8601 valide. Préexistant et hors du correctif local de la Story 14.4 ; à traiter avec une refinement Zod lors d'une évolution du schéma de collection.
+- **Validation calendaire stricte de `content.blog.date`** (`content.config.ts:17`) — **Résolu par la story 14.5** : `date` et `updated` sont validés comme dates calendaires avec une frontière Europe/Paris et `updated >= date`. Cette entrée n'est plus différée ; la conservation de l'ancienne formulation dans ce registre est purement historique.
 
 ## Deferred from: code review of 14-3-implementation-plan-de-taggage-exhaustif-conversions-ia-et-interactions (2026-09-24)
 
@@ -223,7 +223,7 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 
 ## Deferred from: code review of story 14-5-migration-stack-nuxt-seo-sitemap-robots-site-config (2026-09-24)
 
-- **Ancres contextuelles des CTA Services retirées sur la home** (`app/pages/index.vue:447`) — Les trois liens `/services#automatisation`, `/services#workflow` et `/services#sur-mesure` ont été ramenés vers `/services`, régression d'un point explicitement résolu par la story 15.2. À traiter dans le flux Epic 15, hors périmètre de la migration SEO 14.5.
+- **Ancres contextuelles des CTA Services retirées sur la home** (`app/pages/index.vue:447`) — **Résolu par la story 15.2** : les liens contextuels ont été réalignés avec la nouvelle offre sur devis. Cette entrée n'est plus différée ; sa conservation dans ce registre est historique.
 - **Événement `direct_email_copied` émis sans copie** (`app/pages/blog/[...slug].vue:63`, `app/pages/index.vue:317`) — Le clic sur `mailto:` est comptabilisé comme une copie presse-papiers. Introduit par la story 14.3 ; renommer l'événement ou implémenter une copie réelle lors d'une passe analytics dédiée.
 - **Article sans zone défilable jamais marqué comme terminé** (`app/pages/blog/[...slug].vue:117`) — Lorsque `scrollHeight <= innerHeight`, le ratio reste à zéro et le seuil de fin à 90 % ne peut jamais être atteint. Introduit par la story 14.3 ; traiter avec un sentinel de fin ou une durée minimale de lecture.
 - **Timer de survol non annulé lors du reduced motion** (`app/pages/index.vue:370`) — Un timer `service_card_hovered` déjà planifié continue à s'exécuter si la préférence système passe à `prefers-reduced-motion: reduce` pendant le délai de 1,5 seconde. Introduit par la story 14.3 ; réexaminer `isReducedMotion` dans le callback ou annuler les timers lors du changement.
@@ -233,3 +233,16 @@ _Décision Simon (approche DRY/SOLID) : zéro dette → les items ci-dessous ont
 
 - **Épingler les versions exactes des actions, de l’image Node et du runner** (`.github/workflows/cd.yml:27-45`, `docker-compose.yml:13`) — Durcissement supply-chain hors périmètre immédiat de la story 14.6 ; à traiter dans une passe dédiée de reproductibilité et de sécurité CI.
 - **Synchroniser le consentement entre onglets et versionner la politique de consentement** (`app/composables/useConsent.ts:43-114`) — Dette déjà identifiée dans la story 14.1 ; à traiter dans une évolution dédiée du cycle de vie du consentement, hors correctif AEO 14.6.
+
+## Réserves consolidées après la rétrospective Epic 14 (2026-09-25)
+
+Le point de contrôle `docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md` est la source de vérité des propriétaires et de l'état de stabilisation.
+
+- **Validation Google Search Console** (propriétaire : Simon) — la procédure DNS et la soumission du sitemap sont documentées mais ne sont pas rapportées comme exécutées.
+- **Couverture analytics en production** (propriétaire : Responsable vie privée / Amelia) — la mise en œuvre et la revue sont terminées ; un relevé PostHog confirmant au moins un événement par grande catégorie reste à consigner.
+- **Rétention des événements analytics** (propriétaire : Responsable vie privée) — la rétention du replay est vérifiée ; la durée des événements doit être relevée séparément.
+- **Inspection visuelle du replay** (propriétaire : Responsable vie privée) — la session et la configuration sont prouvées ; le rendu pixel n'est pas exposé par MCP.
+- **Mesure AEO** (propriétaire : Responsable produit / PM) — le protocole est défini ; aucune conclusion de visibilité, de citation ou de conversion n'est formulée.
+- **Consentement inter-onglets et versionnement de la politique** (propriétaire : Responsable technique) — différés dans `useConsent.ts`.
+- **Épinglage de la chaîne CI** (propriétaire : Responsable CI) — actions, image Node et runner restent à verrouiller dans une passe de reproductibilité dédiée.
+- **Préflight SEO** (propriétaire : Simon / équipe) — recommandation de la rétrospective uniquement, sans nouvelle obligation ni nouvelle tâche à créer pour l'instant.

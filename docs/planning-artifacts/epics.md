@@ -114,7 +114,7 @@ FR54: Exposition AEO du site public — `llms.txt`, `llms-full.txt`, versions Ma
 
 ### NonFunctional Requirements
 
-NFR1: Baseline DS approuvé au checkpoint Epic 14 — aucune migration ou changement de thème dans le lot blog ; le mode sombre et le terminal sanctuarisé restent les références de contraste.
+NFR1: Baseline DS à ratifier au checkpoint Epic 14 — aucune migration ou changement de thème dans le lot blog ; le mode sombre et le terminal sanctuarisé restent les références de contraste.
 NFR2: Aucune valeur de couleur/espace/rayon hardcodée ; tout passe par les tokens.
 NFR3: Port, pas copie — recréation en Vue 3 `<script setup>` + SCSS `@use` (jamais `@import`).
 NFR4: Compatibilité prerender — tout passe `nuxi generate`, accès DOM gardés.
@@ -150,7 +150,7 @@ NFR20: Compatibilité SSG totale sous GitHub Pages sans dépendance dynamique se
 
 ### Planning hygiene — critères historiques supersédés
 
-Les critères anciens qui mentionnent `yarn`, des handlers sitemap/robots manuels, des URL de production codées en dur ou un thème dark-only sont conservés uniquement comme historique. Pour tout nouveau lot, la source actuelle est le gate Docker `pnpm`, les propriétaires Nuxt SEO/ Site Config et le design system approuvé au checkpoint Epic 14.
+Les critères anciens qui mentionnent `yarn`, des handlers sitemap/robots manuels, des URL de production codées en dur ou un thème dark-only sont conservés uniquement comme historique. Pour tout nouveau lot, la source actuelle est le gate Docker `pnpm`, les propriétaires Nuxt SEO/ Site Config et le design system à ratifier au checkpoint Epic 14.
 
 ### UX Design Requirements
 
@@ -297,8 +297,8 @@ Le visiteur arrivant sur `jouan.ovh` (prospect ou client) comprend en moins de 1
 Le visiteur peut consulter l'ensemble du site dans un thème clair « Papier technique / Crème solaire » reposant et contrasté tout en profitant de l'authenticité des terminaux sombres sanctuarisés. Il bénéficie d'une synchronisation automatique avec son OS, d'une bascule manuelle rapide dans le header (desktop et tiroir mobile) et d'une persistance locale sans aucun clignotement visuel (anti-FOUC) au rechargement statique.
 **FRs covered:** FR37, FR38, FR39, FR40, FR41, FR42 _(NFR17 à NFR20, UX-DR32 à UX-DR35)_
 
-### Epic 14: Analytics Privacy-First, SEO Nuxt, AEO & Google Search Console
-Le visiteur bénéficie d'un contrôle transparent sur sa vie privée via un toast de consentement sobre inspiré du terminal, tandis que Simon Jouan dispose d'une observabilité complète sur l'audience, la restitution de parcours (Session Replay sécurisé) et les conversions de l'offre IA, soutenue par une infrastructure SEO statique maintenue par les modules Nuxt SEO, une politique de découvrabilité IA explicite et des artefacts agent-readables sans promesse de classement.
+### Epic 14: Télémétrie respectueuse de la vie privée, SEO Nuxt, AEO et Google Search Console
+Le visiteur bénéficie d'un contrôle transparent sur sa vie privée via une invite de consentement sobre inspirée du terminal, tandis que Simon Jouan dispose d'une observabilité complète sur l'audience, la restitution de parcours (rejeu de session sécurisé) et les conversions de l'offre IA, soutenue par une infrastructure SEO statique maintenue par les modules Nuxt SEO, une politique de découvrabilité IA explicite et des artefacts lisibles par les agents sans promesse de classement.
 **FRs covered:** FR43, FR44, FR45, FR46, FR47, FR48, FR53, FR54 _(CAP-1 à CAP-10)_
 
 ### Epic 16: Plateforme éditoriale durable — contrat, publication et patrimoine
@@ -1155,11 +1155,11 @@ So that le déploiement sur GitHub Pages soit certifié à 100 % vert sans régr
 
 ---
 
-## Epic 14: Analytics Privacy-First (PostHog EU), Consentement RGPD & Google Search Console
+## Epic 14: Télémétrie respectueuse de la vie privée (PostHog EU), consentement RGPD et Google Search Console
 
-Simon Jouan dispose d'un suivi précis et respectueux du trafic, du comportement des visiteurs (Session Replay masqué) et de la conversion de l'offre commerciale IA, tout en garantissant une conformité RGPD exemplaire (toast de consentement terminal) et une indexation certifiée par Google Search Console (`sitemap.xml`, `robots.txt`, vérification DNS).
+Simon Jouan dispose d'un suivi précis et respectueux du trafic, du comportement des visiteurs (rejeu de session masqué) et de la conversion de l'offre commerciale IA, tout en garantissant une conformité RGPD exemplaire (invite de consentement terminal) et une infrastructure de recherche prête pour Google Search Console (`sitemap.xml`, `robots.txt`, procédure DNS documentée). La validation DNS et la soumission du sitemap restent à exécuter.
 
-> **Checkpoint requis.** Epic 14 reste `in-progress` jusqu'à la résolution de 14.1, 14.2 et 14.6. Epic 16 consomme ce checkpoint et ne modifie pas les propriétaires SEO/AEO/privacy sans décision séparée. Les critères manuels de 14.4 sont supersédés par 14.5.
+> **Point de contrôle documentaire.** Les six tâches de l'Epic 14 sont terminées et la réconciliation documentaire est enregistrée dans `docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md`. Les réserves externes (validation Google Search Console, preuve exhaustive des événements, mesure AEO et inspection visuelle du rejeu de session) restent visibles et ne sont pas déclarées acquises. L'Epic 16 consomme ce point de contrôle et ne modifie pas les propriétaires SEO/AEO/vie privée sans décision séparée. Les critères manuels de 14.4 sont supersédés par 14.5.
 
 ### Story 14.1: Fondations PostHog EU, Composable de Consentement & Toast Cookie Terminal
 
@@ -1411,7 +1411,9 @@ Simon peut publier, préserver et faire découvrir une preuve technique fiable d
 | --- | --- | --- | --- | --- |
 | CAP-1 | T0/E1 | FR-1 à FR-3, FR-18 | contrat + resolver ; checklist FR-18 | bloqué avant ratification |
 | CAP-2 | T0 | FR-4 | `/blog` et empty state | bloqué avant ratification |
+| CAP-3 | R1 | FR-5 | routes Vue dédiées et precedence | différé R1 |
 | CAP-4 | T0/R1 | FR-6 à FR-9 | article responsive ; related R1 | bloqué avant ratification |
+| CAP-5 | R1 | FR-10, FR-11 | auteur canonique et projet par ID public | différé R1 |
 | CAP-6 | T0/E1/R1 | FR-12 | visibility matrix et fixtures | bloqué avant ratification |
 | CAP-7 | T0/R1 | FR-13 à FR-15 | non-régression SEO/AEO ; extensions R1 | bloqué avant ratification |
 | CAP-8 | T0 | FR-9, FR-16 | DS, responsive, a11y | bloqué avant ratification |
@@ -1420,9 +1422,9 @@ Simon peut publier, préserver et faire découvrir une preuve technique fiable d
 ### Conditions d'entrée
 
 - Epic 6 est `done` et ses stories restent la baseline historique.
-- Epic 14 a résolu 14.1, 14.2 et 14.6 et possède un checkpoint écrit (`docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md`).
+- Epic 14 a livré ses six tâches (`14.1` à `14.6`) et possède un checkpoint écrit (`docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md`), actuellement réconcilié mais non ratifié.
 - La SPEC et ses companions partagent les gates T0/E1/R1.
-- D-01 à D-07 sont ratifiés ; D-08 est confirmée au checkpoint.
+- D-01 à D-07 sont ratifiés ; D-08 reste à confirmer au checkpoint Epic 14.
 - Aucun événement/propriété analytics nouveau n'est requis en T0.
 - Les fixtures ne sont jamais versionnées ni déployées en production.
 

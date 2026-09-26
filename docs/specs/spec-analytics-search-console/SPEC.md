@@ -1,5 +1,6 @@
 ---
 id: SPEC-analytics-search-console
+updated: 2026-09-25
 companions:
   - tracking-plan.md
   - compliance-gdpr.md
@@ -9,7 +10,7 @@ sources: []
 
 > **Canonical contract.** This SPEC and the files in `companions:` are the complete, preservation-validated contract for what to build, test, and validate. Source documents listed in frontmatter are for traceability only — consult them only if you need narrative rationale or prose color this contract intentionally omits.
 
-# Analytics Privacy-First, SEO Nuxt, AEO & Observabilité Google Search Console
+# Télémétrie respectueuse de la vie privée, SEO Nuxt, AEO et observabilité Google Search Console
 
 ## Why
 
@@ -22,7 +23,7 @@ Suite au déploiement du repositionnement commercial ciblant les systèmes IA et
   success: En production, le script client charge `posthog-js` depuis l'hôte EU (`https://eu.i.posthog.com`), la clé d'API publique est injectée via `runtimeConfig.public.posthogKey`, et aucun appel réseau analytics n'est émis en environnement de développement local ou lors de `nuxi generate`.
 
 - id: CAP-2
-  intent: Le système active l'enregistrement de sessions (Session Replay) dès la première mise en production pour analyser les points de friction de navigation.
+  intent: Le système active l'enregistrement de sessions (rejeu de session) après consentement explicite pour analyser les points de friction de navigation.
   success: Les sessions utilisateurs sont enregistrées et visionnables sur l’interface PostHog EU après un consentement distinct, avec masquage forcé des champs de saisie, du terminal, des liens de contact et des attributs sensibles (`maskAllInputs: true`, `maskAllElementAttributes: true`, `maskTextSelector: ".ph-no-capture, .terminal, input, textarea"`, `recordBody: false`).
 
 - id: CAP-3
@@ -31,7 +32,7 @@ Suite au déploiement du repositionnement commercial ciblant les systèmes IA et
 
 - id: CAP-4
   intent: La collecte analytique et l'enregistrement de sessions garantissent une conformité stricte au RGPD via un mécanisme de consentement explicite (opt-in) sobre et révocable.
-  success: L'ingestion est cantonnée à l'infrastructure européenne de PostHog, un composant toast de consentement inspiré du terminal permet d'activer séparément la télémétrie et le Session Replay, les signaux `Do Not Track` et `Global Privacy Control` désactivent automatiquement la collecte, un lien permanent dans le footer permet de révoquer chaque choix à tout moment, et la page `/confidentialite` documente l'ensemble des finalités et des durées de conservation.
+  success: L'ingestion est cantonnée à l'infrastructure européenne de PostHog, un composant d'invite de consentement inspiré du terminal permet d'activer séparément la télémétrie et le rejeu de session, les signaux `Do Not Track` et `Global Privacy Control` désactivent automatiquement la collecte, un lien permanent dans le pied de page permet de révoquer chaque choix à tout moment, et la page `/confidentialite` documente les finalités et les durées de conservation vérifiées.
 
 - id: CAP-5
   intent: Le domaine apex `jouan.ovh` est vérifié et monitoré dans Google Search Console via un enregistrement DNS TXT géré chez OVH.
@@ -59,12 +60,12 @@ Suite au déploiement du repositionnement commercial ciblant les systèmes IA et
 
 ## Constraints
 
-- **Hébergement européen strict :** Ingestion et stockage des données analytics exclusivement sur la région Europe de PostHog (`https://eu.i.posthog.com`).
-- **Session Replay sécurisé :** Masquage natif et strict de toute donnée textuelle saisie par l’utilisateur, du terminal et des zones de contact (`maskAllInputs: true`, `maskAllElementAttributes: true`, `maskTextSelector: ".ph-no-capture, .terminal, input, textarea"`, `recordBody: false`).
-- **Consentements opt-in distincts :** La mesure d'audience et le Session Replay sont activés séparément via un bandeau discret terminal conforme RGPD.
+- **Hébergement européen retenu :** l'ingestion et le stockage de la télémétrie utilisent la région Europe de PostHog (`https://eu.i.posthog.com`). Les garanties contractuelles de non-transfert extra-régional doivent être confirmées dans les conditions PostHog applicables ; elles ne sont pas déduites du code seul.
+- **Rejeu de session sécurisé :** masquage natif et strict de toute donnée textuelle saisie par l’utilisateur, du terminal et des zones de contact (`maskAllInputs: true`, `maskAllElementAttributes: true`, `maskTextSelector: ".ph-no-capture, .terminal, input, textarea"`, `recordBody: false`).
+- **Consentements distincts :** la mesure d'audience et le rejeu de session sont activés séparément via une invite terminal discrète conforme RGPD.
 - **Isolation environnementale :** Neutralisation stricte du tracking en développement local et lors des builds SSG.
 - **Zéro hardcoding :** Aucune clé, URL de domaine ou secret dans le code ; consommation obligatoire de `NUXT_SITE_URL`/Site Config et de `useSiteUrl()` pour l’origine canonique.
-- **Source SEO unique :** Une seule implémentation possède `/sitemap.xml` et `/robots.txt` ; les routes manuelles de la story 14.4 sont retirées lors de la migration 14.5.
+- **Source SEO unique :** une seule implémentation possède `/sitemap.xml` et `/robots.txt` ; les routes manuelles de la tâche 14.4 sont retirées lors de la migration 14.5.
 - **Manifeste interdit :** Aucun tableau d’articles ou manifeste de routes manuel ne doit être réintroduit ; la découverte Nuxt Content v3 et le hook de prérenderisation dynamique sont les sources-de-vérité.
 - **Découverte statique :** Les routes articles sont prérendues et ne reposent pas sur une source runtime-only pour GitHub Pages.
 - **AEO sans promesse :** `llms.txt` et Markdown facilitent la lecture machine mais ne constituent pas un facteur de classement ou une garantie de citation ChatGPT.
@@ -95,7 +96,7 @@ Suite au déploiement du repositionnement commercial ciblant les systèmes IA et
 
 ## Success signal
 
-En production, une session consenting aux mesures peut être observée dans PostHog Cloud EU (restitution de la session en replay avec inputs masqués et remontée des événements du plan de taggage), Google Search Console peut valider la propriété du domaine apex et explorer le sitemap, puis les artefacts SEO/AEO statiques sont disponibles avec une politique de crawlers IA explicite. Ces vérifications post-déploiement restent à confirmer pour chaque environnement.
+En production, une session consentant aux mesures peut être observée dans PostHog Cloud EU (rejeu de session, champs masqués et événements du plan de taggage). Les artefacts SEO/AEO statiques sont disponibles avec une politique d'exploration IA explicite. La validation de la propriété du domaine apex et la soumission du sitemap dans Google Search Console restent des opérations externes à exécuter ; leur résultat ne doit pas être déduit de la présence des fichiers. La mesure d'effet AEO reste descriptive et ne constitue ni une attribution causale ni une garantie de classement.
 
 ## Assumptions
 
@@ -104,4 +105,4 @@ En production, une session consenting aux mesures peut être observée dans Post
 - Simon fournit ou fixe `NUXT_SITE_URL`, `NUXT_SITE_NAME` et `NUXT_SITE_ENV=production` dans le build GitHub Pages afin que les modules SEO et AI Ready utilisent l’origine canonique.
 - La CI utilise Node 22 avec une version effective compatible avec le module AI Ready ; la version Docker observée est `22.23.0` et le minimum SQLite documenté est `22.13+` ou le fallback `better-sqlite3` installé.
 - La version `nuxt-ai-ready@2.4.0` est revue et verrouillée dans le manifeste et le lockfile ; aucune installation `latest`, mise à jour de Nuxt/Content ou second générateur `llms.txt` n'est suivie.
-- La publication GitHub Pages et la vérification HTTP post-déploiement sont des étapes opératoires distinctes de la gate locale ; elles doivent être consignées avant de conclure la lifecycle story.
+- La publication GitHub Pages et la vérification HTTP après déploiement sont documentées pour la production ; la validation Google Search Console et la mesure d'effet AEO restent des étapes opératoires distinctes, à consigner lorsqu'elles sont exécutées.

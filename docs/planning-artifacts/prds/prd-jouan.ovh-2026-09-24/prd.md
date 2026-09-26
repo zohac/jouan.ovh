@@ -523,7 +523,7 @@ Le blog de base, les routes Content, le DS, le SEO et la gate CI existent déjà
 
 ## 7. Identité, ton et forme
 
-Le blog doit rester une expérience technique sobre et réutiliser exactement le design system et l'état de thèmes approuvés au checkpoint Epic 14 ; il ne déclenche ni migration clair/sombre ni nouveau thème. La documentation de planning qui diverge sur ce point sera réconciliée avant la revue UX. L'esthétique reste terminale, avec une typographie Ubuntu / Ubuntu Mono. La voix est celle de Simon : première personne, précise, humble sur les limites et exigeante sur la preuve. Le contenu ne doit pas ressembler à une brochure, même lorsque le sujet est commercial.
+Le blog doit rester une expérience technique sobre et réutiliser exactement le design system et l'état de thèmes à ratifier au checkpoint Epic 14 ; il ne déclenche ni migration clair/sombre ni nouveau thème. La documentation de planning qui diverge sur ce point sera réconciliée avant la revue UX. L'esthétique reste terminale, avec une typographie Ubuntu / Ubuntu Mono. La voix est celle de Simon : première personne, précise, humble sur les limites et exigeante sur la preuve. Le contenu ne doit pas ressembler à une brochure, même lorsque le sujet est commercial.
 
 ## 8. Architecture de l'information et plateforme
 

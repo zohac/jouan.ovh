@@ -102,7 +102,7 @@ R1 contient les hubs, related, l'enrichissement auteur/projet, l'AEO étendu, le
 - L'interface et le contenu restent en français, à la première personne pour Simon, avec vouvoiement et sans emoji.
 - Les brouillons, contenus futurs et contenus privés ne sont pas distribués dans les surfaces publiques définies. La matrice de visibilité est la source unique de vérité.
 - Aucun framework de test n'est ajouté uniquement pour ce blog ; la validation s'intègre à la gate et aux assertions CI existantes.
-- Le design system approuvé au checkpoint Epic 14 est réutilisé sans migration de thème. La documentation de planning qui contredit ce baseline est supersédée, pas réinterprétée silencieusement.
+- Le design system à ratifier au checkpoint Epic 14 est réutilisé sans migration de thème. La documentation de planning qui contredit ce baseline est supersédée, pas réinterprétée silencieusement.
 - Aucune promesse de classement, de trafic, de citation par un agent IA ou de conversion n'est déduite de `llms.txt`, du RSS ou du SEO.
 
 ## 5. Non-goals

@@ -1,11 +1,14 @@
 ---
 title: "Sprint Change Proposal — Plateforme éditoriale durable"
 status: approved-applied
+implementation_status: blocked-until-d08-ratification
 created: 2026-09-25
-updated: 2026-09-25
+updated: 2026-09-26
 scope: major
 trigger: "Évolution du blog brownfield vers une plateforme éditoriale durable, avec sequencing à corriger autour d'Epic 6 et d'Epic 14"
 ---
+
+> **Mise à jour après la rétrospective Epic 14 (2026-09-25) :** les six tâches de l'Epic 14 sont terminées, la rétrospective est enregistrée et le point de contrôle est réconcilié documentairement avec des réserves externes visibles. Les tableaux et décisions ci-dessous conservent l'instantané de la proposition ; l'Epic 16 reste en `backlog` jusqu'à la ratification des contrats et la décision de Simon sur les réserves.
 
 # Proposition de changement de sprint — Plateforme éditoriale durable
 
@@ -50,7 +53,7 @@ Le planning ne représente pas cette nouvelle capacité :
 | Epic 6 | `in-progress` incohérent ; 6.1, 6.2 et rétrospective terminées | Ne peut pas absorber la nouvelle plateforme | Passer à `done`, préserver les stories comme baseline historique, ne pas ajouter de stories |
 | Epic 11 | Terminée | La homepage consomme déjà les derniers articles publics | Ajouter la non-régression à Epic 16 ; ne pas rouvrir 11.4 |
 | Epic 13 | Terminée | Le planning contient encore des formulations dark-only contradictoires | Marquer les anciens critères comme supersédés ; ne pas rouvrir Epic 13 |
-| Epic 14 | `in-progress` ; 14.1 active, 14.2/14.6 en revue | Propriétaire des surfaces SEO/AEO/privacy partagées | Terminer le checkpoint avant toute implémentation Epic 16 |
+| Epic 14 | `in-progress` au moment de la proposition ; 14.1 active, 14.2/14.6 en revue | Propriétaire des surfaces SEO/AEO/vie privée partagées | Terminer le point de contrôle avant toute implémentation Epic 16 |
 | Epic 16 | Absente | Aucun epic ne représente le déclencheur | Créer `epic-16: backlog`, sans story d'implémentation |
 
 ### 2.2 Story impact
@@ -99,7 +102,7 @@ Le planning ne représente pas cette nouvelle capacité :
 
 #### Option 2 — Rollback Epic 14
 
-**Non viable.** Epic 14 n'est pas terminé. Un rollback supprimerait des propriétaires SEO/AEO/privacy nécessaires et ne résoudrait pas le manque de planning éditorial.
+**Non viable à la date de la proposition.** Epic 14 était alors en review. Un rollback supprimerait des propriétaires SEO/AEO/privacy nécessaires et ne résoudrait pas le manque de planning éditorial.
 
 #### Option 3 — MVP Review et replan Epic 16
 
@@ -250,5 +253,5 @@ La proposition est approuvée et appliquée au niveau planning/contrat. La créa
 - Investigation : `docs/implementation-artifacts/investigations/blog-editorial-brief-investigation.md`
 - Epics : `docs/planning-artifacts/epics.md`
 - Sprint status : `docs/implementation-artifacts/sprint-status.yaml`
-- Checkpoint Epic 14 : `docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md` (pending)
+- Checkpoint Epic 14 : `docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md` (reconciled, stabilisation en attente)
 - Revue adversarial : `docs/planning-artifacts/prds/prd-jouan.ovh-2026-09-24/review-adversarial-current.md`
