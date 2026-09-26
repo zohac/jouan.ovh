@@ -1409,22 +1409,22 @@ Simon peut publier, préserver et faire découvrir une preuve technique fiable d
 
 | CAP | Phase | FR couvertes | Story map prévu | Statut |
 | --- | --- | --- | --- | --- |
-| CAP-1 | T0/E1 | FR-1 à FR-3, FR-18 | contrat + resolver ; checklist FR-18 | bloqué avant ratification |
-| CAP-2 | T0 | FR-4 | `/blog` et empty state | bloqué avant ratification |
+| CAP-1 | T0/E1 | FR-1 à FR-3, FR-18 | contrat + resolver ; checklist FR-18 | prêt pour décomposition T0 |
+| CAP-2 | T0 | FR-4 | `/blog` et empty state | prêt pour décomposition T0 |
 | CAP-3 | R1 | FR-5 | routes Vue dédiées et precedence | différé R1 |
-| CAP-4 | T0/R1 | FR-6 à FR-9 | article responsive ; related R1 | bloqué avant ratification |
+| CAP-4 | T0/R1 | FR-6 à FR-9 | article responsive ; related R1 | prêt pour décomposition T0 |
 | CAP-5 | R1 | FR-10, FR-11 | auteur canonique et projet par ID public | différé R1 |
-| CAP-6 | T0/E1/R1 | FR-12 | visibility matrix et fixtures | bloqué avant ratification |
-| CAP-7 | T0/R1 | FR-13 à FR-15 | non-régression SEO/AEO ; extensions R1 | bloqué avant ratification |
-| CAP-8 | T0 | FR-9, FR-16 | DS, responsive, a11y | bloqué avant ratification |
-| CAP-9 | T0/E1/R1 | FR-17, FR-18 | Docker, probes, rollback, rapports | bloqué avant ratification |
+| CAP-6 | T0/E1/R1 | FR-12 | visibility matrix et fixtures | prêt pour décomposition T0 |
+| CAP-7 | T0/R1 | FR-13 à FR-15 | non-régression SEO/AEO ; extensions R1 | prêt pour décomposition T0 |
+| CAP-8 | T0 | FR-9, FR-16 | DS, responsive, a11y | prêt pour décomposition T0 |
+| CAP-9 | T0/E1/R1 | FR-17, FR-18 | Docker, probes, rollback, rapports | prêt pour décomposition T0 |
 
 ### Conditions d'entrée
 
 - Epic 6 est `done` et ses stories restent la baseline historique.
-- Epic 14 a livré ses six tâches (`14.1` à `14.6`) et possède un checkpoint écrit (`docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md`), actuellement réconcilié mais non ratifié.
+- Epic 14 a livré ses six tâches (`14.1` à `14.6`) et possède un checkpoint écrit (`docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md`), ratifié le 2026-09-26 (`stabilisation: ratifiée`).
 - La SPEC et ses companions partagent les gates T0/E1/R1.
-- D-01 à D-07 sont ratifiés ; D-08 reste à confirmer au checkpoint Epic 14.
+- D-01 à D-08 sont ratifiés ; D-08 a été confirmée au checkpoint Epic 14 le 2026-09-26.
 - Aucun événement/propriété analytics nouveau n'est requis en T0.
 - Les fixtures ne sont jamais versionnées ni déployées en production.
 

@@ -170,7 +170,7 @@ R1 contient les hubs, related, l'enrichissement auteur/projet, l'AEO étendu, le
 | D-05 | Promotion contrôlée et probe post-déploiement | Ratifié E1 |
 | D-06 | Supply chain, secrets, licences et réseau tiers contrôlés | Ratifié T0 |
 | D-07 | Aucun nouvel analytics en T0 | Ratifié T0 ; liste blanche Epic 14 requise |
-| D-08 | Design system approuvé et navigation homepage/footer seulement en T0 | En attente du checkpoint Epic 14 |
+| D-08 | Design system approuvé et navigation homepage/footer seulement en T0 | Ratifié au checkpoint Epic 14 le 2026-09-26 |
 | R-01 à R-07 | Hubs, related, projet, AEO étendue, RSS, champs optionnels, navigation/analytics | Reportés, non bloquants pour T0/E1 |
 
 ## 10. References

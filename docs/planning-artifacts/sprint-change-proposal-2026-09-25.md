@@ -1,14 +1,14 @@
 ---
 title: "Sprint Change Proposal — Plateforme éditoriale durable"
 status: approved-applied
-implementation_status: blocked-until-d08-ratification
+implementation_status: ready-for-story-decomposition
 created: 2026-09-25
 updated: 2026-09-26
 scope: major
 trigger: "Évolution du blog brownfield vers une plateforme éditoriale durable, avec sequencing à corriger autour d'Epic 6 et d'Epic 14"
 ---
 
-> **Mise à jour après la rétrospective Epic 14 (2026-09-25) :** les six tâches de l'Epic 14 sont terminées, la rétrospective est enregistrée et le point de contrôle est réconcilié documentairement avec des réserves externes visibles. Les tableaux et décisions ci-dessous conservent l'instantané de la proposition ; l'Epic 16 reste en `backlog` jusqu'à la ratification des contrats et la décision de Simon sur les réserves.
+> **Mise à jour après la rétrospective Epic 14 (2026-09-25) puis ratification du point de contrôle (2026-09-26) :** les six tâches de l'Epic 14 sont terminées, la rétrospective est enregistrée, le point de contrôle est ratifié (`stabilisation: ratifiée`) et les huit réserves sont acceptées et suivies. Les tableaux et décisions ci-dessous conservent l'instantané de la proposition ; l'Epic 16 peut désormais passer en décomposition de stories T0.
 
 # Proposition de changement de sprint — Plateforme éditoriale durable
 

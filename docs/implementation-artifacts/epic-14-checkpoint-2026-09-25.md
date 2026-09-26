@@ -1,17 +1,17 @@
 ---
 title: "Point de contrôle Epic 14 — propriété SEO, AEO et vie privée"
-status: reconciled
-stabilisation: en_attente
+status: ratified
+stabilisation: ratifiée
 created: 2026-09-25
-updated: 2026-09-25
+updated: 2026-09-26
 epic: epic-14
 ---
 
 # Point de contrôle Epic 14
 
-Ce point de contrôle est **réconcilié documentairement** le 2026-09-25. Les six tâches de l'Epic 14 sont terminées et les preuves de production disponibles sont enregistrées. Cette réconciliation ne déclare pas clos les résultats externes encore en attente : la validation Google Search Console, la mesure d'effet AEO et certaines preuves d'observabilité restent des réserves explicites, et **D-08 n'est pas encore ratifiée**.
+Ce point de contrôle est **ratifié le 2026-09-26**. Les six tâches de l'Epic 14 sont terminées, la réconciliation documentaire est commitée et les preuves de production disponibles sont enregistrées. La ratification ne déclare pas clos les résultats externes encore en attente : les huit réserves restent acceptées et suivies, avec leurs propriétaires.
 
-L'Epic 14 est donc **livré pour son périmètre de développement**, mais son ouverture comme base stable pour l'Epic 16 reste conditionnée par la ratification des contrats éditoriaux et la décision de Simon sur les réserves ci-dessous.
+L'Epic 14 est donc **livré pour son périmètre de développement** et le point de contrôle est **stabilisé**. L'Epic 16 peut désormais passer en décomposition de stories T0.
 
 ## Responsables
 
@@ -30,15 +30,15 @@ L'Epic 14 est donc **livré pour son périmètre de développement**, mais son o
 - [x] Les routes, dates, exclusions, MIME, `CNAME` et `_headers` de référence sont documentés. — preuves dans `14-5`, `14-6` et `.github/workflows/cd.yml`.
 - [x] Les vérifications de production disponibles sont enregistrées comme base de référence. — CI principale verte, artefacts AEO, sitemap, robots, Markdown, MIME et `CNAME` contrôlés.
 
-## Ratification requise
+## Ratification
 
-La livraison technique des six tâches est acquise, mais la ratification du point de contrôle reste conditionnée par :
+La livraison technique des six tâches est acquise et la ratification du point de contrôle est prononcée le 2026-09-26 :
 
-- [ ] **D-08** : confirmation par Simon de la base visuelle et de navigation (thème sombre prioritaire, thème clair « Papier technique / Crème solaire », terminal sanctuarisé, homepage et footer seulement en T0).
-- [ ] **Matrice de visibilité T0** : validation des états × surfaces × codes HTTP prévue par le PRD et le plan de vérification.
-- [ ] **Décision sur les réserves** : accepter, planifier ou transformer chaque réserve du tableau ci-dessous.
+- [x] **D-08** : base visuelle et navigation confirmées par Simon (thème sombre prioritaire, thème clair « Papier technique / Crème solaire », terminal sanctuarisé, homepage et footer seulement en T0).
+- [x] **Matrice de visibilité T0** : validée par Simon.
+- [x] **Décision sur les réserves** : les huit réserves sont acceptées et suivies, avec leurs propriétaires.
 
-Une fois ces trois points tranchés, `stabilisation` peut passer de `en_attente` à `ratifiée`, puis la réconciliation doit être commitée avant l'ouverture de l'Epic 16.
+`stabilisation: ratifiée`. La réconciliation est commitée sur `develop`. L'Epic 16 peut passer en décomposition de stories T0.
 
 ## Preuves enregistrées
 
@@ -53,7 +53,7 @@ Une fois ces trois points tranchés, `stabilisation` peut passer de `en_attente`
 
 ## Réserves ouvertes
 
-Ces réserves ne remettent pas en cause la livraison des tâches, mais elles ne doivent pas être reformulées comme des garanties acquises :
+Ces réserves ne remettent pas en cause la livraison des tâches, mais elles ne doivent pas être reformulées comme des garanties acquises. Décision Simon du 2026-09-26 : les huit réserves sont **acceptées et suivies** avec leurs propriétaires.
 
 | Réserve | Propriétaire | État | Conséquence |
 | --- | --- | --- | --- |
@@ -70,9 +70,9 @@ Ces réserves ne remettent pas en cause la livraison des tâches, mais elles ne 
 
 - `epic-14: done` décrit la livraison des six tâches.
 - `epic-14-retrospective: done` décrit la rétrospective et la réconciliation documentaire.
-- `status: reconciled` décrit l'état de ce point de contrôle.
-- `stabilisation` prend deux valeurs : `en_attente` tant que D-08, la matrice de visibilité et la décision sur les réserves ne sont pas tranchées ; `ratifiée` une fois ces trois points clos et la réconciliation commitée.
-- L'Epic 16 reste en `backlog` et aucune tâche d'implémentation ne doit être créée avant la ratification des contrats D-01 à D-08 et la confirmation de la base visuelle.
+- `status: ratified` décrit l'état de ce point de contrôle.
+- `stabilisation: ratifiée` : D-08, la matrice de visibilité et la décision sur les réserves sont tranchées, et la réconciliation est commitée.
+- L'Epic 16 peut désormais être décomposé en stories T0 ; aucune story d'implémentation n'est créée par ce point de contrôle lui-même.
 - Les documents `AGENTS.md`, `docs/implementation-artifacts/sprint-status.yaml` et `docs/project-context.md` doivent décrire le même état.
 
 ## Références

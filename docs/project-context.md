@@ -299,4 +299,4 @@ none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux p
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-09-25 (Epic 14 : six tâches terminées, rétrospective et réconciliation documentaire enregistrées ; artefacts SEO/AEO et vie privée vérifiés en production, réserves externes suivies dans `epic-14-checkpoint-2026-09-25.md` ; Epic 16 maintenu en `backlog`).
+Dernière mise à jour : 2026-09-26 (Epic 14 : six tâches terminées, rétrospective et réconciliation documentaire enregistrées, point de contrôle ratifié ; artefacts SEO/AEO et vie privée vérifiés en production, huit réserves acceptées et suivies dans `epic-14-checkpoint-2026-09-25.md` ; Epic 16 prêt pour la décomposition en stories T0).

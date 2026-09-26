@@ -1,8 +1,8 @@
 ---
 title: "Blog éditorial jouan.ovh — autorité technique et patrimoine éditorial"
-status: draft
+status: approved
 created: 2026-09-24
-updated: 2026-09-25
+updated: 2026-09-26
 sources:
   - ../../../specs/spec-blog-editorial/SPEC.md
   - ../../../specs/spec-blog-editorial/brownfield.md
@@ -49,10 +49,10 @@ Ce PRD a été rédigé en **Fast path**, avec une entrée Vision + Features. Ce
 | Première livraison | Préparation technique : contrat minimal, résolution, `/blog`, article, homepage et non-régression SEO/AEO |
 | Roadmap conditionnelle | Hubs, related, auteur enrichi, projets, AEO étendue, RSS, analytics et curation `featured` |
 | Gate d'autorité | Article réel + FR-18 + publication contrôlée ; une fixture ne démontre pas l'expertise |
-| Alignement canonique | SPEC, companions et verification-plan sont révisés et normatifs ; D-08 reste à confirmer au checkpoint Epic 14 |
-| Blocage actuel | Aucun story d'implémentation avant le checkpoint Epic 14, la confirmation D-08 et la vérification de la visibility matrix |
+| Alignement canonique | SPEC, companions et verification-plan sont révisés et normatifs ; D-08 confirmée au checkpoint Epic 14 le 2026-09-26 |
+| Blocage actuel | Point de contrôle ratifié et matrice de visibilité validée ; les stories T0 peuvent être décomposées |
 
-Les phases de ce PRD sont désormais ratifiées dans la SPEC et ses companions. Les stories restent bloquées jusqu'au checkpoint Epic 14, à la confirmation D-08 et aux gates de fixtures de visibility.
+Les phases de ce PRD sont ratifiées dans la SPEC et ses companions. Le checkpoint Epic 14 est ratifié, D-08 est confirmée et la matrice de visibilité est validée ; les stories T0 peuvent être décomposées.
 
 ### Matrice de traçabilité canonique
 
@@ -696,7 +696,7 @@ Ces observations sont des diagnostics ; elles ne créent pas de seuil chiffré n
 | D-05 | Promotion | Build statique, canari ou préproduction, probe et rollback | Équipe technique | Approuvé | Première publication réelle |
 | D-06 | Confidentialité | Liste blanche réseau, licences, secrets et takedown | Responsable technique + Simon | Approuvé | Revue de supply chain |
 | D-07 | Analytics | Aucun nouvel événement/propriété en phase 1 ; inventaire existant | Responsable vie privée | Approuvé | Gate de non-régression |
-| D-08 | Thème et navigation | État DS au checkpoint ; homepage/footer seulement en phase 1 | Simon + équipe technique | À confirmer au checkpoint | Revue visuelle |
+| D-08 | Thème et navigation | État DS au checkpoint ; homepage/footer seulement en phase 1 | Simon + équipe technique | Confirmé au checkpoint le 2026-09-26 | Revue visuelle |
 
 ### Décisions de roadmap différées
 
@@ -716,7 +716,7 @@ Ces observations sont des diagnostics ; elles ne créent pas de seuil chiffré n
 - M-02 : quelles baselines SEO et de distribution sont autorisées, sans seuil de trafic ou de conversion inventé ?
 - P-01 : le brief original est-il sauvegardé comme source produit versionnée avant ratification de la SPEC ?
 
-Ces éléments sont désormais validés par la proposition de changement de sprint ; D-08 reste la seule confirmation opérationnelle pendante du checkpoint Epic 14.
+Ces éléments sont validés par la proposition de changement de sprint ; D-08 a été confirmée au checkpoint Epic 14 le 2026-09-26.
 
 ## 16. Index des hypothèses
 

@@ -126,7 +126,7 @@ La checklist éditoriale minimale proposée est :
 - Epic 16 « Plateforme éditoriale durable — contrat, publication et patrimoine » est ajoutée en backlog, sans story d'implémentation.
 - Epic 14 est `done` pour ses six tâches ; son point de contrôle est réconcilié documentairement, avec des réserves externes suivies. L'ouverture de l'Epic 16 reste conditionnée à la ratification des contrats et à la décision de Simon sur ces réserves.
 - La SPEC, `content-contract.md`, `verification-plan.md`, `architecture-diagrams.md` et `brownfield.md` sont alignés sur T0/E1/R1.
-- Les stories restent bloquées jusqu'à la ratification opérationnelle des contrats et à la confirmation D-08 au checkpoint Epic 14.
+- Les stories T0 peuvent être décomposées : les contrats sont ratifiés et D-08 a été confirmée au checkpoint Epic 14 le 2026-09-26.
 
 ## 7. Source de l'investigation
 

@@ -1,6 +1,6 @@
 # Rapport de réconciliation — PRD blog éditorial / investigation / planning
 
-> **État actuel après la rétrospective Epic 14 (2026-09-25) :** les constats de ce rapport décrivent l'instantané du 2026-09-24. Les six tâches de l'Epic 14 sont désormais terminées, son point de contrôle est réconcilié et l'Epic 16 reste en `backlog` jusqu'à la ratification des contrats. Les constats historiques ne doivent pas être réinterprétés comme l'état actuel.
+> **État actuel après la ratification du point de contrôle Epic 14 (2026-09-26) :** les constats de ce rapport décrivent l'instantané du 2026-09-24. Les six tâches de l'Epic 14 sont terminées, son point de contrôle est ratifié et l'Epic 16 peut passer en décomposition de stories T0. Les constats historiques ne doivent pas être réinterprétés comme l'état actuel.
 
 **Date de réconciliation :** 2026-09-24  
 **Portée :** `prd.md`, `addendum.md`, l'investigation brownfield, `epics.md`, `sprint-status.yaml` et `project-context.md`. Les companions de la SPEC ont aussi été consultés lorsqu'ils sont explicitement référencés par le PRD.  

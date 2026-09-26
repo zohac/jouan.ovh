@@ -165,7 +165,8 @@ development_status:
 
   # Epic 16 — Plateforme éditoriale durable (backlog, aucune tâche créée)
   # T0 = préparation technique ; E1 = article réel + FR-18 ; R1 = roadmap conditionnelle
-  # Bloqué jusqu'à la ratification du point de contrôle Epic 14 et des contrats D-01 à D-08
+  # Point de contrôle Epic 14 ratifié le 2026-09-26 ; D-08 confirmée ; réserves acceptées et suivies
+  # Prochaine étape : décomposition des stories T0 puis sprint planning
   epic-16: backlog
 
 
