@@ -1,5 +1,5 @@
 # generated: 2026-06-18
-# last_updated: 2026-09-25 (rétrospective Epic 14 et réconciliation documentaire)
+# last_updated: 2026-09-27 (story 16.1 créée, epic-16 in-progress ; D-09 CTA tranché)
 # project: jouan.ovh
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-18
-last_updated: "2026-09-25 (rétrospective Epic 14 et réconciliation documentaire)"
+last_updated: "2026-09-27 (story 16.1 créée, epic-16 in-progress ; D-09 CTA tranché)"
 project: jouan.ovh
 project_key: NOKEY
 tracking_system: file-system
@@ -163,10 +163,27 @@ development_status:
   15-4-coherence-globale-seo-formulaire-contact-et-gate-docker: done
   epic-15-retrospective: done
 
-  # Epic 16 — Plateforme éditoriale durable (backlog, aucune tâche créée)
-  # T0 = préparation technique ; E1 = article réel + FR-18 ; R1 = roadmap conditionnelle
-  # Point de contrôle Epic 14 ratifié le 2026-09-26 ; D-08 confirmée ; réserves acceptées et suivies
-  # Prochaine étape : décomposition des stories T0 puis sprint planning
-  epic-16: backlog
+  # Epic 16 — Plateforme éditoriale durable (décomposé le 2026-09-26, gate T0)
+  # Standalone : livrable et démontrable seul via les fixtures T0, sans article réel.
+  # 16.1 et 16.2 parallélisables ; 16.3/16.4 en dépendent ; 16.5 ensuite ; 16.6 produit le build,
+  # 16.7 et 16.8 l'inspectent en parallèle.
+  epic-16: in-progress
+  16-1-contrat-de-contenu-minimal-et-migration-de-date: ready-for-dev
+  16-2-resolver-de-visibility-deterministe: backlog
+  16-3-homepage-blog-editoriale: backlog
+  16-4-route-article-et-blogposting: backlog
+  16-5-non-regression-homepage-seo-aeo-et-supply-chain: backlog
+  16-6-fixtures-t0-et-gate-docker: backlog
+  16-7-assertions-statiques-sur-les-artefacts-generes: backlog
+  16-8-revue-navigateur-et-rapport-de-preuves: backlog
+  epic-16-retrospective: optional
+
+  # Epic 17 — Publication éditoriale vérifiable (gate E1)
+  # NON standalone : requiert Epic 16 vert ET un article réel (content/blog/ ne contient que .gitkeep).
+  # 17.1 exige un pass de Simon ; 17.2 promeut et vérifie en production. Aucun fichier cœur du blog modifié.
+  epic-17: backlog
+  17-1-checklist-de-preuve-et-pass-editorial: backlog
+  17-2-promotion-controlee-et-probes-post-deploiement: backlog
+  epic-17-retrospective: optional
 
 

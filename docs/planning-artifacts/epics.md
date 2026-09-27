@@ -1,5 +1,13 @@
 ---
 stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation']
+# Décomposition Epic 16/17 effectuée le 2026-09-26 en run brownfield ciblé (section Epic 16 uniquement, lignes 1-1371 intactes).
+epic16Decomposition:
+  date: 2026-09-26
+  scope: T0 + E1
+  sourceOfTruth: docs/specs/spec-blog-editorial/SPEC.md
+  epics: [16, 17]
+  stories: 8
+  status: stories-ecrites-sprint-planning-requise
 inputDocuments:
   - docs/specs/spec-design-system-revamp/SPEC.md
   - docs/specs/spec-design-system-revamp/pages.md
@@ -168,7 +176,7 @@ UX-DR11: Layout global — header fixe 56px (logo diamant), footer 56px, hexagon
 UX-DR12: Home — hero Terminal (A), aperçu services, stats, projets sélectionnés (réf. `Home.jsx`, contenu `data.js`).
 UX-DR13: Services — 3 cartes d'offre + section process étapes (réf. `Services.jsx`).
 UX-DR14: About — portrait + bio + timeline + formation + stack (réf. `About.jsx`).
-UX-DR15: Blog — index avec empty-state soigné + vue article prose/code stylés (réf. `Blog.jsx`).
+UX-DR15: Blog — index avec empty-state soigné + vue article prose/code stylés. ⚠️ Cette exigance a été livrée par l'Epic 6 contre l'ancien UI kit ; elle est reprise et étendue par l'Epic 16 sur le design courant (`Home - Awwwards.html`).
 UX-DR16: Contact — formulaire (validation front, pas de backend) + carte infos + CTA terminal + socials (réf. `Contact.jsx`).
 UX-DR17: Accessibilité & motion — `prefers-reduced-motion` (seule boucle = caret), états focus/hover/press visibles, contraste lisible, navigation clavier.
 UX-DR18: Pile atmosphérique `.atmos` avec 3 calques auroras floutés (`.aurora--auberg`, `.aurora--orange`, `.aurora--red`), scanlines CRT et grille de points.
@@ -240,10 +248,19 @@ FR47: Epic 14 — Observabilité SEO, vérification DNS OVH, sitemap.xml et robo
 FR48: Epic 14 — Intégration MCP PostHog et validation Docker complète
 FR53: Epic 14 — Migration SEO Nuxt automatisée avec `@nuxtjs/sitemap` et `@nuxtjs/robots`
 FR54: Epic 14 — AEO et découvrabilité IA avec AI Ready, Markdown et politique OpenAI
-FR55: Epic 16 — Contrat de contenu T0, resolver de visibility et migration contrôlée
-FR56: Epic 16 — Homepage `/blog` minimale, route article responsive et non-régression homepage
-FR57: Epic 16 — FR-18, checklist de preuve, promotion contrôlée et gate E1
-FR58: Epic 16 — Fixtures, validation Docker, navigateur/a11y, rollback et non-régression Epic 14
+FR55: Epic 16 — Contrat de contenu minimal, enums machine et unicité de titre dans le corpus public
+FR56: Epic 16 — Resolver de visibility déterministe et précédence des états de publication
+FR57: Epic 16 — Homepage `/blog` éditoriale, empty state et trois derniers articles publics
+FR58: Epic 16 — Route article responsive, métadonnées résolues, `BlogPosting` et self-canonical
+FR59: Epic 16 — Non-régression de la homepage et de son journal des derniers articles
+FR60: Epic 16 — Contrat de date `YYYY-MM-DD`, refus de `publishedAt` et `updated >= date`
+FR61: Epic 16 — Non-régression SEO/AEO et propriétaires uniques Epic 14 intacts
+FR62: Epic 16 — Fixtures T0, assertions statiques et artefacts générés inspectés
+FR63: Epic 16 — Validation navigateur desktop/mobile et audit a11y
+FR64: Epic 16 — Supply chain éditoriale, secrets, licences et frontière de télémétrie
+FR-18: Epic 17 — Checklist de preuve versionnée, hash de contenu et pass éditorial de Simon
+
+> **Numérotation :** `FR1` à `FR64` suit l'inventaire global de ce document. Les identifiants `FR-1` à `FR-18` **avec tiret** proviennent du PRD `docs/planning-artifacts/prds/prd-jouan.ovh-2026-09-24/prd.md` et sont **distincts** : ils sont utilisés par la matrice de traçabilité CAP et par l'Epic 17. Ne pas les confondre avec la série `FRn`.
 
 ### Epic 1: Migration de la stack vers Nuxt 4
 Le site tourne sur une stack moderne (Nuxt 4, deps à jour, abandon de `@nuxt/bridge-edge`), build & déploiement verts — base saine et bloquante pour la refonte.
@@ -301,11 +318,17 @@ Le visiteur peut consulter l'ensemble du site dans un thème clair « Papier tec
 Le visiteur bénéficie d'un contrôle transparent sur sa vie privée via une invite de consentement sobre inspirée du terminal, tandis que Simon Jouan dispose d'une observabilité complète sur l'audience, la restitution de parcours (rejeu de session sécurisé) et les conversions de l'offre IA, soutenue par une infrastructure SEO statique maintenue par les modules Nuxt SEO, une politique de découvrabilité IA explicite et des artefacts lisibles par les agents sans promesse de classement.
 **FRs covered:** FR43, FR44, FR45, FR46, FR47, FR48, FR53, FR54 _(CAP-1 à CAP-10)_
 
+### Epic 15: Repositionnement Commercial V1.1 — Désancrage Tarifaire & Niveaux d'Intervention
+Le visiteur découvre une offre recentrée sur le workflow métier comme cœur de proposition, avec trois niveaux d'intervention sur devis, une section AI Care dédiée à partir de 250 € HT/mois et le Blueprint relégué au cadrage optionnel, sans plus de prix d'entrée public affiché. **FRs covered:** FR49, FR50, FR51, FR52 _(CAP-1 à CAP-4)_
+
 ### Epic 16: Plateforme éditoriale durable — contrat, publication et patrimoine
 
-Simon peut publier et préserver une preuve technique fiable dans une boucle éditoriale statique, sans étendre l'Epic 6 historique ni concurrencer les propriétaires Epic 14. Le premier périmètre est T0 + E1 ; hubs, related, projets, AEO étendue, RSS, analytics enhancements et curation restent R1 conditionnels. Epic 16 est backlog tant que le checkpoint Epic 14, la SPEC et les contrats D-01 à D-08 ne sont pas ratifiés.
+Simon peut publier et préserver une preuve technique fiable dans une boucle éditoriale statique, sans étendre l'Epic 6 historique ni concurrencer les propriétaires Epic 14. Le premier périmètre est T0 ; hubs, related, projets, AEO étendue, RSS, analytics enhancements et curation restent R1 conditionnels. Dérivé en deux epics (16 = plateforme technique, 17 = publication vérifiable) le 2026-09-26.
 
-**FRs covered:** FR55 à FR58 _(CAP-1, CAP-2, CAP-4, CAP-6 à CAP-9)_
+**FRs covered:** FR55 à FR64, NFR16 à NFR25 _(CAP-1, CAP-2, CAP-4, CAP-6 à CAP-9)_
+
+### Epic 17: Publication éditoriale vérifiable
+Simon publie son premier article réel seulement après une revue de preuve versionnée et un `pass` de son propre checklist FR-18, puis la promotion est vérifiée par probes post-déploiement. **Standalone :** non — requiert l'Epic 16 vert et un article réel existant. **FRs covered:** FR-18 _(Gate E1)_
 
 ---
 
@@ -595,7 +618,7 @@ So that je trouve du contenu à lire (UX-DR15, FR8).
 
 **Acceptance Criteria:**
 
-**Given** le pipeline `@nuxt/content` et la référence `Blog.jsx`
+**Given** le pipeline `@nuxt/content` et le design system de l'époque (UI kit v1, désormais superseded)
 **When** on crée le dossier `content/` et on refond `/blog` (index + empty-state)
 **Then** la liste rend en cartes conformes au DS
 **And** l'empty-state français soigné s'affiche quand il n'y a aucun article
@@ -1373,9 +1396,16 @@ So that le site soit exempt de régressions fonctionnelles, visuelles ou d'acces
 
 Simon peut publier, préserver et faire découvrir une preuve technique fiable dans une boucle éditoriale statique. Cet Epic ne réécrit pas Epic 6, ne fait pas entrer les capacités conditionnelles dans T0 et ne concurrence pas les propriétaires Epic 14.
 
-**Statut de planning :** `backlog` — aucun story d'implémentation ne doit être créé avant le checkpoint Epic 14 et la ratification de la SPEC, du content-contract, du verification-plan et des décisions D-01 à D-08.
+**Statut de planning :** `backlog` — décomposition T0 engagée le 2026-09-26. Le point de contrôle Epic 14 est ratifié (`stabilisation: ratifiée`) et D-01 à D-08 sont tranchées, donc les stories T0 peuvent être créées. Les stories E1 restent conditionnées à T0 vert et la phase R1 reste fermée.
 
 **Source de vérité :** `docs/planning-artifacts/prds/prd-jouan.ovh-2026-09-24/prd.md`, `docs/specs/spec-blog-editorial/SPEC.md` et `docs/planning-artifacts/sprint-change-proposal-2026-09-25.md`.
+
+**Architecture :** `docs/planning-artifacts/architecture-blog-editorial.md` (créée le 2026-09-27).
+Elle fixe les décisions AD-01 à AD-09, dont deux gouvernent directement l'implémentation :
+**AD-02** — `isIndexableBlogEntry` reste autonome et sans importation, car `@nuxtjs/sitemap` la
+sérialise via `Function#toString()` ; **AD-03** — le resolver est à deux couches, le prédicat
+booléen autonome et un resolver d'état riche qui le consomme. La story 16.2 est gouvernée par ces
+deux décisions.
 
 ### Portée Epic 16
 
@@ -1419,6 +1449,78 @@ Simon peut publier, préserver et faire découvrir une preuve technique fiable d
 | CAP-8 | T0 | FR-9, FR-16 | DS, responsive, a11y | prêt pour décomposition T0 |
 | CAP-9 | T0/E1/R1 | FR-17, FR-18 | Docker, probes, rollback, rapports | prêt pour décomposition T0 |
 
+### Exigences extraites — décomposition T0 (2026-09-26)
+
+> Cette section est l'inventaire normatif issu de `SPEC.md`, `content-contract.md`, `verification-plan.md`, `brownfield.md` et `architecture-diagrams.md`. Elle est **scopée à la phase T0**. Les capacités E1 et R1 ne sont pas décomposées ici.
+
+#### FR — Exigences fonctionnelles T0
+
+- **FR55** — Contrat de contenu minimal : schéma Zod de la collection `blog` couvrant `title`, `description`, `date`, `author`, `pillar`, `format`, `tags`, `draft` et `visibility` ; `goals` optionnel et interne ; enums machine fermés pour `pillar` et `format` ; unicité de `title` dans le corpus public. _(CAP-1)_
+- **FR56** — Resolver de visibility déterministe : précédence `draft`/futur/`private` → absence de production ; `noindex`/`robots: false` → HTML 200 sans sélections ni artefacts de découverte ; `sitemap: false/null` → HTML 200 sans sitemap ni artefacts AEO. Une seule matrice gouverne HTML, listes, Markdown, sitemap et AEO. Le resolver expose en outre un état distinct exploitable par un flux RSS futur, **sans créer ni supposer de flux** (FR-15 hors release). _(CAP-6)_
+- **FR57** — Homepage `/blog` éditoriale : promesse éditoriale, état vide explicite, trois derniers articles publics triés par `date` décroissante, liens internes décrivant contenu et pilier. Les sections fondamentales, sélections par pilier et `featured` sont différées. _(CAP-2)_
+- **FR58** — Route article `/blog/<slug>` : métadonnées résolues depuis `SITE.profile` et le resolver, `BlogPosting` enrichi, self-canonical, prose et code responsive, hiérarchie `h1`→`h3` cohérente. _(CAP-4, CAP-7)_
+- **FR59** — Non-régression de la homepage : le journal des trois derniers articles n'affiche que des entrées autorisées et conserve son comportement actuel. _(CAP-2)_
+- **FR60** — Contrat de date : `date` est l'unique champ de publication T0 au format `YYYY-MM-DD` avec sémantique Europe/Paris ; `publishedAt` est refusé ; `updated`, si présent, vérifie `updated >= date` et ne décrit jamais une correction cosmétique. Toute introduction ultérieure de `publishedAt` exige une migration atomique de tous les consommateurs. _(CAP-1)_
+- **FR61** — Non-régression SEO/AEO : `usePageSeo()`, `useSiteUrl()`, Sitemap, Robots et AI Ready restent les propriétaires uniques ; aucune nouvelle projection de champ AEO, aucun second `head`, aucun alias `/a-propos`, aucune nouvelle politique trailing-slash en T0. _(CAP-7)_
+- **FR62** — Fixtures T0 et assertions : onze fixtures locales couvrent publication, brouillon, futur, `private`, `noindex`, `robots: false`, `sitemap: false`, `sitemap: null`, article imbriqué `index.md` et article sans image ; assertions sur `index.html`, `blog/index.html`, HTML article, jumeaux Markdown, `sitemap.xml`, `robots.txt`, `llms.txt`, `llms-full.txt`, `sitemap.md`, `CNAME` et `_headers`. Les fixtures ne sont jamais versionnées ni déployées. _(CAP-9)_
+- **FR63** — Validation navigateur : smoke test desktop 1280 px et mobile 375 px sur `/`, `/blog`, `/blog/<slug>` et `/about` contrôlant hiérarchie de titres, clavier et focus visible, contrastes, textes alternatifs, liens externes accessibles, absence d'overflow horizontal, baseline du design system ratifié, terminal sanctuarisé, `forced-colors` et `prefers-reduced-motion`. _(CAP-8)_
+- **FR64** — Supply chain éditoriale : scripts, trackers, images distantes, iframes et ressources réseau non approuvés interdits ; secrets, licences, attributions et paramètres URL vérifiés ; aucun nouvel événement, propriété ou paramètre de télémétrie. _(CAP-9)_
+
+#### NFR — Exigences non fonctionnelles T0
+
+- **NFR16** — Exécution Docker obligatoire : `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"`. Jamais `pnpm`, `npm`, `yarn` ou `nuxi` sur l'hôte.
+- **NFR17** — pnpm strict (`pnpm@11.8.0`) ; `npm` et `yarn` interdits.
+- **NFR20** — Compatibilité SSG totale sous GitHub Pages sans dépendance serveur dynamique ; tout accès DOM gardé derrière `onMounted` ou `import.meta.client`.
+- **NFR21** — Design system : tokens CSS globaux via `var(--token)` uniquement, aucune valeur en dur ; primitives UI existantes, aucune librairie parallèle.
+- **NFR22** — Accessibilité : focus visible, `ZExternalLink` pour tout `target="_blank"`, listes `<ul>`/`<ol>` sémantiques, repli `forced-colors`, réduction de mouvement.
+- **NFR23** — Langue et voix : français, première personne pour Simon, vouvoiement, zéro emoji.
+- **NFR24** — `CNAME` et `_headers` intacts ; le pipeline de déploiement `gh-pages` n'est pas régressé.
+- **NFR25** — Aucun framework de test ajouté pour ce lot ; la validation s'intègre à la gate Docker et aux assertions CI existantes.
+
+#### Additional Requirements (brownfield, architecture)
+
+- Réutiliser `app/utils/blog-indexability.ts` comme propriétaire de la publication/indexabilité ; les pages ne doivent pas inventer leur propre filtre.
+- Résoudre l'auteur depuis `SITE.profile` ; aucune collection auteurs parallèle.
+- Ne créer aucune collection projets autonome en T0 ; `project` et `related` sont des capacités R1.
+- Étendre l'objet `BlogPosting` existant dans `app/pages/blog/[...slug].vue` plutôt que d'en créer un second.
+- Préserver `server/plugins/seo-content.ts` comme propriétaire unique de la réconciliation sitemap.
+- `crawlLinks: true` est actif : toute relation future doit être résolue et filtrée avant le rendu.
+- Le corpus est vide (`content/blog/` ne contient que `.gitkeep`) : T0 ne peut être validé que par fixtures temporaires.
+- Aucune nouvelle dépendance n'est justifiée ; les capacités contenu, image, SEO, sitemap, AEO et génération statique existent déjà.
+
+#### Limites de l'UX Design — à acter dans les stories
+
+Aucun document `ux-designs/` ne couvre le blog : le seul document UX du dépôt
+(`ux-designs/ux-jouan.ovh-2026-09-18/`) porte le périmètre « Design System Thème Light & Dark » et ne
+mentionne ni le blog ni l'Epic 16. Ses dossiers `imports/` et `.working/` ne contiennent que des
+`.gitkeep`.
+
+**La référence de design est le design courant**, `docs/design_system/ui_kits/jouan-site/Home - Awwwards.html`
+(cible Awwwards de l'Epic 11). Il n'est **pas** le premier UI kit : `ui_kits/jouan-site/index.html`
+et `Blog.jsx` datent de la version précédente du site et sont superseded.
+
+**Ce que la référence couvre :** le langage de section et de titre du site — `section.block`,
+`.block__head`, `.container`, `.eyebrow`, `.tag`, la grille et les composants de carte du journal
+(`.journal`, `.jpost`, `.jfeat`, `.jrow`, `.seeall`) — et le passage au **monospace pour les titres**,
+absent de l'ancien kit.
+
+**Ce qu'elle ne couvre pas :** la page `/blog`, la vue article, l'état vide, la promesse éditoriale, les
+états de visibility, et **le thème clair** (la référence est sombre). Ces surfaces sont des
+**compositions** dérivées des primitives ci-dessus, pas des calques.
+
+**Conséquence actée :** les stories 16.3, 16.4 et 16.8 reprennent les valeurs spatiales du design
+courant comme critères, listent ce qui ne doit pas être reproduit, et confient à Simon l'arbitrage
+visuel de ce que la référence ne couvre pas. La gate navigateur de 16.8 valide la cohérence au design
+system, l'accessibilité, les deux thèmes et l'absence de régression ; **elle ne vaut pas jugement
+esthétique.**
+
+#### Stale data détectée dans les sources
+
+- `brownfield.md:60` décrit encore l'Epic 14 comme non commité avec 14.6 en revue — périmé depuis le commit `5eba621`.
+- `brownfield.md:82` affirme que la révision « ne débloque pas encore les stories » — périmé, D-08 ratifiée le 2026-09-26.
+
+Ces deux passages sont à corriger dans une passe documentaire séparée, sans bloquer la décomposition T0.
+
 ### Conditions d'entrée
 
 - Epic 6 est `done` et ses stories restent la baseline historique.
@@ -1440,5 +1542,584 @@ docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typechec
 ```
 
 - Les résultats statiques, navigateur/a11y et production sont consignés.
+
+### Liste d'epics T0/E1 — approuvée le 2026-09-26
+
+> Deux epics retenus au lieu d'un découpage par CAP : cinq des dix FR touchent les mêmes fichiers cœur (`content.config.ts`, `app/utils/blog-indexability.ts`, `nuxt.config.ts`), donc un découpage par capacité produirait du churn de fichiers sans valeur incrémentale. La Gate E1 dépend en outre d'un article réel et d'un `pass` de Simon, ce qu'aucune story technique ne peut produire.
+
+| Epic | Titre | Outcome utilisateur | FR couvertes |
+| --- | --- | --- | --- |
+| 16 | Plateforme éditoriale durable | Un lecteur découvre et lit un article technique fiable, sourcé et daté, sans jamais voir de contenu brouillon, futur ou privé | FR55 à FR64, NFR16 à NFR25 |
+| 17 | Publication éditoriale vérifiable | Simon publie son premier article réel après une revue de preuve versionnée et une promotion contrôlée | FR-18 et la gate E1 |
+
+**Standalone :** l'Epic 16 est livrable et démontrable seul via les fixtures T0. L'Epic 17 consomme l'artefact statique de l'Epic 16 mais ne modifie aucun fichier cœur du blog : il ajoute le dossier de revue éditorial et le protocole de promotion.
+
+**Dépendances :** Epic 17 requiert Epic 16 vert. Aucune story de l'Epic 16 ne dépend d'Epic 17. L'Epic 17 ne peut pas démarrer avant qu'un article réel existe et passe FR-18.
+
+### Matrice de couverture FR — Epic 16 / 17
+
+| FR | Epic | Description courte |
+| --- | --- | --- |
+| FR55 | 16 | Contrat de contenu minimal, schéma Zod et enums machine |
+| FR56 | 16 | Resolver de visibility déterministe et précédence des états |
+| FR57 | 16 | Homepage `/blog` éditoriale, empty state, trois derniers publics |
+| FR58 | 16 | Route article, métadonnées résolues, `BlogPosting`, self-canonical |
+| FR59 | 16 | Non-régression de la homepage et de son journal |
+| FR60 | 16 | Contrat de date, refus de `publishedAt`, `updated >= date` |
+| FR61 | 16 | Non-régression SEO/AEO et propriétaires uniques intacts |
+| FR62 | 16 | Fixtures T0, assertions statiques et artefacts inspectés |
+| FR63 | 16 | Validation navigateur desktop/mobile et a11y |
+| FR64 | 16 | Supply chain, secrets, licences et frontière télémétrie |
+| NFR16 | 16 | Exécution Docker obligatoire de la gate |
+| NFR17 | 16 | pnpm strict, `npm`/`yarn` interdits |
+| NFR20 | 16 | Compatibilité SSG GitHub Pages sans serveur dynamique |
+| NFR21 | 16 | Tokens CSS et primitives DS existantes uniquement |
+| NFR22 | 16 | Accessibilité, `ZExternalLink`, `forced-colors`, reduced-motion |
+| NFR23 | 16 | Français, première personne, vouvoiement, zéro emoji |
+| NFR24 | 16 | `CNAME`, `_headers` et pipeline `gh-pages` intacts |
+| NFR25 | 16 | Aucun framework de test ajouté, validation via gate et CI |
+| FR-18 | 17 | Checklist de preuve versionnée, hash de contenu et pass de Simon |
+
+**Couverture complète :** 10/10 FR T0 et 10/10 NFR mappés à l'Epic 16, 1/1 exigence E1 mappée à l'Epic 17. Aucune exigence orpheline.
+
+### Table de correspondance PRD → epics
+
+Le PRD numérote ses exigences `FR-1` → `FR-18` (avec tiret) ; l'inventaire global de ce document
+numérote `FR1` → `FR64` (sans tiret). Les deux séries coexistent et cette table est la **seule
+projection formelle** entre elles. Un agent qui lit une story doit pouvoir remonter au PRD sans
+deviner.
+
+| PRD | Epic | Phase | Story porteuse |
+| --- | --- | --- | --- |
+| FR-1 Article structuré | FR55 | T0 | 16.1 |
+| FR-2 Admission fondée sur l'expérience | FR-18 (checklist) | E1 | 17.1 |
+| FR-3 Corrections et mise à jour | FR60 (contrat de date) | T0 + E1 | 16.1, 17.2 |
+| FR-4 Homepage éditoriale | FR57 | T0 | 16.3 |
+| FR-5 Hubs de pilier | — | R1 | différé, gate R1 |
+| FR-6 Traçabilité de la découverte | FR59 | T0 | 16.3, 16.5 |
+| FR-7 Métadonnées et structure | FR58 | T0 | 16.4 |
+| FR-8 Articles liés `related` | — | R1 | différé, gate R1 |
+| FR-9 Lecture longue et code | FR58, FR63 | T0 | 16.4, 16.8 |
+| FR-10 Page auteur enrichie | — | R1 | différé, gate R1 |
+| FR-11 Relation article-projet | — | R1 | différé, gate R1 |
+| FR-12 États de visibility | FR56 | T0 | 16.2 |
+| FR-13 SEO et données structurées | FR58, FR61 | T0 | 16.4, 16.5, 16.7 |
+| FR-14 AEO sans promesse d'autorité | FR61, FR64 | T0 | 16.5, 16.7 |
+| FR-15 RSS conditionnel | — | hors release | aucune story T0, voir « Frontière RSS » en 16.2 |
+| FR-16 Composition avec le design system | FR63, NFR21, NFR22 | T0 | 16.3, 16.4, 16.8 |
+| FR-17 Fixtures et gate statique | FR62 | T0 | 16.6, 16.7 |
+| FR-18 Gate éditoriale de preuve | FR-18 | E1 | 17.1, 17.2 |
+
+**Réserves tracées :** FR-2 n'est implémenté qu'en E1 et FR-3 qu'en partie (le cycle de correction à
+quatre types du PRD n'a pas de story porteuse). Ces deux points sont des défauts de couverture
+identifiés par le readiness check du 2026-09-27 et ne sont pas clos par cette table.
+
+### Stories — Epic 16
+
+> Séquencement : `16.1` et `16.2` sont parallélisables (chemins de code disjoints). `16.3` et `16.4` dépendent toutes deux de `16.1` + `16.2`. `16.5` consomme les quatre précédentes. `16.6` produit les fixtures et la gate, `16.7` inspecte le build statique produit par `16.6`, `16.8` effectue la revue navigateur sur ce même build puis rapporte. `16.7` et `16.8` sont parallélisables entre elles une fois `16.6` verte. Aucune story ne dépend d'une story future.
+
+#### Story 16.1: Contrat de contenu minimal et migration de date
+
+As a mainteneur de la plateforme éditoriale,
+I want un schéma de collection Content typé et déterministe qui valide le contrat minimal des articles T0,
+So that aucun article invalide, ambigu ou daté selon deux règles concurrentes n'atteigne jamais les surfaces publiques. _(FR55, FR60, NFR21)_
+
+**Outillage :** la validation s'exécute via Docker ; aucun gestionnaire de paquets n'est lancé sur l'hôte.
+
+**Acceptance Criteria:**
+
+**Given** la collection `blog` déclarée dans `content.config.ts`
+**When** on valide le frontmatter d'un article
+**Then** le schéma accepte exactement les champs requis T0 : `title`, `description`, `date`, `author`, `pillar`, `format`, `tags`, `draft`, `visibility`
+**And** `goals` reste optionnel et interne, sans effet sur la publication, le classement des articles liés ou un appel à l'action
+**And** `pillar` n'accepte que `ai-systems`, `software-engineering` ou `automation`
+**And** `format` n'accepte que les huit valeurs machine de `content-contract.md` §3
+**And** `tags` n'accepte que des chaînes minuscules en kebab-case
+**And** `author` n'accepte que l'identifiant `simon-jouan`, résolu depuis `SITE.profile`
+**And** une valeur d'enum invalide échoue avec un message de validation compréhensible et sans build partiel
+
+**Given** un article portant `date`
+**When** on valide le champ
+**Then** `date` est acceptée uniquement au format `YYYY-MM-DD` avec sémantique Europe/Paris
+**And** `publishedAt` est refusé en T0 avec une erreur explicite
+**And** si `updated` est présent, il vérifie `updated >= date`
+**And** une date future est acceptée par le schéma mais marquée non publique par le resolver
+
+**Given** deux articles publics distincts
+**When** on valide la collection
+**Then** la collision de `title` échoue la validation
+**And** la règle d'unicité par hub n'est pas appliquée en T0, les hubs n'existant pas encore
+
+#### Story 16.2: Resolver de visibility déterministe
+
+As a mainteneur de la plateforme éditoriale,
+I want un resolver unique qui applique la matrice de visibility ratifiée sans duplication de logique,
+So that le HTML, les listes, le Markdown, le sitemap et l'AEO interprètent chaque article de façon identique. _(FR56)_
+
+**Frontière RSS :** aucun flux RSS n'est créé ni testé en T0. FR-15 est hors première release et ne doit pas être ajouté au backlog sans décision explicite. Le resolver expose un état distinct et documenté, exploitable par un flux futur, **sans en produire et sans supposer son existence**.
+
+**Acceptance Criteria:**
+
+**Given** un document de la collection `blog`
+**When** on demande son état au resolver
+**Then** le resolver applique la précédence ratifiée dans cet ordre : `draft` / date future / `visibility: private` → `noindex` ou `robots: false` → `sitemap: false` ou `null` → publié et indexable
+**And** chaque état expose une réponse unique consommée par toutes les surfaces, sans qu'une page n'implémente son propre filtre
+
+**Given** un article `draft: true`, à venir ou `visibility: private`
+**When** le resolver est interrogé
+**Then** le résultat indique l'absence de HTML production et l'absence des artefacts de découverte
+**And** l'accès direct est traité comme 404 avec une prévisualisation séparée
+
+**Given** un article publié avec `noindex: true` ou `robots: false`
+**When** le resolver est interrogé
+**Then** le résultat autorise un HTML public en 200 avec la balise ou directive correspondante
+**And** exclut l'article des sélections éditoriales, du sitemap et des artefacts AEO
+**And** le resolver signale un état distinct « diffusable mais non indexable », sans créer ni supposer de flux RSS
+
+**Given** un article publié avec `sitemap: false` ou `null`
+**When** le resolver est interrogé
+**Then** le résultat autorise un HTML public en 200
+**And** exclut l'article du sitemap et des artefacts AEO
+**And** ne retire pas automatiquement le HTML ni les liens éditoriaux internes
+
+**Given** une combinaison d'états inconnue
+**When** le resolver est interrogé
+**Then** il échoue explicitement ou renvoie un état documenté, sans choisir silencieusement une sémantique
+
+**Given** l'existant `app/utils/blog-indexability.ts`
+**When** on introduit le resolver
+**Then** on étend ce propriétaire unique plutôt que d'en créer un second
+**And** la règle « une page n'invente pas son propre filtre » est vérifiable en revue de code
+
+#### Story 16.3: Homepage `/blog` éditoriale
+
+As a lecteur arrivant sur le blog,
+I want comprendre la promesse éditoriale et voir les derniers articles réellement publiés,
+So that je puisse choisir quoi lire sans être trompé par du contenu brouillon ou programmé. _(FR57)_
+
+**Référence visuelle — design actuel :** `docs/design_system/ui_kits/jouan-site/Home - Awwwards.html`,
+section `#journal` (lignes 224-252) : `.journal` en grille `1.5fr 1fr` (une colonne sous 860 px),
+`.jpost` / `.jfeat` pour l'article à la une, `.jside` + `.jrow` pour la colonne compacte,
+`.block__head--row` avec le lien `.seeall` « cat tous-les-articles », `.tag` pour la taxonomie.
+
+> `Blog.jsx` (ancien UI kit) **n'est plus la référence** : il date de la première version du site.
+> Ses composants `Card` et sa palette ont été superseded par `.jpost` / `.jrow`.
+
+**Ce qui n'existe pas dans le design actuel et doit être dérivé :** aucune page `/blog` n'est
+maquetée. La homepage l'estime donc depuis la **langue de section** du design courant — `section.block`,
+`.block__head`, `.container`, `.eyebrow`, `.tag` — et non depuis une copie d'écran. **La page `/blog`
+est une composition, pas un calque.**
+
+**Le thème clair n'est couvert par aucune référence** (le design courant est sombre). Les tokens
+`_root.scss` portent les deux thèmes ; la conformité en thème clair se vérifie donc au navigateur,
+pas par comparaison.
+
+**Critères spatiaux issus du design actuel :**
+
+| Élément | Valeur |
+| --- | --- |
+| Rythme de section | `padding: clamp(80px, 12vh, 150px) 0` |
+| Largeur de conteneur | `min(1200px, 92vw)` |
+| Tête de bloc | `max-width: 720px`, `margin-bottom: var(--space-10)` |
+| `h2` de section | `clamp(1.8rem, 3.6vw, 2.75rem)`, `line-height: 1.08` |
+| Grille journal | `grid-template-columns: 1.5fr 1fr`, `gap: var(--space-6)`, 1 colonne sous 860 px |
+| Média d'une `.jpost` | `aspect-ratio: 16 / 9`, dégradé bas `hsl(319 60% 7% / 0.85)` |
+| `h3` de carte | `var(--fs-2xl)`, `line-height: 1.12` |
+| `.jpost__meta` | `margin-top: auto`, `padding-top: var(--space-5)`, `var(--fs-xs)` |
+| `.jrow` | `grid-template-columns: 84px 1fr`, `gap: var(--space-4)` ; vignette `aspect-ratio: 1` |
+| `h4` de `.jrow` | `var(--fs-base)` en **monospace** |
+| `.tag` | `var(--radius-pill)`, `padding: 3px 10px`, `var(--fs-xs)` |
+| Radius de carte | `var(--radius-md)`, bordure `1px solid var(--border-subtle)` |
+| Élévation au survol | `var(--shadow-4), var(--shadow-hairline)`, `translateY(-4px)` |
+
+**Différences structurantes avec l'ancien kit — à ne pas importer :**
+- **Les titres sont en monospace** (`h1, h2, h3 { font-family: var(--font-mono); font-weight: var(--fw-regular) }`).
+  Ne pas reprendre le `--fw-light` ni la hiérarchie typographique de l'ancien kit.
+- La taxonomie est un `.tag` pil (`--radius-pill`), pas un composant `ZTag` de l'ancien rendu.
+
+**Défauts de la référence à NE PAS reproduire** (readiness 2026-09-27) :
+- le journal de la maquette affiche un **temps de lecture** (`${feat.read} de lecture`). Le PRD §12
+  interdit le temps de lecture **calculé**, pas la valeur éditoriale : `read` reste un champ
+  **optionnel** du schéma, alimenté à la main, sans aucun calcul automatique. **Ne pas implémenter de
+  calcul** et ne pas ajouter de champ si la maquette en montre un ; si un `read` existe déjà en base,
+  le rendre tel quel. Voir story 16.1, pièges 1 et 3.
+- le journal de la maquette **conditionne ses articles par programme** et n'exprime aucun état. En
+  T0 la sélection vient exclusivement du resolver (story 16.2), jamais d'un `SITE.posts` statique.
+- l'eyebrow de la maquette est un `<p>` et les cartes un `<h3>`/`h4>` → outline `h1 → h3` avec saut.
+  Utiliser `<h2 class="eyebrow">` avec `<span aria-hidden="true">// </span>`.
+- aucune image de la maquette n'a de `alt` ni de dimensions, alors que FR-9 les exige. Le champ
+  `image` reste **optionnel** dans le schéma T0 (`{ src, alt }`), malgré la cellule « T0 = non » du
+  contrat, contredite par sa propre fixture « article sans image » et par le rendu en production.
+  Un article sans `image` doit produire le fallback éditorial, pas une image cassée.
+- le journal de la maquette ne distingue pas le `noindex` du publiqué. La carte doit refléter l'état
+  du resolver sans le laisser deviner au lecteur.
+
+**Acceptance Criteria:**
+
+**Given** la route `/blog` et le resolver de la story 16.2
+**When** un visiteur ouvre la page
+**Then** la page affiche une promesse éditoriale explicite en français
+**And** affiche au maximum les trois derniers articles publics, triés par `date` décroissante
+**And** chaque lien interne décrit le contenu et son pilier
+
+**Given** un corpus public vide
+**When** un visiteur ouvre `/blog`
+**Then** un état vide explicite est affiché, sans erreur de rendu et sans appel à une collection inexistante
+
+**Given** des articles brouillons, programmés ou privés présents dans la collection
+**When** la page est rendue
+**Then** aucun de ces articles n'apparaît dans les listes
+
+**Given** une section de la page
+**When** la page est rendue
+**Then** aucune carte d'article n'est dupliquée entre les sections
+**And** les sections « contenu fondamental », « sélection par pilier » et `featured` sont absentes en T0, leur source de vérité étant differée à R1
+
+**Given** le corpus réel vide (`content/blog/` ne contient que `.gitkeep`)
+**When** on valide la page
+**Then** la validation s'effectue via fixtures T0 locales et jamais via un article de démonstration publié
+
+#### Story 16.4: Route article et `BlogPosting`
+
+As a lecteur arrivant sur un article,
+I want lire un contenu correctement sourcé, daté et attribué, sur ordinateur comme sur mobile,
+So that je puisse juger la compétence démontrée et reproduire ce qui est présenté. _(FR58, NFR22)_
+
+**Référence visuelle — design actuel :** `docs/design_system/ui_kits/jouan-site/Home - Awwwards.html`
+pour le langage de section et de titre. **La vue article n'y est pas maquetée** et n'existe nulle
+part dans le design courant : elle se compose à partir des mêmes primitives que la homepage —
+`section.block`, `.block__head`, `.container`, `.eyebrow`, `.tag` — et de la primitive globale
+`.prose` (`app/assets/scss/base/_layout.scss`). C'est une **composition**, pas un calque.
+
+> `Blog.jsx` (ancien UI kit) **n'est plus la référence** : il date de la première version du site et
+> n'a ni le monospace des titres, ni la taxonomie `.tag` pil, ni la grid du journal.
+
+**Le thème clair n'est couvert par aucune référence** (le design courant est sombre). Les tokens
+`_root.scss` portent les deux thèmes ; la conformité en thème clair se vérifie au navigateur.
+
+**Critères spatiaux issus du design actuel :**
+
+| Élément | Valeur |
+| --- | --- |
+| Rythme de section | `padding: clamp(80px, 12vh, 150px) 0` |
+| Largeur de conteneur | `min(1200px, 92vw)` |
+| Tête de bloc | `max-width: 720px`, `margin-bottom: var(--space-10)` |
+| `h1` d'article | monospace, `var(--fw-regular)`, `line-height` resserré, `--ls-tight` |
+| Média de couverture | `aspect-ratio: 16 / 9`, bord `--border-subtle`, radius `--radius-md` |
+| Séparateur de tête d'article | `1px solid var(--border-subtle)` |
+| Bloc de code | `<pre><code>` en flux propre, défilement **local**, jamais de débordement de page |
+| Taxonomie | `.tag` pil : `var(--radius-pill)`, `3px 10px`, `var(--fs-xs)` |
+
+**Différences structurantes avec l'ancien kit — à ne pas importer :** les titres sont en monospace
+(`font-weight: var(--fw-regular)`), la taxonomie est un `.tag` pil, et il n'existe pas de bandeau
+`post__meta` pré-conçu : les métadonnées d'article (auteur, dates, pilier, format) sont à composer.
+
+**Défauts de la référence à NE PAS reproduire** (readiness 2026-09-27) :
+- `← Retour au blog` est un `<button onClick>` dans l'ancien kit. Le PRD FR-16 exige un **lien de
+  retour** : utiliser un `NuxtLink` avec `href`, focusable, ouvrable au clic milieu et découvrable
+  au crawl. Ajouter un fil d'Ariane, également exigé par FR-16 et absent des deux références.
+- les images de l'ancien kit portent `alt=""` et aucune dimension. Traiter l'image de couverture
+  comme une image de contenu : `alt` descriptif, dimensions déclarées, rendu via `NuxtImg`. Le champ
+  `image` reste **optionnel** dans le schéma T0 (`{ src, alt }`, `alt` obligatoire), malgré la cellule
+  « T0 = non » du contrat — contredite par sa propre fixture « article sans image » et par le rendu
+  actuel. Le `BlogPosting` lit déjà `article.image` et reste inchangé.
+- l'ancien `post__meta` n'affiche que la date de publication : FR-3 exige de distinguer publication et
+  mise à jour quand les deux existent.
+- l'ancien kit affiche un temps de lecture. Le PRD §12 interdit le temps de lecture **calculé**,
+  pas la valeur éditoriale : `read` reste **optionnel**, alimenté à la main, **sans aucun calcul
+  automatique**. `reading_time_est` dans le JSON-LD lit déjà `article.read` et reste inchangé. Ne pas
+  ajouter de calcul. Voir story 16.1, piège 1.
+- **Le CTA de fin d'article est conditionné par la visibility — décision D-09 (arbitrée par Simon le
+  2026-09-27).** Le bloc `.article__cta` livré par la story 12.6 est aujourd'hui inconditionnel ;
+  `getBlogRobotsDirective` (`app/utils/blog-indexability.ts:112-118`) sortant `"noindex, nofollow"`
+  pour `noindex: true` et `robots: false`, un CTA sur ces pages est un lien que les crawlers sont
+  explicitement invités à ne pas suivre. **Règle : le CTA s'affiche si et seulement si l'article est
+  un artefact public découvrable — exactement le drapeau `discoverable` du resolver qui alimente déjà
+  la liste `/blog` et le journal de la homepage. Aucun second drapeau, aucun filtre dans le template.**
+
+  | État | `discoverable` | CTA |
+  | --- | --- | --- |
+  | publié indexable | oui | oui |
+  | `sitemap: false` / `null` | oui (présent dans les listes) | oui |
+  | `noindex: true` | non | **non** |
+  | `robots: false` | non | **non** |
+  | `draft: true` / date future / `visibility: private` | non (pas de HTML) | sans objet |
+  | preview (hors périmètre T0) | non par construction | **non** |
+
+  Conséquences à assumer : `noindex` étant souvent un état de transition, le CTA apparaît et disparaît
+  pendant la revue. C'est accepté : la page portant `noindex` se déclare elle-même non publique, et une
+  accroche de conversion n'a pas de sens sur un contenu qui n'est pas encore un artefact public. Le
+  CTA ne dépend **jamais** du champ `goals` (PRD §6.1).
+
+**Accessibilité applicable :** focus visible avec repli `outline` standard, hiérarchie de titres sans saut, listes sémantiques, liens externes via `ZExternalLink`, `forced-colors` et `prefers-reduced-motion` respectés, aucune valeur en dur hors tokens CSS.
+
+**Acceptance Criteria:**
+
+**Given** la route `/blog/<slug>` et le contrat de la story 16.1
+**When** un article public est rendu
+**Then** les métadonnées affichées sont résolues depuis `SITE.profile` et le resolver, jamais depuis une chaîne libre du frontmatter
+**And** la hiérarchie `h1` → `h2` → `h3` est cohérente, sans saut de niveau
+**And** la prose et les blocs de code restent lisibles sans débordement horizontal en 1280 px et en 375 px
+
+**Given** un article public
+**When** la métadonnée SEO est produite
+**Then** l'URL canonique est auto-référente et résolue via `useSiteUrl()` et `usePageSeo()`
+**And** l'objet `BlogPosting` existant est enrichi, sans création d'un second bloc JSON-LD
+**And** `datePublished`, `dateModified`, auteur et image correspondent au frontmatter résolu
+**And** aucun alias `/a-propos`, override SEO imbriqué ni politique trailing-slash nouvelle n'est introduite en T0
+
+**Given** un article contenant du HTML brut, des liens externes ou du code
+**When** la page est rendue
+**Then** le HTML généré par `@nuxt/content` est stylé via `:deep()` avec le reset d'ancres de titres documenté dans `project-context.md`
+**And** tout lien `target="_blank"` passe par `ZExternalLink` avec `rel="noopener"` et libellé accessible
+**And** une image absente déclenche le fallback éditorial défini, sans image cassée
+
+**Given** un article et l'état `discoverable` retourné par le resolver de la story 16.2
+**When** le bloc CTA de fin est rendu
+**Then** le CTA est présent si et seulement si `discoverable` est vrai
+**And** la condition est lue depuis l'état du resolver, sans filtre local et sans second drapeau
+**And** le CTA reste indépendant du champ `goals` (PRD §6.1)
+**And** le lien de retour vers `/blog` est présent sur tout article à HTML production
+**And** la non-régression du contenu du CTA livré par la story 12.6 est vérifiée : eyebrow
+`$ ./workflow --inspect`, titre et libellé du bouton inchangés
+
+#### Story 16.5: Non-régression homepage, SEO/AEO et supply chain
+
+As a mainteneur de la plateforme éditoriale,
+I want vérifier que l'introduction du blog n'altère aucune surface partagée déjà stabilisée par Epic 14,
+So that le patrimoine SEO, AEO et vie privée du site reste intact pendant le lot T0. _(FR59, FR61, FR64, NFR17, NFR24)_
+
+**Acceptance Criteria:**
+
+**Given** la homepage `/` et son journal des trois derniers articles
+**When** le resolver de la story 16.2 est appliqué
+**Then** seuls des articles autorisés sont affichés
+**And** le comportement actuel de la homepage est préservé, sans nouvelle section `featured` en T0
+
+**Given** les propriétaires Epic 14
+**When** on inspecte le code produit par les stories 16.1 à 16.4
+**Then** `usePageSeo()` reste l'unique owner du canonical et des métadonnées
+**And** `useSiteUrl()` reste l'unique owner de l'origine
+**And** Sitemap, Robots et AI Ready restent des propriétaires uniques de leurs artefacts
+**And** aucune nouvelle projection de champ AEO n'est introduite
+**And** `server/plugins/seo-content.ts` reste le propriétaire unique de la réconciliation sitemap
+
+**Given** le contenu éditorial de T0
+**When** on contrôle la supply chain
+**Then** les scripts, trackers, images distantes, iframes et ressources réseau non approuvées sont absents
+**And** aucun secret, chemin interne ou donnée privée n'apparaît dans les artefacts générés
+**And** les licences et attributions des extraits de code sont vérifiées
+**And** aucun événement, propriété ou paramètre de télémétrie n'est ajouté par rapport à la liste blanche Epic 14, dont `docs/specs/spec-analytics-search-console/tracking-plan.md` fait foi (source désignée par `epic-14-checkpoint-2026-09-25.md`)
+**And** le diff des appels `posthog` est comparé à ce document, sans interprétation ni tolérance implicite
+
+**Given** le domaine et le pipeline de déploiement
+**When** on génère le site
+**Then** `CNAME` contient exactement `jouan.ovh`
+**And** `_headers` est préservé
+**And** aucune URL de production n'est codée en dur
+
+#### Story 16.6: Fixtures T0 et gate Docker
+
+As a mainteneur de la plateforme éditoriale,
+I want disposer d'un corpus temporaire couvrant chaque état de visibility et d'une gate reproductible,
+So que la validation soit possible sans publier de contenu de démonstration. _(FR62, NFR16, NFR20, NFR23)_
+
+**Contraintes transversales applicables à toutes les stories de l'Epic 16 :** NFR17 (pnpm strict, `npm`/`yarn` interdits), NFR21 (tokens CSS et primitives DS existantes uniquement), NFR22 (accessibilité : focus visible, `ZExternalLink`, listes sémantiques, `forced-colors`, reduced-motion), NFR24 (`CNAME`, `_headers` et pipeline `gh-pages` intacts).
+
+**Acceptance Criteria:**
+
+**Given** un checkout local ou une branche QA temporaire
+**When** on crée les fixtures T0
+**Then** les onze cas sont présents : article publié minimal, `draft: true`, article à venir, `visibility: private`, `noindex: true`, `robots: false`, `sitemap: false`, `sitemap: null`, article imbriqué `index.md` et article sans image
+**And** les fixtures ne sont jamais versionnées ni déployées en production
+**And** leur suppression est vérifiée par un diff et une recherche de slugs
+
+**Given** les fixtures en place
+**When** on exécute la gate Docker
+**Then** `docker compose run --rm web sh -c "corepack enable && pnpm lint && pnpm typecheck && pnpm generate"` termine avec le code `0`
+**And** aucun `pnpm`, `npm`, `yarn` ou `nuxi` n'est lancé sur l'hôte
+**And** aucun framework de test n'est ajouté pour ce lot : la validation s'intègre à la gate Docker et aux assertions CI existantes (NFR25)
+
+**Given** le build statique
+**When** on inspecte `.output/public`
+**Then** `index.html`, `blog/index.html`, le HTML de l'article, les jumeaux Markdown concernés, `sitemap.xml`, `robots.txt`, `llms.txt`, `llms-full.txt`, `sitemap.md`, `CNAME` et `_headers` sont présents et vérifiés
+**And** les dates HTML, JSON-LD, sitemap, Markdown et AEO sont cohérentes
+**And** les budgets AEO restent respectés
+**And** aucune fixture n'est présente dans le bundle de production
+
+#### Story 16.7: Assertions statiques sur les artefacts générés
+
+As a mainteneur de la plateforme éditoriale,
+I want inspecter les artefacts statiques produits par la gate et y vérifier dates, exclusions et absence de fuite,
+So that ce qui est publié soit vérifiable sans ouvrir un navigateur. _(FR62, NFR20)_
+
+**Acceptance Criteria:**
+
+**Given** le build statique produit par la story 16.6
+**When** on inspecte `.output/public`
+**Then** `index.html`, `blog/index.html`, le HTML de chaque fixture, les jumeaux Markdown concernés, `sitemap.xml`, `robots.txt`, `llms.txt`, `llms-full.txt`, `sitemap.md`, `CNAME` et `_headers` sont présents
+**And** les dates de publication de `index.html`, du JSON-LD `BlogPosting`, de `sitemap.xml`, des jumeaux Markdown et des artefacts AEO sont mutuellement cohérentes pour un même article
+**And** les budgets AEO restent respectés : `llms.txt` 64 KiB, `llms-full.txt` 1 MiB
+**And** aucune fixture n'est présente dans le bundle inspecté
+
+**Given** les fixtures couvrant les états exclus
+**When** on compare le sitemap et les artefacts AEO au HTML produit
+**Then** aucun article `draft`, à venir ou `visibility: private` n'apparaît dans `sitemap.xml`, `llms.txt`, `llms-full.txt` ou `sitemap.md`
+**And** aucun article `noindex` ou `robots: false` n'apparaît dans ces mêmes artefacts
+**And** un article `sitemap: false` est absent du sitemap et des artefacts AEO, mais son HTML est présent
+**And** les articles exclus n'ont ni doublon ni route non indexable dans le sitemap
+
+**Given** le HTML d'un article public
+**When** on l'inspecte
+**Then** le canonical est auto-référent et correspond à l'URL résolue par `useSiteUrl()`
+**And** le bloc JSON-LD `BlogPosting` est unique et ses champs correspondent au frontmatter résolu
+**And** aucun second `head`, aucune seconde balise canonical et aucun second bloc JSON-LD ne sont présents
+
+**Given** le HTML des fixtures `noindex: true` et `robots: false`
+**When** on l'inspecte
+**Then** la balise `noindex, nofollow` est présente
+**And** le bloc CTA de fin d'article est **absent** (décision D-09)
+**And** le lien de retour vers `/blog` reste présent
+
+**Given** le HTML des fixtures `sitemap: false` et `sitemap: null`
+**When** on l'inspecte
+**Then** le bloc CTA de fin d'article est **présent** (décision D-09)
+**And** l'article est absent du sitemap et des artefacts AEO
+
+**Given** le HTML de la fixture indexable de référence
+**When** on l'inspecte
+**Then** le bloc CTA de fin d'article est présent et identique à celui livré par la story 12.6
+
+**Given** le contenu éditorial généré
+**When** on recherche des motifs de fuite
+**Then** aucun secret, chemin interne, URL de dépôt privé ni donnée de formulaire n'apparaît dans les artefacts
+**And** aucune image distante, iframe, script ou tracker non approuvé n'est référencé
+
+#### Story 16.8: Revue navigateur desktop/mobile et rapport de preuves
+
+As a mainteneur de la plateforme éditoriale,
+I want une revue navigateur vérifiable et un rapport de preuves traçable,
+So that la conformité visuelle et accessible soit démontrée et non supposée. _(FR63, NFR23)_
+
+**Référence visuelle — design actuel :** `docs/design_system/ui_kits/jouan-site/Home - Awwwards.html`
+(langage de section, section `#journal` pour les cartes) **et le jugement visuel de Simon** pour ce que
+le design courant ne couvre pas : ni la page `/blog`, ni la vue article, ni le thème clair. **La gate
+Docker ne vaut pas preuve de rendu.**
+
+**Acceptance Criteria:**
+
+**Given** le serveur de développement et les fixtures en place
+**When** on effectue le smoke test navigateur
+**Then** `/`, `/blog`, `/blog/<slug>` et `/about` sont contrôlés en 1280 px et en 375 px
+**And** la hiérarchie de titres est contrôlée route par route, sans saut de niveau, l'eyebrow ouvrant
+une section portant `h2` et non `p`
+**And** le clavier, le focus visible, les contrastes, les textes alternatifs et les liens externes
+accessibles sont validés
+**And** le lien de retour de l'article est un lien focusable et non un `button`
+**And** le code long, les tableaux et la taxonomie ne débordent pas horizontalement
+
+**Given** l'état vide de `/blog`
+**When** la page est rendue avec un corpus public vide
+**Then** l'état vide explicite est lisible, stylé avec les tokens du design system, et ne contient
+aucun lien trompeur
+
+**Given** le design system ratifié
+**When** le rendu est comparé à la référence
+**Then** la baseline visuelle, le terminal sanctuarisé, `forced-colors` et `prefers-reduced-motion`
+sont respectés
+**And** les deux thèmes, clair et sombre, sont contrôlés sur `/blog` et `/blog/<slug>`
+**And** les valeurs spatiales de référence reprises dans les criteria de 16.3 et 16.4 sont
+effectivement appliquées
+
+**Given** le résultat de la gate et des revues
+**When** on rapporte
+**Then** le rapport consigne le commit de départ, la commande exacte et son code de sortie, les fixtures
+utilisées et supprimées, les fichiers inspectés, les résultats desktop/mobile par route, et les
+décisions manuelles restantes
+**And** le rapport distingue ce qui a été vérifié automatiquement de ce qui relève du jugement visuel
+de Simon
+**And** toute divergence non résolue est consignée comme réserve et non comme validation
+
+---
+
+## Epic 17: Publication éditoriale vérifiable
+
+Simon publie son premier article réel seulement après une revue de preuve versionnée et un `pass` de son propre checklist FR-18 ; la promotion est ensuite vérifiée par probes post-déploiement, avec rollback éditorial et takedown confidentialité traités comme deux runbooks distincts.
+
+**Statut de planning :** `backlog` — doublement conditionnel. L'Epic 16 doit être vert (T0) **et** un article réel doit exister : `content/blog/` ne contient aujourd'hui que `.gitkeep`. Aucune fixture T0 ne peut être promue en production. L'Epic 16 reste livrable si ce second précondition n'est jamais levé.
+
+**Source de vérité :** `docs/specs/spec-blog-editorial/SPEC.md` (gate E1), `docs/specs/spec-blog-editorial/verification-plan.md` (probes, rollback, takedown) et `docs/planning-artifacts/prds/prd-jouan.ovh-2026-09-24/prd.md` (FR-18).
+
+**Dépendances :** requiert l'Epic 16 vert. Ne modifie aucun fichier cœur du blog — ajoute `docs/implementation-artifacts/editorial-reviews/<slug>.md` et le protocole de promotion. Aucune story de l'Epic 16 ne dépend de l'Epic 17.
+
+### Stories — Epic 17
+
+> Prérequis : l'Epic 16 est vert et un article réel existe. Cet Epic ne modifie aucun fichier cœur du blog — il ajoute le dossier de revue éditorial et le protocole de promotion. Si aucun article réel ne passe la revue, l'Epic 17 reste en attente et l'Epic 16 demeure livrable.
+
+#### Story 17.1: Checklist de preuve et pass éditorial
+
+As a Simon, auteur de l'article,
+I want soumettre mon article réel à une revue de preuve versionnée avant sa publication,
+So that ce que je publie démontre une expérience vérifiable plutôt qu'une affirmation. _(FR-18)_
+
+**Acceptance Criteria:**
+
+**Given** un article réel nommé et sa version soumise
+**When** on calcule le hash du contenu
+**Then** le hash est consigné avec le slug dans `docs/implementation-artifacts/editorial-reviews/<slug>.md`
+**And** le dossier de revue est créé avant toute promotion, jamais après
+
+**Given** la checklist de revue
+**When** on la remplit
+**Then** elle couvre le problème, le contexte, la base de première main, la méthode, les alternatives, les preuves, les résultats, les limites, les sources et la frontière de confidentialité
+**And** la décision est l'un des trois états `pass`, `rework` ou `reject`, avec motif, date et approbateur Simon
+**And** aucune métrique, date, source ou limite n'est inventée pour faire passer la revue
+
+**Given** une décision `pass`
+**When** la date, le hash du contenu, une source ou une limite est modifié
+**Then** le `pass` est invalidé et une nouvelle revue est exigée avant promotion
+
+**Given** une décision `rework` ou `reject`
+**When** l'article est examiné
+**Then** aucune promotion n'est possible et le motif reste tracé dans le dossier de revue
+**And** aucun contenu de démonstration n'est promu à la place de l'article réel
+
+**Given** une fixture locale de la gate T0
+**When** on prépare la publication
+**Then** la fixture ne satisfait pas FR-18 et ne peut pas être promue en production
+
+#### Story 17.2: Promotion contrôlée et probes post-déploiement
+
+As a mainteneur de la plateforme éditoriale,
+I want promouvoir un article réel seulement après une gate complète, puis vérifier la production,
+So that le premier article public ne puisse jamais fuiter de contenu exclu ni dégrader les surfaces partagées. _(Gate E1)_
+
+**Acceptance Criteria:**
+
+**Given** un article réel avec un `pass` de revue valide
+**When** on prépare la promotion
+**Then** le build statique, les assertions statiques et la revue navigateur/a11y sont verts avant toute promotion
+**And** la promotion suit un déploiement contrôlé ou canari, pas un déploiement direct sur la production
+
+**Given** l'artefact promu
+**When** on exécute les probes post-déploiement
+**Then** `/`, `/blog`, `/blog/<slug>`, le canonical, `sitemap.xml`, `robots.txt` et les artefacts Markdown/AEO sont vérifiés
+**And** les codes HTTP, le canonical et les dates correspondent à la version publiée
+**And** aucune fixture, aucun secret, aucune donnée privée et aucune relation non autorisée n'est présente
+
+**Given** un probe en échec
+**When** on applique le runbook
+**Then** le retour arrière éditorial est utilisé pour une régression de contenu, route, canonical, date ou distribution
+**And** la décision, l'impact, l'action et la vérification sont consignés avec leur propriétaire
+
+**Given** une fuite de secret ou de donnée privée détectée après publication
+**When** on applique le runbook
+**Then** le takedown confidentialité et sécurité est engagé séparément du retour arrière éditorial
+**And** les secrets exposés sont révoqués, les artefacts générés purgés et le risque résiduel de l'historique Git documenté
+**And** un `git revert` seul n'est jamais considéré comme un takedown complet
+
+**Given** le résultat des probes
+**When** on clôture la gate E1
+**Then** le commit, le hash, l'artefact, les probes, la version de la checklist et la décision sont consignés dans le dossier de revue et le journal de story
 
 

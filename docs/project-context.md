@@ -271,9 +271,14 @@ none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux p
   dans **Chrome DevTools MCP** ET la référence visuelle correspondante, puis comparer
   le rendu (padding/marges/espacement/fidélité), en desktop ET mobile. La revue de code
   est aveugle aux régressions de rendu. Réfs par page :
-  - **Home** → `docs/design_system/ui_kits/jouan-site/Home - Awwwards.html` (maquette cible Awwwards officielle depuis l'Epic 11).
-  - **Services / About / Blog / Contact** → `docs/design_system/ui_kits/jouan-site/index.html`
-    (UI kit cible ; ouvrir la section correspondante).
+  - **Home / journal** → `docs/design_system/ui_kits/jouan-site/Home - Awwwards.html` (maquette cible
+    Awwwards officielle depuis l'Epic 11 ; section `#journal` pour les cartes d'articles).
+  - **Services / About / Contact** → section correspondante de la même maquette.
+  - ⚠️ **L'UI kit précédent** (`ui_kits/jouan-site/index.html`, `Home.jsx`, `Blog.jsx`, `Services.jsx`,
+    `About.jsx`, `Contact.jsx`, `data.js`, `kit.css`) date de la **version précédente du site** : il est
+    *superseded*. Ne pas s'en servir comme référence de rendu, notamment pour le blog — il ignore le
+    monospace des titres et la taxonomie `.tag` pil. Il reste utile comme première exploration de
+    composants React déjà documentés.
   - Routine appliquée sans faille sur Epics 4-8 (desktop + mobile) → zéro régression de
     rendu ; elle a corrigé un défaut de la maquette (centrage timeline `kit.css`, 5.2),
     attrapé un bug d'ancres de titres `@nuxt/content` (6.2) et validé la refonte terminal
@@ -299,4 +304,4 @@ none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux p
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-09-26 (Epic 14 : six tâches terminées, rétrospective et réconciliation documentaire enregistrées, point de contrôle ratifié ; artefacts SEO/AEO et vie privée vérifiés en production, huit réserves acceptées et suivies dans `epic-14-checkpoint-2026-09-25.md` ; Epic 16 prêt pour la décomposition en stories T0).
+Dernière mise à jour : 2026-09-27 (référence de design blog clarifiée : le design courant est `Home - Awwwards.html`, l'ancien UI kit et `Blog.jsx` sont superseded ; Epic 14 ratifié, Epic 16 décomposé en 10 stories T0/E1 avec `architecture-blog-editorial.md`).

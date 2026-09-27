@@ -499,7 +499,7 @@ Le PRD adopte les décisions de phase suivantes pour éviter que les workflows a
 - [ASSUMPTION: Aucun chiffre de trafic, de classement ou de conversion ne doit être inventé.]
 - [ASSUMPTION: `SITE.profile` reste la source auteur et `SITE.projects` la source projet.]
 - [ASSUMPTION: Les hubs Vue et les routes article doivent rester des namespaces distincts.]
-- [ASSUMPTION: L'Epic 14 doit être stabilisé avant les changements structurels du blog.]
+- ~~[ASSUMPTION: L'Epic 14 doit être stabilisé avant les changements structurels du blog.]~~ **Satisfaite le 2026-09-27** : les six tâches 14.1 à 14.6 sont livrées, le checkpoint est ratifié (`stabilisation: ratifiée`) et D-01 à D-08 sont tranchées. Le précondition est levé ; les réserves suivies restent ouvertes mais ne bloquent plus T0.
 - [ASSUMPTION: Les fixtures sont synthétiques, temporaires et supprimées après validation.]
 - [ASSUMPTION: Le blog reste une source de vérité Markdown et ne reçoit pas de CMS externe.]
 
@@ -651,8 +651,24 @@ Les métriques sont volontairement décrites comme des preuves et des diagnostic
 
 ### 14.1 Primaries
 
-- **SM-1 :** La préparation technique T0 est verte lorsqu'une fixture temporaire explicitement identifiée traverse le contrat minimal, `/blog`, la route article, la homepage et les sorties SEO/AEO existantes sans divergence. Valide FR-1 à FR-4, FR-7, FR-12 à FR-14, FR-16 et FR-17.
-- **SM-E1 :** Le lancement éditorial E1 n'est vert que lorsqu'un article réel passe FR-18, la promotion contrôlée et le probe post-déploiement. Valide FR-3, FR-13, FR-17 et FR-18.
+- **SM-1 :** La préparation technique T0 est verte lorsqu'une fixture temporaire explicitement identifiée traverse le contrat minimal, `/blog`, la route article, la homepage et les sorties SEO/AEO existantes sans divergence. Valide **FR-1, FR-3 (uniquement le contrat de date `updated >= date` et l'immuabilité de `date`), FR-4, FR-7, FR-12 à FR-14, FR-16 et FR-17.**
+- **SM-E1 :** Le lancement éditorial E1 n'est vert que lorsqu'un article réel passe FR-18, la promotion contrôlée et le probe post-déploiement. Valide **FR-2, FR-3 (cycle de correction : note de correction traçable, traitement d'une rétractation, décision de renommage de slug), FR-13, FR-17 et FR-18.**
+
+> **Correction du 2026-09-27 — auto-contradiction de SM-1 levée.** La rédaction précédente déclarait
+> que SM-1 validait « FR-1 à FR-4 », ce qui englobait **FR-2** (*Admission fondée sur l'expérience*)
+> et l'intégralité de **FR-3** (*Corrections et mise à jour*). Or une fixture synthétique ne peut
+> valider ni l'un ni l'autre : elle n'a, par construction, ni expérience de première main, ni
+> correction éditoriale réelle. Le PRD reconnaît lui-même ailleurs qu'« un article sans preuve
+> suffisante reste en préparation technique », qu'« une fixture ne satisfait pas E1 » et qu'un article
+> en recherche d'expérience « n'est pas traité comme une preuve d'expertise ».
+>
+> **Conséquence du défaut :** T0 pouvait être déclaré vert alors que FR-2 et FR-3 n'étaient pas
+> implémentées. **FR-2 relève désormais de SM-E1**, et FR-3 est scindé entre son contrat de date
+> (T0, vérifiable par fixture) et son cycle de correction éditoriale (E1, vérifiable par article réel).
+>
+> **Réserve de couverture ouverte :** le cycle de correction de FR-3 (rétractation ou erreur
+> factuelle, renommage de slug) n'a pas encore de story porteuse dans `epics.md`. À arbitrer avant
+> l'implémentation.
 - **SM-2 :** Après extension, les trois hubs, la homepage, la page auteur et les routes articles sont accessibles sur desktop/mobile et ne régressent pas la homepage. Valide FR-4 à FR-11.
 - **SM-3 :** Les états brouillon, article futur, noindex, preview et exclu du sitemap produisent un comportement documenté et ne fuitent pas. Valide FR-12.
 - **SM-4 :** Le corpus produit des métadonnées cohérentes et vérifiables dans les artefacts publics ; la première release ne crée pas de nouvelle projection AEO. Valide FR-13 et FR-14.
