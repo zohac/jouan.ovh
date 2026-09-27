@@ -26,7 +26,7 @@ resolvesGap: "absence de document d'architecture (readiness 2026-09-27, action A
 | --- | --- | --- | --- |
 | **AD-01** | Le blog reste un site **statique** sur `@nuxt/content` v3. Aucun CMS, aucune base, aucun serveur à l'exécution. | PRD NFR-1, NFR-2 ; PRD §12. | Interdit tout ajout de dépendance serveur. |
 | **AD-02** | `isIndexableBlogEntry` reste **autonome et non sérialisable-importable**. | Elle est passée à `defineSitemapSchema({ filter })` et `@nuxtjs/sitemap` la sérialise via `Function#toString()`. | **Aucune importation, aucune constante externe.** Voir §2. |
-| **AD-03** | Le contrat de publication est un **resolver à deux couches** : un prédicat booléen autonome (couche A) et un resolver d'état riche (couche B) qui le consomme. | La couche A est contrainte par la sérialisation ; la couche B a besoin d'un état structuré que les pages consomment. | Dépendance **B → A uniquement**. A ne dépend de rien. |
+| **AD-03** | Le contrat de publication est un **resolver à deux couches** : un prédicat booléen autonome (couche A) et un resolver d'état riche (couche B) qui produit l'état. | La couche A est contrainte par la sérialisation ; la couche B a besoin d'un état structuré que les pages consomment. | **Aucune dépendance entre les deux couches.** Chacune est autonome. > **Amendé le 2026-09-27 (story 16.2 livrée).** Ce tableau disait « couche B **qui le consomme** » et « Dépendance **B → A uniquement** ». C'est matériellement faux : `resolveBlogVisibility` n'appelle **jamais** `isIndexableBlogEntry`, car T3.3 l'interdit — la couche A étant sérialisée, B ne peut ni l'importer ni la déléguer. B duplique donc le test de date verbatim et ne dépend que de `hasNoindexDirective` et `getBlogRobotsDirective`, qui sont des **frères** de A, pas A. `A --> B` du diagramme §4 est de même un graphe de dépendance faux. L'invariant réellement tenu est **l'équivalence logique** `isIndexableBlogEntry(x) ≡ resolveBlogVisibility(x).inSitemap`, à prouver par confrontation des artefacts en 16.7. |
 | **AD-04** | `visibility` est le champ qui sépare confidentialité et indexabilité. `noindex` et `sitemap` ne le déduisent pas. | PRD FR-12. | Interdit de déduire un état d'un simple nom de champ. |
 | **AD-05** | Le catch-all `/blog/[...slug]` ne porte **que** les articles. Les hubs sont des routes Vue dédiées. | `brownfield.md` §2. | Un slug d'article ne peut être `ia`, `engineering`, `automatisation` sans arbitrage. |
 | **AD-06** | Toute relation future est **filtrée avant le rendu**, jamais après. | `crawlLinks: true` (nuxt.config.ts:787) crée une route dès qu'un lien est trouvé dans le HTML. | Voir §5. |
@@ -150,18 +150,28 @@ Le champ est donc **mort**. Il ne doit pas être lu par la couche B : la source 
 ```mermaid
 flowchart TD
   DOC["Document blog"] --> A["isIndexableBlogEntry<br/>(entry, now?) → boolean<br/>autonome, sérialisée"]
-  DOC --> B["resolveBlogVisibility<br/>(entry, now?) → VisibilityState"]
-  A --> B
-  B --> USE1["Pages : state.renderable"]
+  DOC --> B["resolveBlogVisibility<br/>(entry, now?) → BlogVisibilityState"]
+  A -.->|"équivalence logique, aucune dépendance<br/>A(x) ≡ B(x).inSitemap"| B
+  B --> USE1["HTML / 404 : state.production"]
   B --> USE2["Pages : state.discoverable"]
-  B --> USE3["Pages : state.inSitemap"]
-  B --> USE4["Pages : state.robotsDirective"]
-  B --> USE5["Couches futures : diffusable sans indexation"]
+  B --> USE3["Sitemap + AEO : state.inSitemap"]
+  B --> USE4["Meta robots : state.robots"]
+  B --> USE5["Flux futur : state.feedable"]
 ```
+
+> **Amendé le 2026-09-27 (story 16.2 livrée).** Deux corrections materialize. L'arête `A --> B`
+> était un **graphe de dépendance** et est fausse : B n'appelle jamais A (voir AD-03), la
+> duplication du test de date étant la contrepartie obligatoire de la sérialisation. Elle est
+> remplacée par une arête en pointillé portant l'invariant réellement tenu, l'équivalence
+> logique. Les quatre noms de surface étaient ceux d'une **proposition** que 16.2 a écartée :
+> `state.renderable` → `state.production` et `state.robotsDirective` → `state.robots`, les noms
+> retenus par §4.1. `USE5` est le champ `feedable`, et non « diffusable sans indexation » : la
+> matrice leur donne `✗` pour tout article `noindex` ou `sitemap: false`.
 
 ### 4.1 Forme de l'état
 
-Contrat proposé par cette architecture, à confirmer en story 16.2 :
+**Confirmée en story 16.2 (2026-09-27).** La forme ci-dessous est celle livrée dans
+`app/utils/blog-indexability.ts` ; elle ne varie plus.
 
 ```ts
 type BlogVisibilityState = {
@@ -180,6 +190,11 @@ type BlogVisibilityState = {
   feedable: boolean;
 };
 ```
+
+`inSitemap` est le nom retenu plutôt que `indexable` pour ne pas confondre cette couche avec
+le champ homonyme de `SeoContentRouteState` (`nuxt.config.ts`), brownfield et renommé hors
+périmètre. Le resolver est **total et ne lève jamais** : une entrée nulle, malformée ou inconnue
+renvoie l'état le plus restrictif, `production: "absent"`.
 
 `production: "absent"` couvre `draft: true`, date future et `visibility: private` — les trois se
 comportent identiquement en T0 (404 direct, preview séparée).
@@ -270,31 +285,61 @@ potentiellement indexable. Règle : **filtrer, puis rendre**. Jamais l'inverse.
 
 ## 6. Couches applicatives
 
-### 6.1 Schéma du contenu — `content.config.ts`
+### 6.1 Schéma du contenu — `app/utils/blog-content-contract.ts`
 
-Collection `blog`, `type: "page"`, `source: "blog/**"`. `type: "page"` fournit déjà
-`title`, `description`, `path`, `body`.
+> **Amendé le 2026-09-27 (story 16.1 livrée).** Le schéma ne vit plus dans `content.config.ts` :
+> `defineCollection` n'est utilisable qu'une fois le module Content initialisé, donc jamais au
+> chargement de la configuration Nuxt, et le contrat doit au contraire y être importable pour
+> être exécuté. `content.config.ts` est réduit au câblage : `blog`, `type: "page"`,
+> `source: "blog/**"`, `schema: blogContentSchema`. `type: "page"` fournit déjà `title`,
+> `description`, `path`, `body`.
 
-Champs T0 à valider (FR55, story 16.1) : `date` (ISO `YYYY-MM-DD`, calendrier valide),
+**Le schéma doit être typé ET exécuté.** `@nuxt/content` v3 lit `content.config.ts` pour dériver
+les colonnes SQLite et les types publics, mais ne valide aucun document : `defineCollection`
+appelle `toJSONSchema`, et la boucle d'ingestion (`module.mjs:3301-3305`) transforme toute
+exception en `logger.warn("… is ignored because parsing is failed")`. Un point d'application
+explicite est donc obligatoire, à deux endroits :
+
+- `scanContentRouteState()` (`nuxt.config.ts`) — le seul échec **dur** : il parcourt le disque au
+  chargement de la configuration, avant tout calcul de route, et hors de tout `try/catch`.
+- le hook `content:file:afterParse` — rejoue la validation à chaque relecture de fichier, donc
+  immédiatement en développement. Son exception n'est **pas** un échec de build.
+
+Champs T0 validés (FR55, story 16.1) : `date` (ISO `YYYY-MM-DD`, calendrier valide),
 `updated` (optionnel, `>= date`), `author`, `pillar` (enum fermé), `format` (enum fermé),
-`tags` (kebab-case), `draft`, `visibility`.
+`tags` (kebab-case, au moins un), `draft` (**requis**), `visibility`. `title` et `description`
+ne sont pas redéclarés dans le schéma (AC 16.1 #1) mais sont contrôlés sur l'entrée brute par
+`collectRawFrontmatterIssues`, seule façon de les valider sans les redéclarer.
 
-À retirer ou geler : `read` (non-goal PRD §12, absent de FR55), `sitemapExcluded` (mort, §3.1).
-`updatedAt` reste un alias interne dérivé par le hook `content` (`nuxt.config.ts:690-695`) pour
-`nuxt-ai-ready`, et n'est pas une source éditoriale.
+Gelés, pas retirés : `read` (PRD §12 interdit le *calcul*, pas la valeur ; `reading_time_est` du
+JSON-LD en dépend), `image` (rendue par les deux templates et le JSON-LD), `sitemapExcluded`
+supprimé comme mort (§3.1). `updatedAt` reste un alias interne dérivé par le hook `content`
+pour `nuxt-ai-ready`, et n'est pas une source éditoriale.
 
-Contraintes de validation existantes à préserver :
-- `sitemap.loc` est interdit (`superRefine`, lignes 89-98) — le chemin réel de l'entrée Content fait foi.
-- `updated >= date` est déjà validé (`.refine`, lignes 85-89).
-- `date` et `updated` valident déjà le format **et** la réalité calendaire (rejet de `2026-02-30`).
+Contraintes de validation à préserver :
+- `sitemap.loc` et `sitemap.lastmod` sont interdits, dans leurs formes imbriquée **et** pointée —
+  le chemin réel de l'entrée Content fait foi, et le `lastmod` est dérivé de `updated ?? date`.
+- `publishedAt` est refusé, ainsi que les alias `published`, `pubDate`, `datePublished`,
+  `published_date` : `date` est le seul champ de publication.
+- `updated >= date` est validé (`.refine`).
+- `date` et `updated` valident le format **et** la réalité calendaire (rejet de `2026-02-30`),
+  en ne produisant qu'un message par champ.
 
 ### 6.2 Pages
 
+> **Amendé le 2026-09-27 (story 16.2 livrée).** La bascule de `/blog` et de la homepage sur
+> `discoverable` a été réalisée **dans cette story**, et non en 16.3 / 16.5 : la colonne
+> « Listes et homepage » de la matrice normative (§4.2) couvre explicitement la homepage, et
+> laisser ces pages sur `isIndexableBlogEntry` aurait créé un second filtre — exactement ce
+> qu'AD-03 interdit. 16.3 et 16.5 travaillent donc sur des pages déjà branchées sur le
+> resolver ; leur périmètre est la composition éditoriale (promesse, empty state, carte), pas
+> le prédicat.
+
 | Route | Rôle | Points d'attention |
 | --- | --- | --- |
-| `app/pages/blog/index.vue` | Index, promesse, 3 derniers publics, empty state | Utilise `isIndexableBlogEntry` (l. 97) mais **pas** la couche B → à brancher sur le resolver (story 16.3) |
-| `app/pages/blog/[...slug].vue` | Article, `BlogPosting` (l. 210-259), robots (l. 257) | Enrichir l'objet existant, **jamais** un second bloc JSON-LD |
-| `app/pages/index.vue` | Journal de 3 articles (l. 533) | Même bascule vers la couche B (story 16.5) |
+| `app/pages/blog/index.vue` | Index, promesse, 3 derniers publics, empty state | Filtre sur `state.discoverable` (resolver 16.2) ; la promesse et l'empty state restent à porter en 16.3 |
+| `app/pages/blog/[...slug].vue` | Article, `BlogPosting` (l. 210-259), robots (`state.robots`) | Enrichir l'objet existant, **jamais** un second bloc JSON-LD ; CTA à conditionner à `discoverable` en 16.4 (D-09) |
+| `app/pages/index.vue` | Journal de 3 articles | Filtre sur `state.discoverable` (resolver 16.2) ; non-régression à prouver en 16.5 |
 | `app/pages/about.vue` | `ProfilePage`, auteur canonique | Aucun alias `/a-propos` en T0 |
 
 ### 6.3 Design system — composants mobilisés
@@ -375,10 +420,10 @@ HTML, dans `llms-full.txt` et dans la liste. C'est le rôle de la story 16.7.
 | Story | Décision(s) / section |
 | --- | --- |
 | 16.1 contrat + date | §6.1, AD-09, §3.1 (retrait du champ mort) |
-| 16.2 resolver | **AD-02, AD-03, §2, §4** — la contrainte de sérialisation la gouverne |
-| 16.3 `/blog` | §6.2, §6.3, AD-03 (brancher la couche B) |
+| 16.2 resolver | **AD-02, AD-03, §2, §4, §6.2** — la contrainte de sérialisation la gouverne ; `/blog` et la homepage y sont déjà branchés |
+| 16.3 `/blog` | §6.2, §6.3, AD-03 (promesse, empty state, carte — le prédicat est livré par 16.2) |
 | 16.4 article + `BlogPosting` | §6.2, §7, §4.3 (**D-09**, CTA ⟺ `discoverable`) |
-| 16.5 non-régression | §7, §3 (les neuf appelants) |
+| 16.5 non-régression | §7, §3 (le journal de la homepage consomme déjà la couche B) |
 | 16.6 fixtures + gate | §9 |
 | 16.7 assertions artefacts | §3, §9 — **seule preuve de cohérence inter-couches** |
 | 16.8 revue navigateur | §6.3, §6.4 |
@@ -388,8 +433,9 @@ HTML, dans `llms-full.txt` et dans la liste. C'est le rôle de la story 16.7.
 
 1. **Les numéros de ligne sont ceux de l'état du 2026-09-27** et deviennent faux dès la première
    story. Les symboles et les contrats, eux, sont durables.
-2. **La forme exacte de `BlogVisibilityState` (§4.1) est une proposition**, à confirmer en story 16.2.
-   Ce qui est normatif, c'est la table de correspondance (§4.2).
+2. **La forme exacte de `BlogVisibilityState` (§4.1) était une proposition** — elle a été
+   confirmée en story 16.2 le 2026-09-27 et ne varie plus. Ce qui reste normatif est la table de
+   correspondance (§4.2).
 3. **Aucun composant nouveau n'est spécifié ici.** Si une story en introduit un, ce document doit
    être amendé — sinon il devient faux.
 4. **La surface de preview n'est ni spécifiée ni implémentée.** Le PRD exige que sa politique soit

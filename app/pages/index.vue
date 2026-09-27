@@ -355,7 +355,7 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 import { NuxtLink, ZExternalLink } from "#components";
 import { useAnalytics } from "~/composables/useAnalytics";
 import { SITE } from "~/data/site";
-import { isIndexableBlogEntry } from "~/utils/blog-indexability";
+import { resolveBlogVisibility } from "~/utils/blog-indexability";
 
 const { track } = useAnalytics();
 
@@ -525,12 +525,14 @@ const stats = [
   { id: "stat-3", value: "QA", label: "culture d'automatisation & zéro régression" },
 ];
 
-// Récupération des 3 derniers articles publiés/indexables du journal technique.
-// Le filtre évite qu'un brouillon, une date future ou une entrée noindex soit lié
-// depuis l'accueil puis réintroduit dans les routes prérendues.
+// Récupération des 3 derniers articles découvrables du journal technique, triés par date
+// décroissante. Le filtre est `discoverable` du resolver — le même que celui de la liste
+// `/blog`, sinon cette page garderait son propre prédicat et en créerait un second.
+// Il évite qu'un brouillon, une date future, une entrée privée ou un article noindex soit
+// lié depuis l'accueil puis réintroduit dans les routes prérendues par `crawlLinks`.
 const { data: articles } = await useAsyncData("home-articles", async () => {
   const entries = await queryCollection("blog").order("date", "DESC").all();
-  return entries.filter((entry) => isIndexableBlogEntry(entry)).slice(0, 3);
+  return entries.filter((entry) => resolveBlogVisibility(entry).discoverable).slice(0, 3);
 });
 
 const siteUrl = useSiteUrl();

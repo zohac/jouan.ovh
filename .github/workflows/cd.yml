@@ -75,6 +75,7 @@ jobs:
             content/blog/__ci-seo-sitemap-null.md
             content/blog/__ci-seo-draft.md
             content/blog/__ci-seo-future.md
+            content/blog/__ci-seo-private.md
           )
           for fixture_path in "${fixture_paths[@]}"; do
             if [ -e "$fixture_path" ]; then
@@ -255,6 +256,23 @@ jobs:
 
           Article temporaire futur.
           EOF
+          cat > content/blog/__ci-seo-private.md <<'EOF'
+          ---
+          title: Article prive CI
+          description: Fixture CI visibility private.
+          date: 2026-01-10
+          author: simon-jouan
+          pillar: ai-systems
+          format: reference
+          draft: false
+          visibility: private
+          tags:
+            - ci
+          ---
+
+          Article temporaire prive, marqueur de corps distinctif.
+          MARQUEUR_VISIBILITY_PRIVATE
+          EOF
           pnpm exec nuxi prepare
           pnpm generate
 
@@ -347,6 +365,16 @@ jobs:
             __ci-seo-sitemap-excluded \
             __ci-seo-sitemap-null \
             __ci-seo-draft \
+            __ci-seo-future \
+            __ci-seo-private; do
+            assert_status "/blog/${slug}.md" 404
+          done
+          # 404 en acces direct : uniquement les trois causes de `production: "absent"`.
+          # `noindex`, `robots: false` et `sitemap: false` servent du HTML 200 — les
+          # distinguer ici est le seul moyen de couvrir la ligne 3 de la matrice.
+          for slug in __ci-seo-draft __ci-seo-future __ci-seo-private; do
+            assert_status "/blog/${slug}" 404
+          done
 
       # CNAME et _headers sont émis par Nitro depuis public/. Ne jamais les recopier
       # après le build : une copie CI pourrait écraser un artefact généré par un module.
@@ -547,6 +575,7 @@ jobs:
               '__ci-seo-sitemap-null',
               '__ci-seo-draft',
               '__ci-seo-future',
+              '__ci-seo-private',
           ):
               assert not (public / 'blog' / f'{slug}.md').exists(), f'Markdown noindex/exclu présent : {slug}'
               assert f'/blog/{slug}' not in llms_text, f'lien AI noindex/exclu présent : {slug}'
@@ -579,16 +608,26 @@ jobs:
               'Fixture CI sitemap null.',
               'Fixture CI brouillon.',
               'Fixture CI future.',
+              'Fixture CI visibility private.',
           ):
               assert description not in llms_text, f'description d’article exclu publiée dans llms.txt : {description}'
               assert description not in sitemap_md_text, f'description d’article exclu publiée dans sitemap.md : {description}'
 
-          # Contrôle de confidentialité de bout en bout — appliqué en même temps que la
-          # fixture `__ci-seo-private`, story 16.2. Le balayage de corps ne cherche que le
-          # **corps** de l'article : or une carte de `/blog` ou du journal de l'accueil est
-          # composée du `title` et de la `description`, jamais du corps. Une régression de
-          # `discoverable` listerait donc l'article `private` — titre et description dans les
-          # deux pages — sans que le balayage la voie, et la CI resterait verte.
+          # Contrôle de confidentialité de bout en bout. Le balayage de corps plus bas ne
+          # cherche que le **corps** de l’article : or une carte de `/blog` ou du journal
+          # de l’accueil est composée du `title` et de la `description`, jamais du corps. Une
+          # régression de `discoverable` listerait donc l’article `private` — titre et
+          # description dans les deux pages — sans que le balayage de corps la voie, et la
+          # CI resterait verte. Les deux métadonnées sont donc vérifiées explicitement dans
+          # les surfaces qui les exposent.
+          for listing in ('blog/index.html', 'index.html'):
+              listing_html = (public / listing).read_text(encoding='utf-8')
+              assert 'Article prive CI' not in listing_html, f'titre private listé dans {listing}'
+              assert 'Fixture CI visibility private.' not in listing_html, f'description private listée dans {listing}'
+          for artifact, name in ((llms_text, 'llms.txt'), (llms_full_text, 'llms-full.txt'), (sitemap_md_text, 'sitemap.md')):
+              assert 'Article prive CI' not in artifact, f'titre private publié dans {name}'
+              assert 'Fixture CI visibility private.' not in artifact, f'description private publiée dans {name}'
+
           for marker in ('phc_', 'NUXT_PUBLIC_', 'posthogKey', 'access_key', 'accessKey', 'honeypot', 'jouan_consent_telemetry'):
               assert marker not in llms_text, f'marqueur privé dans llms.txt : {marker}'
               assert marker not in llms_full_text, f'marqueur privé dans llms-full.txt : {marker}'
@@ -685,11 +724,16 @@ jobs:
                   sitemap_value is None
                   and re.search(r'^sitemap:\s*(?:null|~)\s*$', frontmatter, re.MULTILINE)
               )
+              # Matrice normative de visibility (architecture §4.2 / content-contract §7).
+              # `production` couvre `draft`, date future et `visibility: private` ; les trois
+              # se comportent identiquement en T0 et doivent toutes produire zéro HTML.
+              visibility = scalar(frontmatter, 'visibility')
               published = scalar(frontmatter, 'draft') is not True and published_at <= paris_today
+              production = published and visibility != 'private'
               # `sitemap: false`/`null` ne retire PAS le HTML : c'est un contrôle de
-              # propreté de découverte, pas de confidentialité. Seul `noindex` le retire.
-              indexable = published and not robots_noindex and not noindex and not sitemap_excluded
-              html_expected = published
+              # propreté de découverte, pas de confidentialité. Seul `noindex`/`private` le retirent.
+              indexable = production and not robots_noindex and not noindex and not sitemap_excluded
+              html_expected = production
               path = article_path(file)
               loc = f'{canonical_origin}{path}'
               html = html_path(path)
@@ -721,6 +765,27 @@ jobs:
                   else:
                       assert not has_noindex_meta(html), f'meta noindex inattendu : {path}'
 
+          # `visibility: private` est le seul contrôle de confidentialité de la matrice :
+          # son corps ne doit fuiter dans aucun artefact, pas seulement dans le sitemap.
+          private_marker = 'MARQUEUR_VISIBILITY_PRIVATE'
+          for artifact in (llms_text, llms_full_text, sitemap_md_text):
+              assert private_marker not in artifact, 'corps visibility private publié dans un artefact AEO'
+          # Le balayage couvre **tous** les formats d'artefacts publiables, pas seulement
+          # `.html` et `.md`. Un build Nitro écrit les payloads de route en `_payload.json`
+          # — qui contiendrait le corps de l'article — et les artefacts AEO sont des `.txt`.
+          # Un balayage limité à deux extensions laissait donc passer le cas de fuite le
+          # plus probable : HTML absent, payload présent et publié.
+          leak_suffixes = {'.html', '.md', '.json', '.txt', '.xml'}
+          for candidate in public.rglob('*'):
+              if candidate.is_file() and candidate.suffix.lower() in leak_suffixes:
+                  assert private_marker not in candidate.read_text(encoding='utf-8', errors='ignore'), (
+                      f'fuite visibility private : {candidate.relative_to(public)}'
+                  )
+          # Un article `private` ne doit pas non plus produire de payload de route : sa
+          # présence serait la trace directe d'un prérendu exécuté.
+          assert not (public / 'blog' / '__ci-seo-private' / '_payload.json').exists(), (
+              'payload de route présent pour un article visibility private'
+          )
 
           for node in nodes:
               loc = node.findtext(f'{{{namespace}}}loc')
@@ -883,7 +948,8 @@ jobs:
             content/blog/__ci-seo-sitemap-excluded.md \
             content/blog/__ci-seo-sitemap-null.md \
             content/blog/__ci-seo-draft.md \
-            content/blog/__ci-seo-future.md
+            content/blog/__ci-seo-future.md \
+            content/blog/__ci-seo-private.md
           rm -rf content/blog/__ci-seo-nested
 
       - name: Clean build for deployment

@@ -1,5 +1,5 @@
 import { getRequestURL } from "h3";
-import { isIndexableBlogEntry, isPublishedBlogEntry } from "../../app/utils/blog-indexability";
+import { resolveBlogVisibility } from "../../app/utils/blog-indexability";
 import { removeAeoLink } from "../../app/utils/aeo-markdown";
 
 /**
@@ -61,7 +61,19 @@ export default defineNitroPlugin((nitroApp) => {
 
     const route = pathname.replace(/\/+$/u, "").replace(/\.md$/u, "") || "/";
     const entry = await queryCollection(event, "blog").path(route).first();
-    if (!entry || !isPublishedBlogEntry(entry) || isIndexableBlogEntry(entry)) {
+    if (!entry) {
+      return;
+    }
+    // La polarité d'origine est restaurée explicitement : ce plugin ne nettoie que les
+    // jumeaux Markdown d'articles **publiés mais exclus de la découverte**. Réduire la
+    // garde à `!inSitemap` élargirait son périmètre aux articles `draft`, à venir et
+    // `private`, dont la réponse est un 404 — le middleware `aeo-content-visibility`
+    // intercepterait, mais la validité de ce plugin dépendrait alors de l'ordre
+    // middleware/plugin, un couplage invisible. Les deux termes sont donc conservés :
+    // `production === "absent"` (équivalent de `!isPublishedBlogEntry`) et `inSitemap`
+    // (équivalent de `isIndexableBlogEntry`).
+    const state = resolveBlogVisibility(entry);
+    if (state.production === "absent" || state.inSitemap) {
       return;
     }
 

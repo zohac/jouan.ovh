@@ -88,13 +88,16 @@
 // au build par useAsyncData). La vue article (/blog/[...slug]) est la story 6.2.
 import { NuxtLink } from "#components";
 import { SITE } from "~/data/site";
-import { isIndexableBlogEntry } from "~/utils/blog-indexability";
+import { resolveBlogVisibility } from "~/utils/blog-indexability";
 
-// Articles publiés, indexables et triés par date décroissante. Le même filtre que
-// le schéma Sitemap empêche un contenu noindex d'être lié puis-prérendu via le crawler.
+// Articles découvrables, triés par date décroissante. Le filtre est `discoverable` du
+// resolver, et non le `isIndexableBlogEntry` du schéma Sitemap : les deux prédications
+// divergent sur `sitemap: false`, où la matrice impose la présence dans les listes.
+// `crawlLinks: true` suit les liens du HTML généré, donc lier ici suffirait à recréer
+// une route pour un contenu `noindex`.
 const { data: articles, error } = await useAsyncData("blog-list", async () => {
   const entries = await queryCollection("blog").order("date", "DESC").all();
-  return entries.filter((entry) => isIndexableBlogEntry(entry));
+  return entries.filter((entry) => resolveBlogVisibility(entry).discoverable);
 });
 
 // `formatDate` (date ISO → français) est un util auto-importé partagé (app/utils/).

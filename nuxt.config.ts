@@ -1,6 +1,6 @@
 import slugify from "slugify";
 import { parseDocument, stringify } from "yaml";
-import { isIndexableBlogEntry, isPublishedBlogEntry, isSitemapExcluded } from "./app/utils/blog-indexability";
+import { resolveBlogVisibility } from "./app/utils/blog-indexability";
 import { removeAeoLink } from "./app/utils/aeo-markdown";
 import { SITE } from "./app/data/site";
 import { normalizeSiteUrl } from "./app/utils/site-url";
@@ -67,8 +67,14 @@ type SeoContentRouteState = {
 };
 
 // Relever à chaque changement de la sémantique de `prerender`/`indexable` calculés par
-// `scanContentRouteState()`.
-const SEO_ROUTE_CACHE_VERSION = 1;
+// `scanContentRouteState()`. La version 2 est la story 16.2 : `prerender` vaut désormais
+// `state.production === "present"` et non `!isSitemapExcluded`, donc un cache écrit par
+// une version antérieure porte `prerender: true` pour un article `visibility: private`
+// (que `isPublishedBlogEntry` ne connaissait pas) et `prerender: false` pour un article
+// `sitemap: false`. Le cache n'étant restauré que si le scan n'aboutit pas — son `catch`
+// avale toute erreur non préfixée `[content]` — un cache périmé réintroduirait exactement
+// la fuite que l'AC #5 ferme.
+const SEO_ROUTE_CACHE_VERSION = 2;
 
 const projectDirectory = nodeProcess.cwd();
 const seoRouteCachePath = nodePath.resolve(projectDirectory, ".data/content/seo-routes.json");
@@ -484,17 +490,16 @@ function assertBlogContentContract(content: unknown, source: string, mode: "scan
 }
 
 /**
- * Enregistre le titre d'un article du corpus indexable et échoue sur collision.
+ * Enregistre le titre d'un article du corpus listé et échoue sur collision.
  *
- * Deux articles publiés distincts ne peuvent pas partager le même `title` : le
+ * Deux articles découvrables distincts ne peuvent pas partager le même `title` : le
  * titre alimente les cartes, le JSON-LD et les artefacts AEO, donc une collision
  * produirait deux artefacts publics indiscernables côte à côte dans `/blog`. Seul le
- * corpus **indexable** est donc contraint, selon l'arbitrage D3 : un brouillon, un
- * article à venir ou un article `noindex` peut réutiliser un titre. La prédication est
- * `isIndexableBlogEntry` — la définition reprise à l'identique par les assertions CI.
- * (La story 16.2 fera évoluer cette prédication vers `state.discoverable` du resolver,
- * qui distingue `sitemap: false` — découvrable donc listé, mais absent du sitemap —
- * de l'absence totale de production. Arbitrage D6.)
+ * corpus **découvrable** — celui que les listes exposent — est donc contraint : un
+ * brouillon, un article à venir, un article `private` ou un article `noindex` peut
+ * réutiliser un titre. La prédication est `state.discoverable` du resolver
+ * (`app/utils/blog-indexability.ts`), et non `isIndexableBlogEntry` : les deux divergent
+ * sur `sitemap: false`/`null`, qui est découvrable donc listé, mais absent du sitemap.
  *
  * La clé est normalisée (`blogTitleKey`) et la map est auto-réparatrice : le hook
  * `content:file:afterParse` écrit aussi dans cette structure, à chaque relecture de
@@ -528,9 +533,9 @@ function registerPublicBlogTitle(title: string, source: string): void {
   const existing = contentSourcePathByPublicTitle.get(key);
   if (existing !== undefined && existing !== source) {
     throw new Error(
-      `[content] Collision de titre dans le corpus indexable : « ${title} » est déclaré par ${existing} et ${source}. ` +
-        "Renommez l'un des deux titres ; seuls un brouillon, un article à venir ou un article " +
-        "`noindex`/`robots: false` peuvent réutiliser un titre déjà publié.",
+      `[content] Collision de titre dans le corpus listé : « ${title} » est déclaré par ${existing} et ${source}. ` +
+        "Renommez l'un des deux titres ; seuls un brouillon, un article à venir, un article " +
+        "`visibility: private` ou un article `noindex`/`robots: false` peuvent réutiliser un titre déjà listé.",
     );
   }
   const previousKey = publicBlogTitleKeyBySource.get(source);
@@ -542,11 +547,11 @@ function registerPublicBlogTitle(title: string, source: string): void {
 }
 
 /**
- * Retracte la réservation de titre d'un fichier qui sort du corpus indexable.
+ * Retracte la réservation de titre d'un fichier qui sort du corpus listé.
  *
- * Sans cet appel, passer un article en `draft`, en date future, en `noindex: true` ou en
- * `robots: false` en développement laisserait sa clé réservée : un article suivant portant le
- * même titre lèverait alors une collision fantôme, exception que `@nuxt/content` avale en
+ * Sans cet appel, passer un article en `draft`, en date future ou en `visibility: private`
+ * en développement laisserait sa clé réservée : un article suivant portant le même titre
+ * lèverait alors une collision fantôme, exception que `@nuxt/content` avale en
  * `logger.warn` — donc l'article disparaît silencieusement de `/blog`, du sitemap et des
  * artefacts AEO. Le scan n'en a pas besoin : il vide les deux maps à chaque exécution.
  */
@@ -663,12 +668,11 @@ function scanContentRouteState(): void {
         // décision de route : la garantie doit couvrir la collection entière, pas seulement
         // les fichiers dont `contentRouteFromFile()` dérive une route. Placée plus bas, elle
         // serait plus étroite que le reste du contrat — deux articles de même titre
-        // passeraient le build alors que `/blog` affiche deux cartes homonymes. Le corpus
-        // contraint est le corpus **indexable**, selon l'arbitrage D3 : c'est la définition
-        // reprise à l'identique par les assertions CI, et un article `noindex`, exclu du
-        // sitemap ou à venir peut réutiliser un titre publié. (La story 16.2 fera évoluer ce
-        // prédicat vers `state.discoverable` du resolver — arbitrage D6.)
-        if (typeof metadata?.title === "string" && metadata.title !== "" && isIndexableBlogEntry(metadata)) {
+        // passeraient le build alors que `/blog` affiche deux cartes homonymes. Le filtre est
+        // le même qu'ailleurs (`state.discoverable`) : un article `noindex`, `private` ou à
+        // venir ne réserve pas son titre.
+        const blogState = resolveBlogVisibility(metadata);
+        if (typeof metadata?.title === "string" && metadata.title !== "" && blogState.discoverable) {
           try {
             registerPublicBlogTitle(metadata.title, sourcePath);
           } catch (error) {
@@ -697,20 +701,24 @@ function scanContentRouteState(): void {
         throw new Error(`[content] Collision de route Content : ${route} (${existing.source} et ${sourcePath}).`);
       }
 
-      // `draft` et date future sont les deux seules causes d'absence de HTML en T0 : le
-      // contrôle de confidentialité `visibility: private` est livré par le resolver de la
-      // story 16.2, qui n'est pas dans ce commit. `!metadata` est conservé car il porte le
-      // narrowing TypeScript des lectures suivantes.
-      if (!metadata || !isPublishedBlogEntry(metadata)) {
+      // Une seule lecture d'état gouverne le HTML : `draft`, date future et
+      // `visibility: private` sont indiscernables pour le visiteur. `resolveBlogVisibility`
+      // est total — il remplace toute entrée non-objet par `{}` — donc l'ordre des deux
+      // lignes est sans effet sur la sécurité ; le `!metadata` est conservé après l'appel
+      // parce qu'il porte le narrowing TypeScript des lectures suivantes.
+      const state = resolveBlogVisibility(metadata);
+      if (!metadata || state.production === "absent") {
         contentRouteState.delete(route);
         contentSourcePathByRoute.delete(route);
         continue;
       }
 
-      const sitemapExcluded = isSitemapExcluded(metadata);
+      // Mapping nominatif de l'état (AC 16.2 #8). `prerender` n'a pas d'équivalent dans
+      // l'état : `noindex` a du HTML mais pas de sitemap, `sitemap: false` l'inverse.
+      // `prerender: !sitemapExcluded` retirait à tort le HTML d'un article `sitemap: false`.
       contentRouteState.set(route, {
-        prerender: !sitemapExcluded,
-        indexable: !sitemapExcluded && isIndexableBlogEntry(metadata),
+        prerender: state.production === "present",
+        indexable: state.inSitemap,
         source: sourcePath,
       });
       contentSourcePathByRoute.set(route, sourcePath);
@@ -999,10 +1007,8 @@ export default defineNuxtConfig({
         delete context.content.updatedAt;
       }
 
-      // `draft` et date future sont les deux seules causes d'absence de HTML dans ce commit ;
-      // le contrôle de confidentialité `visibility: private` arrive avec le resolver de la
-      // story 16.2.
-      if (!isPublishedBlogEntry(context.content)) {
+      const state = resolveBlogVisibility(context.content);
+      if (state.production === "absent") {
         contentRouteState.delete(normalizedPath);
         // Purges symétriques à celles du scan : `contentSourcePathByRoute` alimente
         // `enrichAiReadyArticleFrontmatter`, qui lirait sinon le frontmatter d'un fichier
@@ -1012,36 +1018,32 @@ export default defineNuxtConfig({
         }
         return;
       }
-      // La réservation de titre est libérée sur **toute** sortie du corpus contraint, et pas
-      // seulement sur l'absence de HTML. La branche « publié mais non indexable » — un
-      // article passant à `noindex: true` ou `robots: false` en développement — satisfait ni
-      // la condition de retraction ci-dessous ni celle d'enregistrement plus bas : rien ne se
-      // passait, et la clé restait réservée. Un article suivant portant le même titre
-      // déclenchait alors une collision fantôme dont l'exception, avalée, le faisait
-      // disparaître de `/blog`.
-      if (source && !isIndexableBlogEntry(context.content)) {
+      // La réservation de titre est libérée sur **toute** sortie du corpus découvrable, et
+      // pas seulement sur `production === "absent"`. La branche « présent mais non
+      // découvrable » — un article passant à `noindex: true` ou `robots: false` en
+      // développement — satisfait ni la condition de retraction ci-dessous ni celle
+      // d'enregistrement plus bas : rien ne se passait, et la clé restait réservée. Un
+      // article suivant portant le même titre déclenchait alors une collision fantôme
+      // dont l'exception, avalée, le faisait disparaître de `/blog`.
+      if (source && !state.discoverable) {
         retractPublicBlogTitle(source);
       }
-      // Seul le corpus indexable réserve un titre — la même prédication que le scan
-      // (`isIndexableBlogEntry`, arbitrage D3), et non la simple publication. Le prédicat du
-      // schéma Sitemap reste le même. (La story 16.2 fera évoluer ce prédicat vers
-      // `state.discoverable` du resolver — arbitrage D6.)
+      // Seul le corpus découvrable réserve un titre — la même prédication que le scan
+      // (`state.discoverable`), et non `isIndexableBlogEntry` : les deux divergent sur
+      // `sitemap: false`/`null`, découvrable donc listé mais absent du sitemap. Le
+      // prédicat du schéma Sitemap (`defineSitemapSchema({ filter })`) reste, lui,
+      // `isIndexableBlogEntry` : il est sérialisé par `Function#toString()` et ne peut
+      // donc pas être remplacé par le resolver (AD-02, Piège 2).
       // Le titre est lu sur le **frontmatter brut** : `context.content.title` peut être
       // synthétisé depuis le nom de fichier (`module.mjs:1150`), ce qui produirait une clé
       // d'unicité qui ne correspond à aucun titre déclaré.
       const declaredTitle = rawFrontmatter?.title;
-      if (
-        source &&
-        typeof declaredTitle === "string" &&
-        declaredTitle !== "" &&
-        isIndexableBlogEntry(context.content)
-      ) {
+      if (source && typeof declaredTitle === "string" && declaredTitle !== "" && state.discoverable) {
         registerPublicBlogTitle(declaredTitle, source);
       }
-      const sitemapExcluded = isSitemapExcluded(context.content);
       contentRouteState.set(normalizedPath, {
-        prerender: !sitemapExcluded,
-        indexable: !sitemapExcluded && isIndexableBlogEntry(context.content),
+        prerender: state.production === "present",
+        indexable: state.inSitemap,
         source,
       });
     },

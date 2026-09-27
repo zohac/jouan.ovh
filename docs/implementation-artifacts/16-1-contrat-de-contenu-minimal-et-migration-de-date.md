@@ -1,7 +1,10 @@
 # Story 16.1: Contrat de contenu minimal et migration de date
 
-Status: in-progress
+Status: done
 baseline_commit: 3b3f3b2adde8ce9459a256269572a0fea7e8845a
+delivery_commits:
+  - "cc933cb — lot 16.1 seul (ce fichier ne dépend d'aucun livrable 16.2)"
+  - "lot 16.2 — resolver, qui consomme `visibility` et fait basculer l'unicité de `title` vers `state.discoverable` (arbitrage D6)"
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

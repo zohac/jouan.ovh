@@ -168,8 +168,8 @@ development_status:
   # 16.1 et 16.2 parallélisables ; 16.3/16.4 en dépendent ; 16.5 ensuite ; 16.6 produit le build,
   # 16.7 et 16.8 l'inspectent en parallèle.
   epic-16: in-progress
-  16-1-contrat-de-contenu-minimal-et-migration-de-date: in-progress
-  16-2-resolver-de-visibility-deterministe: backlog
+  16-1-contrat-de-contenu-minimal-et-migration-de-date: done
+  16-2-resolver-de-visibility-deterministe: done
   16-3-homepage-blog-editoriale: ready-for-dev
   16-4-route-article-et-blogposting: backlog
   16-5-non-regression-homepage-seo-aeo-et-supply-chain: backlog

@@ -1,4 +1,4 @@
-import { isIndexableBlogEntry, isPublishedBlogEntry } from "../../app/utils/blog-indexability";
+import { resolveBlogVisibility } from "../../app/utils/blog-indexability";
 
 type SitemapInputUrl = {
   loc?: unknown;
@@ -35,13 +35,13 @@ export default defineNitroPlugin((nitroApp) => {
     const nonIndexablePaths = new Set([
       ...(runtimeConfig.seoNonIndexableContentRoutes ?? []).map(normalizeContentPath),
       ...entries
-        .filter((entry) => !isIndexableBlogEntry(entry))
+        .filter((entry) => !resolveBlogVisibility(entry).inSitemap)
         .map((entry) => (typeof entry.path === "string" ? normalizeContentPath(entry.path) : ""))
         .filter(Boolean),
     ]);
     const indexableLastmods = new Map(
       entries
-        .filter((entry) => isPublishedBlogEntry(entry) && isIndexableBlogEntry(entry))
+        .filter((entry) => resolveBlogVisibility(entry).inSitemap)
         .filter((entry) => typeof entry.path === "string" && typeof entry.date === "string")
         .map((entry) => [normalizeContentPath(entry.path), entry.updated ?? entry.date]),
     );
