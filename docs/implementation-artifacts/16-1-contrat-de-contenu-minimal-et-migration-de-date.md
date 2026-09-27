@@ -501,3 +501,14 @@ Voir § Piège 4 pour le diagnostic bloquant. Points de rupture rencontrés :
   verte, 56 routes avec fixtures CI puis 42 au clean build, les quatre blocs d'assertions du
   workflow rejoués localement et verts. Deux réserves consignées en `deferred-work.md` :
   `visibility` inerte jusqu'à 16.2, et la convention `.draft` pré-existante.
+- 2026-09-27: **Livraison en deux commits séparés** (`cc933cb` puis `a15a574`). L'ordre retenu
+  est 16.1 puis 16.2, après examen de l'ordre inverse : la story 16.2 déclare elle-même le
+  prérequis « 16.1 doit être commité, sinon `visibility` est absent du schéma et la couche A ne
+  peut pas le lire », et cette contrainte est confirmée par le code — `@nuxt/content` v3 expulse
+  toute clé non déclarée dans `content.meta`, donc un commit 16.2 seul aurait laissé le hook de
+  développement ignorer `visibility` **sans que le build le montre** (le scan lit le frontmatter
+  brut). Chaque commit est vert et rejouable : 42 routes, 0 erreur. `epics.md` est amendé : la
+  parallélisabilité annoncée de 16.1 et 16.2 n'a jamais été tenue, la dépendance réelle est
+  `16.2 → 16.1` pour le seul champ `visibility`. `docs/planning-artifacts/architecture-blog-editorial.md`
+  et `deferred-work.md` portent les corrections des deux lots dans le commit 16.2, les mêmes
+  fichiers mélangeant les deux périmètres.

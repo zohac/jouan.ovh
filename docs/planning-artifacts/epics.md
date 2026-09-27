@@ -1612,11 +1612,28 @@ deviner.
 
 **Réserves tracées :** FR-2 n'est implémenté qu'en E1 et FR-3 qu'en partie (le cycle de correction à
 quatre types du PRD n'a pas de story porteuse). Ces deux points sont des défauts de couverture
-identifiés par le readiness check du 2026-09-27 et ne sont pas clos par cette table.
+identifiés par le readiness check du 2026-09-27 et ne sont pas clos par cette table. S'y ajoute, à
+la même date, la **non-parallélisabilité de `16.1` et `16.2`** : l'affirmation « chemins de code
+disjoints » du bloc Séquencement a été corrigée, et la dépendance réelle est `16.2 → 16.1` pour le
+seul champ `visibility` (§ Séquencement ci-dessus).
 
 ### Stories — Epic 16
 
-> Séquencement : `16.1` et `16.2` sont parallélisables (chemins de code disjoints). `16.3` et `16.4` dépendent toutes deux de `16.1` + `16.2`. `16.5` consomme les quatre précédentes. `16.6` produit les fixtures et la gate, `16.7` inspecte le build statique produit par `16.6`, `16.8` effectue la revue navigateur sur ce même build puis rapporte. `16.7` et `16.8` sont parallélisables entre elles une fois `16.6` verte. Aucune story ne dépend d'une story future.
+> Séquencement : `16.1` et `16.2` **ne sont pas parallélisables** — **amendé le 2026-09-27 à la
+> revue**. Elles sont **séquentielles, `16.1` puis `16.2`**, et la raison est technique, pas
+> de confort. `16.2` consomme le champ `visibility`, que `16.1` déclare dans le schéma de
+> collection ; or `@nuxt/content` v3 n conserve au premier niveau que les clés déclarées et
+> expulse toute autre dans `content.meta`. Un commit `16.2` seul serait resté **vert** — le
+> scan lit le frontmatter brut — mais le hook `content:file:afterParse`, en développement, n'aurait
+> pas vu le champ, et un article `visibility: private` y aurait été traité comme **public** :
+> fuite silencieuse, invisible de toute assertion. L'ordre inverse est donc le seul sûr, et il
+> correspond au prérequis que la story 16.2 déclare d'elle-même.
+>
+> `16.3` et `16.4` dépendent toutes deux de `16.1` + `16.2`. `16.5` consomme les quatre
+> précédentes. `16.6` produit les fixtures et la gate, `16.7` inspecte le build statique produit
+> par `16.6`, `16.8` effectue la revue navigateur sur ce même build puis rapporte. `16.7` et `16.8`
+> sont parallélisables entre elles une fois `16.6` verte. Aucune story ne dépend d'une story
+> future.
 
 #### Story 16.1: Contrat de contenu minimal et migration de date
 
