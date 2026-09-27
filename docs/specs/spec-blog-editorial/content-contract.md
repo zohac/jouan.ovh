@@ -25,6 +25,7 @@
 | Ajouter `publishedAt` | Schéma, normaliseur, helpers, pages, resolver, scan, AEO, CI et fixtures |
 | Renommer `date` | Migration atomique de tous les consommateurs ; pas de modification du seul schéma |
 | Ajouter un état de visibility | Schéma, resolver, route article, listes, sitemap, AEO, CI et probes |
+| **Fermer le vocabulaire `tags`** | Liste canonique published dans le contrat, allow-list Zod, fixtures, et assertion CI de cohérence inter-articles (casse, accents, largeur). Décision de phase, pas un ajustement de schéma : un vocabulaire fermé en T0 obligerait à modifier le schéma Zod pour publier un article sur un outil nouveau. **Ajouté le 2026-09-27** (story 16.1, arbitrage N3). |
 | Ajouter un champ public AEO | Allow-list, owner, export, assertion CI et décision de phase |
 | Ajouter une relation | Résolution déterministe, filtrage avant crawl, fixture et définition de gate |
 
@@ -42,17 +43,17 @@ Les champs obligatoires sont ceux validés par le schéma et le pipeline de publ
 | `pillar` | enum fermé | oui | oui | Exactement un pilier : `ai-systems`, `software-engineering`, `automation` |
 | `format` | enum fermé | oui | oui | Valeurs machine de la section 3 ; indépendant du pilier |
 | `goals` | liste d'enums | optionnel | optionnel | Interne par défaut ; aucun effet T0 sur publication, articles liés ou appel à l'action |
-| `tags` | liste de strings | oui | oui | Minuscules, kebab-case, vocabulaire contrôlé |
+| `tags` | liste de strings | oui | oui | Minuscules, kebab-case, **non vides** ; **vocabulaire ouvert en T0** — **cellule reformulée le 2026-09-27** (story 16.1, arbitrage N3) : elle portait « vocabulaire contrôlé », qu'aucun artefact normatif ne définit et contre quoi rien ne peut donc être contrôlé. La forme est contrôlée par `BLOG_TAG_PATTERN` ; un vocabulaire **fermé** est une décision de phase, portée par la matrice de migration §1. La garantie forte (deux tags visuellement identiques) est récupérée en 16.7 par une assertion de cohérence inter-articles. |
 | `draft` | boolean | oui | oui | `true` signifie non public |
 | `visibility` | enum `public/private` | oui | oui | `private` signifie absence de HTML production ; distinct de l'indexabilité |
 | `noindex` | boolean | optionnel | optionnel | Article public avec balise `noindex` ; ne signifie pas privé |
 | `robots` | boolean/string | optionnel | optionnel | Propriété Nuxt Robots ; ne transforme pas un article en privé |
-| `sitemap` | boolean/object | optionnel | optionnel | Propriété Nuxt Sitemap ; n'est pas un contrôle de confidentialité |
+| `sitemap` | boolean/object | optionnel | optionnel | Propriété Nuxt Sitemap ; n'est pas un contrôle de confidentialité. **Avertissement éditorial (arbitré le 2026-09-27, story 16.2)** : `sitemap: false`/`null` retire l'article du `sitemap.xml`, de `llms.txt`, de `sitemap.md` et de son jumeau `.md`, ainsi que de **sa propre section AEO** dans `llms-full.txt`. Il **ne** le retire **pas** des listes éditoriales : le HTML reste servi en 200 et l'article reste listé sur `/blog` et dans le journal de la homepage. Conséquence assumée et vérifiée : `llms-full.txt` est un assemblage de rendus de pages délimités par `- **Source:** <loc>`, et la section `/blog` — page éditoriale publique — y porte la carte de chaque article découvrable ; le slug d'un article `sitemap: false` y est donc **mentionné**, dans cette seule section de page, et nulle part ailleurs. Ni le `sitemap.xml` ni les artefacts AEO ne comportent de lien ni d'URL d'article vers lui. C'est un contrôle **faible** : la page demeure dans le graphe de liens interne, donc un moteur peut la découvrir. Pour ne pas figurer dans les résultats, utiliser `noindex: true` (page lisible, directive émise, absente des sélections) ou `visibility: private` (aucun HTML). |
 | `project` | ID public nullable | non | oui | R1 uniquement ; lookup par ID stable, jamais par nom humain |
 | `featured` | boolean | non | oui | Curation homepage R1 ; ne modifie pas la publication T0 |
 | `evergreen` | boolean | non | oui | Signal éditorial interne ou public selon gate R1 |
-| `image` | `{ src, alt }` | non | oui | `alt` obligatoire ; image locale ou ressource approuvée |
-| `read` | string | non | oui | Valeur éditoriale facultative ; aucun calcul automatique T0 |
+| `image` | `{ src, alt }` | **oui (optionnel)** | oui | `alt` obligatoire ; image locale ou ressource approuvée. **Cellule corrigée le 2026-09-27** : elle portait « non » en T0, ce que contredisaient la fixture « article sans image » (§8) et le rendu en production. Un article sans `image` doit produire le fallback éditorial, pas une image cassée. |
+| `read` | string | **oui (optionnel)** | oui | Valeur éditoriale facultative ; aucun calcul automatique T0. **Cellule corrigée le 2026-09-27** : elle portait « non » en T0, or `read` est consommé par les deux templates du blog et par `reading_time_est` du JSON-LD. Le PRD §12 interdit le temps de lecture *calculé*, pas la valeur saisie. Retrait différé à une décision de phase. |
 | `seo` | objet fermé | non | oui | Overrides limités et consommés par `usePageSeo()` ; pas de second head |
 | `canonical` | URL absolue ou null | non | oui | Résolue via Site Config ; self-canonical par défaut T0 |
 | `related` | liste de slugs | non | oui | R1 ; cibles publiques, filtrées avant rendu et crawl |

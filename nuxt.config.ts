@@ -4,6 +4,12 @@ import { isIndexableBlogEntry, isPublishedBlogEntry, isSitemapExcluded } from ".
 import { removeAeoLink } from "./app/utils/aeo-markdown";
 import { SITE } from "./app/data/site";
 import { normalizeSiteUrl } from "./app/utils/site-url";
+import {
+  blogContentSchema,
+  blogTitleKey,
+  collectRawFrontmatterIssues,
+  formatBlogSchemaIssues,
+} from "./app/utils/blog-content-contract";
 
 // Valider la valeur brute avant que nuxt-site-config ne la normalise est indispensable :
 // le module transforme notamment une URL relative en origin absolue, ce qui masquerait
@@ -19,6 +25,7 @@ type NodeFileSystem = {
     name: string;
     isDirectory(): boolean;
     isFile(): boolean;
+    isSymbolicLink(): boolean;
   }>;
   writeFileSync(path: string, data: string, encoding: "utf8"): void;
   rmSync(path: string, options: { recursive: boolean; force: boolean }): void;
@@ -59,12 +66,26 @@ type SeoContentRouteState = {
   source?: string;
 };
 
+// Relever à chaque changement de la sémantique de `prerender`/`indexable` calculés par
+// `scanContentRouteState()`.
 const SEO_ROUTE_CACHE_VERSION = 1;
 
 const projectDirectory = nodeProcess.cwd();
 const seoRouteCachePath = nodePath.resolve(projectDirectory, ".data/content/seo-routes.json");
 const contentRouteState = new Map<string, SeoContentRouteState>();
 const contentSourcePathByRoute = new Map<string, string>();
+/**
+ * Titre d'article du corpus public → source qui le déclare (unicité T0, AC 16.1 #8).
+ *
+ * Zod ne valide qu'un document à la fois : la garantie porte sur la collection et
+ * doit donc vivre à l'échelle du module, comme `contentSourcePathByRoute`. La map
+ * est vidée au début de chaque scan, car le cache SQLite de `@nuxt/content` peut
+ * réutiliser une entrée déjà parsée sans rejouer `content:file:afterParse` : un
+ * état accumulé serait alors à la fois incomplet et périmé.
+ */
+const contentSourcePathByPublicTitle = new Map<string, string>();
+/** Table inverse du registre ci-dessus : source → clé de titre, pour retraction. */
+const publicBlogTitleKeyBySource = new Map<string, string>();
 
 /**
  * Nettoyage post-conversion limité aux blocs décoratifs du terminal.
@@ -377,10 +398,22 @@ function readContentFrontmatter(source: string): Record<string, unknown> | undef
   return parseFrontmatter(source);
 }
 
+/**
+ * `index` est un mot-clé de routage, pas un nom de fichier : `INDEX.md` et `Index.md`
+ * produisent la même route canonique que `index.md`. Les trois points de décision — scan,
+ * dérivation de route et matrice CI — doivent donc comparer sur la forme canonique, sinon
+ * un fichier en majuscules échappe à la réservation de `/blog` sur Linux (macOS, où les
+ * deux fichiers ne peuvent pas coexister, ne le révèle jamais).
+ */
+function isIndexBasename(name: string): boolean {
+  return slugify(name, { lower: true }) === "index";
+}
+
 function contentRouteFromFile(relativePath: string): string | undefined {
   const withoutExtension = relativePath.replace(/\.md$/u, "");
   const parts = withoutExtension.split("/").filter(Boolean);
-  if (parts.at(-1) === "index") {
+  const last = parts.at(-1);
+  if (last !== undefined && isIndexBasename(last)) {
     parts.pop();
   }
   if (parts[0] !== "blog" || parts.length === 0) {
@@ -395,44 +428,279 @@ function contentRouteFromFile(relativePath: string): string | undefined {
 }
 
 /**
+ * Applique le contrat éditorial T0 à un document `blog` et échoue sinon.
+ *
+ * `@nuxt/content` v3 lit `content.config.ts` pour dériver les colonnes SQLite et les
+ * types publics, mais ne valide jamais un document contre lui : sans ce point
+ * d'application, un `pillar` hors vocabulaire, un tag en CamelCase ou un
+ * `publishedAt` resurgence traverserait le build en silence, et l'échec
+ * n'arriverait qu'à l'affichage (« Invalid Date », tri faux, JSON-LD vide).
+ *
+ * Le contrat est donc exécuté à deux endroits, sur deux sources distinctes :
+ *
+ * - `scanContentRouteState()` valide le frontmatter brut de chaque fichier de la
+ *   collection, au chargement de la configuration. C'est le seul point où l'échec
+ *   est *dur* : le module Content rattrape les erreurs du hook `afterParse` et se
+ *   contente d'ignorer le fichier fautif (`WARN … is ignored because parsing is
+ *   failed`), ce qui produirait un build partiel — l'article hors contrat
+ *   disparaîtrait du site, ou ferait échouer le prérendu sur un 404 opaque. Les
+ *   violations y sont **agrégées** puis levées à la fin de la fonction, donc
+ *   **à l'intérieur** du `try` qui enveloppe `visit()` : ce n'est pas la position du
+ *   `throw` qui les protège, c'est le **préfixe `[content]`** du message, seul préfixe
+ *   que le `catch` laisse passer. Cette convention non structurelle porte donc à elle
+ *   seule la garantie d'échec dur — d'où l'assertion CI qui vérifie qu'un article hors
+ *   contrat fait bien échouer `pnpm generate`.
+ * - le hook `content:file:afterParse` valide le document parsé à chaque relecture
+ *   du fichier, donc immédiatement en développement, quand la configuration — et
+ *   donc le scan — n'est pas rejouée. Son exception n'est **pas** un échec de build.
+ *
+ * Les contrôles de l'entrée brute (`title`/`description`, alias de date de publication,
+ * clés pointées) précèdent le `safeParse` : Zod supprime les clés non déclarées, donc
+ * ces invariants sont invisibles au schéma.
+ */
+function assertBlogContentContract(content: unknown, source: string, mode: "scan" | "hook"): void {
+  const rawIssues = collectRawFrontmatterIssues(content);
+  const result = blogContentSchema.safeParse(content);
+  if (rawIssues.length === 0 && result.success) {
+    return;
+  }
+  const issues = [...rawIssues, ...(result.success ? [] : formatBlogSchemaIssues(result.error))];
+  const message =
+    `[content] Contrat éditorial T0 violé par ${source} :\n${issues.map((issue) => `  - ${issue}`).join("\n")}\n` +
+    (mode === "scan"
+      ? "Corrigez le frontmatter ; aucun artefact n'est produit. "
+      : "Corrigez le frontmatter. Attention : ce point n'est pas un échec de build sur le chemin du build — " +
+        "le fichier sera ignoré avec un WARN du module Content ; sur le chemin watcher, le rejet n'est " +
+        "ni journalisé ni avalé. ") +
+    "Référence : docs/specs/spec-blog-editorial/content-contract.md";
+  if (mode === "hook") {
+    // Journalisé **avant** la levée : le comportement du module n'est pas uniforme entre le
+    // chemin du build (`processCollectionItems`, `try/catch` par clé → `logger.warn`) et le
+    // chemin watcher (`onChange`, aucun `try/catch` et aucun `.catch()` sur l'écouteur). Le
+    // diagnostic ne peut donc pas dépendre du module qui le rattrape.
+    console.warn(`\n${message}\n`);
+  }
+  throw new Error(message);
+}
+
+/**
+ * Enregistre le titre d'un article du corpus indexable et échoue sur collision.
+ *
+ * Deux articles publiés distincts ne peuvent pas partager le même `title` : le
+ * titre alimente les cartes, le JSON-LD et les artefacts AEO, donc une collision
+ * produirait deux artefacts publics indiscernables côte à côte dans `/blog`. Seul le
+ * corpus **indexable** est donc contraint, selon l'arbitrage D3 : un brouillon, un
+ * article à venir ou un article `noindex` peut réutiliser un titre. La prédication est
+ * `isIndexableBlogEntry` — la définition reprise à l'identique par les assertions CI.
+ * (La story 16.2 fera évoluer cette prédication vers `state.discoverable` du resolver,
+ * qui distingue `sitemap: false` — découvrable donc listé, mais absent du sitemap —
+ * de l'absence totale de production. Arbitrage D6.)
+ *
+ * La clé est normalisée (`blogTitleKey`) et la map est auto-réparatrice : le hook
+ * `content:file:afterParse` écrit aussi dans cette structure, à chaque relecture de
+ * fichier en développement, sans que la configuration — donc le scan qui purge — soit
+ * rejouée. La table inverse permet de retracter le titre précédent du fichier avant
+ * d'enregistrer le nouveau ; sans elle, un simple renommage de titre déclencherait une
+ * collision fantôme contre un fichier qui n'existe plus, et l'exception avalée par le
+ * module Content ferait disparaître l'article de `/blog` jusqu'au redémarrage.
+ */
+function registerPublicBlogTitle(title: string, source: string): void {
+  const key = blogTitleKey(title);
+  // Purge préalable des réservations dont le fichier a disparu. `onRemove`
+  // (`module.mjs:1838-1859`) supprime la ligne de cache et la ligne SQL **sans** repasser
+  // par `content:file:afterParse`, donc rien ne informait le registre d'une suppression
+  // ni d'un renommage de fichier : après `git mv a.md b.md`, `Foo → a.md` survivait et le
+  // prochain article nommé « Foo » déclenchait une collision fantôme, dont l'exception
+  // avalée faisait disparaître l'article de `/blog` jusqu'au redémarrage. Le scan reste
+  // le seul purgeur complet — il vide les deux tables — mais il ne rejoue pas sans
+  // rechargement de la configuration.
+  for (const [reservedSource, reservedKey] of [...publicBlogTitleKeyBySource]) {
+    if (reservedSource !== source && !nodeFileSystem.existsSync(nodePath.resolve(projectDirectory, reservedSource))) {
+      publicBlogTitleKeyBySource.delete(reservedSource);
+      if (contentSourcePathByPublicTitle.get(reservedKey) === reservedSource) {
+        contentSourcePathByPublicTitle.delete(reservedKey);
+      }
+    }
+  }
+  // Contrôle de collision **avant** toute mutation : muter d'abord laisserait les deux
+  // tables déchirées quand la collision lève (`throw`), le registre perdant sa clé
+  // précédente sans que la nouvelle soit enregistrée.
+  const existing = contentSourcePathByPublicTitle.get(key);
+  if (existing !== undefined && existing !== source) {
+    throw new Error(
+      `[content] Collision de titre dans le corpus indexable : « ${title} » est déclaré par ${existing} et ${source}. ` +
+        "Renommez l'un des deux titres ; seuls un brouillon, un article à venir ou un article " +
+        "`noindex`/`robots: false` peuvent réutiliser un titre déjà publié.",
+    );
+  }
+  const previousKey = publicBlogTitleKeyBySource.get(source);
+  if (previousKey !== undefined && previousKey !== key) {
+    contentSourcePathByPublicTitle.delete(previousKey);
+  }
+  contentSourcePathByPublicTitle.set(key, source);
+  publicBlogTitleKeyBySource.set(source, key);
+}
+
+/**
+ * Retracte la réservation de titre d'un fichier qui sort du corpus indexable.
+ *
+ * Sans cet appel, passer un article en `draft`, en date future, en `noindex: true` ou en
+ * `robots: false` en développement laisserait sa clé réservée : un article suivant portant le
+ * même titre lèverait alors une collision fantôme, exception que `@nuxt/content` avale en
+ * `logger.warn` — donc l'article disparaît silencieusement de `/blog`, du sitemap et des
+ * artefacts AEO. Le scan n'en a pas besoin : il vide les deux maps à chaque exécution.
+ */
+function retractPublicBlogTitle(source: string): void {
+  const previousKey = publicBlogTitleKeyBySource.get(source);
+  if (previousKey === undefined) {
+    return;
+  }
+  if (contentSourcePathByPublicTitle.get(previousKey) === source) {
+    contentSourcePathByPublicTitle.delete(previousKey);
+  }
+  publicBlogTitleKeyBySource.delete(source);
+}
+
+/**
  * Recalcule l'état des routes Content depuis les fichiers présents.
  *
  * Le cache SQLite peut réutiliser une entrée parsée sans rejouer
  * `content:file:afterParse` ; la lecture du frontmatter évite qu'une fixture
  * inchangée, une date future devenue passée ou une exclusion robots soit
  * conservée dans un état de prérendu obsolète.
+ *
+ * Ce même passage est le point dur d'application du contrat éditorial T0 : il
+ * parcourt le disque à chaque chargement de la configuration, ce qui le rend
+ * indépendant du cache Content, et il ne dépend pas du statut de publication —
+ * un brouillon, un article futur ou une entrée `sitemap: false` hors contrat
+ * doivent interrompre le build au même titre qu'un article publié. Les violations y
+ * sont **agrégées** sur tout le corpus, et les entrées du répertoire sont triées :
+ * corriger un lot d'articles invalides suppose un build, pas un build par fichier, et
+ * le fichier cité ne varie pas d'un build à l'autre.
  */
 function scanContentRouteState(): void {
+  // Chaque scan repart d'un état de titres vide : l'unicité porte sur les fichiers
+  // réellement présents, pas sur l'historique des parses de cette même session.
+  contentSourcePathByPublicTitle.clear();
+  publicBlogTitleKeyBySource.clear();
+  const contractViolations: string[] = [];
+  const titleCollisions: string[] = [];
   const contentRoot = nodePath.resolve(projectDirectory, "content");
   const scannedRoutes = new Set<string>();
   const visit = (directory: string): void => {
-    for (const entry of nodeFileSystem.readdirSync(directory, { withFileTypes: true })) {
+    // Tri par **points de code**, et non par `localeCompare` : celle-ci utilise la locale
+    // par défaut du runtime, donc l'ordre diffère entre le runner CI et le poste local
+    // (`A.md`/`a.md`, `a-b.md`/`ab.md`, `é.md`/`e.md`). Le build échoue dans tous les cas,
+    // mais le fichier cité en premier dans une collision variait — ce qui contredisait la
+    // justification même du tri.
+    const entries = [...nodeFileSystem.readdirSync(directory, { withFileTypes: true })].sort((a, b) =>
+      a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
+    );
+    for (const entry of entries) {
       const fullPath = nodePath.resolve(directory, entry.name);
+      // `Dirent` ne résout pas les liens symboliques : `isFile()` **et** `isDirectory()`
+      // valent `false` pour un symlink, alors que `tinyglobby` — utilisé par
+      // `@nuxt/content` pour résoudre la source `blog/**/*.md` — suit les liens par défaut.
+      // Un lien vers un fichier hors contrat serait donc ingéré et publié, mais invisible
+      // du scan : ni contrôle, ni entrée dans `contentRouteState`, ni unicité de titre. Le
+      // refus est dur et explicite plutôt que résolu en silence.
+      if (entry.isSymbolicLink()) {
+        throw new Error(
+          `[content] Lien symbolique refusé sous content/ : ${nodePath.relative(projectDirectory, fullPath)}. ` +
+            "La source de la collection est résolue par tinyglobby (followSymbolicLinks), qui suit les liens " +
+            "alors que ce scan ne les voit pas : le fichier serait ingéré sans contrat ni unicité de titre. " +
+            "Utilisez un fichier réel.",
+        );
+      }
       if (entry.isDirectory()) {
         visit(fullPath);
         continue;
       }
-      if (!entry.isFile() || !entry.name.endsWith(".md")) {
+      if (!entry.isFile()) {
+        continue;
+      }
+      // Les fichiers point (`.gitkeep`, `.gitignore`) ne sont pas du contenu : `tinyglobby`
+      // les ignore par défaut (`dot: false`), donc les collectionner ou les refuser fausserait
+      // les deux côtés. Le refus d'extension qui suit ne vise donc que les formats réels.
+      if (entry.name.startsWith(".")) {
         continue;
       }
       const relativePath = fullPath.slice(contentRoot.length + 1);
-      if (relativePath === "blog/index.md") {
-        throw new Error("[content] content/blog/index.md est réservé à la route Vue /blog.");
+      if (relativePath === "blog" || relativePath.startsWith("blog/")) {
+        // `blog/**/*.md` est la collection déclarée dans `content.config.ts` : tout fichier
+        // Markdown y appartenant doit respecter le contrat, publié ou non. Un frontmatter
+        // absent ou illisible n'est pas une exception : c'est le cas précis où `date`,
+        // `author`, `pillar` et `format` manquent tous, et il doit donc être refusé.
+        //
+        // Le test d'extension est insensible à la casse : `@nuxt/content` résout son
+        // transformateur avec `new RegExp(".md", "i")`, donc `Mon-Article.MD` est bien
+        // ingéré, prérendu et publié — un filtre `.endsWith(".md")` le laissait passer sans
+        // contrat, sans route d'état et sans unicité de titre.
+        if (!entry.name.toLowerCase().endsWith(".md")) {
+          throw new Error(
+            "[content] Extension non Markdown refusée dans la collection blog : " +
+              `${nodePath.relative(projectDirectory, fullPath)}. La collection est déclarée "blog/**/*.md" ; ` +
+              "tout autre format serait ingéré sans passer par le contrat T0.",
+          );
+        }
+        const reserved = relativePath.split("/").at(-1);
+        if (reserved !== undefined && isIndexBasename(reserved)) {
+          throw new Error(
+            `[content] ${nodePath.relative(projectDirectory, fullPath)} est réservé à la route Vue /blog.`,
+          );
+        }
+
+        const sourcePath = nodePath.relative(projectDirectory, fullPath);
+        const source = nodeFileSystem.readFileSync(fullPath, "utf8");
+        const metadata = readContentFrontmatter(source);
+        try {
+          assertBlogContentContract(metadata ?? {}, sourcePath, "scan");
+        } catch (error) {
+          contractViolations.push(error instanceof Error ? error.message : String(error));
+        }
+
+        // L'unicité de `title` est enregistrée **dans le bloc `blog/**`**, avant toute
+        // décision de route : la garantie doit couvrir la collection entière, pas seulement
+        // les fichiers dont `contentRouteFromFile()` dérive une route. Placée plus bas, elle
+        // serait plus étroite que le reste du contrat — deux articles de même titre
+        // passeraient le build alors que `/blog` affiche deux cartes homonymes. Le corpus
+        // contraint est le corpus **indexable**, selon l'arbitrage D3 : c'est la définition
+        // reprise à l'identique par les assertions CI, et un article `noindex`, exclu du
+        // sitemap ou à venir peut réutiliser un titre publié. (La story 16.2 fera évoluer ce
+        // prédicat vers `state.discoverable` du resolver — arbitrage D6.)
+        if (typeof metadata?.title === "string" && metadata.title !== "" && isIndexableBlogEntry(metadata)) {
+          try {
+            registerPublicBlogTitle(metadata.title, sourcePath);
+          } catch (error) {
+            // Diagnostic de nature différente d'une violation de frontmatter.
+            titleCollisions.push(error instanceof Error ? error.message : String(error));
+          }
+        }
+        continue;
       }
+
+      // Hors collection `blog` : aucune lecture de frontmatter, aucun contrat.
+      if (!entry.name.toLowerCase().endsWith(".md")) {
+        continue;
+      }
+      const sourcePath = nodePath.relative(projectDirectory, fullPath);
+      const source = nodeFileSystem.readFileSync(fullPath, "utf8");
+      const metadata = readContentFrontmatter(source);
       const route = contentRouteFromFile(relativePath);
       if (!route) {
         continue;
       }
       scannedRoutes.add(route);
 
-      const sourcePath = nodePath.relative(projectDirectory, fullPath);
       const existing = contentRouteState.get(route);
       if (existing?.source && existing.source !== sourcePath) {
         throw new Error(`[content] Collision de route Content : ${route} (${existing.source} et ${sourcePath}).`);
       }
 
-      const source = nodeFileSystem.readFileSync(fullPath, "utf8");
-      const metadata = readContentFrontmatter(source);
+      // `draft` et date future sont les deux seules causes d'absence de HTML en T0 : le
+      // contrôle de confidentialité `visibility: private` est livré par le resolver de la
+      // story 16.2, qui n'est pas dans ce commit. `!metadata` est conservé car il porte le
+      // narrowing TypeScript des lectures suivantes.
       if (!metadata || !isPublishedBlogEntry(metadata)) {
         contentRouteState.delete(route);
         contentSourcePathByRoute.delete(route);
@@ -462,6 +730,19 @@ function scanContentRouteState(): void {
       throw error;
     }
     // Le module Content signalera une collection absente ou invalide plus tard.
+  }
+
+  if (contractViolations.length > 0) {
+    throw new Error(
+      `[content] Contrat éditorial T0 violé sur ${contractViolations.length} entrée(s) :\n${contractViolations.join("\n")}\n` +
+        "Corrigez le frontmatter ; aucun artefact n'est produit. " +
+        "Référence : docs/specs/spec-blog-editorial/content-contract.md",
+    );
+  }
+  // Les collisions de titre sont un diagnostic distinct : aucun frontmatter n'est en
+  // cause, et le scan a déjà construit `contentRouteState` pour les autres fichiers.
+  if (titleCollisions.length > 0) {
+    throw new Error(`[content] Unicité de titre violée :\n${titleCollisions.join("\n")}\n`);
   }
 }
 
@@ -678,6 +959,30 @@ export default defineNuxtConfig({
         typeof context.file.path === "string"
           ? nodePath.relative(projectDirectory, nodePath.resolve(projectDirectory, context.file.path))
           : undefined;
+      // Le contrat est appliqué ici sur le **frontmatter brut relu depuis le disque**, et
+      // non sur `context.content` : le module a déjà transformé le document. Concrètement,
+      // `module.mjs:1489-1495` ne conserve au premier niveau que les clés déclarées dans
+      // `extendedSchema` et expulse **toute clé non déclarée dans `content.meta`** — donc
+      // `published`, `pubDate`, `datePublished` et `published_date` y atterrissent et
+      // échappaient aux deux points de contrôle. Et `module.mjs:1150`
+      // (`content.title || generateTitle(basename)`) synthétise `title` depuis le nom de
+      // fichier **avant** `afterParse` : le contrôle « `title` non vide » passait sur un
+      // champ absent, et le registre d'unicité s'alimentait d'une clé synthétique pouvant
+      // tuer un article légitime. Les contrôles d'identité, de clés interdites et
+      // d'enregistrement de titre lisent donc tous le frontmatter brut.
+      //
+      // Son exception n'est PAS un échec de build sur le chemin du build : le module la
+      // transforme en `logger.warn` et ignore le fichier. Sur le chemin **watcher**
+      // (`module.mjs:1794-1837`), `parser(...)` est appelé sans `try/catch` ni `.catch()`
+      // : le rejet n'est ni journalisé ni avalé. Le comportement est donc journalisé
+      // explicitement avant la levée, et l'application dure reste dans
+      // `scanContentRouteState()`.
+      const rawFrontmatter =
+        source !== undefined
+          ? readContentFrontmatter(nodeFileSystem.readFileSync(nodePath.resolve(projectDirectory, source), "utf8"))
+          : undefined;
+      assertBlogContentContract(rawFrontmatter ?? context.content, source ?? normalizedPath, "hook");
+
       const existing = contentRouteState.get(normalizedPath);
       if (existing?.source && source && existing.source !== source) {
         throw new Error(`[content] Collision de route Content : ${normalizedPath}.`);
@@ -694,9 +999,44 @@ export default defineNuxtConfig({
         delete context.content.updatedAt;
       }
 
+      // `draft` et date future sont les deux seules causes d'absence de HTML dans ce commit ;
+      // le contrôle de confidentialité `visibility: private` arrive avec le resolver de la
+      // story 16.2.
       if (!isPublishedBlogEntry(context.content)) {
         contentRouteState.delete(normalizedPath);
+        // Purges symétriques à celles du scan : `contentSourcePathByRoute` alimente
+        // `enrichAiReadyArticleFrontmatter`, qui lirait sinon le frontmatter d'un fichier
+        // renommé.
+        if (source) {
+          contentSourcePathByRoute.delete(normalizedPath);
+        }
         return;
+      }
+      // La réservation de titre est libérée sur **toute** sortie du corpus contraint, et pas
+      // seulement sur l'absence de HTML. La branche « publié mais non indexable » — un
+      // article passant à `noindex: true` ou `robots: false` en développement — satisfait ni
+      // la condition de retraction ci-dessous ni celle d'enregistrement plus bas : rien ne se
+      // passait, et la clé restait réservée. Un article suivant portant le même titre
+      // déclenchait alors une collision fantôme dont l'exception, avalée, le faisait
+      // disparaître de `/blog`.
+      if (source && !isIndexableBlogEntry(context.content)) {
+        retractPublicBlogTitle(source);
+      }
+      // Seul le corpus indexable réserve un titre — la même prédication que le scan
+      // (`isIndexableBlogEntry`, arbitrage D3), et non la simple publication. Le prédicat du
+      // schéma Sitemap reste le même. (La story 16.2 fera évoluer ce prédicat vers
+      // `state.discoverable` du resolver — arbitrage D6.)
+      // Le titre est lu sur le **frontmatter brut** : `context.content.title` peut être
+      // synthétisé depuis le nom de fichier (`module.mjs:1150`), ce qui produirait une clé
+      // d'unicité qui ne correspond à aucun titre déclaré.
+      const declaredTitle = rawFrontmatter?.title;
+      if (
+        source &&
+        typeof declaredTitle === "string" &&
+        declaredTitle !== "" &&
+        isIndexableBlogEntry(context.content)
+      ) {
+        registerPublicBlogTitle(declaredTitle, source);
       }
       const sitemapExcluded = isSitemapExcluded(context.content);
       contentRouteState.set(normalizedPath, {

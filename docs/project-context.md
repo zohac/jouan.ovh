@@ -64,8 +64,18 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   `<img>` brut. Assets statiques dans `public/images/`.
 - Blog alimenté par `@nuxt/content` **v3** (markdown sous `content/blog/`) — index
   `app/pages/blog/index.vue`, article `app/pages/blog/[...slug].vue`. Collections **typées
-  dans `content.config.ts`** (schéma `blog` : `date` validée ISO via `z.string().regex`,
-  `updated`, `tags`, `read`, `image`). Requêtes via `queryCollection("blog")…` dans `useAsyncData`
+  dans `content.config.ts`**, qui ne contient que le câblage (`type: "page"`,
+  `source: "blog/**"`, `schema: blogContentSchema`) ; **le schéma lui-même vit dans
+  `app/utils/blog-content-contract.ts`** (champs `date` ISO + réalité calendaire, `updated`
+  avec `updated >= date`, `author`, `pillar`, `format`, `tags` kebab-case non vide, `draft`
+  requis, `visibility`, plus `read`, `image`, `noindex`, `robots`, `sitemap`, `updatedAt`).
+  ⚠️ **`@nuxt/content` v3 n'exécute jamais le schéma Zod** : il n'en dérive que les colonnes
+  SQLite et avale les exceptions d'ingestion en `logger.warn`. Le contrat est donc appliqué
+  explicitement par `assertBlogContentContract()` (`nuxt.config.ts`), dans
+  `scanContentRouteState()` — seul échec **dur**, au chargement de la configuration — et dans
+  le hook `content:file:afterParse` — utile en développement, mais **sans effet sur le build**.
+  Un article hors contrat échoue donc le build, il n'est jamais silencieusement publié ni
+  ignoré. Requêtes via `queryCollection("blog")…` dans `useAsyncData`
   (prerender-safe) ; rendu article via `<ContentRenderer>`. **Coloration Shiki désactivée**
   (`content.build.markdown.highlight: false`) pour imposer la palette terminale du DS —
   ne pas réactiver sans surcharge (sinon styles inline par token écrasant le DS).

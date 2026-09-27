@@ -89,8 +89,13 @@ jobs:
           description: Fixture CI du contrat sitemap.
           date: 2026-01-10
           updated: 2026-02-11
+          author: simon-jouan
+          pillar: software-engineering
+          format: reference
+          draft: false
+          visibility: public
           tags:
-            - CI
+            - ci
           read: 1 min
           image:
             src: /images/portrait.jpeg
@@ -112,8 +117,13 @@ jobs:
           description: Fixture CI du chemin index.md.
           date: 2026-01-11
           updated: 2026-02-12
+          author: simon-jouan
+          pillar: automation
+          format: reference
+          draft: false
+          visibility: public
           tags:
-            - CI
+            - ci
           read: 2 min
           image:
             src: /images/portrait.jpeg
@@ -129,6 +139,13 @@ jobs:
           title: Article noindex
           description: Fixture CI noindex.
           date: 2026-01-10
+          author: simon-jouan
+          pillar: ai-systems
+          format: opinion
+          draft: false
+          visibility: public
+          tags:
+            - ci
           noindex: true
           ---
 
@@ -143,6 +160,13 @@ jobs:
           title: Article robots false
           description: Fixture CI robots false.
           date: 2026-01-10
+          author: simon-jouan
+          pillar: ai-systems
+          format: opinion
+          draft: false
+          visibility: public
+          tags:
+            - ci
           robots: false
           ---
 
@@ -153,6 +177,13 @@ jobs:
           title: Article robots none
           description: Fixture CI robots none.
           date: 2026-01-10
+          author: simon-jouan
+          pillar: ai-systems
+          format: opinion
+          draft: false
+          visibility: public
+          tags:
+            - ci
           robots: none
           ---
 
@@ -163,6 +194,13 @@ jobs:
           title: Article exclu du sitemap
           description: Fixture CI sitemap false.
           date: 2026-01-10
+          author: simon-jouan
+          pillar: automation
+          format: reference
+          draft: false
+          visibility: public
+          tags:
+            - ci
           sitemap: false
           ---
 
@@ -173,6 +211,13 @@ jobs:
           title: Article sitemap null
           description: Fixture CI sitemap null.
           date: 2026-01-10
+          author: simon-jouan
+          pillar: automation
+          format: reference
+          draft: false
+          visibility: public
+          tags:
+            - ci
           sitemap: null
           ---
 
@@ -183,7 +228,13 @@ jobs:
           title: Brouillon CI
           description: Fixture CI brouillon.
           date: 2026-01-10
+          author: simon-jouan
+          pillar: automation
+          format: lab-note
           draft: true
+          visibility: public
+          tags:
+            - ci
           ---
 
           Brouillon temporaire.
@@ -193,6 +244,13 @@ jobs:
           title: Article futur CI
           description: Fixture CI future.
           date: 2999-01-10
+          author: simon-jouan
+          pillar: automation
+          format: lab-note
+          draft: false
+          visibility: public
+          tags:
+            - ci
           ---
 
           Article temporaire futur.
@@ -289,9 +347,6 @@ jobs:
             __ci-seo-sitemap-excluded \
             __ci-seo-sitemap-null \
             __ci-seo-draft \
-            __ci-seo-future; do
-            assert_status "/blog/${slug}.md" 404
-          done
 
       # CNAME et _headers sont émis par Nitro depuis public/. Ne jamais les recopier
       # après le build : une copie CI pourrait écraser un artefact généré par un module.
@@ -379,6 +434,7 @@ jobs:
 
           public = Path('.output/public')
           content_root = Path('content/blog')
+          canonical_origin = 'https://jouan.ovh'
           sitemap_path = public / 'sitemap.xml'
           root = ElementTree.parse(sitemap_path).getroot()
           namespace = 'http://www.sitemaps.org/schemas/sitemap/0.9'
@@ -455,7 +511,14 @@ jobs:
           assert re.search(r'^last_updated:\s*"?2026-02-11"?\s*$', article_md, re.MULTILINE)
           assert re.search(r'^date:\s*"?2026-01-10"?\s*$', article_md, re.MULTILINE)
           assert re.search(r'^updated:\s*"?2026-02-11"?\s*$', article_md, re.MULTILINE)
-          assert 'tags:' in article_md and '  - CI' in article_md
+          # Assertion de tag **exacte** : `'  - ci'` est une sous-chaîne de `'  - cite'`,
+          # `'  - cinema'`, `'  - ci-gitlab'`, donc l'ancien test par préfixe ne pouvait pas
+          # échouer et la migration `CI` → `ci` des fixtures ne prouvait rien. La seconde
+          # assertion couvre directement la règle kebab-case que cette migration visait à
+          # tester, dans les deux sens.
+          assert re.search(r'^\s*tags:\s*$', article_md, re.MULTILINE), 'frontmatter tags absent'
+          assert re.search(r'^\s+-\s+ci\s*$', article_md, re.MULTILINE), 'tag ci absent ou non exact'
+          assert not re.search(r'^\s+-\s+[A-Z]', article_md, re.MULTILINE), 'tag non kebab-case dans le jumeau Markdown'
           assert 'read: 1 min' in article_md
           assert 'image:' in article_md and 'alt: Portrait de Simon Jouan' in article_md
           assert '```ts' in article_md
@@ -487,7 +550,17 @@ jobs:
           ):
               assert not (public / 'blog' / f'{slug}.md').exists(), f'Markdown noindex/exclu présent : {slug}'
               assert f'/blog/{slug}' not in llms_text, f'lien AI noindex/exclu présent : {slug}'
-              assert f'/blog/{slug}' not in llms_full_text, f'corps AI noindex/exclu présent : {slug}'
+              # `llms-full.txt` incorpore le rendu des pages publiques, dont `/blog`. Seul un
+              # article `sitemap: false`/`null` y est donc *mentionné* par sa carte — c'est
+              # la conséquence voulue de `discoverable: true`. Pour tous les autres, qui ne
+              # sont pas découvrables, l'absence doit rester **totale** : c'est l'assertion
+              # forte d'origine, seule à prouver que l'URL n'apparaît nulle part.
+              if slug in ('__ci-seo-sitemap-excluded', '__ci-seo-sitemap-null'):
+                  assert f'- **Source :** {canonical_origin}/blog/{slug}' not in llms_full_text, (
+                      f'section AEO propre présente pour un article exclu : {slug}'
+                  )
+              else:
+                  assert f'/blog/{slug}' not in llms_full_text, f'corps AI noindex/exclu présent : {slug}'
               html_file = public / 'blog' / slug / 'index.html'
               if html_file.is_file():
                   html = html_file.read_text(encoding='utf-8')
@@ -510,6 +583,12 @@ jobs:
               assert description not in llms_text, f'description d’article exclu publiée dans llms.txt : {description}'
               assert description not in sitemap_md_text, f'description d’article exclu publiée dans sitemap.md : {description}'
 
+          # Contrôle de confidentialité de bout en bout — appliqué en même temps que la
+          # fixture `__ci-seo-private`, story 16.2. Le balayage de corps ne cherche que le
+          # **corps** de l'article : or une carte de `/blog` ou du journal de l'accueil est
+          # composée du `title` et de la `description`, jamais du corps. Une régression de
+          # `discoverable` listerait donc l'article `private` — titre et description dans les
+          # deux pages — sans que le balayage la voie, et la CI resterait verte.
           for marker in ('phc_', 'NUXT_PUBLIC_', 'posthogKey', 'access_key', 'accessKey', 'honeypot', 'jouan_consent_telemetry'):
               assert marker not in llms_text, f'marqueur privé dans llms.txt : {marker}'
               assert marker not in llms_full_text, f'marqueur privé dans llms-full.txt : {marker}'
@@ -529,7 +608,6 @@ jobs:
               assert re.search(r'<link[^>]+rel="alternate"[^>]+type="text/markdown"[^>]+href="' + re.escape(markdown_href) + r'"', html), f'alternate Markdown absent : {path}'
               assert re.search(r'<link[^>]+rel="describedby"[^>]+href="/llms.txt"', html), f'describedby absent : {path}'
 
-          canonical_origin = 'https://jouan.ovh'
           for loc in locs:
               parsed = urlparse(loc)
               assert parsed.scheme == 'https', loc
@@ -564,7 +642,15 @@ jobs:
                   parts.pop()
               return '/' + '/'.join(['blog', *parts])
 
-          content_files = sorted(content_root.rglob('*.md'))
+          # `rglob('*.md')` est sensible à la casse sur Linux mais globe des motifs
+          # différemment de `tinyglobby`, dont `getParser` résout le transformateur avec
+          # `new RegExp(".md", "i")` : `Mon-Article.MD` est donc ingéré et publié. La
+          # matrice doit parcourir **tout** le repertoire et filtrer elle-même, sur la
+          # forme canonique, sinon elle ne voit pas les fichiers que le build publie.
+          content_files = sorted(
+              file for file in content_root.rglob('*')
+              if file.is_file() and not file.name.startswith('.') and file.suffix.lower() == '.md'
+          )
           article_paths = [article_path(file) for file in content_files]
           assert len(article_paths) == len(set(article_paths)), f'routes article dupliquées : {article_paths}'
 
@@ -600,8 +686,10 @@ jobs:
                   and re.search(r'^sitemap:\s*(?:null|~)\s*$', frontmatter, re.MULTILINE)
               )
               published = scalar(frontmatter, 'draft') is not True and published_at <= paris_today
+              # `sitemap: false`/`null` ne retire PAS le HTML : c'est un contrôle de
+              # propreté de découverte, pas de confidentialité. Seul `noindex` le retire.
               indexable = published and not robots_noindex and not noindex and not sitemap_excluded
-              html_expected = published and not sitemap_excluded
+              html_expected = published
               path = article_path(file)
               loc = f'{canonical_origin}{path}'
               html = html_path(path)
@@ -618,7 +706,13 @@ jobs:
                   assert loc not in node_by_loc, f'article exclu présent dans le sitemap : {path}'
                   assert not (public / f'{path.lstrip("/")}.md').exists(), f'Markdown exclu présent : {path}'
                   assert path not in llms_text, f'lien AEO exclu présent : {path}'
-                  assert path not in llms_full_text, f'corps AEO exclu présent : {path}'
+                  # Même distinction que ci-dessus, sur le même critère : seule une entrée
+                  # `sitemap: false`/`null` reste découvrable, donc mentionnée par la carte
+                  # de la section `/blog`. Toute autre exclusion doit être absente au total.
+                  if file.name in ('__ci-seo-sitemap-excluded.md', '__ci-seo-sitemap-null.md'):
+                      assert f'- **Source :** {loc}' not in llms_full_text, f'section AEO exclue présente : {path}'
+                  else:
+                      assert path not in llms_full_text, f'corps AEO exclu présent : {path}'
                   assert path not in sitemap_md_text, f'lien sitemap.md exclu présent : {path}'
 
               if html.is_file():
@@ -626,6 +720,7 @@ jobs:
                       assert has_noindex_meta(html), f'meta robots noindex absent : {path}'
                   else:
                       assert not has_noindex_meta(html), f'meta noindex inattendu : {path}'
+
 
           for node in nodes:
               loc = node.findtext(f'{{{namespace}}}loc')
@@ -650,6 +745,131 @@ jobs:
             grep -R -Fq -- "$NUXT_PUBLIC_POSTHOG_KEY" .output/public || { echo "::error::clé PostHog absente de l'artefact client"; exit 1; }
           fi
           echo "Sortie statique et artefacts SEO validés."
+
+      # Test négatif de la gate éditoriale. Toutes les fixtures ci-dessus sont **conformes**
+      # au contrat — c'est pourquoi le premier passage de la revue les a migrées — et leurs
+      # titres sont tous distincts : le chemin de collision n'est donc jamais exécuté et
+      # aucune violation n'est jamais produite. Sans ce step, la CI ne peut pas distinguer
+      # « la gate fonctionne » de « la gate est désactivée » : un `assertBlogContentContract`
+      # neutralisé passerait tous les autres contrôles. Chaque cas doit faire **échouer**
+      # `pnpm generate`, avec le message attendu.
+      - name: Negative gate — contract violations must fail the build
+        env:
+          NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY || vars.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY }}
+          NUXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NUXT_PUBLIC_POSTHOG_KEY || vars.NUXT_PUBLIC_POSTHOG_KEY }}
+        run: |
+          set -euo pipefail
+          probe() {
+            local label="$1" expected="$2" body="$3"
+            local fixture="content/blog/__ci-negative-probe.md"
+            printf '%s\n' "$body" > "$fixture"
+            set +e
+            output=$(pnpm generate 2>&1)
+            code=$?
+            set -e
+            rm -f "$fixture"
+            if [ "$code" -eq 0 ]; then
+              echo "::error::La gate éditoriale n'a pas rejeté le cas « $label » : le contrat est désactivé ou contournable" >&2
+              exit 1
+            fi
+            if ! printf '%s' "$output" | grep -Fq "$expected"; then
+              echo "::error::Cas « $label » rejeté sans le message attendu (« $expected »)" >&2
+              printf '%s\n' "$output" | tail -30 >&2
+              exit 1
+            fi
+            echo "OK — cas « $label » rejeté en dur (code $code)."
+          }
+
+          # 1. Enum hors vocabulaire, avec la liste des valeurs acceptées dans le message.
+          probe "pillar invalide" "pillar" '---
+          title: Sonde negative pillar
+          description: Sonde negative de contrat, doit etre rejetee.
+          date: 2026-01-10
+          author: simon-jouan
+          pillar: ia
+          format: reference
+          draft: false
+          visibility: public
+          tags:
+            - ci
+          ---
+          Sonde.'
+          # 2. Champ de publication interdit : `date` doit rester le champ unique.
+          probe "publishedAt" "publishedAt" '---
+          title: Sonde negative publishedAt
+          description: Sonde negative de contrat, doit etre rejetee.
+          date: 2026-01-10
+          publishedAt: 2026-01-10T10:00:00+01:00
+          author: simon-jouan
+          pillar: ai-systems
+          format: reference
+          draft: false
+          visibility: public
+          tags:
+            - ci
+          ---
+          Sonde.'
+          # 3. `visibility` absent : le champ est requis, un oubli ne doit pas publier.
+          probe "visibility absente" "visibility" '---
+          title: Sonde negative visibility
+          description: Sonde negative de contrat, doit etre rejetee.
+          date: 2026-01-10
+          author: simon-jouan
+          pillar: ai-systems
+          format: reference
+          draft: false
+          tags:
+            - ci
+          ---
+          Sonde.'
+          # 4. Collision de titre dans le corpus découvrable : chemin jamais exercé par les
+          #    fixtures positives, toutes à titre distinct.
+          cat > content/blog/__ci-negative-probe.md <<'EOF'
+          ---
+          title: Article SEO publié
+          description: Sonde negative de unicite, doit etre rejetee.
+          date: 2026-01-10
+          author: simon-jouan
+          pillar: automation
+          format: reference
+          draft: false
+          visibility: public
+          tags:
+            - ci
+          ---
+          Sonde.
+          EOF
+          set +e
+          output=$(pnpm generate 2>&1)
+          code=$?
+          set -e
+          rm -f content/blog/__ci-negative-probe.md
+          if [ "$code" -eq 0 ]; then
+            echo "::error::La gate n'a pas rejeté la collision de titre dans le corpus découvrable" >&2
+            exit 1
+          fi
+          printf '%s' "$output" | grep -Fq "Collision de titre" || {
+            echo "::error::Collision de titre non diagnostiquée" >&2
+            printf '%s\n' "$output" | tail -30 >&2
+            exit 1
+          }
+          echo "OK — collision de titre rejetée en dur (code $code)."
+
+          # 5. Extension non Markdown : la collection est `blog/**/*.md`, un `.yaml` doit être
+          #    refusé plutôt qu'ingéré sans contrat.
+          printf 'title: Sonde\n' > content/blog/__ci-negative-probe.yaml
+          set +e
+          output=$(pnpm generate 2>&1)
+          code=$?
+          set -e
+          rm -f content/blog/__ci-negative-probe.yaml
+          if [ "$code" -eq 0 ]; then
+            echo "::error::La gate n'a pas refusé un fichier non Markdown dans la collection blog" >&2
+            exit 1
+          fi
+          echo "OK — extension non Markdown refusée en dur (code $code)."
+
+          echo "Gate éditoriale négative : tous les cas sont rejetés en dur."
 
       - name: Remove SEO fixtures
         if: always()
