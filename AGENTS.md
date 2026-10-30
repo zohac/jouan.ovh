@@ -159,6 +159,7 @@ jouan.ovh/
 
 - Le fichier `public/CNAME` contient **`jouan.ovh`**. Ne jamais le modifier ou le supprimer.
 - Le step `Verify static output` dans `.github/workflows/cd.yml` vérifie `grep -qx "jouan.ovh" .output/public/CNAME`. Tout changement de domaine doit être répercuté simultanément sur ces deux fichiers.
+- **Sonde de production** : `.github/workflows/production-probe.yml` exécute `scripts/probe-production.mjs` après chaque `cd` réussi sur `main` et une fois par jour. Elle vérifie l'artefact **réellement servi** (sitemap, robots, canonical = `loc`, absence de `noindex`, artefacts AEO, redirections) — ce que la CI ne peut pas voir, puisqu'elle valide `.output/public` avant l'hébergement. Toute évolution des surfaces SEO/AEO doit laisser cette sonde verte.
 
 ### 7. Composants Immersifs, Canvas & WebGL (Acquis Epic 11)
 

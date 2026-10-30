@@ -155,3 +155,36 @@ https://jouan.ovh/contact/card/
   citation. Il supprime une cause identifiée de redirection et rétablit une lecture
   possible du sitemap. La réserve « Validation DNS et exploitation Google Search
   Console » du point de contrôle Epic 14 reste suivie par Simon.
+
+## 6. Sonde de production
+
+`scripts/probe-production.mjs` interroge l'origine publique, là où la CI de `cd` ne
+regarde jamais (elle valide `.output/public`, avant redirection 301 et avant cache).
+
+Contrôles, exécutés après chaque déploiement réussi sur `main`
+(`.github/workflows/production-probe.yml`, `workflow_run`) et chaque jour à 06:17 UTC
+(`schedule`) :
+
+| Contrôle | Écart détecté |
+| --- | --- |
+| `robots.txt` 200, `text/plain`, `Sitemap:` absolu | Politique d'exploration cassée |
+| `sitemap.xml` 200, type XML, `loc` uniques et non vides | `Impossible de récupérer le sitemap` |
+| chaque `loc` : barre finale, 200 **sans** redirection | « Page avec redirection », « Erreur liée aux redirections » |
+| `<link rel="canonical">` de chaque page **égal** à son `loc` | Canonical qui redirige ou canonicals divergents |
+| directive `robots` sans `noindex` sur chaque page listée | Site entier désindexé (`NUXT_SITE_ENV` mal positionné, garde-fou oublié) |
+| `llms.txt`, `llms-full.txt`, `sitemap.md` servis | Artefacts AEO non publiés |
+| forme sans barre finale encore redirigée | Liens anciens en 404 |
+
+Chaque requête porte un jeton de cache-busting et l'origine canonique attendue est
+lue dans `llms.txt` : la sonde ne peut pas valider un déploiement précédent resté en
+cache. Après un déploiement, elle réessaie 16 × 15 s (propagation GitHub Pages) ; sur
+le run quotidien, deux tentatives suffisent.
+
+Vérification locale possible avant tout déploiement, sur un aperçu HTTP du build :
+
+```sh
+node scripts/probe-production.mjs --base http://127.0.0.1:4174
+```
+
+Preuves du 2026-10-30 : la sonde **échoue** sur la production d'alors (8 écarts, tous
+les `loc` sans barre finale) et **passe** sur le build corrigé servi localement.

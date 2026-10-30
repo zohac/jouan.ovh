@@ -1,0 +1,60 @@
+name: production-probe
+
+# Sonde de production : vérifie l'artefact réellement servi par GitHub Pages
+# (sitemap, robots, canonical, redirections, artefacts AEO). Séparée de `cd` :
+# elle ne construit rien, ne déploie rien, et peut donc tourner tous les jours.
+#
+# Origine de l'écart qu'elle ferme : `sitemap.xml` publié le 2026-09-25, lu une
+# seule fois par la Search Console — en échec — puis plus jamais. Les vérifications
+# de `cd` portent sur `.output/public`, donc sur un artefact qui n'a pas encore
+# traversé la redirection 301 ni le cache de l'hébergement.
+# Cf. `docs/implementation-artifacts/seo-redirections-search-console-2026-10-30.md`.
+
+on:
+  # Après chaque passage réussi de `cd` sur `main` (déploiement effectif).
+  workflow_run:
+    workflows:
+      - cd
+    types:
+      - completed
+    branches:
+      - main
+  # Filet quotidien : une régression d'hébergement ne prévient pas.
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-probe
+  cancel-in-progress: false
+
+env:
+  # Même origine que le build de production (`cd.yml`). C'est une donnée
+  # d'environnement de CI, jamais une valeur du code applicatif.
+  NUXT_SITE_URL: https://jouan.ovh
+
+jobs:
+  probe:
+    # Un `workflow_run` peut conclure en échec ou être annulé : ne pas sonder
+    # la production dans ce cas, le déploiement n'a pas eu lieu.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      # La propagation GitHub Pages n'est pas instantanée : après un déploiement on
+      # réessaie ~4 minutes (16 × 15 s). Sur un run planifié, deux tentatives suffisent
+      # à absorber un incident réseau passager.
+      - name: Probe production
+        run: |
+          node scripts/probe-production.mjs \
+            --base "$NUXT_SITE_URL" \
+            --attempts "${{ github.event_name == 'workflow_run' && 16 || 2 }}" \
+            --delay 15000
