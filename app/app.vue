@@ -23,7 +23,7 @@ const organizationJsonLd = {
   "@type": "Organization",
   "@id": `${siteUrl}/#organization`,
   name: SITE.profile.name,
-  url: siteUrl,
+  url: absoluteCanonicalUrl(siteUrl, "/"),
   logo: `${siteUrl}/images/logo.png`,
   email: SITE.profile.email,
   address: {

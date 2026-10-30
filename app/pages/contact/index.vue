@@ -448,7 +448,7 @@ const contactJsonLd = {
   name: "Contact — Simon Jouan",
   description:
     "Parlons de votre workflow : décrivez le processus métier qui vous ralentit pour identifier les opportunités d'automatisation et d'agents IA adaptés.",
-  url: `${siteUrl}/contact`,
+  url: absoluteCanonicalUrl(siteUrl, "/contact"),
   mainEntity: {
     "@type": "Person",
     name: SITE.profile.name,

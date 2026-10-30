@@ -541,7 +541,7 @@ const homeJsonLd = [
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Simon Jouan — Systèmes IA, agents & automatisation métier",
-    url: siteUrl,
+    url: absoluteCanonicalUrl(siteUrl, "/"),
     description: SITE.profile.role,
   },
   {
@@ -549,7 +549,7 @@ const homeJsonLd = [
     "@type": "Person",
     name: SITE.profile.name,
     jobTitle: SITE.profile.role,
-    url: siteUrl,
+    url: absoluteCanonicalUrl(siteUrl, "/"),
     image: `${siteUrl}/images/portrait.jpeg`,
     email: SITE.profile.email,
     address: {

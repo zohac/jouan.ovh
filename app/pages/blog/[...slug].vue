@@ -218,7 +218,7 @@ usePageSeo(() => {
   if (!article) {
     return null;
   }
-  const url = `${siteUrl}${article.path}`;
+  const url = absoluteCanonicalUrl(siteUrl, article.path);
   const image = article.image
     ? article.image.src.startsWith("/")
       ? `${siteUrl}${article.image.src}`
@@ -234,13 +234,13 @@ usePageSeo(() => {
     author: {
       "@type": "Person",
       name: SITE.profile.name,
-      url: siteUrl,
+      url: absoluteCanonicalUrl(siteUrl, "/"),
     },
     publisher: {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
       name: SITE.profile.name,
-      url: siteUrl,
+      url: absoluteCanonicalUrl(siteUrl, "/"),
       logo: `${siteUrl}/images/logo.png`,
     },
     url,

@@ -108,7 +108,7 @@ const siteUrl = useSiteUrl();
 const pageTitle = "Blog — Simon Jouan";
 const pageDescription =
   "Notes de dev, architecture, agents IA et automatisation métier : retours d'expérience et apprentissages concrets sur le terrain.";
-const pageUrl = `${siteUrl}/blog`;
+const pageUrl = absoluteCanonicalUrl(siteUrl, "/blog");
 
 // JSON-LD : flux d'articles (Blog → BlogPosting) pour les moteurs / agrégateurs.
 // Construit à partir de la liste résolue (snapshot au build, page prerendue).
@@ -127,16 +127,16 @@ const blogJsonLd = {
     author: {
       "@type": "Person",
       name: SITE.profile.name,
-      url: siteUrl,
+      url: absoluteCanonicalUrl(siteUrl, "/"),
     },
     publisher: {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
       name: SITE.profile.name,
-      url: siteUrl,
+      url: absoluteCanonicalUrl(siteUrl, "/"),
       logo: `${siteUrl}/images/logo.png`,
     },
-    url: `${siteUrl}${article.path}`,
+    url: absoluteCanonicalUrl(siteUrl, article.path),
     ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
     ...(article.image
       ? {

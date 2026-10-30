@@ -59,10 +59,22 @@ const MAX_ATTRIBUTION_VALUE_LENGTH = 120;
 // est neutralisée avant emission.
 const SAFE_ATTRIBUTION_VALUE_RE = /^[a-zA-Z0-9._:+-]+$/u;
 
+/**
+ * Chemin d'analyse stable, sans barre finale.
+ *
+ * La forme canonique des URL du site est `/about/` (cf. `toCanonicalPath`) alors
+ * que la série d'analyse de l'Epic 14 est indexée sur `/about`. Normaliser ici
+ * conserve la continuité des `path`, `page_path` et `location` émis sans créer
+ * de nouvelle propriété ni de nouvel événement de télémétrie.
+ */
+function normalizeAnalyticsPath(path: string): string {
+  return path.replace(/\/+$/u, "") || "/";
+}
+
 /** Retire la query string et le hash d'une URL — ne conserve que `pathname`. */
 function sanitizeLocation(): string {
   const path = engine?.router.currentRoute.value.path ?? "/";
-  return redactPii(path);
+  return redactPii(normalizeAnalyticsPath(path));
 }
 
 /** Extrait l'origine (hostname) d'une URL de provenance, fallback `'direct'`. */
@@ -283,7 +295,7 @@ function emitPageview(path: string, fullPath: string, query: Record<string, unkn
     pendingPageview = null;
     const queryParams = sanitizeQuery(query);
     track("$pageview", {
-      path,
+      path: normalizeAnalyticsPath(path),
       title: document.title,
       referrer: sanitizeReferrer(document.referrer),
       ...(queryParams ? { query_params: queryParams } : {}),

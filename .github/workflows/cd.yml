@@ -474,15 +474,20 @@ jobs:
 
           expected = {
               'https://jouan.ovh/',
-              'https://jouan.ovh/services',
-              'https://jouan.ovh/about',
-              'https://jouan.ovh/contact',
-              'https://jouan.ovh/contact/card',
-              'https://jouan.ovh/blog',
-              'https://jouan.ovh/mentions-legales',
-              'https://jouan.ovh/confidentialite',
+              'https://jouan.ovh/services/',
+              'https://jouan.ovh/about/',
+              'https://jouan.ovh/contact/',
+              'https://jouan.ovh/contact/card/',
+              'https://jouan.ovh/blog/',
+              'https://jouan.ovh/mentions-legales/',
+              'https://jouan.ovh/confidentialite/',
           }
           assert expected.issubset(locs), sorted(expected.difference(locs))
+          # Forme canonique de l'hébergement statique : la racine est `/` et toute
+          # page se termine par une barre. GitHub Pages redirige `/about` en 301 vers
+          # `/about/` ; un `loc` sans barre ferait de chaque entrée une « Page avec
+          # redirection » dans la Search Console.
+          assert all(loc.endswith('/') for loc in locs), [loc for loc in locs if not loc.endswith('/')]
 
           # Artefacts AEO : contenu public, liens Markdown, couverture et budgets.
           llms_path = public / 'llms.txt'
@@ -529,12 +534,20 @@ jobs:
           sources = re.findall(r'^- \*\*Source\s*:\*\* (\S+)$', llms_full_text, re.MULTILINE)
           assert sources, 'llms-full.txt ne contient aucune Source'
           assert len(sources) == len(set(sources)), 'llms-full.txt contient des sources dupliquées'
-          assert set(sources) == set(locs), 'llms-full.txt ne couvre pas exactement les URLs du sitemap'
+          # Comparaison de **couverture**, pas d'orthographe : les `Source` d'AI Ready
+          # nomment la route (`/about`) alors que le sitemap émet la forme servie
+          # (`/about/`). Les deux désignent la même page ; seule la barre finale diffère.
+          def source_path(url: str) -> str:
+              return urlparse(url).path.rstrip('/') or '/'
+
+          assert {source_path(source) for source in sources} == {source_path(loc) for loc in locs}, (
+              'llms-full.txt ne couvre pas exactement les URLs du sitemap'
+          )
 
           article_md = (public / 'blog/__ci-seo-published.md').read_text(encoding='utf-8')
           assert re.search(r'^title:\s*"?Article SEO publié"?\s*$', article_md, re.MULTILINE)
           assert re.search(
-              r'^canonical_url:\s*"?https://jouan\.ovh/blog/__ci-seo-published"?\s*$', article_md, re.MULTILINE
+              r'^canonical_url:\s*"?https://jouan\.ovh/blog/__ci-seo-published/"?\s*$', article_md, re.MULTILINE
           )
           assert re.search(r'^last_updated:\s*"?2026-02-11"?\s*$', article_md, re.MULTILINE)
           assert re.search(r'^date:\s*"?2026-01-10"?\s*$', article_md, re.MULTILINE)
@@ -554,7 +567,7 @@ jobs:
           nested_md = (public / 'blog/__ci-seo-nested.md').read_text(encoding='utf-8')
           for pattern in (
               r'^title:\s*"?Article SEO imbriqué"?\s*$',
-              r'^canonical_url:\s*"?https://jouan\.ovh/blog/__ci-seo-nested"?\s*$',
+              r'^canonical_url:\s*"?https://jouan\.ovh/blog/__ci-seo-nested/"?\s*$',
               r'^last_updated:\s*"?2026-02-12"?\s*$',
               r'^date:\s*"?2026-01-11"?\s*$',
               r'^updated:\s*"?2026-02-12"?\s*$',
@@ -641,7 +654,7 @@ jobs:
                   assert marker not in (public / relative).read_text(encoding='utf-8'), f'composant non public dans {relative} : {marker}'
 
           for path in sitemap_paths:
-              html_file = public / ('index.html' if path == '/' else path.lstrip('/') + '/index.html')
+              html_file = public / ('index.html' if path == '/' else path.strip('/') + '/index.html')
               html = html_file.read_text(encoding='utf-8')
               markdown_href = '/' + markdown_for(path)
               assert re.search(r'<link[^>]+rel="alternate"[^>]+type="text/markdown"[^>]+href="' + re.escape(markdown_href) + r'"', html), f'alternate Markdown absent : {path}'
@@ -735,7 +748,7 @@ jobs:
               indexable = production and not robots_noindex and not noindex and not sitemap_excluded
               html_expected = production
               path = article_path(file)
-              loc = f'{canonical_origin}{path}'
+              loc = f'{canonical_origin}{path}/' if path != '/' else f'{canonical_origin}/'
               html = html_path(path)
 
               if html_expected:
@@ -754,7 +767,8 @@ jobs:
                   # `sitemap: false`/`null` reste découvrable, donc mentionnée par la carte
                   # de la section `/blog`. Toute autre exclusion doit être absente au total.
                   if file.name in ('__ci-seo-sitemap-excluded.md', '__ci-seo-sitemap-null.md'):
-                      assert f'- **Source :** {loc}' not in llms_full_text, f'section AEO exclue présente : {path}'
+                      source_loc = f'{canonical_origin}{path}'
+                      assert f'- **Source :** {source_loc}' not in llms_full_text, f'section AEO exclue présente : {path}'
                   else:
                       assert path not in llms_full_text, f'corps AEO exclu présent : {path}'
                   assert path not in sitemap_md_text, f'lien sitemap.md exclu présent : {path}'
@@ -799,8 +813,16 @@ jobs:
 
           for loc in locs:
               path = urlparse(loc).path
-              relative = 'index.html' if path == '/' else f"{path.lstrip('/')}/index.html"
-              assert (public / relative).is_file(), f'HTML manquant pour {loc}'
+              relative = 'index.html' if path == '/' else f"{path.strip('/')}/index.html"
+              html_file = public / relative
+              assert html_file.is_file(), f'HTML manquant pour {loc}'
+              # Invariant anti-régression : le `loc` du sitemap, le canonical déclaré
+              # par la page et l'URL servie par l'hébergement statique sont la même
+              # chaîne. Un canonical sans barre finale désignerait une redirection
+              # (« Page avec redirection » / « Erreur liée aux redirections »).
+              canonical = re.search(r'<link[^>]+rel="canonical"[^>]+href="([^"]+)"', html_file.read_text(encoding='utf-8'))
+              assert canonical is not None, f'canonical absent : {loc}'
+              assert canonical.group(1) == loc, f'canonical différent du loc du sitemap : {canonical.group(1)} != {loc}'
           PY
 
           if [ "${{ github.event_name }}" = "push" ]; then

@@ -42,7 +42,9 @@ export function usePageSeo(options: MaybeRefOrGetter<PageSeoOptions | undefined 
 
     const rawPath = opts.path ?? "";
     const cleanPath = rawPath === "" || rawPath === "/" ? "" : rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
-    const canonicalUrl = cleanPath ? `${siteUrl}${cleanPath}` : siteUrl;
+    // Forme canonique servie par l'hébergement statique : `/services/` et non
+    // `/services`, qui répond en 301. Le canonical ne doit jamais rediriger.
+    const canonicalUrl = absoluteCanonicalUrl(siteUrl, cleanPath);
 
     let imageUrl: string | undefined;
     if (opts.image) {

@@ -838,6 +838,14 @@ export default defineNuxtConfig({
     name: rawSiteName,
     env: rawSiteEnv,
     description: `${SITE.profile.role}. ${SITE.profile.name} conçoit des applications et workflows fiables.`,
+    // Forme d'URL canonique du site statique. GitHub Pages ne répond 200 que sur la
+    // forme « dossier » (`/about/`) et redirige `/about` en 301. `nuxt-site-config`
+    // propage cette forme aux résolveurs d'URL de ses consommateurs — dont
+    // `@nuxtjs/sitemap` (`fixSlashes`, `createSitePathResolver`) — et `toCanonicalPath()`
+    // l'applique au canonical, à l'Open Graph et au JSON-LD. Sans elle, chaque page du
+    // sitemap et chaque canonical désignent une redirection (« Page avec redirection »,
+    // « Erreur liée aux redirections » dans la Search Console).
+    trailingSlash: true,
   },
   // AEO statique : génération au build uniquement, sans serveur MCP, WebMCP,
   // synchronisation runtime, cron, base persistante ou négociation de contenu.
@@ -904,6 +912,18 @@ export default defineNuxtConfig({
   // Structure Nuxt 4 par défaut : code applicatif sous app/ (srcDir = "app").
   experimental: {
     payloadExtraction: false,
+    // Forme d'URL canonique du site statique. GitHub Pages ne répond 200 que sur
+    // la forme « dossier » (`/about/`) et redirige `/about` en 301 : les liens
+    // internes doivent donc nommer la forme servie, sinon chaque navigation d'un
+    // robot ou d'un premier chargement traverse une redirection, ce que la Search
+    // Console signale comme « Page avec redirection » / « Erreur liée aux
+    // redirections ». La forme est appliquée en cohérence par `toCanonicalPath()`
+    // (canonical, Open Graph, JSON-LD) et par le hook `sitemap:input`.
+    defaults: {
+      nuxtLink: {
+        trailingSlash: "append",
+      },
+    },
   },
   // Flat config gérée par @nuxt/eslint ; on laisse Prettier formater (stylistic off).
   eslint: {

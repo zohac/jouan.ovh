@@ -91,7 +91,7 @@ const cardJsonLd = {
   jobTitle: profile.role,
   email: profile.email,
   telephone: profile.phone,
-  url: siteUrl,
+  url: absoluteCanonicalUrl(siteUrl, "/"),
   image: `${siteUrl}/images/portrait.jpeg`,
   address: {
     "@type": "PostalAddress",

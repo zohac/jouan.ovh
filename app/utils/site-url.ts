@@ -29,3 +29,36 @@ export function normalizeSiteUrl(siteUrl: string): string {
 
   return url.origin;
 }
+
+/**
+ * Forme canonique d'un chemin public : barre oblique finale.
+ *
+ * GitHub Pages, qui sert ce site statique, ne répond 200 que sur la forme
+ * « dossier » (`/about/`) et redirige en 301 la forme sans barre (`/about`).
+ * Le canonical, l'Open Graph, le JSON-LD et le sitemap doivent donc nommer
+ * l'URL réellement servie : un canonical qui redirige est signalé par la
+ * Search Console (« Page avec redirection », « Erreur liée aux redirections »)
+ * et fragilise la consolidation des signaux d'indexation.
+ *
+ * Le fragment et la query sont conservés en fin d'URL, la racine reste `/` et
+ * la barre finale n'est jamais doublée.
+ */
+export function toCanonicalPath(rawPath: string): string {
+  const value = rawPath.trim();
+  if (value === "") {
+    return "/";
+  }
+
+  const boundaries = [value.indexOf("?"), value.indexOf("#")].filter((index) => index >= 0);
+  const boundary = boundaries.length > 0 ? Math.min(...boundaries) : -1;
+  const pathname = boundary === -1 ? value : value.slice(0, boundary);
+  const suffix = boundary === -1 ? "" : value.slice(boundary);
+  const segments = pathname.split("/").filter(Boolean);
+
+  return segments.length === 0 ? `/${suffix}` : `/${segments.join("/")}/${suffix}`;
+}
+
+/** Concatène l'origin canonique et un chemin public sous sa forme canonique. */
+export function absoluteCanonicalUrl(origin: string, path: string): string {
+  return `${origin}${toCanonicalPath(path)}`;
+}
