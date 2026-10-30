@@ -123,6 +123,11 @@ jouan.ovh/
 - **Règle :** Ne **JAMAIS** écrire en dur `https://jouan.ovh` ou `https://dev.jouan.ovh` dans le code applicatif ou les métadonnées.
 - **Pattern :** Toujours injecter l'URL via le composable `useSiteUrl()`. Ce composable lit `useSiteConfig().url`, alimenté au build par `NUXT_SITE_URL` (avec `NUXT_SITE_NAME` et `NUXT_SITE_ENV`). `runtimeConfig.public.siteUrl` et `NUXT_PUBLIC_SITE_URL` ne sont plus des sources SEO.
 - **SEO :** Utiliser systématiquement `usePageSeo({ title, description, path, ... })` pour garantir l'unicité des canonicals et des balises OpenGraph/Twitter.
+- **Forme d'URL canonique : barre finale.** GitHub Pages (hébergement statique) ne répond `200` que sur la forme « dossier » (`/about/`) et redirige `/about` en `301`. La forme est pilotée par `site.trailingSlash: true` (propagée au sitemap et aux artefacts AI Ready par `nuxt-site-config`) et par `experimental.defaults.nuxtLink.trailingSlash: "append"` (liens internes).
+  - Toute URL absolue construite dans du code applicatif (canonical, `og:url`, `url` JSON-LD) passe par `absoluteCanonicalUrl(siteUrl, path)` (`app/utils/site-url.ts`) — **jamais** par une interpolation `${siteUrl}/chemin`. Le canonical et le `loc` du sitemap doivent désigner l'URL réellement servie, sinon la Search Console signale « Page avec redirection » / « Erreur liée aux redirections ».
+  - La CI le vérifie : chaque `loc` du sitemap se termine par `/` et doit être égal au `<link rel="canonical">` du HTML correspondant.
+  - Corollaire : un lien vers un **fichier** (`/sitemap.xml`, `/llms.txt`, `/about.md`) ne passe pas par `<NuxtLink>` — la forme canonique y ajouterait une barre finale. Utiliser une balise `<a>` explicite (ou la primitive adaptée) pour ces cibles.
+  - Les redirections `http://jouan.ovh/` → `https://` et `www` → apex sont normales et attendues ; ne pas tenter de les supprimer.
 
 ### 2. Contenu Partagé : DRY Strict
 
