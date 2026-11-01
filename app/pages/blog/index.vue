@@ -88,13 +88,16 @@
 // au build par useAsyncData). La vue article (/blog/[...slug]) est la story 6.2.
 import { NuxtLink } from "#components";
 import { SITE } from "~/data/site";
-import { isIndexableBlogEntry } from "~/utils/blog-indexability";
+import { resolveBlogVisibility } from "~/utils/blog-indexability";
 
-// Articles publiés, indexables et triés par date décroissante. Le même filtre que
-// le schéma Sitemap empêche un contenu noindex d'être lié puis-prérendu via le crawler.
+// Articles découvrables, triés par date décroissante. Le filtre est `discoverable` du
+// resolver, et non le `isIndexableBlogEntry` du schéma Sitemap : les deux prédications
+// divergent sur `sitemap: false`, où la matrice impose la présence dans les listes.
+// `crawlLinks: true` suit les liens du HTML généré, donc lier ici suffirait à recréer
+// une route pour un contenu `noindex`.
 const { data: articles, error } = await useAsyncData("blog-list", async () => {
   const entries = await queryCollection("blog").order("date", "DESC").all();
-  return entries.filter((entry) => isIndexableBlogEntry(entry));
+  return entries.filter((entry) => resolveBlogVisibility(entry).discoverable);
 });
 
 // `formatDate` (date ISO → français) est un util auto-importé partagé (app/utils/).
@@ -105,7 +108,7 @@ const siteUrl = useSiteUrl();
 const pageTitle = "Blog — Simon Jouan";
 const pageDescription =
   "Notes de dev, architecture, agents IA et automatisation métier : retours d'expérience et apprentissages concrets sur le terrain.";
-const pageUrl = `${siteUrl}/blog`;
+const pageUrl = absoluteCanonicalUrl(siteUrl, "/blog");
 
 // JSON-LD : flux d'articles (Blog → BlogPosting) pour les moteurs / agrégateurs.
 // Construit à partir de la liste résolue (snapshot au build, page prerendue).
@@ -124,16 +127,16 @@ const blogJsonLd = {
     author: {
       "@type": "Person",
       name: SITE.profile.name,
-      url: siteUrl,
+      url: absoluteCanonicalUrl(siteUrl, "/"),
     },
     publisher: {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
       name: SITE.profile.name,
-      url: siteUrl,
+      url: absoluteCanonicalUrl(siteUrl, "/"),
       logo: `${siteUrl}/images/logo.png`,
     },
-    url: `${siteUrl}${article.path}`,
+    url: absoluteCanonicalUrl(siteUrl, article.path),
     ...(article.tags?.length ? { keywords: article.tags.join(", ") } : {}),
     ...(article.image
       ? {

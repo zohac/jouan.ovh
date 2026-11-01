@@ -149,4 +149,4 @@ Le retour arrière éditorial et le takedown confidentialité/sécurité sont di
 - Les hubs Vue ne passent pas par `contentRouteState` comme les documents Markdown.
 - Les relations sont filtrées avant le rendu afin que `crawlLinks: true` ne puisse pas créer une route non voulue.
 - Le RSS est un propriétaire de distribution séparé, jamais un second propriétaire du sitemap ou du canonical.
-- Le baseline visuel et de navigation est celui approuvé au checkpoint Epic 14 ; le blog ne déclenche pas de migration de thème.
+- Le baseline visuel et de navigation est celui à ratifier au checkpoint Epic 14 ; le blog ne déclenche pas de migration de thème.

@@ -4,7 +4,7 @@ baseline_commit: d8193c7
 
 # Story 14.2: Session Replay sécurisé, Masquage des Données Sensibles & Mise à Jour RGPD
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -233,6 +233,7 @@ deepseek-v4.1-flash (opencode)
 - **AC5 (restitution)** : réglages projet PostHog EU confirmés intacts via MCP. **Limitation honnête** : la capture live d'une session de replay **ne peut pas être prouvée avant déploiement** — `recording_domains` est restreint à `https://jouan.ovh`, donc un enregistrement local (localhost) est refusé par le projet. La vérification end-to-end (session enregistrée + inputs masqués dans le replay) est **reportée au post-déploiement** sur `https://jouan.ovh` (clé injectée par la CI). Le masquage est néanmoins garanti par : (1) la config client bundlée (`maskAllInputs`, `maskTextSelector`, `maskAllElementAttributes`), (2) l'exclusion native `ph-no-capture` (blockClass par défaut du recorder) sur tous les champs, (3) les réglages projet. À confirmer via `query-session-recordings-list` après le premier déploiement.
 - **Non-régression 14.1** : gardes `instance`/race/retry, DNT non écrasable, tokens `--z-*`, auto-affichage conditionné à la clé — tous préservés.
 - **Rétention 30 j** : la cible « 14 mois » de `compliance-gdpr.md §5` reste non atteignable sur le plan actuel — déjà consignée dans `deferred-work.md` (section « Deferred from: story 14.2 »).
+- **Clôture post-déploiement (2026-09-25)** : CI `main` verte (run `36141238524`), production servie avec la clé PostHog EU. Vérification MCP après consentement `Mesure + replay` sur `https://jouan.ovh` : un enregistrement de session a été créé (`session-recording-get` → `01a0d8cc-8441-789d-93a6-3a7ced26e677`, `snapshot_source: web`, `retention_period_days: 30`, `expiry_time: 2026-10-25`, 0 erreur console), ce qui lève la limitation AC5. Les réglages projet restent intacts (`session_recording_opt_in: true`, `anonymize_ips: true`, `capture_console_log_opt_in: false`, `recording_domains`/`app_urls` = `https://jouan.ovh`). Le consentement replay est désormais séparé de la mesure d'audience (revue 14.6) : `startSessionRecording()` n'est appelé que si `consentState === accepted` **et** `replayConsentState === accepted`. Le masquage reste garanti par la config client (`maskAllInputs`, `maskTextSelector` incluant `.ph-no-capture, .terminal, input, textarea`, `maskAllElementAttributes`, `recordBody: false`), les 7 champs `ph-no-capture` du formulaire et les réglages projet ; la vérification pixel du replay n'est pas exposée par les outils MCP.
 
 ### File List
 
@@ -243,6 +244,7 @@ deepseek-v4.1-flash (opencode)
 - `docs/implementation-artifacts/14-2-session-replay-securise-masquage-donnees-et-politique-rgpd.md` (UPDATE) — story.
 
 ## Change Log
+- 2026-09-25 : **Clôture post-déploiement** — CI `main` verte (`36141238524`), clé PostHog EU identique au projet `62302`, consentement `Mesure + replay` exercé sur `https://jouan.ovh`, enregistrement de session confirmé via MCP (`01a0d8cc-8441-789d-93a6-3a7ced26e677`, rétention 30 j, source web). Réglages projet EU confirmés intacts. AC5 levé. Statut → `done`.
 - 2026-09-23 : **Code review story 14.2** — 2 décisions résolues (D1 : ajout de `posthog.reset()` sur refus/DNT pour mitigation RGPD art. 17 côté client ; D2 : statut `review` maintenu, limitation AC5 structurellement transparente), 5 patches appliqués (catch silencieux sur `applyConsent`, wording « 13 routes statiques + assets IPX », `console.warn` dev-only dans le `.catch()` PostHog init, bullet `deferred-work.md` 14.1 obsolète réécrit, typo `maskTextClass` = faux positif — déjà correct), 1 defer tracé (contrat `ZInput` forwarding non couvert par CI, projet-wide).
 - 2026-09-23 : **Implémentation story 14.2** — Session Replay sécurisé (config `session_recording` camelCase, opt-in via `startSessionRecording()`, stop sur refus/DNT), exclusion native `ph-no-capture` des 7 champs de contact, mise à jour RGPD de `/confidentialite` (section cookies corrigée + sous-section PostHog EU, rétention 30 j). Gate Docker verte (13 routes statiques + assets IPX). Réglages projet PostHog EU revérifiés intacts via MCP. Capture live du replay reportée au post-déploiement (`recording_domains` = `jouan.ovh`). Statut → review.
 - 2026-09-23 : **Réglages projet PostHog appliqués via MCP** (EU, projet 62302) — `anonymize_ips: true`, `capture_console_log_opt_in: false`, `recording_domains`/`app_urls` restreints à `https://jouan.ovh`. Rétention Session Replay laissée à `30d` (refus API : plafond du plan). Story mise à jour : Session Replay déjà actif côté projet (vérifier ≠ activer), rétention réelle 30 j (≠ 14 mois), périmètre projet intégré, décision D4 (MCP) levée.

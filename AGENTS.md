@@ -8,7 +8,7 @@ Ce document constitue la **source de vérité universelle** pour tout agent IA (
 
 - **Projet :** `jouan.ovh` — Portfolio, vitrine de services et blog de **Simon Jouan** (développeur Full Stack spécialisé en systèmes IA & automatisation métier).
 - **URL de production :** [`https://jouan.ovh`](https://jouan.ovh) (déployé sur **GitHub Pages**, domaine custom, HTTPS Let's Encrypt forcé, DNS OVH).
-- **Statut actuel :** **Repositionnement commercial V1.1 livré** (Désancrage tarifaire, 3 niveaux d'intervention sur devis, section dédiée AI Care dès 250 € HT/mois, Blueprint en cadrage, Epics 1 à 13 et Epic 15 validés et clôturés, Epic 14 en cours avec roadmap SEO/AEO). Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
+- **Statut actuel :** **Repositionnement commercial V1.1 livré** (désancrage tarifaire, 3 niveaux d'intervention sur devis, section AI Care à partir de 250 € HT/mois, Blueprint en cadrage). Les Epics 1 à 15 sont livrés ; les six tâches de l'Epic 14 sont terminées, la rétrospective est enregistrée et le point de contrôle est ratifié le 2026-09-26 (`stabilisation: ratifiée`), avec des réserves explicites acceptées et suivies. Les huit réserves suivies (Google Search Console, couverture analytics, rétention des événements, inspection visuelle du rejeu, mesure d'effet AEO, synchronisation inter-onglets, chaîne d'approvisionnement CI, préflight SEO) sont détaillées avec leur propriétaire dans `docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md`. L'Epic 16 peut désormais passer en décomposition de stories T0. Le projet est en phase d'**exploitation, maintenance et évolutions ciblées (Run)**.
 - **Langue & Voix (NFR6) :**
   - Interface et contenu en **FRANÇAIS** (`lang="fr"`).
   - Voix : **1re personne (« je »)** pour Simon, **vouvoiement** pour le visiteur/client.
@@ -53,7 +53,7 @@ _Note SQLite / `@nuxt/content` :_ Lancer `pnpm generate` dans un conteneur sépa
 - **UI / Composants :** Vue 3 avec **`<script setup lang="ts">`** obligatoire pour tout nouveau composant. (Plus aucun décorateur de classe ; le terminal a été intégralement migré en `script setup`).
 - **Langage :** TypeScript `^6.0.3` en mode strict.
 - **Styles :** SCSS (`sass ^1.101.0`) avec `@use ... as _alias` (jamais `@import`).
-- **Tokens & Design System :** Dark-first (pas de mode clair). Tokens CSS custom properties exposés globalement sur `:root` dans `app/assets/scss/abstract/_root.scss`. Consommation via `var(--token)`.
+- **Tokens & Design System :** priorité au thème sombre avec thème clair « Papier technique / Crème solaire » et terminal sombre sanctuarisé. Tokens CSS exposés globalement sur `:root` dans `app/assets/scss/abstract/_root.scss`. Consommation via `var(--token)`.
 - **Contenu :** `@nuxt/content ^3.14.0` (v3, stockage SQLite, collections typées dans `content.config.ts`).
 - **Images :** `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`), jamais de balise `<img>` brute.
 - **Linters :** ESLint 10 (flat config `@nuxt/eslint`), Prettier 3, Stylelint 17 (`stylelint-scss`).
@@ -91,7 +91,9 @@ jouan.ovh/
 │       ├── index.vue        # Accueil (Hero terminal, aperçu services, projets phares)
 │       ├── services.vue     # Offres de freelance et déroulé du process en 4 étapes
 │       ├── about.vue        # Biographie, timeline expériences/formations et stack
-│       ├── contact.vue      # Formulaire de contact Web3Forms et coordonnées
+│       ├── contact/            # Pages Contact
+│       │   ├── index.vue       # Formulaire Web3Forms et coordonnées
+│       │   └── card.vue        # Carte de visite numérique
 │       ├── confidentialite.vue # Politique de confidentialité RGPD
 │       ├── mentions-legales.vue# Mentions légales
 │       └── blog/
@@ -121,6 +123,11 @@ jouan.ovh/
 - **Règle :** Ne **JAMAIS** écrire en dur `https://jouan.ovh` ou `https://dev.jouan.ovh` dans le code applicatif ou les métadonnées.
 - **Pattern :** Toujours injecter l'URL via le composable `useSiteUrl()`. Ce composable lit `useSiteConfig().url`, alimenté au build par `NUXT_SITE_URL` (avec `NUXT_SITE_NAME` et `NUXT_SITE_ENV`). `runtimeConfig.public.siteUrl` et `NUXT_PUBLIC_SITE_URL` ne sont plus des sources SEO.
 - **SEO :** Utiliser systématiquement `usePageSeo({ title, description, path, ... })` pour garantir l'unicité des canonicals et des balises OpenGraph/Twitter.
+- **Forme d'URL canonique : barre finale.** GitHub Pages (hébergement statique) ne répond `200` que sur la forme « dossier » (`/about/`) et redirige `/about` en `301`. La forme est pilotée par `site.trailingSlash: true` (propagée au sitemap et aux artefacts AI Ready par `nuxt-site-config`) et par `experimental.defaults.nuxtLink.trailingSlash: "append"` (liens internes).
+  - Toute URL absolue construite dans du code applicatif (canonical, `og:url`, `url` JSON-LD) passe par `absoluteCanonicalUrl(siteUrl, path)` (`app/utils/site-url.ts`) — **jamais** par une interpolation `${siteUrl}/chemin`. Le canonical et le `loc` du sitemap doivent désigner l'URL réellement servie, sinon la Search Console signale « Page avec redirection » / « Erreur liée aux redirections ».
+  - La CI le vérifie : chaque `loc` du sitemap se termine par `/` et doit être égal au `<link rel="canonical">` du HTML correspondant.
+  - Corollaire : un lien vers un **fichier** (`/sitemap.xml`, `/llms.txt`, `/about.md`) ne passe pas par `<NuxtLink>` — la forme canonique y ajouterait une barre finale. Utiliser une balise `<a>` explicite (ou la primitive adaptée) pour ces cibles.
+  - Les redirections `http://jouan.ovh/` → `https://` et `www` → apex sont normales et attendues ; ne pas tenter de les supprimer.
 
 ### 2. Contenu Partagé : DRY Strict
 
@@ -152,6 +159,7 @@ jouan.ovh/
 
 - Le fichier `public/CNAME` contient **`jouan.ovh`**. Ne jamais le modifier ou le supprimer.
 - Le step `Verify static output` dans `.github/workflows/cd.yml` vérifie `grep -qx "jouan.ovh" .output/public/CNAME`. Tout changement de domaine doit être répercuté simultanément sur ces deux fichiers.
+- **Sonde de production** : `.github/workflows/production-probe.yml` exécute `scripts/probe-production.mjs` après chaque `cd` réussi sur `main` et une fois par jour. Elle vérifie l'artefact **réellement servi** (sitemap, robots, canonical = `loc`, absence de `noindex`, artefacts AEO, redirections) — ce que la CI ne peut pas voir, puisqu'elle valide `.output/public` avant l'hébergement. Toute évolution des surfaces SEO/AEO doit laisser cette sonde verte.
 
 ### 7. Composants Immersifs, Canvas & WebGL (Acquis Epic 11)
 
@@ -162,12 +170,19 @@ jouan.ovh/
 
 ### 8. Fidélité Visuelle & Spécifications (Accords Rétro Epic 11)
 
-- **Spécifications complètes dès la rédaction :** Toute nouvelle story d'UI doit stipuler les contraintes de rendu spatial (dimensions, échelles `clamp`, transparences, gestion de l'arrière-plan d'ambiance) directement dérivées de la maquette cible.
-- **Revue visuelle obligatoire :** L'obtention d'une gate de test verte (lint/build) est une condition nécessaire mais NON suffisante pour valider une story d'interface. Un contrôle visuel comparatif (navigateur / captures) est obligatoire avant clôture.
+- **Spécifications complètes dès la rédaction :** Toute nouvelle tâche d'interface doit stipuler les contraintes de rendu spatial (dimensions, échelles `clamp`, transparences, gestion de l'arrière-plan d'ambiance) directement dérivées de la maquette cible.
+- **Revue visuelle obligatoire :** L'obtention d'une barre de validation verte (analyse statique et génération) est une condition nécessaire mais NON suffisante pour valider une tâche d'interface. Un contrôle visuel comparatif (navigateur / captures) est obligatoire avant clôture.
+
+### 9. Propriété des surfaces partagées (Epic 14)
+
+- `useSiteUrl()` et `usePageSeo()` restent les propriétaires de l'origine, des canonicals et des métadonnées SEO ; `@nuxtjs/sitemap`, `@nuxtjs/robots` et `nuxt-ai-ready` sont les propriétaires uniques de leurs artefacts.
+- Toute évolution T0 du blog ne doit créer ni second sitemap, ni second robots, ni seconde projection AEO, ni nouvel événement ou nouvelle propriété de télémétrie sans revue de vie privée explicite.
+- Les artefacts AEO et la politique d'exploration sont vérifiés en production ; cette vérification ne vaut ni certification Google Search Console, ni mesure d'effet AEO, ni garantie de citation ou de classement.
+- Les réserves du point de contrôle Epic 14 sont suivies dans `docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md`. Le point de contrôle est ratifié et les contrats D-01 à D-08 sont statués ; l'Epic 16 peut être décomposé en stories T0.
 
 ---
 
-## 6. Checklist de Validation Qualité (Definition of Done)
+## 6. Liste de contrôle de validation qualité (définition de terminé)
 
 Avant de soumettre tout changement ou de clore une tâche, l'agent IA doit exécuter et valider :
 
@@ -180,7 +195,7 @@ Avant de soumettre tout changement ou de clore une tâche, l'agent IA doit exéc
    - Routes publiques, articles et artefacts SEO/AEO pré-rendus avec succès par Nitro ; les assertions CI contrôlent `llms.txt`, `llms-full.txt`, les jumeaux `.md`, les liens alternatifs et les budgets.
 2. **Vérification visuelle & comportementale :**
    - Contrôle visuel comparatif sur navigateur (desktop et mobile) conforme à la maquette cible.
-   - Rendu fidèle au Design System (thème sombre aubergine, orange accent, typographie Ubuntu).
+   - Rendu fidèle au Design System (thème sombre aubergine, thème clair « Papier technique », orange accent, typographie Ubuntu ; terminal sanctuarisé).
    - Navigation clavier fonctionnelle (focus visible, ordre logique).
    - Pas de valeurs CSS en dur non justifiées.
 
@@ -190,5 +205,5 @@ Avant de soumettre tout changement ou de clore une tâche, l'agent IA doit exéc
 
 - [`docs/project-context.md`](file:///Users/simon/dev/jouan.ovh/docs/project-context.md) : Historique détaillé, leçons apprises par épic et règles fines.
 - [`docs/implementation-artifacts/sprint-status.yaml`](file:///Users/simon/dev/jouan.ovh/docs/implementation-artifacts/sprint-status.yaml) : Registre officiel des stories et de leur statut.
-- [`docs/planning-artifacts/epics.md`](file:///Users/simon/dev/jouan.ovh/docs/planning-artifacts/epics.md) : Cahier des charges et critères d'acceptation des Epics 1 à 12.
+- [`docs/planning-artifacts/epics.md`](file:///Users/simon/dev/jouan.ovh/docs/planning-artifacts/epics.md) : cahier des charges et critères d'acceptation des Epics 1 à 16 ; les critères historiques supersédés restent explicites et ne doivent pas être réinterprétés silencieusement.
 - [`docs/implementation-artifacts/deferred-work.md`](file:///Users/simon/dev/jouan.ovh/docs/implementation-artifacts/deferred-work.md) : Inventaire des arbitrages et améliorations futures optionnelles.

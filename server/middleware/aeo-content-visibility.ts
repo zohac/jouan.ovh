@@ -1,12 +1,12 @@
 import { createError, getRequestURL } from "h3";
-import { isIndexableBlogEntry, isPublishedBlogEntry } from "../../app/utils/blog-indexability";
+import { resolveBlogVisibility } from "../../app/utils/blog-indexability";
 
 /**
  * Empêche la lecture directe d'un jumeau Markdown pour un article exclu.
  *
  * Le build SSG produit puis nettoie les routes noindex via le hook Nitro. En
  * développement et sur un runtime Node, la source Content ne doit toutefois pas
- * devenir un chemin de contournement : un article draft, futur, noindex ou
+ * devenir un chemin de contournement : un article draft, futur, privé, noindex ou
  * explicitement exclu du sitemap répond 404 sur son URL `.md`.
  */
 export default defineEventHandler(async (event) => {
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
     return;
   }
 
-  if (!isPublishedBlogEntry(entry) || !isIndexableBlogEntry(entry)) {
+  if (!resolveBlogVisibility(entry).inSitemap) {
     throw createError({
       statusCode: 404,
       statusMessage: "Contenu non public",

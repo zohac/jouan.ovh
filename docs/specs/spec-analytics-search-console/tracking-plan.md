@@ -20,7 +20,7 @@ Conformément à la directive projet (« Mieux vaut un maximum d'événements à
 | Nom de l'événement          | Déclencheur                                                     | Propriétés spécifiques                                                     | Objectif métier                                      |
 | :-------------------------- | :-------------------------------------------------------------- | :------------------------------------------------------------------------- | :--------------------------------------------------- |
 | `hero_cta_clicked`          | Clic sur un des deux CTAs principaux du Hero                    | `cta_id` (`identify_workflow`, `view_systems`), `cta_label`, `destination` | Mesure de l'impact immédiat du hook d'accroche IA.   |
-| `hero_badge_clicked`        | Clic sur le badge de disponibilité ("Disponible pour missions") | `badge_state` (`available`, `busy`)                                        | Intérêt pour la disponibilité commerciale immédiate. |
+| `hero_malt_link_clicked`    | Clic sur le lien de profil Malt depuis le badge de disponibilité | `badge_state` (`available`, `busy`)                                        | Intérêt pour la disponibilité commerciale immédiate. |
 | `hero_terminal_interaction` | Première interaction avec le terminal intégré au Hero           | `interaction_type` (`click`, `keypress`)                                   | Évaluation de la curiosité pour l'univers terminal.  |
 
 ---
@@ -67,7 +67,7 @@ Conformément à la directive projet (« Mieux vaut un maximum d'événements à
 | `contact_form_submit_attempt` | Clic sur le bouton de soumission du formulaire         | `fields_filled_count`, `form_validity`                            | Mesure de la volonté d'envoi.                                 |
 | `contact_form_success`        | Confirmation de réception via l'API Web3Forms          | `has_company` (booléen), `latency_ms`                             | **Macro-conversion principale** du site.                      |
 | `contact_form_error`          | Échec de l'envoi (réseau ou validation Web3Forms)      | `error_status`, `error_code` (`api_rejection` ou `network_error`) | Alerting technique sans message fournisseur ni contenu saisi. |
-| `direct_email_copied`         | Clic pour copier l'adresse email de contact            | `email_context` (`footer`, `contact_page`)                        | Suivi des prises de contact hors formulaire.                  |
+| `direct_email_copied`         | Clic sur un lien `mailto:` ou une action de copie     | `email_context` (`footer`, `contact_page`, `blog_article`, `homepage_final`) | Signal provisoire ; ne pas l'interpréter comme une copie confirmée sans correction du déclencheur. |
 | `linkedin_profile_clicked`    | Clic sur le lien vers le profil LinkedIn               | `location` (`header`, `footer`, `contact`)                        | Mesure des redirections vers le canal social professionnel.   |
 
 ---
@@ -145,3 +145,11 @@ Le panel de mesure fixe comporte des requêtes en français portant sur les syst
 Pour chaque exécution, le journal indique la date, le prompt, l'URL mentionnée éventuelle, la page attribuée, l'exactitude de la réponse et la présence d'une citation correcte. Une citation observée est un constat de sortie, pas une garantie de citation future.
 
 Google Search Console sert de contrôle organique : pages indexées, requêtes, impressions et clics sont suivis séparément des sessions referral. L'absence d'UTM, le refus du consentement et les signaux Do Not Track/GPC rendent la session non observable. Aucun score de lisibilité machine ni aucune présence de fichier `llms.txt` n'est utilisé comme proxy de classement ou de causalité.
+
+## 11. Réserves de contrat à ne pas masquer
+
+- `hero_malt_link_clicked` est le nom réellement émis par le code ; `hero_badge_clicked` est conservé uniquement comme ancien libellé de référence.
+- `direct_email_copied` est actuellement déclenché par l'ouverture de liens `mailto:` ; le nom et le comportement doivent être corrigés dans une passe analytics dédiée avant d'en tirer une conclusion.
+- `terminal_minimized_maximized` et `project_card_clicked` ne sont pas émis lorsque l'interface ne fournit pas le comportement correspondant ; ces absences sont intentionnelles et ne doivent pas être transformées en valeurs nulles.
+- `blog_code_copied.code_language` peut rester `unknown` car Shiki est désactivé au profit de la palette terminale du design system.
+- La couverture des catégories d'événements en production doit être confirmée par une requête PostHog avant de présenter le plan comme pleinement observé.

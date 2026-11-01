@@ -2,6 +2,8 @@
 
 Ce document formalise la validation de propriété du domaine `jouan.ovh` dans Google Search Console et le contrat de génération des artefacts d’exploration `sitemap.xml` et `robots.txt`.
 
+> **État au 2026-09-25 :** les artefacts SEO et les probes de production sont vérifiés. La validation DNS Google et la soumission du sitemap dans Google Search Console restent des opérations à exécuter ; elles ne sont pas déduites de la présence des fichiers.
+
 ---
 
 ## 1. Méthode retenue : vérification par enregistrement DNS TXT chez OVH
@@ -30,7 +32,7 @@ La validation DNS et la soumission du sitemap restent des opérations post-dépl
 - **Exclusions :** brouillons, articles futurs, entrées noindex, `sitemap: false`, `robots: false`, routes d’erreur, assets et endpoints internes ne sont pas inclus. Les URLs publiques présentes dans le sitemap possèdent toutes un fichier HTML statique correspondant.
 - **Format :** XML sitemap 0.9 valide, une seule occurrence par URL et une origine absolue canonicale.
 
-Le hook de build `content:file:afterParse` construit dynamiquement l’état des routes Content sans manifeste manuel. Cet état est conservé dans `.data/content/seo-routes.json` afin que les builds suivants restent déterministes même lorsque la base SQLite est réutilisée. Les articles noindex sont prérendus avec leur meta robots puis retirés du sitemap fusionné par `server/plugins/seo-content.ts` ; les entrées `sitemap: false` ou `sitemap: null` ne sont ni prérendues ni découvertes. Le plugin réapplique aussi le `lastmod` éditorial après la fusion des sources, sans priority ni changefreq.
+Le hook de build `content:file:afterParse` construit dynamiquement l’état des routes Content sans manifeste manuel. Cet état est conservé dans `.data/content/seo-routes.json` afin que les builds suivants restent déterministes même lorsque la base SQLite est réutilisée. Les articles noindex sont prérendus avec leur balise `noindex` lorsqu'ils restent accessibles, puis retirés du sitemap fusionné par `server/plugins/seo-content.ts` ; les entrées `sitemap: false` ou `sitemap: null` restent également hors du sitemap et des artefacts AEO, selon la matrice de visibilité. Le plugin réapplique le `lastmod` éditorial après la fusion des sources, sans `priority` ni `changefreq`.
 
 ---
 
@@ -80,6 +82,8 @@ La CI vérifie l’existence de `sitemap.xml`, `robots.txt`, `contact/card/index
 4. Après propagation, Simon demande la confirmation de validation à Google Search Console.
 5. Après le déploiement de la story 14.5, Simon soumet `https://jouan.ovh/sitemap.xml` dans le menu « Sitemaps ».
 
+Cette démarche est documentée mais son exécution et sa validation ne sont pas encore enregistrées. Le sitemap servi en production ne vaut donc pas preuve de propriété Google, de soumission ou d'indexation.
+
 ---
 
 ## 6. Validation AEO et AI Ready
@@ -96,7 +100,7 @@ Le build de production doit produire :
 - `/index.md`, `/services.md`, `/about.md`, `/contact.md`, `/contact/card.md`, `/blog.md`, `/mentions-legales.md`, `/confidentialite.md` ;
 - un jumeau `.md` pour chaque article publié et chaque route présente dans le sitemap.
 
-Les liens HTML `rel="alternate" type="text/markdown"` et `rel="describedby" href="/llms.txt"` sont vérifiés dans chaque HTML éligible. Le hook Content expose un alias interne `updatedAt` dérivé de `updated` pour que la représentation Markdown publie `last_updated` lorsque cette date éditoriale existe. Le hook d'AI Ready complète ensuite le frontmatter Markdown avec `date`, `updated`, `tags`, `image` et `read` à partir du fichier source, y compris lorsque l'article est stocké dans un `index.md` imbriqué, sans réécrire le corps ni dupliquer les champs. Les routes noindex, brouillons, futurs et exclusions explicites sont retirés des artefacts AEO ; leur HTML peut rester accessible avec sa balise `noindex` afin de préserver le contrat SEO 14.5, mais ses liens `alternate`/`describedby` sont retirés et une requête `.md` directe répond 404 en développement.
+Les liens HTML `rel="alternate" type="text/markdown"` et `rel="describedby" href="/llms.txt"` sont vérifiés dans chaque HTML éligible. Le hook Content expose un alias interne `updatedAt` dérivé de `updated` pour que la représentation Markdown publie `last_updated` lorsque cette date éditoriale existe. Le hook d'AI Ready complète ensuite le frontmatter Markdown avec `date`, `updated`, `tags`, `image` et `read` à partir du fichier source, y compris lorsque l'article est stocké dans un `index.md` imbriqué, sans réécrire le corps ni dupliquer les champs. Les routes noindex, brouillons, futurs et exclusions explicites sont retirés des artefacts AEO ; leur HTML peut rester accessible avec sa balise `noindex` afin de préserver le contrat SEO 14.5, mais ses liens `alternate`/`describedby` sont retirés et une requête `.md` directe répond 404 en développement comme en production.
 
 En `NUXT_SITE_ENV=staging` ou `development`, le propriétaire Robots conserve le blocage global `Disallow: /` et n'expose pas les groupes OpenAI de production. La politique OAI/GPT doit donc être vérifiée sur un build `NUXT_SITE_ENV=production` ; un artifact local de staging ne vaut pas preuve de la politique publiée.
 
@@ -104,7 +108,7 @@ Les pages légales et les coordonnées professionnelles déjà publiques sont in
 
 ### Nettoyage et publication
 
-AI Ready utilise une base SQLite temporaire pendant le build, mais son dossier public `__ai-ready/` (`pages.json`, `pages.dump`, `pages.meta.json`) est supprimé après la génération statique. Le dump `__nuxt_content/blog/sql_dump.txt` est conservé comme asset technique de @nuxt/content pour les requêtes client ; il n'est ni une page AEO, ni lié depuis `llms.txt` ou `sitemap.md`, ni exposé dans les jumeaux Markdown. Les routes techniques Content générées par le framework ne sont donc pas des contenus AEO.
+AI Ready utilise une base SQLite temporaire pendant le build, mais son dossier public `__ai-ready/` (`pages.json`, `pages.dump`, `pages.meta.json`) est supprimé après la génération statique. Le dump technique `__nuxt_content/blog/sql_dump.txt` est également retiré de la sortie publique. Ces fichiers ne sont ni des pages AEO, ni liés depuis `llms.txt` ou `sitemap.md`, ni exposés dans les jumeaux Markdown ; les routes techniques Content générées par le framework ne sont donc pas des contenus AEO.
 
 `public/_headers` reste la source des règles de cache et de sécurité. AI Ready enrichit la copie générée avec les règles `/*.md`, le MIME Markdown et la relation `describedby`. La CI compare les invariants de `CNAME` et vérifie la structure de `_headers`, sans recopier `public/_headers` après le build.
 

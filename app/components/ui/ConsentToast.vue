@@ -71,8 +71,8 @@ watch(visible, async (isVisible, wasVisible) => {
 // explicitement, pas à l'auto-affichage initial).
 watch(
   () => [showConsentModal.value, focusRequested.value] as const,
-  ([isOpen, wasRequested]) => {
-    if (!isOpen && wasRequested && lastFocusedBeforeOpen && document.contains(lastFocusedBeforeOpen)) {
+  ([isOpen], [wasOpen, wasRequested]) => {
+    if (!isOpen && wasOpen && wasRequested && lastFocusedBeforeOpen && document.contains(lastFocusedBeforeOpen)) {
       lastFocusedBeforeOpen.focus();
       lastFocusedBeforeOpen = null;
     }

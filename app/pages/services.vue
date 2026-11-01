@@ -330,7 +330,7 @@ const servicesJsonLd = {
   name: "Services & Systèmes IA — Simon Jouan",
   description:
     "Conception et développement de systèmes IA et automatisation de processus métier : automatisation ciblée, workflows complets et applications métier sur mesure.",
-  url: `${siteUrl}/services`,
+  url: absoluteCanonicalUrl(siteUrl, "/services"),
   mainEntity: {
     "@type": "ItemList",
     itemListElement: [
@@ -341,7 +341,7 @@ const servicesJsonLd = {
           "@type": "Service",
           name: offer.title,
           description: offer.desc,
-          url: `${siteUrl}/services#${offer.id}`,
+          url: absoluteCanonicalUrl(siteUrl, `/services#${offer.id}`),
           provider: {
             "@type": "Organization",
             "@id": `${siteUrl}/#organization`,
@@ -360,7 +360,7 @@ const servicesJsonLd = {
           "@type": "Service",
           name: careOffer.title,
           description: careOffer.desc,
-          url: `${siteUrl}/services#${careOffer.id}`,
+          url: absoluteCanonicalUrl(siteUrl, `/services#${careOffer.id}`),
           provider: {
             "@type": "Organization",
             "@id": `${siteUrl}/#organization`,

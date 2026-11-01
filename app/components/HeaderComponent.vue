@@ -118,11 +118,15 @@ const navItems = [
 ];
 
 // Lien actif : exact pour l'accueil, préfixe pour les autres (couvre /blog/[...slug]).
+// La route courante porte la forme canonique du site (`/about/`) : la comparaison
+// se fait donc sur le chemin sans barre finale pour rester indépendante de la forme
+// d'URL émise par NuxtLink (`experimental.defaults.nuxtLink.trailingSlash`).
 function isActive(to: string): boolean {
+  const current = route.path.replace(/\/+$/u, "") || "/";
   if (to === "/") {
-    return route.path === "/";
+    return current === "/";
   }
-  return route.path === to || route.path.startsWith(`${to}/`);
+  return current === to || current.startsWith(`${to}/`);
 }
 
 // --- Scroll state & progress ---

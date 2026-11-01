@@ -1,7 +1,7 @@
 ---
 project_name: "jouan.ovh"
 user_name: "Simon"
-date: "2026-09-18"
+date: "2026-09-25"
 sections_completed: ["technology_stack", "language_framework", "code_quality", "workflow_testing", "critical_rules"]
 status: "complete"
 optimized_for_llm: true
@@ -27,7 +27,7 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - **Contenu :** `@nuxt/content ^3.14.0` (**v3** — stockage SQLite via `better-sqlite3`, blog). Images : `@nuxt/image ^2.0.0` (`<NuxtImg>` / `<NuxtPicture>`).
 - **Lint :** ESLint `^10` en **flat config** via `@nuxt/eslint` (`eslint.config.mjs`, `eslint: { config: { stylistic: false } }` → Prettier formate). Prettier `^3` (double quotes, points-virgules). Stylelint `^17` + `stylelint-config-standard-scss` + `stylelint-scss`. Script : `eslint . && stylelint "app/assets/**/*.scss" "app/**/*.vue"`.
 - **Gestionnaire de paquets :** pnpm (`packageManager: pnpm@11.8.0`, `pnpm-lock.yaml`), Node `>=22.13.0` — dev via Docker (cf. Workflow).
-- **Déploiement :** site statique (`nuxi generate`) → publication vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME` = `jouan.ovh`). ✅ La chaîne CI de déploiement est **prouvée en réel** sur `main` (Story 10.7) pour les routes publiques et les artefacts SEO. La couche AEO `nuxt-ai-ready@2.4.0` est validée par la gate locale et reste soumise à la vérification HTTP post-déploiement ; elle est configurée en mode statique (`contentSource`, Markdown, `llms.txt`, `sitemap.md`). HTTPS Let's Encrypt forcé et DNS OVH opérationnel.
+- **Déploiement :** site statique (`nuxi generate`) → publication vers la branche `gh-pages` (GitHub Pages, domaine custom via `CNAME` = `jouan.ovh`). ✅ La chaîne CI de déploiement est **prouvée en réel** sur `main` (tâche 10.7) pour les routes publiques et les artefacts SEO. La couche AEO `nuxt-ai-ready@2.4.0` est vérifiée en production (artefacts, MIME, exclusions, liens et budgets) et reste configurée en mode statique (`contentSource`, Markdown, `llms.txt`, `sitemap.md`). La validation DNS et l'exploitation Google Search Console ainsi que la mesure d'effet AEO restent des opérations distinctes, non conclues par la seule présence des fichiers. HTTPS Let's Encrypt forcé et DNS OVH opérationnel.
 - **Divers :** `ua-parser-js ^2` (détection device, terminal).
 
 ## Critical Implementation Rules
@@ -64,8 +64,18 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   `<img>` brut. Assets statiques dans `public/images/`.
 - Blog alimenté par `@nuxt/content` **v3** (markdown sous `content/blog/`) — index
   `app/pages/blog/index.vue`, article `app/pages/blog/[...slug].vue`. Collections **typées
-  dans `content.config.ts`** (schéma `blog` : `date` validée ISO via `z.string().regex`,
-  `updated`, `tags`, `read`, `image`). Requêtes via `queryCollection("blog")…` dans `useAsyncData`
+  dans `content.config.ts`**, qui ne contient que le câblage (`type: "page"`,
+  `source: "blog/**"`, `schema: blogContentSchema`) ; **le schéma lui-même vit dans
+  `app/utils/blog-content-contract.ts`** (champs `date` ISO + réalité calendaire, `updated`
+  avec `updated >= date`, `author`, `pillar`, `format`, `tags` kebab-case non vide, `draft`
+  requis, `visibility`, plus `read`, `image`, `noindex`, `robots`, `sitemap`, `updatedAt`).
+  ⚠️ **`@nuxt/content` v3 n'exécute jamais le schéma Zod** : il n'en dérive que les colonnes
+  SQLite et avale les exceptions d'ingestion en `logger.warn`. Le contrat est donc appliqué
+  explicitement par `assertBlogContentContract()` (`nuxt.config.ts`), dans
+  `scanContentRouteState()` — seul échec **dur**, au chargement de la configuration — et dans
+  le hook `content:file:afterParse` — utile en développement, mais **sans effet sur le build**.
+  Un article hors contrat échoue donc le build, il n'est jamais silencieusement publié ni
+  ignoré. Requêtes via `queryCollection("blog")…` dans `useAsyncData`
   (prerender-safe) ; rendu article via `<ContentRenderer>`. **Coloration Shiki désactivée**
   (`content.build.markdown.highlight: false`) pour imposer la palette terminale du DS —
   ne pas réactiver sans surcharge (sinon styles inline par token écrasant le DS).
@@ -74,15 +84,23 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
   `llmsTxt.markdownLinks: true`, `sitemapMd: true` et `describedby: true`. Le hook de nettoyage
   `server/plugins/ai-ready-markdown.ts` retire les composants non publics ; le middleware
   `server/middleware/aeo-content-visibility.ts` refuse les sources Content non publiques en runtime ;
-  l'état des routes est recalculé depuis les fichiers présents. Les artefacts AEO sont générés au build,
-  les routes noindex sont retirées après génération et les dumps `__ai-ready` ne sont pas publiés.
-  Ne pas activer MCP/WebMCP/runtime sync sur GitHub Pages.
+  l'état des routes est recalculé depuis les fichiers présents. Les artefacts AEO sont générés au build ;
+  les routes noindex, brouillons, futurs ou explicitement exclues sont retirées des listes, du sitemap
+  et des artefacts AEO, tandis que leur HTML public peut conserver sa balise `noindex`. Les dumps
+  `__ai-ready` et le dump technique Content ne sont pas publiés. Ne pas activer MCP/WebMCP/runtime sync
+  sur GitHub Pages.
 - **Formulaire `/contact` (Epic 7)** : envoi via **Web3Forms** (tiers _sans serveur_, site
   reste statique), clé via `runtimeConfig.public.web3formsAccessKey` (env
   `NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY`, cf. `.env.example`). ⚠️ **Sans la clé, l'envoi échoue** —
   la provisionner en env. `$fetch` **client-only** (prerender-safe) + honeypot anti-spam ;
   validation/feedback front. Notice RGPD sous le form + page politique de confidentialité dédiée
   (`/confidentialite`, livrée en story 10.6).
+
+### Référence de gouvernance Epic 14
+
+- Les propriétaires uniques de l'URL, du canonical, du sitemap, de `robots.txt` et des artefacts AEO sont documentés dans `docs/implementation-artifacts/epic-14-checkpoint-2026-09-25.md`.
+- Les six tâches 14.1 à 14.6 sont terminées ; le point de contrôle est réconcilié documentairement, mais la validation Google Search Console, la preuve exhaustive des événements en production, l'inspection visuelle du rejeu de session, la rétention des événements de télémétrie et la mesure d'effet AEO restent des réserves explicites.
+- L'Epic 16 ne doit ajouter en phase T0 ni événement, ni propriété, ni paramètre de télémétrie, ni second propriétaire SEO/AEO. Toute évolution de la télémétrie ou de la politique de consentement exige une revue de vie privée distincte.
 
 **SCSS (règle critique)**
 
@@ -142,9 +160,11 @@ _Ce fichier contient les règles et patterns critiques que les agents IA doivent
 - Copier les SVG/PNG du design system depuis `docs/design_system/assets/` vers
   `public/images/` ou `assets/` lors de l'implémentation.
 - **Contenu partagé, URLs & SEO :**
-  - Source unique de contenu : `app/data/site.ts` (`SITE.profile` / `SITE.skills` / `SITE.projects`, typés `IProfile`/`IProject`) — consommée par les programmes terminal (`skills`/`projets`/`contact`/`about`), `index.vue`, `about.vue`, `contact.vue` et `FooterComponent`. **Ne pas re-hardcoder** profil/skills/projets/email/ville ailleurs (DRY, consolidé en 8.2).
+  - Source unique de contenu : `app/data/site.ts` (`SITE.profile` / `SITE.skills` / `SITE.projects`, typés `IProfile`/`IProject`) — consommée par les programmes terminal (`skills`/`projets`/`contact`/`about`), `index.vue`, `about.vue`, `contact/index.vue`, `contact/card.vue` et `FooterComponent`. **Ne pas re-hardcoder** profil/skills/projets/email/ville ailleurs (DRY, consolidé en 8.2).
   - Source unique d'URL de base : `app/composables/useSiteUrl.ts` (lit `useSiteConfig().url`, alimenté par `NUXT_SITE_URL`; `NUXT_SITE_NAME` et `NUXT_SITE_ENV` complètent la source Nuxt Site Config). **Ne jamais hardcoder l'URL de domaine** dans le code applicatif.
   - Helper SEO centralisé : `app/composables/usePageSeo.ts` — pose `useSeoMeta`, liens canonicals et JSON-LD Schema.org échappé via `jsonLdScript()`. _(Les `experiences`/`degrees` divergent volontairement entre le CV terminal détaillé et `/about` condensé — non unifiés, suivi dans `deferred-work.md`.)_
+  - **Forme d'URL canonique = barre finale** (`/about/`). GitHub Pages ne répond 200 que sur la forme « dossier » et redirige `/about` en 301. Pilotée par `site.trailingSlash: true` (sitemap + artefacts AI Ready via `nuxt-site-config`) et `experimental.defaults.nuxtLink.trailingSlash: "append"` (liens internes). Toute URL absolue applicative (canonical, `og:url`, `url` JSON-LD) passe par `absoluteCanonicalUrl()` (`app/utils/site-url.ts`) — jamais une interpolation `${siteUrl}/chemin`. La CI impose `loc ∈ sitemap` terminé par `/` et égal au canonical du HTML. Diagnostic complet : `docs/implementation-artifacts/seo-redirections-search-console-2026-10-30.md`.
+  - **`NUXT_SITE_ENV=development` rend tout le site non indexable** (`noindex, nofollow` partout, sitemap vide) : c'est le garde-fou de `nuxt-site-config`. Pour inspecter les artefacts SEO/AEO en local, générer avec `NUXT_SITE_ENV=production`.
 
 **Langue**
 
@@ -233,8 +253,7 @@ none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux p
 
 - La **fonctionnalité terminal** draggable (`components/terminal/`) est un
   easter-egg à conserver — le design system la garde comme feature secondaire.
-- Le **dark-first** : pas de thème clair. Surfaces sombres teintées aubergine,
-  orange Ubuntu comme unique accent héros.
+- Le **dark-first avec thème clair** : le thème sombre aubergine reste la référence de lecture, le thème clair « Papier technique / Crème solaire » est disponible via la préférence utilisateur et le terminal conserve son fond sombre sanctuarisé. Orange Ubuntu reste l'accent héros.
 - Respect de `prefers-reduced-motion` ; seule animation en boucle = le caret du
   terminal.
 
@@ -264,9 +283,14 @@ none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux p
   dans **Chrome DevTools MCP** ET la référence visuelle correspondante, puis comparer
   le rendu (padding/marges/espacement/fidélité), en desktop ET mobile. La revue de code
   est aveugle aux régressions de rendu. Réfs par page :
-  - **Home** → `docs/design_system/ui_kits/jouan-site/Home - Awwwards.html` (maquette cible Awwwards officielle depuis l'Epic 11).
-  - **Services / About / Blog / Contact** → `docs/design_system/ui_kits/jouan-site/index.html`
-    (UI kit cible ; ouvrir la section correspondante).
+  - **Home / journal** → `docs/design_system/ui_kits/jouan-site/Home - Awwwards.html` (maquette cible
+    Awwwards officielle depuis l'Epic 11 ; section `#journal` pour les cartes d'articles).
+  - **Services / About / Contact** → section correspondante de la même maquette.
+  - ⚠️ **L'UI kit précédent** (`ui_kits/jouan-site/index.html`, `Home.jsx`, `Blog.jsx`, `Services.jsx`,
+    `About.jsx`, `Contact.jsx`, `data.js`, `kit.css`) date de la **version précédente du site** : il est
+    *superseded*. Ne pas s'en servir comme référence de rendu, notamment pour le blog — il ignore le
+    monospace des titres et la taxonomie `.tag` pil. Il reste utile comme première exploration de
+    composants React déjà documentés.
   - Routine appliquée sans faille sur Epics 4-8 (desktop + mobile) → zéro régression de
     rendu ; elle a corrigé un défaut de la maquette (centrage timeline `kit.css`, 5.2),
     attrapé un bug d'ancres de titres `@nuxt/content` (6.2) et validé la refonte terminal
@@ -292,4 +316,4 @@ none` + reset marges UA → rendu identique), pas en `<div>`. Écrire ces deux p
 - Mettre à jour quand la stack change.
 - Revue périodique ; retirer les règles devenues évidentes.
 
-Dernière mise à jour : 2026-09-24 ( Epic 14 enrichi avec la roadmap SEO Nuxt automatisée et AEO AI Ready ; la validation de production reste post-déploiement).
+Dernière mise à jour : 2026-09-27 (référence de design blog clarifiée : le design courant est `Home - Awwwards.html`, l'ancien UI kit et `Blog.jsx` sont superseded ; Epic 14 ratifié, Epic 16 décomposé en 10 stories T0/E1 avec `architecture-blog-editorial.md`).

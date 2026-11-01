@@ -82,7 +82,7 @@ import { NuxtLink } from "#components";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useAnalytics } from "~/composables/useAnalytics";
 import { SITE } from "~/data/site";
-import { getBlogRobotsDirective, isPublishedBlogEntry } from "~/utils/blog-indexability";
+import { resolveBlogVisibility } from "~/utils/blog-indexability";
 
 const route = useRoute();
 const { track } = useAnalytics();
@@ -104,7 +104,7 @@ const finishedSlug = ref("");
 
 function emitArticleViewed(): void {
   const article = page.value;
-  if (!article || !isPublishedBlogEntry(article)) {
+  if (!article || resolveBlogVisibility(article).production === "absent") {
     return;
   }
   articleStartedAt.value = Date.now();
@@ -177,12 +177,14 @@ onBeforeUnmount(() => {
 });
 
 // Erreur adaptée à l'état courant : 500 si la requête de contenu échoue (on ne masque
-// pas une vraie erreur derrière un 404), 404 uniquement quand l'article n'existe pas.
+// pas une vraie erreur derrière un 404), 404 quand l'article n'a pas de HTML production
+// — inexistant, brouillon, à venir ou `visibility: private`, tous indiscernables pour le
+// visiteur. La surface de preview est une décision R1 non prise.
 const resolveContentError = () => {
   if (error.value) {
     return createError({ statusCode: 500, statusMessage: "Erreur lors du chargement de l'article" });
   }
-  if (!page.value || !isPublishedBlogEntry(page.value)) {
+  if (!page.value || resolveBlogVisibility(page.value).production === "absent") {
     return createError({ statusCode: 404, statusMessage: "Article introuvable" });
   }
   return null;
@@ -216,7 +218,7 @@ usePageSeo(() => {
   if (!article) {
     return null;
   }
-  const url = `${siteUrl}${article.path}`;
+  const url = absoluteCanonicalUrl(siteUrl, article.path);
   const image = article.image
     ? article.image.src.startsWith("/")
       ? `${siteUrl}${article.image.src}`
@@ -232,13 +234,13 @@ usePageSeo(() => {
     author: {
       "@type": "Person",
       name: SITE.profile.name,
-      url: siteUrl,
+      url: absoluteCanonicalUrl(siteUrl, "/"),
     },
     publisher: {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
       name: SITE.profile.name,
-      url: siteUrl,
+      url: absoluteCanonicalUrl(siteUrl, "/"),
       logo: `${siteUrl}/images/logo.png`,
     },
     url,
@@ -254,7 +256,7 @@ usePageSeo(() => {
     image: article.image?.src,
     imageAlt: article.image?.alt,
     type: "article",
-    robots: getBlogRobotsDirective(article),
+    robots: resolveBlogVisibility(article).robots,
     jsonLd,
   };
 });

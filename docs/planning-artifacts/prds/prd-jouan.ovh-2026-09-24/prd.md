@@ -1,8 +1,8 @@
 ---
 title: "Blog éditorial jouan.ovh — autorité technique et patrimoine éditorial"
-status: draft
+status: approved
 created: 2026-09-24
-updated: 2026-09-25
+updated: 2026-09-26
 sources:
   - ../../../specs/spec-blog-editorial/SPEC.md
   - ../../../specs/spec-blog-editorial/brownfield.md
@@ -49,10 +49,10 @@ Ce PRD a été rédigé en **Fast path**, avec une entrée Vision + Features. Ce
 | Première livraison | Préparation technique : contrat minimal, résolution, `/blog`, article, homepage et non-régression SEO/AEO |
 | Roadmap conditionnelle | Hubs, related, auteur enrichi, projets, AEO étendue, RSS, analytics et curation `featured` |
 | Gate d'autorité | Article réel + FR-18 + publication contrôlée ; une fixture ne démontre pas l'expertise |
-| Alignement canonique | SPEC, companions et verification-plan sont révisés et normatifs ; D-08 reste à confirmer au checkpoint Epic 14 |
-| Blocage actuel | Aucun story d'implémentation avant le checkpoint Epic 14, la confirmation D-08 et la vérification de la visibility matrix |
+| Alignement canonique | SPEC, companions et verification-plan sont révisés et normatifs ; D-08 confirmée au checkpoint Epic 14 le 2026-09-26 |
+| Blocage actuel | Point de contrôle ratifié et matrice de visibilité validée ; les stories T0 peuvent être décomposées |
 
-Les phases de ce PRD sont désormais ratifiées dans la SPEC et ses companions. Les stories restent bloquées jusqu'au checkpoint Epic 14, à la confirmation D-08 et aux gates de fixtures de visibility.
+Les phases de ce PRD sont ratifiées dans la SPEC et ses companions. Le checkpoint Epic 14 est ratifié, D-08 est confirmée et la matrice de visibilité est validée ; les stories T0 peuvent être décomposées.
 
 ### Matrice de traçabilité canonique
 
@@ -499,7 +499,7 @@ Le PRD adopte les décisions de phase suivantes pour éviter que les workflows a
 - [ASSUMPTION: Aucun chiffre de trafic, de classement ou de conversion ne doit être inventé.]
 - [ASSUMPTION: `SITE.profile` reste la source auteur et `SITE.projects` la source projet.]
 - [ASSUMPTION: Les hubs Vue et les routes article doivent rester des namespaces distincts.]
-- [ASSUMPTION: L'Epic 14 doit être stabilisé avant les changements structurels du blog.]
+- ~~[ASSUMPTION: L'Epic 14 doit être stabilisé avant les changements structurels du blog.]~~ **Satisfaite le 2026-09-27** : les six tâches 14.1 à 14.6 sont livrées, le checkpoint est ratifié (`stabilisation: ratifiée`) et D-01 à D-08 sont tranchées. Le précondition est levé ; les réserves suivies restent ouvertes mais ne bloquent plus T0.
 - [ASSUMPTION: Les fixtures sont synthétiques, temporaires et supprimées après validation.]
 - [ASSUMPTION: Le blog reste une source de vérité Markdown et ne reçoit pas de CMS externe.]
 
@@ -523,7 +523,7 @@ Le blog de base, les routes Content, le DS, le SEO et la gate CI existent déjà
 
 ## 7. Identité, ton et forme
 
-Le blog doit rester une expérience technique sobre et réutiliser exactement le design system et l'état de thèmes approuvés au checkpoint Epic 14 ; il ne déclenche ni migration clair/sombre ni nouveau thème. La documentation de planning qui diverge sur ce point sera réconciliée avant la revue UX. L'esthétique reste terminale, avec une typographie Ubuntu / Ubuntu Mono. La voix est celle de Simon : première personne, précise, humble sur les limites et exigeante sur la preuve. Le contenu ne doit pas ressembler à une brochure, même lorsque le sujet est commercial.
+Le blog doit rester une expérience technique sobre et réutiliser exactement le design system et l'état de thèmes à ratifier au checkpoint Epic 14 ; il ne déclenche ni migration clair/sombre ni nouveau thème. La documentation de planning qui diverge sur ce point sera réconciliée avant la revue UX. L'esthétique reste terminale, avec une typographie Ubuntu / Ubuntu Mono. La voix est celle de Simon : première personne, précise, humble sur les limites et exigeante sur la preuve. Le contenu ne doit pas ressembler à une brochure, même lorsque le sujet est commercial.
 
 ## 8. Architecture de l'information et plateforme
 
@@ -651,8 +651,24 @@ Les métriques sont volontairement décrites comme des preuves et des diagnostic
 
 ### 14.1 Primaries
 
-- **SM-1 :** La préparation technique T0 est verte lorsqu'une fixture temporaire explicitement identifiée traverse le contrat minimal, `/blog`, la route article, la homepage et les sorties SEO/AEO existantes sans divergence. Valide FR-1 à FR-4, FR-7, FR-12 à FR-14, FR-16 et FR-17.
-- **SM-E1 :** Le lancement éditorial E1 n'est vert que lorsqu'un article réel passe FR-18, la promotion contrôlée et le probe post-déploiement. Valide FR-3, FR-13, FR-17 et FR-18.
+- **SM-1 :** La préparation technique T0 est verte lorsqu'une fixture temporaire explicitement identifiée traverse le contrat minimal, `/blog`, la route article, la homepage et les sorties SEO/AEO existantes sans divergence. Valide **FR-1, FR-3 (uniquement le contrat de date `updated >= date` et l'immuabilité de `date`), FR-4, FR-7, FR-12 à FR-14, FR-16 et FR-17.**
+- **SM-E1 :** Le lancement éditorial E1 n'est vert que lorsqu'un article réel passe FR-18, la promotion contrôlée et le probe post-déploiement. Valide **FR-2, FR-3 (cycle de correction : note de correction traçable, traitement d'une rétractation, décision de renommage de slug), FR-13, FR-17 et FR-18.**
+
+> **Correction du 2026-09-27 — auto-contradiction de SM-1 levée.** La rédaction précédente déclarait
+> que SM-1 validait « FR-1 à FR-4 », ce qui englobait **FR-2** (*Admission fondée sur l'expérience*)
+> et l'intégralité de **FR-3** (*Corrections et mise à jour*). Or une fixture synthétique ne peut
+> valider ni l'un ni l'autre : elle n'a, par construction, ni expérience de première main, ni
+> correction éditoriale réelle. Le PRD reconnaît lui-même ailleurs qu'« un article sans preuve
+> suffisante reste en préparation technique », qu'« une fixture ne satisfait pas E1 » et qu'un article
+> en recherche d'expérience « n'est pas traité comme une preuve d'expertise ».
+>
+> **Conséquence du défaut :** T0 pouvait être déclaré vert alors que FR-2 et FR-3 n'étaient pas
+> implémentées. **FR-2 relève désormais de SM-E1**, et FR-3 est scindé entre son contrat de date
+> (T0, vérifiable par fixture) et son cycle de correction éditoriale (E1, vérifiable par article réel).
+>
+> **Réserve de couverture ouverte :** le cycle de correction de FR-3 (rétractation ou erreur
+> factuelle, renommage de slug) n'a pas encore de story porteuse dans `epics.md`. À arbitrer avant
+> l'implémentation.
 - **SM-2 :** Après extension, les trois hubs, la homepage, la page auteur et les routes articles sont accessibles sur desktop/mobile et ne régressent pas la homepage. Valide FR-4 à FR-11.
 - **SM-3 :** Les états brouillon, article futur, noindex, preview et exclu du sitemap produisent un comportement documenté et ne fuitent pas. Valide FR-12.
 - **SM-4 :** Le corpus produit des métadonnées cohérentes et vérifiables dans les artefacts publics ; la première release ne crée pas de nouvelle projection AEO. Valide FR-13 et FR-14.
@@ -696,7 +712,7 @@ Ces observations sont des diagnostics ; elles ne créent pas de seuil chiffré n
 | D-05 | Promotion | Build statique, canari ou préproduction, probe et rollback | Équipe technique | Approuvé | Première publication réelle |
 | D-06 | Confidentialité | Liste blanche réseau, licences, secrets et takedown | Responsable technique + Simon | Approuvé | Revue de supply chain |
 | D-07 | Analytics | Aucun nouvel événement/propriété en phase 1 ; inventaire existant | Responsable vie privée | Approuvé | Gate de non-régression |
-| D-08 | Thème et navigation | État DS au checkpoint ; homepage/footer seulement en phase 1 | Simon + équipe technique | À confirmer au checkpoint | Revue visuelle |
+| D-08 | Thème et navigation | État DS au checkpoint ; homepage/footer seulement en phase 1 | Simon + équipe technique | Confirmé au checkpoint le 2026-09-26 | Revue visuelle |
 
 ### Décisions de roadmap différées
 
@@ -716,7 +732,7 @@ Ces observations sont des diagnostics ; elles ne créent pas de seuil chiffré n
 - M-02 : quelles baselines SEO et de distribution sont autorisées, sans seuil de trafic ou de conversion inventé ?
 - P-01 : le brief original est-il sauvegardé comme source produit versionnée avant ratification de la SPEC ?
 
-Ces éléments sont désormais validés par la proposition de changement de sprint ; D-08 reste la seule confirmation opérationnelle pendante du checkpoint Epic 14.
+Ces éléments sont validés par la proposition de changement de sprint ; D-08 a été confirmée au checkpoint Epic 14 le 2026-09-26.
 
 ## 16. Index des hypothèses
 

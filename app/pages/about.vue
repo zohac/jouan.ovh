@@ -159,12 +159,12 @@ const aboutJsonLd = {
   "@context": "https://schema.org",
   "@type": "ProfilePage",
   name: pageTitle,
-  url: `${siteUrl}/about`,
+  url: absoluteCanonicalUrl(siteUrl, "/about"),
   mainEntity: {
     "@type": "Person",
     name: SITE.profile.name,
     jobTitle: SITE.profile.role,
-    url: siteUrl,
+    url: absoluteCanonicalUrl(siteUrl, "/"),
     image: `${siteUrl}/images/portrait.jpeg`,
     email: SITE.profile.email,
     address: {
